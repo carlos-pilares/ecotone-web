@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Ecotone — Immersive Nature Experiences · Cusco, Perú</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --brown:#906730;--brown-dk:#563B12;--brown-xdk:#2C1D07;--cream:#ECE5D5;
+  --w:#FDFCF9;--n50:#F7F4EE;--n100:#EDE7DA;--n200:#D8CFBF;
+  --n400:#A59880;--n700:#4A3E30;--n900:#1A1209;
+  --b50:#FAF3E8;--b100:#EDD9B8;--b200:#D4AA72;
+  --f:'Lexend',system-ui,sans-serif;
+  --nav-h:64px;--g:clamp(20px,3vw,40px);--max:1200px;
+  --r:14px;--rl:20px;--rxl:28px;
+}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:var(--f);background:var(--w);color:var(--n900);overflow-x:hidden;font-weight:300;font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
+img{display:block;width:100%;object-fit:cover}
+a{color:inherit;text-decoration:none}
+button{font-family:var(--f);cursor:pointer}
+
+/* ── TYPOGRAPHY ── */
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--brown);display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.eyebrow::before{content:'';width:18px;height:1px;background:var(--b200);flex-shrink:0}
+.eyebrow-lt{color:rgba(212,170,114,.7)}
+.eyebrow-lt::before{background:rgba(212,170,114,.3)}
+.h2{font-size:clamp(26px,3.5vw,42px);font-weight:700;line-height:1.08;letter-spacing:-.025em;color:var(--n900);margin-bottom:16px}
+.body{font-size:14px;font-weight:300;color:var(--n700);line-height:1.8}
+
+/* ── BUTTONS ── */
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--brown);color:#fff;font-family:var(--f);font-size:13px;font-weight:700;letter-spacing:.05em;padding:13px 28px;border-radius:100px;border:none;transition:background .2s,transform .15s;white-space:nowrap;cursor:pointer}
+.btn-primary:hover{background:var(--brown-dk);transform:translateY(-1px)}
+.btn-outline{display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--n900);font-family:var(--f);font-size:13px;font-weight:500;padding:12px 24px;border-radius:100px;border:1.5px solid var(--n200);transition:border-color .2s,background .2s;white-space:nowrap;cursor:pointer}
+.btn-outline:hover{border-color:var(--brown);background:var(--b50)}
+
+/* ── SECTIONS ── */
+.sec{padding:72px var(--g)}
+.sec-inner{max-width:var(--max);margin:0 auto}
+.bg-warm{background:var(--n50)}
+.bg-parch{background:var(--n100)}
+.bg-cream{background:var(--b50)}
+
+/* ── FADE IN ── */
+.fade{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease}
+.fade.in{opacity:1;transform:none}
+.fade-d1{transition-delay:.1s}.fade-d2{transition-delay:.2s}.fade-d3{transition-delay:.3s}
+
+/* ══════════════════════════════════════
+   TOP NAV
+══════════════════════════════════════ */
+.top-nav{position:fixed;top:0;left:0;right:0;z-index:300;height:var(--nav-h);transition:background .35s,border-color .35s,box-shadow .35s;border-bottom:1px solid transparent}
+.top-nav.solid{background:rgba(253,252,249,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom-color:var(--n200);box-shadow:0 1px 16px rgba(26,18,9,.05)}
+.nav-inner{max-width:var(--max);margin:0 auto;height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;padding:0 var(--g)}
+.nav-logo{display:flex;align-items:center;gap:10px;transition:opacity .2s}
+.nav-logo:hover{opacity:.85}
+.nav-logo-isotipo{width:28px;height:28px;flex-shrink:0;transition:color .35s}
+.nav-logo-wordmark{height:18px;flex-shrink:0;transition:opacity .35s}
+.nav-links{display:flex;align-items:center;gap:28px;list-style:none}
+.nav-links a{font-size:13px;font-weight:400;color:rgba(236,229,213,.85);letter-spacing:.03em;transition:color .2s}
+.top-nav.solid .nav-links a{color:var(--n700)}
+.nav-links a:hover,.top-nav.solid .nav-links a:hover{color:var(--brown)}
+.nav-book{background:var(--brown);color:#fff;font-size:13px;font-weight:600;letter-spacing:.05em;padding:9px 22px;border-radius:100px;border:none;transition:background .2s,transform .15s;cursor:pointer}
+.nav-book:hover{background:var(--brown-dk);transform:translateY(-1px)}
+.hamburger{display:none;background:none;border:none;padding:4px;flex-direction:column;gap:5px;cursor:pointer}
+.hamburger span{display:block;width:22px;height:1.5px;background:rgba(236,229,213,.9);transition:background .35s}
+.top-nav.solid .hamburger span{background:var(--n900)}
+@media(max-width:720px){
+  .nav-links,.nav-book.desk{display:none!important}
+  .hamburger{display:flex!important}
+}
+.mobile-drawer{display:none;position:fixed;top:var(--nav-h);left:0;right:0;z-index:298;background:var(--w);border-bottom:1px solid var(--n200);padding:8px var(--g) 24px;flex-direction:column;box-shadow:0 4px 24px rgba(26,18,9,.08)}
+.mobile-drawer.open{display:flex}
+.mobile-drawer a{display:block;padding:14px 0;font-size:14px;font-weight:400;color:var(--n700);border-bottom:1px solid var(--n200)}
+.mobile-drawer .btn-primary{margin-top:16px;justify-content:center}
+
+/* ══════════════════════════════════════
+   HERO
+══════════════════════════════════════ */
+.hero{position:relative;height:100svh;min-height:640px;overflow:hidden;background:var(--brown-xdk);display:grid;grid-template-rows:1fr auto}
+.hero-bg{position:absolute;inset:0;background:linear-gradient(110deg,rgba(0,0,0,.65) 0%,rgba(0,0,0,.15) 52%,rgba(0,0,0,.55) 100%),url('https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=1800&q=85') center/cover no-repeat;transform:scale(1.06);animation:hz 28s ease-in-out infinite alternate}
+.hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.32) 0%,transparent 20%,transparent 48%,rgba(0,0,0,.72) 100%)}
+@keyframes hz{0%{transform:scale(1.06)}100%{transform:scale(1.12)}}
+
+/* Brand mark decorative — subtle on hero */
+.hero-brand-mark{position:absolute;right:-60px;top:50%;transform:translateY(-50%);width:400px;height:400px;opacity:.04;pointer-events:none}
+
+.hero-inner{position:relative;z-index:2;max-width:var(--max);width:100%;margin:0 auto;display:grid;grid-template-columns:1fr;align-items:end;padding:calc(var(--nav-h) + 40px) var(--g) 60px}
+@media(min-width:900px){.hero-inner{grid-template-columns:1fr 1fr;align-items:end;gap:52px}}
+.hero-eyebrow{font-size:12px;font-weight:400;letter-spacing:.2em;text-transform:uppercase;color:rgba(236,229,213,.6);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.hero-eyebrow::before{content:'';width:16px;height:1px;background:rgba(212,170,114,.45)}
+.hero-h1{font-size:clamp(46px,7.5vw,84px);font-weight:700;line-height:.97;letter-spacing:-.032em;color:var(--cream);margin-bottom:18px}
+.hero-h1 span{display:block;font-weight:200;opacity:.78;letter-spacing:-.022em}
+.hero-sub{font-size:14px;font-weight:300;color:rgba(236,229,213,.68);max-width:420px;line-height:1.75;margin-bottom:28px}
+.hero-pills{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:32px}
+.hero-pill{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.4);color:#fff;font-size:12px;font-weight:500;padding:6px 14px;border-radius:100px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);white-space:nowrap}
+.hero-pill svg{width:11px;height:11px;opacity:.85;flex-shrink:0}
+.hero-ctas{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.hero-ghost{font-size:13px;font-weight:400;color:rgba(236,229,213,.82);text-decoration:underline;text-underline-offset:3px}
+
+.hero-right{display:none}
+@media(min-width:900px){.hero-right{display:flex;align-items:flex-end;justify-content:flex-end}}
+.hero-card{background:rgba(0,0,0,.58);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);border:1px solid rgba(255,255,255,.18);border-radius:var(--rxl);padding:28px 24px;min-width:260px}
+.hero-card-price{font-size:44px;font-weight:700;color:var(--cream);line-height:1;letter-spacing:-.04em;margin-bottom:3px}
+.hero-card-price small{font-size:13px;font-weight:300;opacity:.6;margin-left:2px}
+.hero-card-sub{font-size:12px;font-weight:300;color:rgba(236,229,213,.52);margin-bottom:18px}
+.hero-card-div{height:1px;background:rgba(255,255,255,.12);margin:14px 0}
+.hero-card-rows{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.hero-card-row{display:flex;justify-content:space-between}
+.hero-card-row span:first-child{font-size:12px;font-weight:300;color:rgba(236,229,213,.48)}
+.hero-card-row span:last-child{font-size:13px;font-weight:500;color:rgba(236,229,213,.92)}
+.btn-hero-book{display:block;width:100%;text-align:center;background:var(--brown);color:#fff;font-size:13px;font-weight:700;letter-spacing:.05em;padding:14px;border-radius:100px;border:none;transition:background .2s,transform .15s;cursor:pointer}
+.btn-hero-book:hover{background:var(--brown-dk);transform:translateY(-1px)}
+
+.hero-scroll{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;padding:14px 0 22px;gap:10px}
+.hero-scroll span{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgba(236,229,213,.3)}
+.scroll-line{width:1px;height:28px;background:rgba(236,229,213,.18);overflow:hidden;border-radius:2px}
+.scroll-line::after{content:'';display:block;width:100%;height:50%;background:rgba(236,229,213,.65);animation:sl 2.4s ease-in-out infinite}
+@keyframes sl{0%{transform:translateY(-100%)}100%{transform:translateY(200%)}}
+
+/* ══════════════════════════════════════
+   STATS BAND
+══════════════════════════════════════ */
+.stats-band{background:var(--n100);padding:0 var(--g);border-bottom:1px solid var(--n200)}
+.stats-inner{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid var(--n200)}
+@media(min-width:560px){.stats-inner{grid-template-columns:repeat(4,1fr)}}
+.stat{padding:24px 16px;border-right:1px solid var(--n200);text-align:center}
+.stat:last-child{border-right:none}
+.stat-n{font-size:26px;font-weight:700;color:var(--n900);line-height:1;letter-spacing:-.04em}
+.stat-l{font-size:12px;font-weight:300;color:var(--n400);margin-top:5px;letter-spacing:.04em}
+/* Stats — compacto solo en móvil (desktop: reglas de arriba) */
+@media(max-width:559px){
+  .stat{padding:12px 10px 11px;min-height:0}
+  .stat-n{font-size:22px;letter-spacing:-.035em}
+  .stat-l{font-size:11px;margin-top:2px;letter-spacing:.03em;line-height:1.25}
+}
+
+/* ══════════════════════════════════════
+   MANIFESTO
+══════════════════════════════════════ */
+.manifesto-grid{display:grid;grid-template-columns:1fr;gap:44px;align-items:center}
+@media(min-width:780px){.manifesto-grid{grid-template-columns:1fr 1fr;gap:60px}}
+.manifesto-img{width:100%;height:clamp(280px,40vw,460px);border-radius:var(--rl);overflow:hidden;position:relative}
+.manifesto-img img{height:100%}
+.manifesto-caption{font-size:12px;font-weight:400;color:var(--n400);margin-top:10px;letter-spacing:.05em}
+.manifesto-cta{margin-top:24px;display:flex;gap:12px;flex-wrap:wrap}
+
+/* ══════════════════════════════════════
+   EXPERIENCES EXPLORER
+══════════════════════════════════════ */
+.filter-tabs{display:flex;gap:6px;margin-top:20px;margin-bottom:26px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.filter-tabs::-webkit-scrollbar{display:none}
+.filter-tab{font-size:12px;font-weight:500;padding:8px 18px;border-radius:100px;border:1.5px solid var(--n200);color:var(--n700);background:transparent;white-space:nowrap;flex-shrink:0;transition:all .2s;cursor:pointer}
+.filter-tab:hover{border-color:var(--brown);color:var(--brown)}
+.filter-tab.active{background:var(--brown);border-color:var(--brown);color:#fff;font-weight:600}
+.filter-tab.tailor{border-color:var(--b200);color:var(--brown-dk)}
+.filter-tab.tailor.active{background:var(--brown-dk);border-color:var(--brown-dk);color:var(--b100)}
+
+.exp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(min-width:700px){.exp-grid{grid-template-columns:repeat(3,1fr)}}
+
+.exp-card{border:1px solid var(--n200);border-radius:var(--r);overflow:hidden;background:var(--w);transition:border-color .2s,box-shadow .2s;cursor:pointer}
+.exp-card:hover{border-color:var(--b200);box-shadow:0 8px 32px rgba(144,103,48,.12);transform:translateY(-2px);transition:all .25s}
+.exp-card-img{position:relative;height:clamp(140px,22vw,190px);overflow:hidden}
+.exp-card-img img{height:100%;transition:transform .6s ease}
+.exp-card:hover .exp-card-img img{transform:scale(1.06)}
+.exp-card-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.04) 40%,rgba(0,0,0,.04) 58%,rgba(0,0,0,.62) 100%)}
+.badge-type{position:absolute;top:9px;left:9px;font-size:11px;font-weight:600;background:rgba(0,0,0,.68);color:#fff;padding:4px 10px;border-radius:100px}
+.badge-dur{position:absolute;top:9px;right:9px;font-size:11px;font-weight:700;background:var(--brown);color:#fff;padding:4px 10px;border-radius:100px}
+.badge-route{position:absolute;bottom:9px;left:9px;font-size:11px;font-weight:500;background:rgba(0,0,0,.65);color:#fff;padding:4px 10px;border-radius:100px;border:1px solid rgba(255,255,255,.2)}
+.badge-flag{position:absolute;bottom:9px;right:9px;font-size:11px;font-weight:700;background:var(--brown);color:#fff;padding:4px 10px;border-radius:100px}
+.exp-card-body{padding:13px 14px 15px}
+.exp-card-title{font-size:13px;font-weight:700;color:var(--n900);line-height:1.28;letter-spacing:-.01em;margin-bottom:5px}
+.exp-card-desc{font-size:13px;font-weight:300;color:var(--n400);line-height:1.6;margin-bottom:11px}
+.exp-card-foot{display:flex;justify-content:space-between;align-items:center}
+.exp-card-price{font-size:14px;font-weight:700;color:var(--brown);letter-spacing:-.01em}
+.exp-card-cta{font-size:12px;font-weight:600;color:var(--brown);display:flex;align-items:center;gap:3px}
+
+.exp-card-tailor{grid-column:1/-1;border:1.5px solid var(--b200);border-radius:var(--r);overflow:hidden;background:var(--b50);display:grid;grid-template-columns:1fr}
+@media(min-width:560px){.exp-card-tailor{grid-template-columns:1fr 1fr}}
+.exp-card-tailor-img{position:relative;height:clamp(130px,18vw,180px);background:linear-gradient(145deg,var(--brown-xdk),var(--brown-dk),#4a3418);overflow:hidden}
+.exp-card-tailor-img img{height:100%}
+.exp-card-tailor-body{padding:22px 24px;display:flex;flex-direction:column;justify-content:center;gap:7px}
+.exp-card-tailor-title{font-size:18px;font-weight:700;color:var(--brown-xdk);letter-spacing:-.022em;line-height:1.2}
+.exp-card-tailor-desc{font-size:13px;font-weight:300;color:var(--brown-dk);line-height:1.65}
+.btn-tailor{display:inline-flex;align-items:center;gap:6px;background:var(--brown-dk);color:var(--b100);font-size:13px;font-weight:700;letter-spacing:.05em;padding:11px 22px;border-radius:100px;border:none;align-self:flex-start;margin-top:5px;transition:background .2s;cursor:pointer}
+.btn-tailor:hover{background:var(--brown)}
+
+/* ══════════════════════════════════════
+   REVIEWS — unified section
+══════════════════════════════════════ */
+.reviews-header{display:grid;grid-template-columns:1fr auto;align-items:start;gap:20px;margin-bottom:28px}
+.reviews-rating-wrap{display:flex;justify-content:flex-end;align-items:flex-start}
+.reviews-rating-col{display:flex;flex-direction:column;align-items:center;gap:6px}
+.big-score{font-size:54px;font-weight:700;color:var(--n900);line-height:1;letter-spacing:-.05em}
+.stars{display:flex;gap:3px;justify-content:center}
+.star{width:13px;height:13px;background:var(--brown);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.trustpilot-badge{display:flex;align-items:center;gap:5px;justify-content:center}
+.tp-icon{width:16px;height:16px;background:#00B67A;border-radius:2px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tp-name{font-size:12px;font-weight:600;color:var(--n700)}
+
+/* Featured quote — no box, text directly on background */
+.quote-featured{text-align:center;padding:28px 16px;margin-bottom:24px}
+.quote-text{font-size:clamp(20px,3.2vw,32px);font-weight:700;color:var(--n900);line-height:1.15;letter-spacing:-.022em;margin-bottom:12px}
+.quote-text span{font-weight:300;color:var(--n700)}
+.quote-attr{font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--brown);margin-bottom:18px}
+.quote-dots{display:flex;justify-content:center;gap:7px}
+.qdot{width:7px;height:7px;border-radius:50%;background:var(--n200);border:none;padding:0;cursor:pointer;transition:background .2s}
+.qdot.active{background:var(--brown)}
+
+.rev-carousel{position:relative}
+.rev-scroll{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;padding-bottom:4px;scrollbar-width:none;overscroll-behavior-x:contain}
+.rev-scroll::-webkit-scrollbar{display:none}
+.rev-card{flex-shrink:0;width:clamp(230px,52vw,290px);scroll-snap-align:start;background:var(--w);border:1px solid var(--n200);border-radius:var(--r);padding:18px 16px}
+.rev-card-dots{display:none;justify-content:center;align-items:center;gap:7px;padding:4px 0 2px}
+.rev-card-dots .rev-dot{width:7px;height:7px;border-radius:50%;border:none;padding:0;cursor:pointer;background:var(--n200);transition:background .2s,transform .2s;flex-shrink:0}
+.rev-card-dots .rev-dot.active{background:var(--brown);transform:scale(1.15)}
+/* Reviews: carrusel táctil en móvil; desktop sin cambios */
+@media(max-width:699px){
+  #reviews{overflow-x:clip}
+  #reviews .sec-inner{max-width:100%}
+  .rev-scroll{
+    gap:10px;
+    margin-left:calc(-1 * var(--g));
+    margin-right:calc(-1 * var(--g));
+    padding-left:var(--g);
+    padding-right:var(--g);
+    padding-bottom:8px;
+    scroll-snap-type:x mandatory;
+    scroll-padding-inline:var(--g);
+  }
+  .rev-card{
+    flex:0 0 85%;
+    max-width:300px;
+    min-width:min(260px,100%);
+    width:auto;
+    scroll-snap-align:center;
+    box-shadow:0 1px 0 rgba(0,0,0,.04);
+  }
+  .rev-card-dots{display:flex}
+}
+@media(min-width:700px){
+  .rev-card-dots{display:none !important}
+}
+.rev-q{font-size:14px;font-weight:300;font-style:italic;color:var(--n700);line-height:1.65;margin-bottom:15px}
+.rev-author{display:flex;align-items:center;gap:10px}
+.rev-av{width:34px;height:34px;border-radius:50%;background:var(--b100);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--brown-dk);flex-shrink:0}
+.rev-name{font-size:13px;font-weight:600;color:var(--n900);line-height:1.25}
+.rev-loc{font-size:12px;font-weight:300;color:var(--n400)}
+.rev-exp{font-size:11px;font-weight:500;color:var(--brown);margin-top:2px}
+
+/* ══════════════════════════════════════
+   TECH SECTION
+══════════════════════════════════════ */
+.tech-grid{display:grid;grid-template-columns:1fr;gap:6px;margin-top:32px}
+@media(min-width:600px){.tech-grid{grid-template-columns:repeat(3,1fr)}}
+.tech-card{background:var(--w);border:1px solid var(--n200);border-radius:var(--rl);overflow:hidden;transition:border-color .2s,box-shadow .2s}
+.tech-card:hover{border-color:var(--b200);box-shadow:0 8px 28px rgba(144,103,48,.1)}
+.tech-img-wrap{position:relative;height:clamp(180px,24vw,260px);overflow:hidden;background:var(--n900)}
+.tech-img-wrap img{height:100%;transition:transform .6s ease}
+.tech-card:hover .tech-img-wrap img{transform:scale(1.04)}
+.tech-card-content{padding:18px 18px 22px}
+.tech-num{font-size:12px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--brown);margin-bottom:7px}
+.tech-title{font-size:16px;font-weight:700;color:var(--n900);letter-spacing:-.015em;margin-bottom:8px;line-height:1.2}
+.tech-desc{font-size:13px;font-weight:300;color:var(--n700);line-height:1.72}
+.tech-badge{display:inline-block;margin-top:14px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:var(--b50);border:1px solid var(--b200);color:var(--brown-dk);padding:5px 13px;border-radius:100px}
+
+/* ══════════════════════════════════════
+   MISSION — with icons
+══════════════════════════════════════ */
+.mission-grid{display:grid;grid-template-columns:1fr;gap:44px;align-items:start}
+@media(min-width:780px){.mission-grid{grid-template-columns:1fr 1fr;gap:60px}}
+.mission-list{list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:22px}
+.mission-item{display:flex;align-items:flex-start;gap:13px}
+.mission-icon{width:34px;height:34px;border-radius:9px;background:var(--b50);border:1px solid var(--b200);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.mission-item-text{}
+.mission-item-title{font-size:13px;font-weight:600;color:var(--n900);margin-bottom:2px;line-height:1.3}
+.mission-item-sub{font-size:13px;font-weight:300;color:var(--n400);line-height:1.55}
+.mission-cta{display:inline-flex;align-items:center;gap:6px;margin-top:26px;font-size:13px;font-weight:600;color:var(--brown);border:1.5px solid var(--b200);padding:11px 22px;border-radius:100px;transition:border-color .2s,background .2s}
+.mission-cta:hover{background:var(--b50)}
+.mission-photos{display:flex;flex-direction:column;gap:12px}
+.mission-photo-main{width:100%;height:clamp(200px,28vw,300px);border-radius:var(--rl);overflow:hidden}
+.mission-photo-main img{height:100%}
+.mission-photo-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mission-photo-sm{border-radius:var(--r);overflow:hidden;height:clamp(110px,15vw,170px)}
+.mission-photo-sm img{height:100%}
+
+/* ══════════════════════════════════════
+   PARTNERS
+══════════════════════════════════════ */
+.partners-band{background:var(--w);border-top:1px solid var(--n200);border-bottom:1px solid var(--n200);padding:32px var(--g)}
+.partners-inner{max-width:var(--max);margin:0 auto}
+.partners-label{text-align:center;font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--n400);margin-bottom:22px}
+.partners-row{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0}
+.partner-logo{display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 18px;opacity:.4;transition:opacity .25s}
+.partner-logo:hover{opacity:1}
+.partner-wordmark{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--n700);white-space:nowrap}
+.partner-sep{width:1px;height:28px;background:var(--n200);flex-shrink:0;align-self:center}
+
+/* ══════════════════════════════════════
+   BLOG
+══════════════════════════════════════ */
+.blog-scroll{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:4px;scrollbar-width:none;margin-top:28px}
+.blog-scroll::-webkit-scrollbar{display:none}
+.blog-card{flex-shrink:0;width:clamp(230px,44vw,310px);scroll-snap-align:start;border:1px solid var(--n200);border-radius:var(--r);overflow:hidden;background:var(--w);transition:border-color .2s,box-shadow .2s}
+.blog-card:hover{border-color:var(--b200);box-shadow:0 4px 20px rgba(144,103,48,.08)}
+.blog-img{height:clamp(110px,17vw,160px);background:var(--n900);overflow:hidden;position:relative}
+.blog-img img{height:100%}
+.blog-img-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.52) 0%,transparent 52%)}
+.blog-tag{position:absolute;top:9px;left:9px;font-size:11px;font-weight:600;background:rgba(0,0,0,.68);color:#fff;padding:4px 10px;border-radius:100px}
+.blog-body{padding:14px 14px 15px}
+.blog-title{font-size:13px;font-weight:700;color:var(--n900);line-height:1.38;margin-bottom:9px}
+.blog-read{font-size:12px;font-weight:600;color:var(--brown);display:flex;align-items:center;gap:3px}
+
+/* ══════════════════════════════════════
+   BOOKING CTA
+══════════════════════════════════════ */
+.booking-layout{display:grid;grid-template-columns:1fr;gap:44px;align-items:start}
+@media(min-width:800px){.booking-layout{grid-template-columns:1fr 400px;gap:68px}}
+.trust-list{list-style:none;display:flex;flex-direction:column;gap:11px;margin-top:22px}
+.trust-item{display:flex;align-items:center;gap:11px;font-size:13px;font-weight:300;color:var(--n400)}
+.trust-item svg{width:15px;height:15px;color:var(--brown);flex-shrink:0}
+.book-card{background:var(--w);border:1.5px solid var(--n200);border-radius:var(--rxl);padding:30px 26px}
+@media(min-width:800px){.book-card{position:sticky;top:calc(var(--nav-h) + 10px)}}
+.book-price{font-size:48px;font-weight:700;color:var(--n900);line-height:1;letter-spacing:-.05em;margin-bottom:2px}
+.book-price small{font-size:15px;font-weight:300;color:var(--brown);margin-left:3px}
+.book-price-sub{font-size:12px;font-weight:300;color:var(--n400);margin-bottom:18px}
+.book-divider{height:1px;background:var(--n200);margin:16px 0}
+.book-rows{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.book-row{display:flex;justify-content:space-between;align-items:center}
+.book-rl{font-size:12px;font-weight:300;color:var(--n400)}
+.book-rv{font-size:13px;font-weight:600;color:var(--n900)}
+.btn-book{display:block;width:100%;text-align:center;background:var(--brown);color:#fff;font-size:14px;font-weight:700;letter-spacing:.05em;padding:16px;border-radius:100px;border:none;transition:background .2s,transform .15s;margin-bottom:10px;cursor:pointer}
+.btn-book:hover{background:var(--brown-dk);transform:translateY(-1px)}
+.btn-wa{display:flex;align-items:center;justify-content:center;gap:8px;background:transparent;color:var(--n700);font-size:13px;font-weight:400;padding:13px;border-radius:100px;border:1.5px solid var(--n200);transition:border-color .2s,background .2s;cursor:pointer}
+.btn-wa:hover{border-color:var(--b200);background:var(--b50)}
+
+/* ══════════════════════════════════════
+   FOOTER
+══════════════════════════════════════ */
+.footer{background:var(--n900);padding:56px var(--g) 40px;position:relative;overflow:hidden}
+/* Decorative brand mark in footer */
+.footer-brand-deco{position:absolute;right:-40px;bottom:-40px;width:280px;height:280px;opacity:.04;pointer-events:none}
+.footer-inner{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:1fr;gap:36px;position:relative;z-index:1}
+@media(min-width:640px){.footer-inner{grid-template-columns:1.6fr 1fr 1fr;gap:52px;align-items:start}}
+/* Mismo lockup horizontal que .nav-logo (isotipo + wordmark) */
+.foot-logo{margin-bottom:8px}
+.foot-tagline{font-size:12px;font-weight:300;color:rgba(236,229,213,.35);line-height:1.65;letter-spacing:.04em;text-transform:uppercase;margin-top:2px}
+.foot-col h5{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(236,229,213,.28);margin-bottom:16px}
+.foot-links{list-style:none;display:flex;flex-direction:column;gap:10px}
+.foot-links a{font-size:13px;font-weight:300;color:rgba(236,229,213,.55);transition:color .2s}
+.foot-links a:hover{color:var(--cream)}
+.foot-bottom{border-top:1px solid rgba(236,229,213,.07);padding-top:24px;margin-top:32px;max-width:var(--max);margin-left:auto;margin-right:auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;position:relative;z-index:1}
+.foot-copy{font-size:12px;font-weight:300;color:rgba(236,229,213,.2)}
+.foot-certs{display:flex;gap:14px;align-items:center}
+.foot-cert{font-size:11px;font-weight:700;letter-spacing:.06em;color:rgba(236,229,213,.28)}
+</style>
+</head>
+<body>
+
+<!-- ═══ SVG ASSETS (inline, reusable) ═══ -->
+<!-- Isotipo #906730 -->
+<svg style="display:none">
+  <symbol id="isotipo" viewBox="0 0 105 101">
+    <path d="M103.703 59.25C102.343 49.75 97.3635 41.34 89.6735 35.59C89.3235 35.33 88.9635 35.07 88.6035 34.82C88.0135 15.52 72.1235 0 52.6835 0C33.6535 0 18.0434 14.86 16.8234 33.58C11.1834 37.11 6.62343 42.15 3.64343 48.28C-0.556567 56.91 -1.14654 66.66 1.98346 75.74C5.11346 84.81 11.5934 92.13 20.2234 96.33C25.2034 98.75 30.5535 99.98 35.9235 99.98C39.8735 99.98 43.8335 99.32 47.6735 98C49.0635 97.52 50.4034 96.96 51.7134 96.33L51.9534 96.46C56.9534 98.99 62.4335 100.31 68.0535 100.31C69.7735 100.31 71.5035 100.19 73.2335 99.94C82.7335 98.58 91.1434 93.6 96.8934 85.91C102.643 78.22 105.063 68.75 103.703 59.25ZM52.6835 6.51001C67.2435 6.51001 79.3634 17.14 81.7034 31.05C79.1434 30 76.4735 29.25 73.7335 28.83C70.7635 20.05 62.4535 13.72 52.6835 13.72C40.4335 13.72 30.4634 23.69 30.4634 35.94C30.4634 47.44 39.2534 56.92 50.4634 58.03C50.5834 58.31 50.6935 58.6 50.7935 58.89C51.5235 60.99 51.7835 63.18 51.6035 65.34H51.4734C35.8035 64.7 23.2535 51.76 23.2535 35.94C23.2535 19.71 36.4535 6.51001 52.6835 6.51001ZM66.4734 28.44C65.3234 28.49 64.1734 28.6 63.0234 28.77C53.5234 30.13 45.1135 35.11 39.3635 42.8C39.2035 43.01 39.0534 43.23 38.8934 43.45C37.6734 41.22 36.9734 38.66 36.9734 35.94C36.9734 27.28 44.0135 20.24 52.6735 20.24C58.6235 20.24 63.8035 23.56 66.4734 28.44ZM22.6534 55.68C28.5534 64.63 38.3535 70.79 49.6135 71.75C47.7335 75.09 44.7334 77.6 41.0734 78.86C32.8934 81.69 23.9335 77.32 21.1035 69.14C19.4935 64.47 20.2234 59.56 22.6534 55.68ZM45.5435 91.83C38.1135 94.39 30.1335 93.91 23.0635 90.47C15.9935 87.03 10.6934 81.04 8.13342 73.61C5.57342 66.18 6.05347 58.2 9.49347 51.13C11.3535 47.3 13.9634 44 17.1534 41.36C17.5734 44.12 18.3134 46.77 19.3234 49.29C14.2034 55.1 12.2534 63.43 14.9534 71.26C18.1234 80.45 26.7534 86.23 35.9734 86.23C38.3735 86.23 40.8134 85.84 43.2034 85.01C48.8134 83.07 53.3335 79.07 55.9335 73.73C58.5335 68.39 58.8934 62.37 56.9634 56.76C56.6834 55.95 56.3535 55.16 55.9935 54.4C57.6035 52.43 59.6134 50.94 61.8234 49.98C62.5834 51.38 63.2434 52.86 63.7834 54.41C66.3434 61.84 65.8635 69.82 62.4235 76.89C58.9635 83.96 52.9735 89.26 45.5435 91.83ZM91.6735 81.99C86.9635 88.28 80.0835 92.36 72.3035 93.47C67.5435 94.15 62.7935 93.67 58.3735 92.12C60.5435 90.39 62.5034 88.41 64.2234 86.21C65.5034 86.44 66.8034 86.55 68.0934 86.55C74.8534 86.55 81.5434 83.48 85.9034 77.66C89.4634 72.91 90.9535 67.06 90.1135 61.18C89.2735 55.31 86.1935 50.11 81.4435 46.55C71.6435 39.2 57.6834 41.21 50.3434 51.01C50.2434 51.14 50.1535 51.27 50.0635 51.4C47.5735 50.98 45.2734 49.97 43.3234 48.52C43.7234 47.9 44.1334 47.29 44.5834 46.69C49.2934 40.4 56.1734 36.32 63.9534 35.21C65.3734 35.01 66.7835 34.91 68.1935 34.91C74.5135 34.91 80.6334 36.94 85.7734 40.79C92.0634 45.5 96.1435 52.38 97.2535 60.16C98.3635 67.95 96.3835 75.7 91.6735 81.99ZM69.9235 52.29C69.4935 51.04 68.9935 49.83 68.4435 48.66C71.6235 48.72 74.8034 49.74 77.5334 51.78C80.8934 54.29 83.0635 57.97 83.6635 62.12C84.2635 66.27 83.2035 70.41 80.6835 73.76C77.6035 77.87 72.8835 80.04 68.1035 80.04C68.1535 79.94 68.2035 79.84 68.2535 79.74C72.4635 71.12 73.0535 61.36 69.9235 52.29Z" fill="currentColor"/>
+  </symbol>
+</svg>
+
+<!-- ═══ TOP NAV ═══ -->
+<nav class="top-nav" id="topNav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <!-- Isotipo -->
+      <svg class="nav-logo-isotipo" viewBox="0 0 105 101" fill="none" xmlns="http://www.w3.org/2000/svg" id="navIsotipo">
+        <use href="#isotipo" style="color:var(--cream)"/>
+      </svg>
+      <!-- Wordmark SVG — crema by default, marrón cuando nav sólido -->
+      <svg class="nav-logo-wordmark" id="navWordmark" viewBox="0 0 176 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="height:20px">
+        <path d="M8.08002 33.61L20.73 28.67V35.43H0V1.40997H18.01V7.16998L8.08002 3.21997V15.15H15.93V17.78H8.08002V33.61Z" fill="#ECE5D5"/>
+        <path d="M44.7401 16.55L36.6201 10.2C32.9001 11.38 30.5401 15.51 30.5401 20.4C30.5401 26.48 34.5801 30.29 39.1101 30.29C42.1001 30.29 44.6001 29.29 46.4601 27.02L46.9101 27.34C45.2801 32.15 41.3801 35.87 35.3901 35.87C28.5001 35.87 22.8301 30.29 22.8301 22.63C22.8301 14.97 28.6801 8.62 37.4801 8.62C40.6101 8.62 43.1901 9.52999 44.7401 10.43V16.55Z" fill="#ECE5D5"/>
+        <path d="M76.8098 22.04C76.8098 29.75 71.1398 35.87 63.2498 35.87C55.3598 35.87 49.0098 30.06 49.0098 22.54C49.0098 14.87 54.5398 8.62 62.6198 8.62C70.6398 8.62 76.8098 14.56 76.8098 22.04ZM69.4198 25.4C69.4198 22.59 68.5998 19.73 67.1498 17.28C65.2898 14.15 62.5198 11.7 59.1698 10.79C57.2198 12.6 56.3998 15.82 56.3998 19.04C56.3998 21.94 57.3098 24.94 58.8498 27.48C60.7098 30.43 63.4298 32.74 66.6998 33.65C68.6498 31.84 69.4198 28.62 69.4198 25.4Z" fill="#ECE5D5"/>
+        <path d="M87.3998 0V9.07001H92.6198V12.93H87.3998V35.43H79.7798V6.17999L87.3998 0Z" fill="#ECE5D5"/>
+        <path d="M120.89 22.04C120.89 29.75 115.22 35.87 107.33 35.87C99.4398 35.87 93.0898 30.06 93.0898 22.54C93.0898 14.87 98.6198 8.62 106.7 8.62C114.73 8.62 120.89 14.56 120.89 22.04ZM113.5 25.4C113.5 22.59 112.68 19.73 111.23 17.28C109.37 14.15 106.6 11.7 103.25 10.79C101.3 12.6 100.48 15.82 100.48 19.04C100.48 21.94 101.39 24.94 102.93 27.48C104.79 30.43 107.51 32.74 110.78 33.65C112.73 31.84 113.5 28.62 113.5 25.4Z" fill="#ECE5D5"/>
+        <path d="M124.27 35.42V9.07001H131.89V12.11C135.7 10.02 138.74 8.62 141.46 8.62C145.41 8.62 147.45 11.02 147.45 15.11V35.43H139.83V15.97C139.83 13.61 138.88 12.34 136.79 12.34C135.7 12.34 134.3 12.52 131.89 13.7V35.43H124.27V35.42Z" fill="#ECE5D5"/>
+        <path d="M163.88 35.88C156.31 35.88 150.55 30.3 150.55 22.41C150.55 13.93 156.85 8.62 163.11 8.62C170.55 8.62 174.31 13.9299 175.08 19.0099H158.16C158.16 19.2399 158.16 19.51 158.16 19.78C158.16 26.67 162.24 30.3 167.32 30.3C170.45 30.3 172.85 29.08 174.71 26.81L175.16 27.17C173.77 31.43 169.91 35.88 163.88 35.88ZM158.39 16.69H167.69C166.83 14.01 164.47 11.11 161.2 10.52C159.93 11.66 158.85 13.7 158.39 16.69Z" fill="#ECE5D5"/>
+      </svg>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#experiences">Experiences</a></li>
+      <li><a href="#routes">Routes</a></li>
+      <li><a href="https://www.ecotone.eco/destinations">Lodges</a></li>
+      <li><a href="https://www.ecotone.eco/blog">Journal</a></li>
+      <li><a href="#about">About</a></li>
+    </ul>
+    <a href="#book" class="nav-book desk">Book now</a>
+    <button class="hamburger" id="ham"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-drawer" id="drawer">
+  <a href="#experiences">Experiences</a>
+  <a href="#routes">Routes</a>
+  <a href="https://www.ecotone.eco/destinations">Lodges</a>
+  <a href="https://www.ecotone.eco/blog">Journal</a>
+  <a href="#about">About</a>
+  <a href="#book" class="btn-primary">Book now</a>
+</div>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero" id="top">
+  <div class="hero-bg"></div>
+  <!-- Decorative isotipo watermark -->
+  <div class="hero-brand-mark">
+    <svg viewBox="0 0 105 101" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <use href="#isotipo" style="color:white"/>
+    </svg>
+  </div>
+  <div class="hero-inner">
+    <div>
+      <div class="hero-eyebrow">Manu Biosphere Reserve &amp; Camanti · Cusco, Perú</div>
+      <h1 class="hero-h1">
+        The forest
+        <span>is waiting for you.</span>
+      </h1>
+      <p class="hero-sub">Immersive all-inclusive experiences in the most biodiverse ecosystems on Earth. All-inclusive from Cusco.</p>
+      <div class="hero-pills">
+        <div class="hero-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>3 Routes</div>
+        <div class="hero-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>~10 Experiences</div>
+        <div class="hero-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Max 8 per group</div>
+        <div class="hero-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>All inclusive</div>
+      </div>
+      <div class="hero-ctas">
+        <a href="#experiences" class="btn-primary">Explore experiences <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+        <a href="#routes" class="hero-ghost">Our routes ↓</a>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-card">
+        <div class="hero-card-price">from $380<small>/person</small></div>
+        <div class="hero-card-sub">All inclusive · departure from Cusco</div>
+        <div class="hero-card-div"></div>
+        <div class="hero-card-rows">
+          <div class="hero-card-row"><span>Routes</span><span>3 territories</span></div>
+          <div class="hero-card-row"><span>Experiences</span><span>~10 programs</span></div>
+          <div class="hero-card-row"><span>Group</span><span>Up to 8 people</span></div>
+          <div class="hero-card-row"><span>Duration</span><span>3 days – 6 weeks</span></div>
+        </div>
+        <button class="btn-hero-book" onclick="location.href='#book'">Check availability →</button>
+      </div>
+    </div>
+  </div>
+  <div class="hero-scroll"><div class="scroll-line"></div><span>scroll</span></div>
+</section>
+
+<!-- ═══ STATS ═══ -->
+<div class="stats-band">
+  <div class="stats-inner">
+    <div class="stat"><div class="stat-n">3</div><div class="stat-l">Routes</div></div>
+    <div class="stat"><div class="stat-n">~10</div><div class="stat-l">Experiences</div></div>
+    <div class="stat"><div class="stat-n">1,200+</div><div class="stat-l">Species observed</div></div>
+    <div class="stat"><div class="stat-n">5.0 ★</div><div class="stat-l">Guest rating</div></div>
+  </div>
+</div>
+
+<!-- ═══ MANIFESTO ═══ -->
+<section class="sec bg-warm" id="about">
+  <div class="sec-inner">
+    <div class="manifesto-grid fade">
+      <div>
+        <div class="manifesto-img">
+          <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=900&q=85" alt="Soqtapata cloud forest">
+        </div>
+        <p class="manifesto-caption">Soqtapata · 3,200 m.a.s.l. · Camanti Route</p>
+      </div>
+      <div>
+        <div class="eyebrow">Our purpose</div>
+        <h2 class="h2">Not a tour.<br>An immersion.</h2>
+        <p class="body">We design all-inclusive journeys where technology deepens your connection with nature — not replaces it. Every trail, every sound, every species encountered becomes part of a story you carry home.</p>
+        <p class="body" style="margin-top:14px">Three routes through the Manu Biosphere Reserve and Camanti cloud forest. Four ways to travel with purpose. One commitment: protect what matters.</p>
+        <div class="manifesto-cta">
+          <a href="#about" class="btn-primary">Our story</a>
+          <a href="#experiences" class="btn-outline">Explore programs</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- @ECOTONE_EXPERIENCES_INJECT -->
+
+<!-- ═══ REVIEWS — unified ═══ -->
+<section class="sec bg-cream fade" id="reviews">
+  <div class="sec-inner">
+    <div class="reviews-header">
+      <div>
+        <div class="eyebrow">What guests say</div>
+        <h2 class="h2" style="margin-bottom:0">Real experiences</h2>
+      </div>
+      <div class="reviews-rating-wrap">
+        <div class="reviews-rating-col">
+          <div class="big-score">5.0</div>
+          <div class="stars" aria-hidden="true">
+            <div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div>
+          </div>
+          <div class="trustpilot-badge">
+            <div class="tp-icon"><svg width="9" height="9" viewBox="0 0 24 24" fill="white"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></div>
+            <span class="tp-name">Trustpilot</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Featured quote — NO box, text on background directly -->
+    <div class="quote-featured">
+      <div class="quote-text" id="quoteText">"Breathtaking place with amazing people <span>that changed my way of travelling."</span></div>
+      <div class="quote-attr" id="quoteAttr">— Vanessa · London · Soqtapata 3D/2N</div>
+      <div class="quote-dots">
+        <button class="qdot active" data-q="0"></button>
+        <button class="qdot" data-q="1"></button>
+        <button class="qdot" data-q="2"></button>
+      </div>
+    </div>
+
+    <!-- Individual review cards (carrusel con snap + dots en móvil) -->
+    <div class="rev-carousel">
+    <div class="rev-scroll" id="revScroll" role="region" aria-label="Guest reviews">
+      <div class="rev-card"><div class="stars" style="margin-bottom:11px"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="rev-q">"Breathtaking place with amazing people that changed my way of travelling and understanding nature."</p><div class="rev-author"><div class="rev-av">V</div><div><div class="rev-name">Vanessa</div><div class="rev-loc">London, UK</div><div class="rev-exp">Soqtapata 3D/2N</div></div></div></div>
+      <div class="rev-card"><div class="stars" style="margin-bottom:11px"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="rev-q">"Absolutely out of this world experience. Will definitely make the trip back someday."</p><div class="rev-author"><div class="rev-av">M</div><div><div class="rev-name">Morgan</div><div class="rev-loc">New York, US</div><div class="rev-exp">Manu Gradient</div></div></div></div>
+      <div class="rev-card"><div class="stars" style="margin-bottom:11px"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="rev-q">"Super comfortable place. There are no words to describe the beauty of this place."</p><div class="rev-author"><div class="rev-av">R</div><div><div class="rev-name">Richard</div><div class="rev-loc">California, US</div><div class="rev-exp">Soqtapata 3D/2N</div></div></div></div>
+      <div class="rev-card"><div class="stars" style="margin-bottom:11px"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="rev-q">"The ForestWhisper experience at night — I still get goosebumps thinking about it."</p><div class="rev-author"><div class="rev-av">L</div><div><div class="rev-name">Lucas</div><div class="rev-loc">São Paulo, BR</div><div class="rev-exp">Family Quest</div></div></div></div>
+      <div class="rev-card"><div class="stars" style="margin-bottom:11px"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="rev-q">"Birdwatching at 5 AM — over 20 species before breakfast. Life-changing morning."</p><div class="rev-author"><div class="rev-av">S</div><div><div class="rev-name">Sofia</div><div class="rev-loc">Barcelona, ES</div><div class="rev-exp">Soqtapata 3D/2N</div></div></div></div>
+    </div>
+    <div class="rev-card-dots" id="revCardDots" role="tablist" aria-label="Select a review">
+      <button type="button" class="rev-dot active" data-rev="0" role="tab" aria-selected="true" aria-label="Review 1 of 5"></button>
+      <button type="button" class="rev-dot" data-rev="1" role="tab" aria-selected="false" aria-label="Review 2 of 5"></button>
+      <button type="button" class="rev-dot" data-rev="2" role="tab" aria-selected="false" aria-label="Review 3 of 5"></button>
+      <button type="button" class="rev-dot" data-rev="3" role="tab" aria-selected="false" aria-label="Review 4 of 5"></button>
+      <button type="button" class="rev-dot" data-rev="4" role="tab" aria-selected="false" aria-label="Review 5 of 5"></button>
+    </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TECH ═══ -->
+<section class="sec bg-warm" id="tech">
+  <div class="sec-inner fade">
+    <div class="eyebrow">Exclusive technology</div>
+    <h2 class="h2">A commitment to<br>preserving pristine nature</h2>
+    <p class="body" style="max-width:560px">Designed for eco-travellers seeking adventure with purpose. We combine immersive technology, sustainable lodging, and direct impact on local communities.</p>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <div class="tech-img-wrap"><img src="https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=900&q=85" alt="EcoDroneView"></div>
+        <div class="tech-card-content">
+          <div class="tech-num">01</div>
+          <div class="tech-title">EcoDroneView®</div>
+          <div class="tech-desc">A journey beyond the trails, soaring above the canopy and exploring remote landscapes inaccessible by foot.</div>
+          <span class="tech-badge">Only at Ecotone</span>
+        </div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-img-wrap"><img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=900&q=85" alt="ForestWhisper"></div>
+        <div class="tech-card-content">
+          <div class="tech-num">02</div>
+          <div class="tech-title">ForestWhisper®</div>
+          <div class="tech-desc">Immerse yourself in the rainforest's enchanting sounds through premium 360° microphones and high-fidelity headphones.</div>
+          <span class="tech-badge">Only at Ecotone</span>
+        </div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-img-wrap"><img src="https://images.unsplash.com/photo-1617575521317-d2974f3b56d2?w=900&q=85" alt="EcoSpeciesExplorer"></div>
+        <div class="tech-card-content">
+          <div class="tech-num">03</div>
+          <div class="tech-title">EcoSpeciesExplorer®</div>
+          <div class="tech-desc">This comprehensive platform reveals all kinds of incredible species found in our conservation destinations. Live on iOS.</div>
+          <span class="tech-badge">Only at Ecotone</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MISSION — with icons ═══ -->
+<section class="sec" id="mission">
+  <div class="sec-inner fade">
+    <div class="mission-grid">
+      <div>
+        <div class="eyebrow">Why travel with us</div>
+        <h2 class="h2">Travel deeper.<br>Protect what matters.</h2>
+        <p class="body">Every booking directly funds conservation in the Manu Biosphere Reserve and Camanti cloud forest.</p>
+        <ul class="mission-list">
+          <li class="mission-item">
+            <div class="mission-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#906730" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+            <div class="mission-item-text"><div class="mission-item-title">All-inclusive from Cusco</div><div class="mission-item-sub">Certified naturalist guides · pickup at your hotel</div></div>
+          </li>
+          <li class="mission-item">
+            <div class="mission-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#906730" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+            <div class="mission-item-text"><div class="mission-item-title">Exclusive eco-lodges</div><div class="mission-item-sub">Located in high-biodiversity conservation zones</div></div>
+          </li>
+          <li class="mission-item">
+            <div class="mission-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#906730" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg></div>
+            <div class="mission-item-text"><div class="mission-item-title">Technology-enhanced immersion</div><div class="mission-item-sub">EcoDroneView® · ForestWhisper® · EcoSpeciesExplorer®</div></div>
+          </li>
+          <li class="mission-item">
+            <div class="mission-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#906730" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div class="mission-item-text"><div class="mission-item-title">Max 8 people per group</div><div class="mission-item-sub">Always intimate · never a mass tour</div></div>
+          </li>
+          <li class="mission-item">
+            <div class="mission-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#906730" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div class="mission-item-text"><div class="mission-item-title">Direct conservation impact</div><div class="mission-item-sub">Every booking funds active research and local communities</div></div>
+          </li>
+        </ul>
+        <a href="#" class="mission-cta">Read our impact →</a>
+      </div>
+      <div class="mission-photos">
+        <div class="mission-photo-main"><img src="https://images.unsplash.com/photo-1564419320461-6870880221ad?w=800&q=80" alt="Conservation"></div>
+        <div class="mission-photo-row">
+          <div class="mission-photo-sm"><img src="https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=500&q=80" alt="Biodiversity"></div>
+          <div class="mission-photo-sm"><img src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=500&q=80" alt="Forest"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PARTNERS ═══ -->
+<div class="partners-band fade">
+  <div class="partners-inner">
+    <div class="partners-label">Certified by & affiliated with</div>
+    <div class="partners-row">
+      <div class="partner-logo"><svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="4" fill="#1A5276"/><path d="M10 8h6.5c2.5 0 4 1.2 4 3.2 0 1.4-.8 2.4-2 2.8 1.5.4 2.5 1.5 2.5 3.1 0 2.2-1.7 3.5-4.5 3.5H10V8zm2.2 5.2h3.8c1.1 0 1.8-.6 1.8-1.6s-.7-1.6-1.8-1.6h-3.8v3.2zm0 5.4h4.1c1.2 0 2-.7 2-1.8s-.8-1.8-2-1.8h-4.1v3.6z" fill="white"/></svg><div class="partner-wordmark">B Corp</div></div>
+      <div class="partner-sep"></div>
+      <div class="partner-logo"><svg width="44" height="32" viewBox="0 0 44 32" fill="none"><rect width="44" height="32" rx="4" fill="#1E5631"/><text x="22" y="21" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="700" font-size="11" fill="white" letter-spacing="1">ATTA</text></svg><div class="partner-wordmark">Adventure Travel</div></div>
+      <div class="partner-sep"></div>
+      <div class="partner-logo"><svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="4" fill="#1E7A34"/><ellipse cx="16" cy="18" rx="7" ry="5" fill="#52B76A"/><circle cx="11" cy="13" r="3" fill="#52B76A"/><circle cx="21" cy="13" r="3" fill="#52B76A"/><circle cx="10.5" cy="12.5" r="1.2" fill="white"/><circle cx="21.5" cy="12.5" r="1.2" fill="white"/></svg><div class="partner-wordmark">Rainforest Alliance</div></div>
+      <div class="partner-sep"></div>
+      <div class="partner-logo"><svg width="40" height="32" viewBox="0 0 40 32" fill="none"><rect width="40" height="32" rx="4" fill="#0D5C8A"/><text x="20" y="21" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="700" font-size="11" fill="white" letter-spacing=".5">GSTC</text></svg><div class="partner-wordmark">GSTC</div></div>
+      <div class="partner-sep"></div>
+      <div class="partner-logo"><svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="4" fill="#E05A00"/><text x="16" y="21" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="700" font-size="10" fill="white">IUCN</text></svg><div class="partner-wordmark">IUCN Partner</div></div>
+      <div class="partner-sep"></div>
+      <div class="partner-logo"><svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="4" fill="#2E4057"/><circle cx="16" cy="16" r="7" stroke="white" stroke-width="1.2" fill="none"/><line x1="16" y1="9" x2="16" y2="23" stroke="white" stroke-width="1"/><ellipse cx="16" cy="16" rx="3.5" ry="7" stroke="white" stroke-width="1" fill="none"/><line x1="9" y1="16" x2="23" y2="16" stroke="white" stroke-width="1"/></svg><div class="partner-wordmark">UN Tourism</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ BLOG ═══ -->
+<section class="sec bg-warm">
+  <div class="sec-inner fade">
+    <div style="display:grid;grid-template-columns:1fr auto;align-items:end;gap:16px;margin-bottom:0">
+      <div><div class="eyebrow">From the field</div><h2 class="h2" style="margin-bottom:0">Latest from Ecotone</h2></div>
+      <a href="https://www.ecotone.eco/blog" style="font-size:13px;font-weight:600;color:var(--brown);display:flex;align-items:center;gap:4px;white-space:nowrap">All posts <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="6" x2="10" y2="6"/><polyline points="7 3 10 6 7 9"/></svg></a>
+    </div>
+    <div class="blog-scroll">
+      <div class="blog-card"><div class="blog-img"><img src="https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=600&q=80" alt="Birds"><div class="blog-img-overlay"></div><span class="blog-tag">Birds · 3 min</span></div><div class="blog-body"><div class="blog-title">5 birds you can only see in the Manu Reserve</div><a href="https://www.ecotone.eco/blog" class="blog-read">Read <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="6" x2="10" y2="6"/><polyline points="7 3 10 6 7 9"/></svg></a></div></div>
+      <div class="blog-card"><div class="blog-img"><img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80" alt="Technology"><div class="blog-img-overlay"></div><span class="blog-tag">Technology · 4 min</span></div><div class="blog-body"><div class="blog-title">How ForestWhisper® changes the way you hear the jungle</div><a href="https://www.ecotone.eco/blog" class="blog-read">Read <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="6" x2="10" y2="6"/><polyline points="7 3 10 6 7 9"/></svg></a></div></div>
+      <div class="blog-card"><div class="blog-img"><img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80" alt="Conservation"><div class="blog-img-overlay"></div><span class="blog-tag">Conservation · 5 min</span></div><div class="blog-body"><div class="blog-title">Why we choose Camanti: the last cloud forest nobody talks about</div><a href="https://www.ecotone.eco/blog" class="blog-read">Read <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="6" x2="10" y2="6"/><polyline points="7 3 10 6 7 9"/></svg></a></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ BOOKING CTA ═══ -->
+<section class="sec" id="book">
+  <div class="sec-inner fade">
+    <div class="eyebrow">Reserve your spot</div>
+    <h2 class="h2">Ready to disconnect?</h2>
+    <div class="booking-layout">
+      <div>
+        <p class="body">Small groups. Fixed departures. Limited spots. Choose from ~10 immersive experiences across 3 routes — or let us design something entirely yours.</p>
+        <ul class="trust-list">
+          <li class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Secure payment — multiple methods accepted</li>
+          <li class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>Free cancellation up to 15 days before departure</li>
+          <li class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Committed to responsible and regenerative tourism</li>
+          <li class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>All-inclusive from Cusco — pickup from your hotel</li>
+        </ul>
+      </div>
+      <div>
+        <div class="book-card">
+          <div class="book-price">from $380<small>/ person</small></div>
+          <div class="book-price-sub">All inclusive · departure from Cusco</div>
+          <div class="book-divider"></div>
+          <div class="book-rows">
+            <div class="book-row"><span class="book-rl">Routes</span><span class="book-rv">Camanti · Manu Route · Core</span></div>
+            <div class="book-row"><span class="book-rl">Group size</span><span class="book-rv">2 – 8 people</span></div>
+            <div class="book-row"><span class="book-rl">Duration</span><span class="book-rv">3 days – 6 weeks</span></div>
+            <div class="book-row"><span class="book-rl">Pickup</span><span class="book-rv">4:30–5:00 AM · Cusco</span></div>
+          </div>
+          <a href="https://www.ecotone.eco/services-4" class="btn-book">Explore all experiences →</a>
+          <a href="https://wa.me/51974781094?text=I%20want%20information%20about%20Ecotone%20experiences" class="btn-wa">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Ask via WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="footer">
+  <!-- Decorative brand mark — isotipo watermark bottom right -->
+  <div class="footer-brand-deco">
+    <svg viewBox="0 0 105 101" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <use href="#isotipo" style="color:white"/>
+    </svg>
+  </div>
+  <div class="footer-inner">
+    <div>
+      <div class="foot-logo">
+        <a href="/" class="nav-logo" aria-label="Ecotone home">
+          <svg class="nav-logo-isotipo" viewBox="0 0 105 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <use href="#isotipo" style="color:#ECE5D5"/>
+          </svg>
+          <svg class="nav-logo-wordmark" viewBox="0 0 176 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="height:20px">
+            <path d="M8.08002 33.61L20.73 28.67V35.43H0V1.40997H18.01V7.16998L8.08002 3.21997V15.15H15.93V17.78H8.08002V33.61Z" fill="#ECE5D5"/>
+            <path d="M44.7401 16.55L36.6201 10.2C32.9001 11.38 30.5401 15.51 30.5401 20.4C30.5401 26.48 34.5801 30.29 39.1101 30.29C42.1001 30.29 44.6001 29.29 46.4601 27.02L46.9101 27.34C45.2801 32.15 41.3801 35.87 35.3901 35.87C28.5001 35.87 22.8301 30.29 22.8301 22.63C22.8301 14.97 28.6801 8.62 37.4801 8.62C40.6101 8.62 43.1901 9.52999 44.7401 10.43V16.55Z" fill="#ECE5D5"/>
+            <path d="M76.8098 22.04C76.8098 29.75 71.1398 35.87 63.2498 35.87C55.3598 35.87 49.0098 30.06 49.0098 22.54C49.0098 14.87 54.5398 8.62 62.6198 8.62C70.6398 8.62 76.8098 14.56 76.8098 22.04ZM69.4198 25.4C69.4198 22.59 68.5998 19.73 67.1498 17.28C65.2898 14.15 62.5198 11.7 59.1698 10.79C57.2198 12.6 56.3998 15.82 56.3998 19.04C56.3998 21.94 57.3098 24.94 58.8498 27.48C60.7098 30.43 63.4298 32.74 66.6998 33.65C68.6498 31.84 69.4198 28.62 69.4198 25.4Z" fill="#ECE5D5"/>
+            <path d="M87.3998 0V9.07001H92.6198V12.93H87.3998V35.43H79.7798V6.17999L87.3998 0Z" fill="#ECE5D5"/>
+            <path d="M120.89 22.04C120.89 29.75 115.22 35.87 107.33 35.87C99.4398 35.87 93.0898 30.06 93.0898 22.54C93.0898 14.87 98.6198 8.62 106.7 8.62C114.73 8.62 120.89 14.56 120.89 22.04ZM113.5 25.4C113.5 22.59 112.68 19.73 111.23 17.28C109.37 14.15 106.6 11.7 103.25 10.79C101.3 12.6 100.48 15.82 100.48 19.04C100.48 21.94 101.39 24.94 102.93 27.48C104.79 30.43 107.51 32.74 110.78 33.65C112.73 31.84 113.5 28.62 113.5 25.4Z" fill="#ECE5D5"/>
+            <path d="M124.27 35.42V9.07001H131.89V12.11C135.7 10.02 138.74 8.62 141.46 8.62C145.41 8.62 147.45 11.02 147.45 15.11V35.43H139.83V15.97C139.83 13.61 138.88 12.34 136.79 12.34C135.7 12.34 134.3 12.52 131.89 13.7V35.43H124.27V35.42Z" fill="#ECE5D5"/>
+            <path d="M163.88 35.88C156.31 35.88 150.55 30.3 150.55 22.41C150.55 13.93 156.85 8.62 163.11 8.62C170.55 8.62 174.31 13.9299 175.08 19.0099H158.16C158.16 19.2399 158.16 19.51 158.16 19.78C158.16 26.67 162.24 30.3 167.32 30.3C170.45 30.3 172.85 29.08 174.71 26.81L175.16 27.17C173.77 31.43 169.91 35.88 163.88 35.88ZM158.39 16.69H167.69C166.83 14.01 164.47 11.11 161.2 10.52C159.93 11.66 158.85 13.7 158.39 16.69Z" fill="#ECE5D5"/>
+          </svg>
+        </a>
+      </div>
+      <div class="foot-tagline">People meet nature</div>
+      <p style="font-size:13px;font-weight:300;color:rgba(236,229,213,.38);line-height:1.65;margin-top:10px">Immersive nature tourism<br>Cusco, Perú · Manu & Camanti</p>
+    </div>
+    <div class="foot-col">
+      <h5>Explore</h5>
+      <ul class="foot-links">
+        <li><a href="#experiences">Experiences</a></li>
+        <li><a href="https://www.ecotone.eco/copy-of-programas">Routes</a></li>
+        <li><a href="https://www.ecotone.eco/destinations">Lodges</a></li>
+        <li><a href="https://www.ecotone.eco/services-4">Programs</a></li>
+        <li><a href="https://www.ecotone.eco/blog">Journal</a></li>
+      </ul>
+    </div>
+    <div class="foot-col">
+      <h5>Contact</h5>
+      <ul class="foot-links">
+        <li><a href="https://wa.me/51974781094">WhatsApp</a></li>
+        <li><a href="https://www.ecotone.eco">ecotone.eco</a></li>
+        <li><a href="#">Instagram</a></li>
+        <li><a href="#">Privacy policy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <p class="foot-copy">© 2025 Ecotone · HERPIRO · All rights reserved.</p>
+    <div class="foot-certs">
+      <span class="foot-cert">B Corp</span>
+      <span style="width:1px;height:12px;background:rgba(236,229,213,.15)"></span>
+      <span class="foot-cert">ATTA Member</span>
+      <span style="width:1px;height:12px;background:rgba(236,229,213,.15)"></span>
+      <span class="foot-cert">GSTC</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── Nav scroll ──
+const topNav = document.getElementById('topNav');
+const navIsotipo = document.getElementById('navIsotipo');
+const navWordmark = document.getElementById('navWordmark');
+
+window.addEventListener('scroll', () => {
+  const solid = window.scrollY > 60;
+  topNav.classList.toggle('solid', solid);
+  // Switch wordmark color on scroll
+  const paths = navWordmark.querySelectorAll('path');
+  paths.forEach(p => p.setAttribute('fill', solid ? '#906730' : '#ECE5D5'));
+  // Switch isotipo
+  const use = navIsotipo.querySelector('use');
+  if(use) use.style.color = solid ? '#906730' : '#ECE5D5';
+}, { passive: true });
+
+// ── Hamburger ──
+const ham = document.getElementById('ham');
+const drawer = document.getElementById('drawer');
+ham.addEventListener('click', () => drawer.classList.toggle('open'));
+drawer.querySelectorAll('a').forEach(a => a.addEventListener('click', () => drawer.classList.remove('open')));
+
+// ── Fade in on scroll ──
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+}, { threshold: 0.04 });
+document.querySelectorAll('.fade').forEach(f => io.observe(f));
+
+// ── Experience filter ──
+const tabs = document.querySelectorAll('.filter-tab');
+const cards = document.querySelectorAll('[data-type]');
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    tabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const filter = tab.dataset.filter;
+    cards.forEach(card => {
+      const isTailor = card.classList.contains('exp-card-tailor');
+      const match = filter === 'all' || card.dataset.type === filter;
+      card.style.display = (match || isTailor) ? '' : 'none';
+    });
+  });
+});
+
+// ── Quote rotation ──
+const quotes = [
+  { text: '"Breathtaking place with amazing people <span>that changed my way of travelling."</span>', attr: '— Vanessa · London · Soqtapata 3D/2N' },
+  { text: '"Absolutely out of this world experience. <span>Will definitely make the trip back."</span>', attr: '— Morgan · New York · Manu Gradient' },
+  { text: '"No words to describe the beauty. <span>The ForestWhisper was unforgettable."</span>', attr: '— Lucas · São Paulo · Family Quest' },
+];
+const qText = document.getElementById('quoteText');
+const qAttr = document.getElementById('quoteAttr');
+const qdots = document.querySelectorAll('.qdot');
+let qCurrent = 0;
+qText.style.transition = 'opacity .35s';
+qAttr.style.transition = 'opacity .35s';
+
+function setQuote(i) {
+  qCurrent = i;
+  qText.style.opacity = '0'; qAttr.style.opacity = '0';
+  setTimeout(() => {
+    qText.innerHTML = quotes[i].text;
+    qAttr.textContent = quotes[i].attr;
+    qText.style.opacity = '1'; qAttr.style.opacity = '1';
+  }, 350);
+  qdots.forEach((d, idx) => d.classList.toggle('active', idx === i));
+}
+qdots.forEach((d, i) => d.addEventListener('click', () => { setQuote(i); clearInterval(qTimer); qTimer = setInterval(() => setQuote((qCurrent+1)%quotes.length), 5000); }));
+let qTimer = setInterval(() => setQuote((qCurrent+1)%quotes.length), 5000);
+</script>
+</body>
+</html>
