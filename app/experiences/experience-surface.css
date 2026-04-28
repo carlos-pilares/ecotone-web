@@ -964,16 +964,17 @@ body:has(#ecotone-experience-root) .top-nav a.nav-logo .nav-logo-full-wrap .nav-
   }
 }
 
-/* Technology (#tech): grid + tarjetas con lectura clara de “card” (imagen + cuerpo + badge) */
+/* Technology (#tech): paridad con app/globals.css (misma página que Home) para que
+   orden de chunks en producción no deje el bloque sin pill/tipografía aprobada. */
 body:has(#ecotone-experience-root) #tech .tech-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: 6px;
   margin-top: 32px;
 }
 @media (min-width: 600px) {
   body:has(#ecotone-experience-root) #tech .tech-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     align-items: stretch;
   }
 }
@@ -986,39 +987,81 @@ body:has(#ecotone-experience-root) #tech .tech-card {
   background: var(--w);
   border: 1px solid var(--n200);
   border-radius: var(--rl);
-  box-shadow: 0 1px 3px rgba(26, 18, 9, 0.04);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+body:has(#ecotone-experience-root) #tech .tech-card:hover {
+  border-color: var(--b200);
+  box-shadow: 0 8px 28px rgba(144, 103, 48, 0.1);
 }
 body:has(#ecotone-experience-root) #tech .tech-card.not-included {
-  opacity: 0.72;
+  opacity: 0.65;
 }
 body:has(#ecotone-experience-root) #tech .tech-img-wrap {
   flex-shrink: 0;
   position: relative;
-  height: clamp(170px, 24vw, 255px);
+  height: clamp(180px, 24vw, 260px);
   overflow: hidden;
   background: var(--n900);
-  border-radius: 0;
-}
-body:has(#ecotone-experience-root) #tech .tech-card-content {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  gap: 0;
-  padding: 18px 18px 20px;
-}
-body:has(#ecotone-experience-root) #tech .tech-badge,
-body:has(#ecotone-experience-root) #tech .tech-badge-free {
-  align-self: flex-start;
-  margin-top: auto;
-  padding-top: 4px;
 }
 body:has(#ecotone-experience-root) #tech .tech-img-wrap img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.6s ease;
+}
+body:has(#ecotone-experience-root) #tech .tech-card:hover .tech-img-wrap img {
+  transform: scale(1.04);
+}
+body:has(#ecotone-experience-root) #tech .tech-card-content {
+  padding: 18px 18px 22px;
+}
+body:has(#ecotone-experience-root) #tech .tech-num {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--brown);
+  margin-bottom: 7px;
+}
+body:has(#ecotone-experience-root) #tech .tech-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--n900);
+  letter-spacing: -0.015em;
+  margin-bottom: 8px;
+  line-height: 1.2;
 }
 body:has(#ecotone-experience-root) #tech .tech-desc {
-  flex: 1 1 auto;
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--n700);
+  line-height: 1.72;
+}
+body:has(#ecotone-experience-root) #tech .tech-badge {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: var(--b50);
+  border: 1px solid var(--b200);
+  color: var(--brown-dk);
+  padding: 5px 13px;
+  border-radius: 100px;
+  box-sizing: border-box;
+}
+body:has(#ecotone-experience-root) #tech .tech-badge-free {
+  background: var(--n50);
+  border-color: var(--n200);
+  color: var(--n400);
+}
+body:has(#ecotone-experience-root) #tech .body {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--n700);
+  line-height: 1.8;
 }
