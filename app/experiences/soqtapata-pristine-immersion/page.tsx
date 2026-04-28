@@ -65,9 +65,9 @@ export default async function SoqtapataPristineImmersionPage() {
   }
 
   return (
-    <EcotoneV2Client featuredQuoteItems={featuredQuoteItems} solidMainNav>
+    <EcotoneV2Client featuredQuoteItems={featuredQuoteItems}>
       <IsotipoDefs />
-      <SiteHeader mainNavSolid />
+      <SiteHeader />
       <SoqtapataPhotoLightbox />
       <div id="ecotone-experience-root">
         <ExperienceHeroSoqtapata data={ex.hero} />
