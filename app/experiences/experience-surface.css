@@ -68,8 +68,8 @@ button { font-family: var(--f); cursor: pointer; }
    NAV — shared component, same on every page
    CMS controls: logo, nav links, book CTA text+link
    ═══════════════════════════════════════════════════════════ */
-.top-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 400; height: var(--nav-h); isolation: isolate; transition: transform 0.28s ease, opacity 0.24s ease, background 0.35s, border-color 0.35s, box-shadow 0.35s; border-bottom: 1px solid transparent; }
-/* Global top nav stays visible past the hero (same behavior as Home). */
+.top-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 400; height: var(--nav-h); isolation: isolate; transition: transform 0.28s ease, opacity 0.24s ease, background 0.35s, border-color 0.35s, box-shadow 0.35s; border-bottom: 1px solid transparent; transform: translateY(0); opacity: 1; }
+/* En Home el #topNav sigue fijo con scroll; en experiencia larga se oculta tras el hero (body.ecotone-exp-past-hero #topNav). */
 .top-nav.solid { background: rgba(253,252,249,.97); backdrop-filter: blur(20px); border-bottom-color: var(--n200); box-shadow: 0 1px 16px rgba(26,18,9,.05); }
 .nav-inner { max-width: var(--max); margin: 0 auto; height: var(--nav-h); display: flex; align-items: center; justify-content: space-between; padding: 0 var(--g); }
 .nav-logo { display: flex; align-items: center; gap: 10px; }
@@ -173,27 +173,58 @@ button { font-family: var(--f); cursor: pointer; }
 .snap-l { font-size: 11px; font-weight: 300; color: var(--n400); margin-top: 4px; letter-spacing: .03em; }
 
 /* ── INTERNAL PAGE NAV — one row: package + days | section links | From + price + Book ── */
-/* Sticky under the global top bar; past hero we only add a slightly stronger shadow (no hiding main nav). */
-.page-nav { background: var(--w); border-bottom: 1.5px solid var(--n200); position: sticky; top: var(--nav-h); z-index: 199; max-width: 100%; box-sizing: border-box; transition: top 0.28s ease, box-shadow 0.22s ease; }
-body.ecotone-exp-past-hero .page-nav {
+/* Con hero aún visible: sticky bajo el #topNav. Tras el hero: solo esta barra queda fija arriba; el header principal se oculta (véase body.ecotone-exp-past-hero #topNav). */
+.page-nav {
+  background: var(--w);
+  border-bottom: 1.5px solid var(--n200);
+  position: sticky;
+  top: var(--nav-h);
+  z-index: 199;
+  max-width: 100%;
+  box-sizing: border-box;
+  transition: top 0.28s ease, box-shadow 0.22s ease;
+}
+body:has(#ecotone-experience-root).ecotone-exp-past-hero .page-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
+  top: 0;
+  z-index: 290;
   box-shadow: 0 1px 0 rgba(26, 18, 9, 0.05), 0 6px 18px rgba(26, 18, 9, 0.05);
 }
-/* Legacy slot kept for minimal DOM diff; in-flow sticky bar no longer needs a height shim. */
+/* Oculta header principal tras el hero (misma lógica que ecotone-experience_2.html). Solo experiencia Soqtapata (DOM con #ecotone-experience-root). */
+body:has(#ecotone-experience-root).ecotone-exp-past-hero #topNav {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+/* Reserva altura cuando #pageNav pasa a fixed (evita salto de layout). */
 .pnav-scroll-shim {
-  display: none !important;
   width: 100%;
   box-sizing: border-box;
   flex: 0 0 auto;
   margin: 0;
   padding: 0;
   border: 0;
-  height: 0 !important;
-  min-height: 0 !important;
   pointer-events: none;
   transition: height 0.2s ease;
 }
+body:has(#ecotone-experience-root):not(.ecotone-exp-past-hero) .pnav-scroll-shim {
+  display: none;
+  height: 0 !important;
+  min-height: 0 !important;
+}
+body:has(#ecotone-experience-root).ecotone-exp-past-hero .pnav-scroll-shim {
+  display: block;
+}
 @media (prefers-reduced-motion: reduce) {
-  .top-nav, .page-nav, .pnav-scroll-shim { transition: none; }
+  .top-nav,
+  body:has(#ecotone-experience-root).ecotone-exp-past-hero #topNav,
+  .page-nav,
+  .pnav-scroll-shim {
+    transition: none;
+  }
 }
 /* Desktop + tablet: one row; mobile (max-width 719px): compact bar + chevron, section links in collapsible panel */
 .page-nav-grid {
@@ -933,21 +964,61 @@ body:has(#ecotone-experience-root) .top-nav a.nav-logo .nav-logo-full-wrap .nav-
   }
 }
 
-/* Technology (#tech): grid estable + imágenes de card bajo reglas globales img */
+/* Technology (#tech): grid + tarjetas con lectura clara de “card” (imagen + cuerpo + badge) */
 body:has(#ecotone-experience-root) #tech .tech-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 6px;
+  gap: 16px;
   margin-top: 32px;
 }
 @media (min-width: 600px) {
   body:has(#ecotone-experience-root) #tech .tech-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
   }
+}
+body:has(#ecotone-experience-root) #tech .tech-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--w);
+  border: 1px solid var(--n200);
+  border-radius: var(--rl);
+  box-shadow: 0 1px 3px rgba(26, 18, 9, 0.04);
+}
+body:has(#ecotone-experience-root) #tech .tech-card.not-included {
+  opacity: 0.72;
+}
+body:has(#ecotone-experience-root) #tech .tech-img-wrap {
+  flex-shrink: 0;
+  position: relative;
+  height: clamp(170px, 24vw, 255px);
+  overflow: hidden;
+  background: var(--n900);
+  border-radius: 0;
+}
+body:has(#ecotone-experience-root) #tech .tech-card-content {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 0;
+  padding: 18px 18px 20px;
+}
+body:has(#ecotone-experience-root) #tech .tech-badge,
+body:has(#ecotone-experience-root) #tech .tech-badge-free {
+  align-self: flex-start;
+  margin-top: auto;
+  padding-top: 4px;
 }
 body:has(#ecotone-experience-root) #tech .tech-img-wrap img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+}
+body:has(#ecotone-experience-root) #tech .tech-desc {
+  flex: 1 1 auto;
 }
