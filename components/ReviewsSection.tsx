@@ -67,33 +67,75 @@ function locLabel(r: ReviewDoc) {
   return a || c || ''
 }
 
+export type ReviewsSectionProps = {
+  /** Review cards (already filtered for experience context when needed). */
+  reviews: ReviewDoc[] | null
+  /** Featured quote rotation; same source as `EcotoneV2Client` `featuredQuoteItems`. */
+  featuredQuoteItems: { text: string; attr: string }[]
+  /** CMS home field overrides. */
+  homeData?: HomePageDoc | null
+  /** Explicit copy overrides; take precedence over `homeData` when provided. */
+  eyebrow?: string
+  headline?: string
+  /** e.g. `"5.0"` */
+  averageRating?: string
+  /** Label under the source icon (e.g. Trustpilot). */
+  sourceLabel?: string
+  /** Optional line under stars (e.g. “12 verified reviews”) — experience context. */
+  secondaryRatingLine?: string | null
+  /** Optional intro under eyebrow/H2 (CMS landing module). */
+  sectionLead?: string | null
+  /** When true, empty `reviews` uses global homepage static cards. */
+  useHomepageSampleReviewsIfEmpty?: boolean
+  sectionClassName?: string
+  contentInnerClassName?: string
+  /** CTA card at the end of the carousel (e.g. link to all Trustpilot reviews). */
+  emptyMessage?: string
+}
+
 export function ReviewsSection({
-  homeData,
+  homeData: h,
   reviews,
   featuredQuoteItems,
-}: {
-  homeData: HomePageDoc | null
-  reviews: ReviewDoc[] | null
-  featuredQuoteItems: { text: string; attr: string }[]
-}) {
-  const h = homeData
+  eyebrow: eyebrowProp,
+  headline: headlineProp,
+  averageRating: averageRatingProp,
+  sourceLabel = 'Trustpilot',
+  secondaryRatingLine = null,
+  sectionLead = null,
+  useHomepageSampleReviewsIfEmpty = true,
+  sectionClassName = 'sec bg-cream fade',
+  contentInnerClassName = 'sec-inner',
+  emptyMessage = 'No guest reviews for this program yet. Be the first to share your experience.',
+}: ReviewsSectionProps) {
   const quotesForDots = featuredQuoteItems.length > 0 ? featuredQuoteItems : DEFAULT_FEATURED_QUOTES
   const first = quotesForDots[0] ?? { text: '""', attr: '—' }
-  const list = Array.isArray(reviews) && reviews.length > 0 ? reviews : FALLBACK_CARDS
+  const hasReviews = Array.isArray(reviews) && reviews.length > 0
+  const list = hasReviews
+    ? reviews!
+    : useHomepageSampleReviewsIfEmpty
+      ? FALLBACK_CARDS
+      : []
+
+  const eyebrow = eyebrowProp ?? h?.reviewsEyebrow ?? 'What guests say'
+  const headline = headlineProp ?? h?.reviewsHeadline ?? 'Real experiences'
+  const averageRating = (averageRatingProp ?? h?.reviewsScore)?.trim() || '5.0'
+
+  const showEmpty = list.length === 0 && !useHomepageSampleReviewsIfEmpty
 
   return (
-    <section className="sec bg-cream fade" id="reviews">
-      <div className="sec-inner">
+    <section className={sectionClassName} id="reviews">
+      <div className={contentInnerClassName}>
         <div className="reviews-header">
           <div>
-            <div className="eyebrow">{h?.reviewsEyebrow ?? 'What guests say'}</div>
+            <div className="eyebrow">{eyebrow}</div>
             <h2 className="h2" style={{ marginBottom: 0 }}>
-              {h?.reviewsHeadline ?? 'Real experiences'}
+              {headline}
             </h2>
           </div>
           <div className="reviews-rating-wrap">
             <div className="reviews-rating-col">
-              <div className="big-score">{h?.reviewsScore?.trim() || '5.0'}</div>
+              <div className="big-score">{averageRating}</div>
               <div className="stars" aria-hidden>
                 <div className="star" />
                 <div className="star" />
@@ -101,17 +143,37 @@ export function ReviewsSection({
                 <div className="star" />
                 <div className="star" />
               </div>
+              {secondaryRatingLine ? (
+                <div
+                  className="reviews-secondary-line"
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 300,
+                    color: 'var(--n400)',
+                    marginBottom: 4,
+                    textAlign: 'center',
+                  }}
+                >
+                  {secondaryRatingLine}
+                </div>
+              ) : null}
               <div className="trustpilot-badge">
                 <div className="tp-icon">
                   <svg width="9" height="9" viewBox="0 0 24 24" fill="white" aria-hidden>
                     <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
                   </svg>
                 </div>
-                <span className="tp-name">Trustpilot</span>
+                <span className="tp-name">{sourceLabel}</span>
               </div>
             </div>
           </div>
         </div>
+
+        {sectionLead?.trim() ? (
+          <p className="body" style={{ maxWidth: 560, marginTop: 12, marginBottom: 0 }}>
+            {sectionLead.trim()}
+          </p>
+        ) : null}
 
         <div className="quote-featured">
           <div
@@ -125,13 +187,30 @@ export function ReviewsSection({
           </div>
           <div className="quote-dots">
             {quotesForDots.map((_, i) => (
-              <button key={i} type="button" className={'qdot' + (i === 0 ? ' active' : '')} data-q={i} aria-label={`Quote ${i + 1}`} />
+              <button
+                key={i}
+                type="button"
+                className={'qdot' + (i === 0 ? ' active' : '')}
+                data-q={i}
+                aria-label={`Quote ${i + 1}`}
+              />
             ))}
           </div>
         </div>
 
         <div className="rev-carousel">
-          <div className="rev-scroll" id="revScroll" role="region" aria-label="Guest reviews">
+          {showEmpty ? (
+            <p className="body" style={{ maxWidth: 560 }}>
+              {emptyMessage}
+            </p>
+          ) : null}
+          <div
+            className="rev-scroll"
+            id="revScroll"
+            role="region"
+            aria-label="Guest reviews"
+            style={showEmpty ? { display: 'none' } : undefined}
+          >
             {list.map((r) => {
               const initial = (r.authorName || 'G').trim().slice(0, 1).toUpperCase()
               const q = r.quote || ''
@@ -151,19 +230,21 @@ export function ReviewsSection({
               )
             })}
           </div>
-          <div className="rev-card-dots" id="revCardDots" role="tablist" aria-label="Select a review">
-            {list.map((r, i) => (
-              <button
-                key={r._id}
-                type="button"
-                className={'rev-dot' + (i === 0 ? ' active' : '')}
-                data-rev={i}
-                role="tab"
-                aria-selected={i === 0}
-                aria-label={`Review ${i + 1} of ${list.length}`}
-              />
-            ))}
-          </div>
+          {list.length > 0 && !showEmpty ? (
+            <div className="rev-card-dots" id="revCardDots" role="tablist" aria-label="Select a review">
+              {list.map((r, i) => (
+                <button
+                  key={r._id}
+                  type="button"
+                  className={'rev-dot' + (i === 0 ? ' active' : '')}
+                  data-rev={i}
+                  role="tab"
+                  aria-selected={i === 0}
+                  aria-label={`Review ${i + 1} of ${list.length}`}
+                />
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
     </section>

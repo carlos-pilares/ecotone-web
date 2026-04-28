@@ -12,11 +12,21 @@ if (!projectId || !dataset) {
   )
 }
 
-export const client = createClient({
+const base = {
   projectId: projectId || '',
   dataset: dataset || '',
   apiVersion,
+}
+
+export const client = createClient({
+  ...base,
   useCdn: true,
+})
+
+/** Server: fresher content for SSG/ISR and CMS previews (avoids long CDN cache). */
+export const clientServer = createClient({
+  ...base,
+  useCdn: false,
 })
 
 const imageBuilder = createImageUrlBuilder({ projectId: projectId || '', dataset: dataset || '' })

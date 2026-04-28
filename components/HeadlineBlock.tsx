@@ -5,24 +5,31 @@ export function HeadlineBlock({
   text,
   fallback,
   style,
+  id,
 }: {
   className?: string
   text?: string | null
   fallback: ReactNode
   style?: React.CSSProperties
+  /** For `aria-labelledby` on parent regions */
+  id?: string
 }) {
   const t = text?.trim()
   if (!t) {
-    return <h2 className={className}>{fallback}</h2>
+    return (
+      <h2 className={className} id={id}>
+        {fallback}
+      </h2>
+    )
   }
   if (t.includes('<')) {
     // eslint-disable-next-line react/no-danger
-    return <h2 className={className} style={style} dangerouslySetInnerHTML={{ __html: t }} />
+    return <h2 className={className} style={style} id={id} dangerouslySetInnerHTML={{ __html: t }} />
   }
   const parts = t.split('\n').filter((p) => p.trim())
   if (parts.length > 1) {
     return (
-      <h2 className={className} style={style}>
+      <h2 className={className} style={style} id={id}>
         {parts.map((line, i) => (
           <span key={i}>
             {i > 0 ? <br /> : null}
@@ -33,7 +40,7 @@ export function HeadlineBlock({
     )
   }
   return (
-    <h2 className={className} style={style}>
+    <h2 className={className} style={style} id={id}>
       {t}
     </h2>
   )

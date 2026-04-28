@@ -1,8 +1,25 @@
 'use client'
 
-import { useEffect, useMemo, useRef, type ReactNode } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, type ReactNode } from 'react'
 
 import { DEFAULT_FEATURED_QUOTES } from '@/lib/homeQuoteDefaults'
+
+function applyTopNavFromSolid(solid: boolean) {
+  if (typeof document === 'undefined') return
+  const topNav = document.getElementById('topNav')
+  const navWordmark = document.getElementById('navWordmark')
+  const navIsotipo = document.getElementById('navIsotipo')
+  topNav?.classList.toggle('solid', solid)
+  if (navWordmark) {
+    navWordmark.querySelectorAll('path').forEach((p) => {
+      p.setAttribute('fill', solid ? '#906730' : '#ECE5D5')
+    })
+  }
+  if (navIsotipo) {
+    const useEl = navIsotipo.querySelector('use')
+    if (useEl) (useEl as SVGUseElement).style.color = solid ? '#906730' : '#ECE5D5'
+  }
+}
 
 type FullHtmlProps = { html: string; before?: never; after?: never; children?: never; featuredQuoteItems?: never }
 type SplitBodyProps = {
@@ -18,10 +35,13 @@ type ReactShellProps = {
   before?: never
   after?: never
   featuredQuoteItems?: { text: string; attr: string }[] | null
+  /** When set (e.g. experience long-form pages), the main bar uses the solid/light-background colors from first paint. */
+  solidMainNav?: boolean
 }
 
 export function EcotoneV2Client(props: FullHtmlProps | SplitBodyProps | ReactShellProps) {
   const rootRef = useRef<HTMLDivElement>(null)
+  const solidMainNav = 'solidMainNav' in props && props.solidMainNav === true
   const mode: 'full' | 'split' | 'shell' =
     'html' in props && typeof props.html === 'string'
       ? 'full'
@@ -39,26 +59,23 @@ export function EcotoneV2Client(props: FullHtmlProps | SplitBodyProps | ReactShe
     [rawFeatured],
   )
 
+  const syncMainNav = useCallback(() => {
+    const solid = solidMainNav || window.scrollY > 60
+    applyTopNavFromSolid(solid)
+  }, [solidMainNav])
+
+  useLayoutEffect(() => {
+    syncMainNav()
+  }, [syncMainNav])
+
   useEffect(() => {
     const root = rootRef.current
     if (!root) return
 
     const cleanups: Array<() => void> = []
 
-    const topNav = document.getElementById('topNav')
-    const navWordmark = document.getElementById('navWordmark')
-    const navIsotipo = document.getElementById('navIsotipo')
-
     const onScroll = () => {
-      const solid = window.scrollY > 60
-      topNav?.classList.toggle('solid', solid)
-      if (navWordmark) {
-        navWordmark.querySelectorAll('path').forEach((p) => {
-          p.setAttribute('fill', solid ? '#906730' : '#ECE5D5')
-        })
-      }
-      const useEl = navIsotipo?.querySelector('use')
-      if (useEl) (useEl as SVGUseElement).style.color = solid ? '#906730' : '#ECE5D5'
+      syncMainNav()
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     onScroll()
@@ -169,7 +186,7 @@ export function EcotoneV2Client(props: FullHtmlProps | SplitBodyProps | ReactShe
     return () => {
       cleanups.forEach((fn) => fn())
     }
-  }, [html, before, after, mode, quoteList])
+  }, [html, before, after, mode, quoteList, syncMainNav])
 
   /** Móvil: carrusel de reviews (snap + dots) — desktop con media query no aplica. */
   useEffect(() => {

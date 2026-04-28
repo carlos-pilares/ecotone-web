@@ -1,32 +1,38 @@
 import type { SanityImageSource } from '@sanity/image-url'
 import { groq } from 'next-sanity'
 
-/** Experience document as returned from GROQ (published API shape). */
+/** Experience card row (homepage + listados). */
 export type ExperienceFromSanity = {
   _id: string
   name: string
   slug: { current: string } | null
   price: number | null
+  priceLabel?: string | null
   duration?: string | null
   programType?: string | null
   route?: string | null
   status?: string | null
   shortDescription?: string | null
+  /** Imagen Sanity (urlFor en homepage). */
   mainImage: SanityImageSource | null
+  /** URL resuelta en GROQ (referencia o CDN). */
+  mainImageUrl?: string | null
 }
 
 export const experiencesQuery = groq`
-  *[_type == "experience"] | order(_createdAt desc) {
+  *[_type == "experience"] | order(price asc) {
     _id,
     name,
     slug,
     price,
+    priceLabel,
     duration,
     programType,
     route,
     status,
     shortDescription,
-    mainImage
+    mainImage,
+    "mainImageUrl": mainImage.asset->url
   }
 `
 
@@ -95,8 +101,9 @@ export type HomePageDoc = {
   bookingCta2Link?: string | null
 } | null
 
+/** Singleton by seed id (`data/cmsApproved/ids.ts` → `homePage`), not a generic _type match. */
 export const homePageQuery = groq`
-  *[_type == "homePage"][0] {
+  *[_id == "homePage"][0] {
     heroHeadline, heroHeadlineLight, heroSubheadline,
     heroPills, heroCta1Text, heroCta1Link, heroCta2Text, heroCta2Link,
     heroCardPrice, heroCardSubprice, heroCardRows, heroCardCtaText, heroCardCtaLink,
@@ -137,6 +144,153 @@ export const reviewsQuery = groq`
   }
 `
 
+export const experiencePageBySlugQuery = groq`
+  *[_type == "experiencePage" && slug.current == $slug][0] {
+    _id,
+    title,
+    slug,
+    seoTitle,
+    seoDescription,
+    payloadV1
+  }
+`
+
+/** Soqtapata landing: full `experiencePage` + dereferenced `experience`, lodge, route, reviews, tech. No `payloadV1`. */
+export const soqtapataStructuredPageBySlugQuery = groq`
+  *[_type == "experiencePage" && slug.current == $slug][0] {
+    _id,
+    internalTitle,
+    slug,
+    seo,
+    internalNav {
+      title,
+      subtitle,
+      fromLabel,
+      priceText,
+      priceSuffix,
+      ctaLabel,
+      ctaUrl,
+      ctaVisible,
+      items[] {
+        _key,
+        label,
+        targetSection,
+        visible,
+        order
+      }
+    },
+    sectionModules[] {
+      _key,
+      key,
+      visible,
+      anchorId,
+      eyebrow,
+      sectionTitle,
+      sectionText
+    },
+    pageHero {
+      eyebrow,
+      headline,
+      headlineSub,
+      pills,
+      priceLine,
+      priceSub,
+      useProductPrice,
+      bookCta { label, href, openInNewTab, style },
+      heroImage {
+        alt,
+        title,
+        caption,
+        image,
+        "imageUrl": image.asset->url
+      }
+    },
+    reviewsLayout,
+    "reviewDocs": reviewRefs[]-> {
+      _id, quote, authorName, authorCity, authorCountry, experienceName, rating, isFeatured
+    },
+    "techProductDocs": techProductRefs[]-> {
+      _id, stableId, name, number, description, image, badgeText, badgeTextWhenExcluded, slug
+    },
+    includedTechProductIds,
+    relatedSectionEyebrow,
+    relatedSectionTitle,
+    "relatedRefIds": relatedExperienceRefs[]._ref,
+    "relatedExperiencesFromLanding": relatedExperienceRefs[]-> {
+      _id,
+      name,
+      tagline,
+      programType,
+      route,
+      duration,
+      price,
+      priceLabel,
+      shortDescription,
+      mainImage,
+      "mainImageUrl": mainImage.asset->url,
+      "slug": slug.current
+    },
+    reserveBlock {
+      eyebrow,
+      headline,
+      price,
+      priceNote,
+      priceSub,
+      infoRows[] { label, value },
+      wetravelUrl,
+      wetravelLabel,
+      whatsappUrl,
+      whatsappLabel,
+      legalNote,
+      legalTermsLink
+    },
+    "experience": experience-> {
+      _id,
+      name, tagline, programType, route, status,
+      duration, price, priceLabel,
+      shortDescription, fullDescription,
+      mainImage,
+      "mainImageUrl": mainImage.asset->url,
+      gallery[] {
+        caption, category,
+        image,
+        "imageUrl": image.asset->url
+      },
+      videoUrl, videoTitle, videoDuration,
+      highlights,
+      itinerary[] {
+        dayNumber, title, subtitle, photoCaption,
+        image,
+        "imageUrl": image.asset->url,
+        timeline[] { time, title, description },
+        lodgeOvernight, lodgeSub
+      },
+      includes, notIncludes,
+      lodgeNightLabel, groupSizeMin, groupSizeMax,
+      altitude, distanceFromCusco, ecosystem,
+      wildlife[] { name, description, iconType },
+      "includedTechProductDocs": includedTechProducts[]-> {
+        _id, stableId, name, number, description, image, badgeText, badgeTextWhenExcluded, slug
+      },
+      bestTimeByMonth[] { month, highlight, level },
+      entryRequirements[] { title, description },
+      packingList,
+      gettingHereInfo[] { title, description },
+      cancellationPolicy, termsAndConditions, importantNotes,
+      mapPdfUrl, mapPdfLabel, brochurePdfUrl, brochurePdfLabel,
+      faqs[] { question, answer },
+      seo,
+      "lodge": lodge-> {
+        _id, name, shortDescription, altitude, route, amenities,
+        "mainImageUrl": mainImage.asset->url
+      },
+      "routeDocument": *[_type == "route" && slug.current == ^.route][0] {
+        name, shortDescription, tagline, "slug": slug.current
+      }
+    }
+  }
+`
+
 export type TechnologyProductDoc = {
   _id: string
   name?: string | null
@@ -144,12 +298,14 @@ export type TechnologyProductDoc = {
   description?: string | null
   image?: SanityImageSource | null
   badgeText?: string | null
+  /** CTA on this card when it is *not* in `includedProductIds` (e.g. “Download free on iOS”). */
+  badgeTextWhenExcluded?: string | null
   slug?: { current?: string } | null
 }
 
 export const technologyProductsQuery = groq`
   *[_type == "technologyProduct"] | order(order asc) {
-    _id, name, number, description, image, badgeText, slug
+    _id, name, number, description, image, badgeText, badgeTextWhenExcluded, slug
   }
 `
 
@@ -180,5 +336,283 @@ export type BlogPostDoc = {
 export const blogPostsQuery = groq`
   *[_type == "blogPost"] | order(publishedAt desc) [0...3] {
     _id, title, category, readingMinutes, image, externalLink, slug
+  }
+`
+
+export type ExperienceLodgeDoc = {
+  _id?: string | null
+  name?: string | null
+  slug?: { current?: string } | null
+  altitude?: string | null
+  distanceFromCusco?: string | null
+  capacity?: number | null
+  ecosystem?: string | null
+  shortDescription?: string | null
+  mainImage?: SanityImageSource | null
+  mainImageUrl?: string | null
+  researchStation?: { name?: string; description?: string; organization?: string } | null
+  amenities?: string[] | null
+  roomTypes?: Array<{
+    name?: string
+    capacity?: number
+    bedType?: string
+    hasPrivateBathroom?: boolean
+    description?: string
+  }> | null
+} | null
+
+export type ItineraryTimelineItem = { time?: string | null; title?: string | null; description?: string | null }
+export type ItineraryDay = {
+  dayNumber?: number | null
+  title?: string | null
+  subtitle?: string | null
+  photoCaption?: string | null
+  image?: SanityImageSource | null
+  imageUrl?: string | null
+  timeline?: ItineraryTimelineItem[] | null
+  lodgeOvernight?: string | null
+  lodgeSub?: string | null
+}
+
+export type BestTimeMonth = {
+  month?: string | null
+  highlight?: string | null
+  level?: 'always-good' | 'good' | 'peak' | null
+}
+
+export type FaqItem = { question?: string | null; answer?: string | null }
+export type WildlifeItem = {
+  name?: string | null
+  subtitle?: string | null
+  description?: string | null
+  iconType?: string | null
+  image?: SanityImageSource | null
+  imageUrl?: string | null
+}
+
+export type ExperienceDoc = {
+  _id: string
+  name: string
+  slug: { current: string } | null
+  price: number | null
+  priceLabel?: string | null
+  tagline?: string | null
+  duration?: string | null
+  programType?: string | null
+  route?: string | null
+  status?: string | null
+  shortDescription?: string | null
+  fullDescription?: string | null
+  highlights?: string[] | null
+  includes?: string[] | null
+  notIncludes?: string[] | null
+  mainImage: SanityImageSource | null
+  mainImageUrl?: string | null
+  gallery?: Array<{
+    _key?: string
+    image?: SanityImageSource | null
+    caption?: string | null
+    category?: string | null
+    url?: string | null
+  }> | null
+  lodge?: ExperienceLodgeDoc
+  lodgeNightLabel?: string | null
+  groupSizeMin?: number | null
+  groupSizeMax?: number | null
+  altitude?: string | null
+  distanceFromCusco?: string | null
+  ecosystem?: string | null
+  itinerary?: ItineraryDay[] | null
+  videoUrl?: string | null
+  videoTitle?: string | null
+  videoDuration?: string | null
+  mapPdfUrl?: string | null
+  mapPdfLabel?: string | null
+  brochurePdfUrl?: string | null
+  brochurePdfLabel?: string | null
+  bestTimeByMonth?: BestTimeMonth[] | null
+  packingList?: string[] | null
+  entryRequirements?: Array<{ title?: string; description?: string }> | null
+  gettingHereInfo?: Array<{ title?: string; description?: string }> | null
+  cancellationPolicy?: string | null
+  termsAndConditions?: string | null
+  importantNotes?: string[] | null
+  faqs?: FaqItem[] | null
+  wildlife?: WildlifeItem[] | null
+  wildlifeHighlights?: WildlifeItem[] | null
+  includedTech?: TechnologyProductDoc[] | null
+  includedTechIds?: string[] | null
+  /** All `technologyProduct` documents (GROQ subquery); not a stored CMS field. */
+  techProducts?: TechnologyProductDoc[] | null
+  reviews?: ReviewDoc[] | null
+  related?: ExperienceCardTeaser[] | null
+  relatedExperiences?: ExperienceCardTeaser[] | null
+  seoTitle?: string | null
+  seoDescription?: string | null
+}
+
+export type ExperienceCardTeaser = {
+  _id: string
+  name?: string | null
+  slug?: { current?: string } | null
+  price?: number | null
+  priceLabel?: string | null
+  duration?: string | null
+  programType?: string | null
+  shortDescription?: string | null
+  mainImage?: SanityImageSource | null
+  mainImageUrl?: string | null
+  route?: string | null
+}
+
+export const experienceBySlugQuery = groq`
+  *[_type == "experience" && slug.current == $slug][0] {
+    _id, name, slug, programType, route, status,
+    duration, price, priceLabel, tagline,
+    shortDescription, fullDescription,
+    highlights[],
+    mainImage,
+    "mainImageUrl": mainImage.asset->url,
+    gallery[] {
+      _key,
+      caption, category,
+      image,
+      "url": image.asset->url
+    },
+    videoUrl, videoTitle, videoDuration,
+    "itinerary": itinerary | order(dayNumber asc) {
+      dayNumber, title, subtitle, photoCaption,
+      image,
+      "imageUrl": image.asset->url,
+      lodgeOvernight, lodgeSub,
+      timeline[] { time, title, description }
+    },
+    includes[], notIncludes[],
+    "lodge": lodge-> {
+      _id, name, slug,
+      altitude, distanceFromCusco, capacity,
+      ecosystem, shortDescription, researchStation,
+      mainImage,
+      "mainImageUrl": mainImage.asset->url,
+      amenities[], roomTypes
+    },
+    lodgeNightLabel, groupSizeMin, groupSizeMax,
+    altitude, distanceFromCusco, ecosystem,
+    wildlife[] {
+      name, description, iconType,
+      image,
+      "imageUrl": image.asset->url
+    },
+    "wildlifeHighlights": wildlife[] {
+      name,
+      "subtitle": description,
+      description,
+      iconType,
+      image
+    },
+    "techProducts": *[_type == "technologyProduct"] | order(order asc) {
+      _id, name, number, description, image, badgeText, badgeTextWhenExcluded,
+      "imageUrl": image.asset->url,
+      "slug": slug
+    },
+    "includedTech": includedTechProducts[]-> {
+      _id, name, number, description, image, badgeText, badgeTextWhenExcluded, slug
+    },
+    "includedTechIds": includedTechProducts[]-> _id,
+    bestTimeByMonth[] { month, highlight, level },
+    packingList[],
+    entryRequirements[] { title, description },
+    gettingHereInfo[] { title, description },
+    cancellationPolicy, termsAndConditions,
+    importantNotes[],
+    mapPdfUrl, mapPdfLabel,
+    brochurePdfUrl, brochurePdfLabel,
+    "related": relatedExperiences[]-> {
+      _id, name, slug, price, priceLabel,
+      duration, programType, shortDescription,
+      mainImage, route,
+      "mainImageUrl": mainImage.asset->url
+    },
+    "relatedExperiences": relatedExperiences[]-> {
+      _id, name, slug, duration, priceLabel,
+      programType, shortDescription,
+      mainImage,
+      "mainImageUrl": mainImage.asset->url
+    },
+    faqs[] { question, answer },
+    seoTitle, seoDescription,
+    "reviews": *[_type == "review"] | order(_createdAt asc) {
+      _id, quote, authorName, authorCity, authorCountry,
+      experienceName, rating, isFeatured
+    }
+  }
+`
+
+export const experienceSlugsQuery = groq`
+  *[_type == "experience" && defined(slug.current)]{ "slug": slug.current }
+`
+
+/** Logos for global shell (SiteHeader / SiteFooter). Document id is fixed in Sanity structure. */
+export type SiteSettingsLogosRow = {
+  headerLogoLight: SanityImageSource | null
+  headerLogoDark: SanityImageSource | null
+  /** Footer: optional dedicated asset */
+  footerLogo: SanityImageSource | null
+  brandIsotipo: SanityImageSource | null
+}
+
+export const siteSettingsLogosQuery = groq`
+  *[_id == "siteSettings"][0]{
+    "headerLogoLight": coalesce(header.headerLogoLight, header.headerLogoFullHorizontal),
+    "headerLogoDark": header.headerLogoDark,
+    "footerLogo": coalesce(footer.footerLogo, footer.footerLogoFullHorizontal, header.headerLogoFullHorizontal),
+    "brandIsotipo": brandIsotipo
+  }
+`
+
+/** Global shell: header nav/CTA + footer copy/links + logos (single fetch for `SiteHeader` / `SiteFooter`). */
+export type SiteSettingsShellRow = {
+  homePath: string | null
+  mobileMenuAriaLabel: string | null
+  mainNav: Array<{ label?: string; href?: string; openInNewTab?: boolean }> | null
+  primaryCta: { label?: string; href?: string; openInNewTab?: boolean } | null
+  headerLogoLight: SanityImageSource | null
+  headerLogoDark: SanityImageSource | null
+  footerLogo: SanityImageSource | null
+  brandIsotipo: SanityImageSource | null
+  footer: {
+    showBrandDeco: boolean | null
+    tagline: string | null
+    descriptionLines: string[] | null
+    exploreTitle: string | null
+    exploreLinks: Array<{ label?: string; href?: string; openInNewTab?: boolean }> | null
+    contactTitle: string | null
+    contactLinks: Array<{ label?: string; href?: string; openInNewTab?: boolean }> | null
+  } | null
+  copyright: string | null
+  footerCertText: string[] | null
+} | null
+
+export const siteSettingsShellQuery = groq`
+  *[_id == "siteSettings"][0]{
+    "homePath": header.homePath,
+    "mobileMenuAriaLabel": header.mobileMenuAriaLabel,
+    "mainNav": header.mainNav,
+    "primaryCta": header.primaryCta,
+    "headerLogoLight": coalesce(header.headerLogoLight, header.headerLogoFullHorizontal),
+    "headerLogoDark": header.headerLogoDark,
+    "footerLogo": coalesce(footer.footerLogo, footer.footerLogoFullHorizontal, header.headerLogoFullHorizontal),
+    "brandIsotipo": brandIsotipo,
+    "footer": {
+      "showBrandDeco": footer.showBrandDeco,
+      "tagline": footer.tagline,
+      "descriptionLines": footer.descriptionLines,
+      "exploreTitle": footer.exploreTitle,
+      "exploreLinks": footer.exploreLinks,
+      "contactTitle": footer.contactTitle,
+      "contactLinks": footer.contactLinks
+    },
+    "copyright": copyright,
+    "footerCertText": footer.footerCertText
   }
 `
