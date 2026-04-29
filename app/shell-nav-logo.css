@@ -1,0 +1,66 @@
+/**
+ * Global shell: CMS full-horizontal logo. Loaded after `globals.css` in layout, and appended to the
+ * Home-injected block in `app/page.tsx` so rules always follow `img { width:100% }` from ecotone.
+ *
+ * Pattern: fixed-height .nav-logo-full-wrap, img { height:100%; width:auto; object-fit:contain; }.
+ * Uses app/shell-logo-tokens.css. Fallback px matches tokens if vars are missing.
+ */
+
+#topNav a.nav-logo,
+.top-nav a.nav-logo {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+#topNav a.nav-logo .nav-logo-full-wrap,
+.top-nav a.nav-logo .nav-logo-full-wrap {
+  display: inline-block;
+  flex: 0 0 auto;
+  min-width: 0;
+  height: var(--shell-logo-h, 40px);
+  max-width: min(calc(184 / 57 * var(--shell-logo-h, 40px)), 46vw);
+  line-height: 0;
+  box-sizing: border-box;
+}
+
+#topNav a.nav-logo .nav-logo-full-wrap .nav-logo-full,
+.top-nav a.nav-logo .nav-logo-full-wrap .nav-logo-full {
+  display: block;
+  box-sizing: border-box;
+  width: auto;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: left center;
+  vertical-align: top;
+}
+
+.foot-logo .nav-logo .nav-logo-full-wrap {
+  display: inline-block;
+  height: var(--shell-logo-foot-h, 45px);
+  max-width: min(calc(184 / 57 * var(--shell-logo-foot-h, 45px)), 85vw);
+  line-height: 0;
+  box-sizing: border-box;
+}
+
+.foot-logo .nav-logo .nav-logo-full-wrap .nav-logo-full {
+  display: block;
+  box-sizing: border-box;
+  width: auto;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: left center;
+  vertical-align: top;
+}
+
+@media (max-width: 720px) {
+  #topNav a.nav-logo .nav-logo-full-wrap,
+  .top-nav a.nav-logo .nav-logo-full-wrap {
+    max-width: min(calc(184 / 57 * var(--shell-logo-h, 40px)), 52vw);
+  }
+}

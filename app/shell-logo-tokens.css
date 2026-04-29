@@ -1,0 +1,9 @@
+/*
+ * Shell logo dimensions — single source (imported in layout + appended last in Home inject).
+ * !important: (1) wins over ecotone :root in the same injected <style>, (2) stable on hard reload.
+ * Header: 40px. Footer: 45px (50% up from 30px); header unchanged.
+ */
+:root {
+  --shell-logo-h: 40px !important;
+  --shell-logo-foot-h: 45px !important;
+}
