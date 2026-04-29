@@ -1,4 +1,5 @@
-import {defineField, defineType} from 'sanity'
+import {defineArrayMember, defineField, defineType} from 'sanity'
+import {HomeSourceListReadout} from '../components/homePage/HomeSourceListReadout'
 
 const heroCardRow = {
   type: 'object',
@@ -113,6 +114,7 @@ export const homePage = defineType({
   title: 'Home page',
   type: 'document',
   groups: [
+    {name: 'meta', title: 'SEO & metadata'},
     {name: 'hero', title: 'Hero', default: true},
     {name: 'stats', title: 'Stats'},
     {name: 'manifesto', title: 'Manifesto'},
@@ -126,11 +128,23 @@ export const homePage = defineType({
   ],
   fields: [
     defineField({
+      name: 'seo',
+      title: 'SEO (home /)',
+      type: 'seo',
+      group: 'meta',
+    }),
+    defineField({
       name: 'heroImage',
       title: 'Hero image',
       type: 'image',
       group: 'hero',
       options: {hotspot: true},
+    }),
+    defineField({
+      name: 'heroEyebrow',
+      title: 'Eyebrow (location line)',
+      type: 'string',
+      group: 'hero',
     }),
     defineField({name: 'heroHeadline', title: 'Headline (bold)', type: 'string', group: 'hero'}),
     defineField({name: 'heroHeadlineLight', title: 'Headline (light)', type: 'string', group: 'hero'}),
@@ -147,6 +161,14 @@ export const homePage = defineType({
     defineField({name: 'heroCta2Text', title: 'CTA 2 text', type: 'string', group: 'hero'}),
     defineField({name: 'heroCta2Link', title: 'CTA 2 link', type: 'string', group: 'hero'}),
     defineField({name: 'heroCardPrice', title: 'Hero card — price', type: 'string', group: 'hero'}),
+    defineField({
+      name: 'heroCardPriceSuffix',
+      title: 'Hero card — price line suffix',
+      type: 'string',
+      description: 'e.g. “per person” or “/person” (small text beside the price).',
+      initialValue: '/person',
+      group: 'hero',
+    }),
     defineField({name: 'heroCardSubprice', title: 'Hero card — subprice line', type: 'string', group: 'hero'}),
     defineField({name: 'heroCardRows', title: 'Hero card — rows', type: 'array', of: [heroCardRow], group: 'hero'}),
     defineField({name: 'heroCardCtaText', title: 'Hero card — CTA text', type: 'string', group: 'hero'}),
@@ -181,9 +203,27 @@ export const homePage = defineType({
     defineField({name: 'explorerEyebrow', title: 'Eyebrow', type: 'string', group: 'explorer'}),
     defineField({name: 'explorerHeadline', title: 'Headline', type: 'string', group: 'explorer'}),
     defineField({name: 'explorerSubheadline', title: 'Subheadline', type: 'text', group: 'explorer', rows: 3}),
+    defineField({
+      name: 'explorerCatalogReadout',
+      title: 'Experience catalog (read-only)',
+      type: 'text',
+      rows: 1,
+      group: 'explorer',
+      readOnly: true,
+      components: {input: HomeSourceListReadout},
+      options: {catalog: 'experiences'},
+    }),
 
     defineField({name: 'reviewsEyebrow', title: 'Eyebrow', type: 'string', group: 'reviews'}),
     defineField({name: 'reviewsHeadline', title: 'Headline', type: 'string', group: 'reviews'}),
+    defineField({
+      name: 'reviewsBody',
+      title: 'Intro / body',
+      type: 'text',
+      rows: 4,
+      group: 'reviews',
+      description: 'Optional intro under the reviews heading on Home (when the site reads this field).',
+    }),
     defineField({
       name: 'reviewsScore',
       title: 'Score (display)',
@@ -191,10 +231,52 @@ export const homePage = defineType({
       initialValue: '5.0',
       group: 'reviews',
     }),
+    defineField({
+      name: 'homeSelectedReviews',
+      title: 'Reviews on Home (order)',
+      type: 'array',
+      group: 'reviews',
+      description:
+        'Drag to set order. Canonical quote and author live on each Review document — edit there, not here.',
+      of: [
+        defineArrayMember({
+          type: 'reference',
+          to: [{type: 'review'}],
+          options: {disableNew: true},
+        }),
+      ],
+      validation: (Rule) => Rule.unique(),
+    }),
 
     defineField({name: 'techEyebrow', title: 'Eyebrow', type: 'string', group: 'tech'}),
     defineField({name: 'techHeadline', title: 'Headline', type: 'string', group: 'tech'}),
     defineField({name: 'techBody', title: 'Body', type: 'text', group: 'tech', rows: 4}),
+    defineField({
+      name: 'technologyCatalogReadout',
+      title: 'Tech product catalog (read-only)',
+      type: 'text',
+      rows: 1,
+      group: 'tech',
+      readOnly: true,
+      components: {input: HomeSourceListReadout},
+      options: {catalog: 'technologyProducts'},
+    }),
+    defineField({
+      name: 'homeSelectedTechnologyProducts',
+      title: 'Tech products on Home (order)',
+      type: 'array',
+      group: 'tech',
+      description:
+        'Optional curated list and order. Leave empty to fall back to site rules (e.g. all products). Edit each product under Content → Tech product.',
+      of: [
+        defineArrayMember({
+          type: 'reference',
+          to: [{type: 'technologyProduct'}],
+          options: {disableNew: true},
+        }),
+      ],
+      validation: (Rule) => Rule.unique(),
+    }),
 
     defineField({name: 'missionEyebrow', title: 'Eyebrow', type: 'string', group: 'mission'}),
     defineField({name: 'missionHeadline', title: 'Headline', type: 'string', group: 'mission'}),
@@ -213,9 +295,77 @@ export const homePage = defineType({
       initialValue: 'Certified by & affiliated with',
       group: 'partners',
     }),
+    defineField({
+      name: 'partnersBody',
+      title: 'Intro / body',
+      type: 'text',
+      rows: 4,
+      group: 'partners',
+      description: 'Optional text under the partners heading on Home (when the site reads this field).',
+    }),
+    defineField({
+      name: 'partnersCatalogReadout',
+      title: 'Partner catalog (read-only)',
+      type: 'text',
+      rows: 1,
+      group: 'partners',
+      readOnly: true,
+      components: {input: HomeSourceListReadout},
+      options: {catalog: 'partners'},
+    }),
+    defineField({
+      name: 'homeSelectedPartners',
+      title: 'Partners on Home (order)',
+      type: 'array',
+      group: 'partners',
+      description:
+        'Drag to set order. Names, logos, and links are edited on each Partner document — not here.',
+      of: [
+        defineArrayMember({
+          type: 'reference',
+          to: [{type: 'partner'}],
+          options: {disableNew: true},
+        }),
+      ],
+      validation: (Rule) => Rule.unique(),
+    }),
 
     defineField({name: 'blogEyebrow', title: 'Eyebrow', type: 'string', group: 'blog'}),
     defineField({name: 'blogHeadline', title: 'Headline', type: 'string', group: 'blog'}),
+    defineField({
+      name: 'blogBody',
+      title: 'Intro / body',
+      type: 'text',
+      rows: 4,
+      group: 'blog',
+      description: 'Optional intro under the blog heading on Home (when the site reads this field).',
+    }),
+    defineField({
+      name: 'blogCatalogReadout',
+      title: 'Blog post catalog (read-only)',
+      type: 'text',
+      rows: 1,
+      group: 'blog',
+      readOnly: true,
+      components: {input: HomeSourceListReadout},
+      options: {catalog: 'blogPosts'},
+    }),
+    defineField({
+      name: 'homeSelectedBlogPosts',
+      title: 'Blog posts on Home (order)',
+      type: 'array',
+      group: 'blog',
+      description:
+        'Drag to set order. Titles, images, and links are edited on each Blog post — not here.',
+      of: [
+        defineArrayMember({
+          type: 'reference',
+          to: [{type: 'blogPost'}],
+          options: {disableNew: true},
+        }),
+      ],
+      validation: (Rule) => Rule.unique(),
+    }),
 
     defineField({name: 'bookingEyebrow', title: 'Eyebrow', type: 'string', group: 'booking'}),
     defineField({name: 'bookingHeadline', title: 'Headline', type: 'string', group: 'booking'}),

@@ -43,11 +43,20 @@ function mainImageUrl(mainImage: ExperienceFromSanity['mainImage']): string {
   }
 }
 
+const CANONICAL_SOQTAPATA_PATH = '/experiences/soqtapata-pristine-immersion'
+
+function slugLooksLikeSoqtapata(raw: string): boolean {
+  return raw.toLowerCase().includes('soqtapata')
+}
+
 function tourHref(doc: Pick<ExperienceFromSanity, 'slug'>): string {
-  const c = doc.slug?.current
-  if (!c) return '#'
-  if (c.startsWith('http')) return c
-  return `https://www.ecotone.eco/${c.replace(/^\//, '')}`
+  const raw = doc.slug?.current?.trim()
+  if (!raw) return '#'
+  if (/^https?:\/\//i.test(raw)) return raw
+  if (slugLooksLikeSoqtapata(raw)) return CANONICAL_SOQTAPATA_PATH
+  const path = raw.replace(/^\//, '')
+  if (path.startsWith('experiences/')) return `/${path}`
+  return `/experiences/${path}`
 }
 
 function priceLabel(doc: ExperienceFromSanity): { text: string; muted?: boolean } {
@@ -192,225 +201,12 @@ function CmsGrid({ list }: { list: ExperienceFromSanity[] }) {
   )
 }
 
-function FallbackGrid() {
+function ExperiencesFallback() {
   return (
-    <>
-      <div className="exp-card" data-type="nature">
-        <div className="exp-card-img">
-          <img
-            src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=700&q=80"
-            alt="Soqtapata"
-          />
-          <div className="exp-card-overlay" />
-          <span className="badge-type">Nature Core</span>
-          <span className="badge-dur">3D · 2N</span>
-          <span className="badge-route">Camanti Route</span>
-        </div>
-        <div className="exp-card-body">
-          <div className="exp-card-title">Soqtapata Pristine Immersion</div>
-          <div className="exp-card-desc">Cloud forest. 300+ birds. EcoDroneView®. Private bungalow.</div>
-          <div className="exp-card-foot">
-            <span className="exp-card-price">USD 986</span>
-            <a href="https://www.ecotone.eco/tours-soqtapata-3d2n" className="exp-card-cta">
-              View <Arrow />
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div className="exp-card" data-type="nature">
-        <div className="exp-card-img">
-          <img
-            src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=700&q=80"
-            alt="Andean Cloud Forest"
-          />
-          <div className="exp-card-overlay" />
-          <span className="badge-type">Nature Core</span>
-          <span className="badge-dur">4D · 3N</span>
-          <span className="badge-route">Camanti Route</span>
-        </div>
-        <div className="exp-card-body">
-          <div className="exp-card-title">Andean Cloud Forest</div>
-          <div className="exp-card-desc">Extended trails. Night walks. Deeper forest access.</div>
-          <div className="exp-card-foot">
-            <span className="exp-card-price">USD 1,200+</span>
-            <a href="https://www.ecotone.eco/copy-of-soqtapata-3d-2n-1" className="exp-card-cta">
-              View <Arrow />
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div className="exp-card" data-type="nature">
-        <div className="exp-card-img">
-          <img
-            src="https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=700&q=80"
-            alt="Manu Gradient"
-          />
-          <div className="exp-card-overlay" />
-          <span className="badge-type">Nature Core</span>
-          <span className="badge-dur">3D · 2N</span>
-          <span className="badge-route">Manu Route</span>
-        </div>
-        <div className="exp-card-body">
-          <div className="exp-card-title">Manu Gradient Expedition</div>
-          <div className="exp-card-desc">Cloud forest to jungle river. Wildlife encounters.</div>
-          <div className="exp-card-foot">
-            <span className="exp-card-price">Enquire</span>
-            <a href="https://www.ecotone.eco/tours-mbl-3d2n" className="exp-card-cta">
-              View <Arrow />
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div className="exp-card" data-type="nature">
-        <div className="exp-card-img">
-          <img
-            src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=700&q=80"
-            alt="Manu Extended"
-          />
-          <div className="exp-card-overlay" />
-          <span className="badge-type">Nature Core</span>
-          <span className="badge-dur">4D · 3N</span>
-          <span className="badge-route">Manu Route</span>
-        </div>
-        <div className="exp-card-body">
-          <div className="exp-card-title">Manu Gradient Extended</div>
-          <div className="exp-card-desc">Oxbow lakes. Macaw clay licks. 4 nights.</div>
-          <div className="exp-card-foot">
-            <span className="exp-card-price">Enquire</span>
-            <a href="https://www.ecotone.eco/tours-mbl-4d3n" className="exp-card-cta">
-              View <Arrow />
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div className="exp-card" data-type="family">
-        <div className="exp-card-img">
-          <img
-            src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=700&q=80"
-            alt="Family Quest"
-          />
-          <div className="exp-card-overlay" />
-          <span className="badge-type">Family Adventure</span>
-          <span className="badge-dur">5D · 4N</span>
-          <span className="badge-route">Manu Core</span>
-          <span className="badge-flag">Signature</span>
-        </div>
-        <div className="exp-card-body">
-          <div className="exp-card-title">Family Discovery Quest</div>
-          <div className="exp-card-desc">A legacy journey for families. Conservation-first expedition.</div>
-          <div className="exp-card-foot">
-            <span className="exp-card-price">Enquire</span>
-            <a href="https://www.ecotone.eco/copy-of-soqtapata-3d-2n" className="exp-card-cta">
-              View <Arrow />
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div className="exp-card" data-type="learning">
-        <div className="exp-card-img">
-          <img
-            src="https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=700&q=80"
-            alt="Experiential Learning"
-          />
-          <div className="exp-card-overlay" />
-          <span className="badge-type">Exp. Learning</span>
-          <div style={{ position: 'absolute', top: 9, right: 9, display: 'flex', gap: 3 }}>
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                background: 'var(--brown)',
-                color: '#fff',
-                padding: '4px 7px',
-                borderRadius: 100,
-              }}
-            >
-              2w
-            </span>
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                background: 'var(--brown)',
-                color: '#fff',
-                padding: '4px 7px',
-                borderRadius: 100,
-              }}
-            >
-              4w
-            </span>
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                background: 'var(--brown)',
-                color: '#fff',
-                padding: '4px 7px',
-                borderRadius: 100,
-              }}
-            >
-              6w
-            </span>
-          </div>
-          <span className="badge-route">Camanti Route</span>
-        </div>
-        <div className="exp-card-body">
-          <div className="exp-card-title">Schools & Universities</div>
-          <div className="exp-card-desc">2, 4 or 6-week academic field programs. Custom curriculum.</div>
-          <div className="exp-card-foot">
-            <span style={{ fontSize: 12, fontWeight: 300, color: 'var(--n400)' }}>Custom pricing</span>
-            <a href="https://wa.me/51974781094" className="exp-card-cta">
-              Enquire <Arrow />
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div className="exp-card-tailor" data-type="tailor">
-        <div className="exp-card-tailor-img">
-          <img
-            src="https://images.unsplash.com/photo-1504701954957-2010ec3bcec1?w=900&q=80"
-            alt="Tailor Made"
-          />
-          <div className="exp-card-overlay" />
-          <span className="badge-type">Tailor Made</span>
-          <span
-            style={{
-              position: 'absolute',
-              bottom: 9,
-              left: 9,
-              fontSize: 11,
-              fontWeight: 700,
-              background: 'rgba(144,103,48,.55)',
-              border: '1px solid rgba(212,170,114,.5)',
-              color: 'var(--b100)',
-              padding: '4px 10px',
-              borderRadius: 100,
-            }}
-          >
-            Any route · Any duration
-          </span>
-        </div>
-        <div className="exp-card-tailor-body">
-          <div className="exp-card-tailor-title">Designed Around You</div>
-          <div className="exp-card-tailor-desc">
-            Private groups, couples, photographers, corporate retreats. Your pace, your purpose. We design
-            every detail.
-          </div>
-          <a
-            href="https://wa.me/51974781094?text=I%20want%20to%20design%20a%20tailor%20made%20Ecotone%20experience"
-            className="btn-tailor"
-          >
-            Design my journey →
-          </a>
-        </div>
-      </div>
-    </>
+    <p className="body" style={{ maxWidth: 560, gridColumn: '1 / -1' }}>
+      Experience programs are not available right now. When your CMS connection is working, they will
+      appear here. You can still <a href="#book">plan a trip</a>.
+    </p>
   )
 }
 
@@ -461,7 +257,7 @@ export function ExperiencesExplorer({
           </button>
         </div>
         <div className="exp-grid fade fade-d2" id="expGrid">
-          {fromCms && experiences ? <CmsGrid list={experiences} /> : <FallbackGrid />}
+          {fromCms && experiences ? <CmsGrid list={experiences} /> : <ExperiencesFallback />}
         </div>
       </div>
     </section>

@@ -36,7 +36,28 @@ export const experiencesQuery = groq`
   }
 `
 
+/** Resolved in GROQ from `homePage.seo.ogImage`. */
+export type HomePageSeoDoc = {
+  title?: string | null
+  description?: string | null
+  noIndex?: boolean | null
+  ogImageUrl?: string | null
+}
+
+export type ReviewDoc = {
+  _id: string
+  quote?: string | null
+  authorName?: string | null
+  authorCity?: string | null
+  authorCountry?: string | null
+  experienceName?: string | null
+  rating?: number | null
+  isFeatured?: boolean | null
+}
+
 export type HomePageDoc = {
+  seo?: HomePageSeoDoc | null
+  heroEyebrow?: string | null
   heroHeadline?: string | null
   heroHeadlineLight?: string | null
   heroSubheadline?: string | null
@@ -46,6 +67,8 @@ export type HomePageDoc = {
   heroCta2Text?: string | null
   heroCta2Link?: string | null
   heroCardPrice?: string | null
+  /** Small label next to hero card price, e.g. `/person`. */
+  heroCardPriceSuffix?: string | null
   heroCardSubprice?: string | null
   heroCardRows?: Array<{ _key?: string; _type?: string; label?: string; value?: string }> | null
   heroCardCtaText?: string | null
@@ -67,10 +90,16 @@ export type HomePageDoc = {
   explorerSubheadline?: string | null
   reviewsEyebrow?: string | null
   reviewsHeadline?: string | null
+  /** Intro under reviews heading on Home. */
+  reviewsBody?: string | null
   reviewsScore?: string | null
+  /** Curated reviews for Home (order preserved). Empty / omit → use all `review` docs. */
+  homeSelectedReviews?: ReviewDoc[] | null
   techEyebrow?: string | null
   techHeadline?: string | null
   techBody?: string | null
+  /** Curated technology products for Home (order preserved). Empty / omit → use `technologyProductsQuery`. */
+  homeSelectedTechnologyProducts?: TechnologyProductDoc[] | null
   missionEyebrow?: string | null
   missionHeadline?: string | null
   missionBody?: string | null
@@ -86,8 +115,15 @@ export type HomePageDoc = {
   missionPhoto2?: SanityImageSource | null
   missionPhoto3?: SanityImageSource | null
   partnersLabel?: string | null
+  /** Optional intro under partners label on Home. */
+  partnersBody?: string | null
+  /** Curated partners for Home (order preserved). Empty / omit → use `partnersQuery`. */
+  homeSelectedPartners?: PartnerDoc[] | null
   blogEyebrow?: string | null
   blogHeadline?: string | null
+  blogBody?: string | null
+  /** Curated blog posts for Home (order preserved). Empty / omit → use `blogPostsQuery`. */
+  homeSelectedBlogPosts?: BlogPostDoc[] | null
   bookingEyebrow?: string | null
   bookingHeadline?: string | null
   bookingBody?: string | null
@@ -104,38 +140,53 @@ export type HomePageDoc = {
 /** Singleton by seed id (`data/cmsApproved/ids.ts` → `homePage`), not a generic _type match. */
 export const homePageQuery = groq`
   *[_id == "homePage"][0] {
+    seo {
+      title,
+      description,
+      noIndex,
+      "ogImageUrl": ogImage.asset->url
+    },
     heroHeadline, heroHeadlineLight, heroSubheadline,
     heroPills, heroCta1Text, heroCta1Link, heroCta2Text, heroCta2Link,
-    heroCardPrice, heroCardSubprice, heroCardRows, heroCardCtaText, heroCardCtaLink,
+    heroCardPrice, heroCardPriceSuffix, heroCardSubprice, heroCardRows, heroCardCtaText, heroCardCtaLink,
+    heroEyebrow,
     heroImage,
     stats,
     manifestoEyebrow, manifestoHeadline, manifestoBody1, manifestoBody2,
     manifestoImage, manifestoImageCaption,
     manifestoCta1Text, manifestoCta1Link, manifestoCta2Text, manifestoCta2Link,
     explorerEyebrow, explorerHeadline, explorerSubheadline,
-    reviewsEyebrow, reviewsHeadline, reviewsScore,
+    reviewsEyebrow, reviewsHeadline, reviewsBody, reviewsScore,
+    "homeSelectedReviews": homeSelectedReviews[]-> {
+      _id,
+      quote,
+      authorName,
+      authorCity,
+      authorCountry,
+      experienceName,
+      rating,
+      isFeatured
+    },
     techEyebrow, techHeadline, techBody,
+    "homeSelectedTechnologyProducts": homeSelectedTechnologyProducts[]-> {
+      _id, name, number, description, image, badgeText, badgeTextWhenExcluded, slug
+    },
     missionEyebrow, missionHeadline, missionBody, missionItems,
     missionCtaText, missionCtaLink,
     missionPhoto1, missionPhoto2, missionPhoto3,
-    partnersLabel,
-    blogEyebrow, blogHeadline,
+    partnersLabel, partnersBody,
+    "homeSelectedPartners": homeSelectedPartners[]-> {
+      _id, name, logoSvg, link, order
+    },
+    blogEyebrow, blogHeadline, blogBody,
+    "homeSelectedBlogPosts": homeSelectedBlogPosts[]-> {
+      _id, title, category, readingMinutes, image, externalLink, slug
+    },
     bookingEyebrow, bookingHeadline, bookingBody, bookingTrustItems,
     bookingPrice, bookingPriceSubtext, bookingCardRows,
     bookingCta1Text, bookingCta1Link, bookingCta2Text, bookingCta2Link,
   }
 `
-
-export type ReviewDoc = {
-  _id: string
-  quote?: string | null
-  authorName?: string | null
-  authorCity?: string | null
-  authorCountry?: string | null
-  experienceName?: string | null
-  rating?: number | null
-  isFeatured?: boolean | null
-}
 
 export const reviewsQuery = groq`
   *[_type == "review"] | order(_createdAt asc) {
@@ -278,6 +329,23 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       gettingHereInfo[] { title, description },
       cancellationPolicy, termsAndConditions, importantNotes,
       mapPdfUrl, mapPdfLabel, brochurePdfUrl, brochurePdfLabel,
+      resources[] {
+        _key,
+        title,
+        subtitle,
+        resourceType,
+        visualPreset,
+        previewImage {
+          alt,
+          image,
+          "imageUrl": image.asset->url
+        },
+        fileUrl,
+        "fileAssetUrl": file.asset->url,
+        ctaLabel,
+        visible,
+        order
+      },
       faqs[] { question, answer },
       seo,
       "lodge": lodge-> {
@@ -527,6 +595,23 @@ export const experienceBySlugQuery = groq`
     importantNotes[],
     mapPdfUrl, mapPdfLabel,
     brochurePdfUrl, brochurePdfLabel,
+    resources[] {
+      _key,
+      title,
+      subtitle,
+      resourceType,
+      visualPreset,
+      previewImage {
+        alt,
+        image,
+        "imageUrl": image.asset->url
+      },
+      fileUrl,
+      "fileAssetUrl": file.asset->url,
+      ctaLabel,
+      visible,
+      order
+    },
     "related": relatedExperiences[]-> {
       _id, name, slug, price, priceLabel,
       duration, programType, shortDescription,

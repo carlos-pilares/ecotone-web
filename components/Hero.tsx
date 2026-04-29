@@ -1,3 +1,4 @@
+import { homePageTextFields } from '@/data/cmsApproved/homePageFields'
 import type { HomePageDoc } from '@/lib/queries'
 import { cdnImageUrl } from '@/lib/sanity'
 
@@ -32,6 +33,8 @@ const DEFAULT_PILLS = ['3 Routes', '~10 Experiences', 'Max 8 per group', 'All in
 
 export function Hero({ heroData }: { heroData: HomePageDoc | null }) {
   const h = heroData
+  const eyebrow =
+    (h?.heroEyebrow ?? homePageTextFields.heroEyebrow).trim() || homePageTextFields.heroEyebrow
   const headline = h?.heroHeadline ?? 'The forest'
   const headlineLight = h?.heroHeadlineLight ?? 'is waiting for you.'
   const sub = h?.heroSubheadline ?? 'Immersive all-inclusive experiences in the most biodiverse ecosystems on Earth. All-inclusive from Cusco.'
@@ -41,6 +44,8 @@ export function Hero({ heroData }: { heroData: HomePageDoc | null }) {
   const cta2Text = h?.heroCta2Text ?? 'Our routes ↓'
   const cta2Link = h?.heroCta2Link ?? '#routes'
   const cardPrice = h?.heroCardPrice ?? 'from $380'
+  const priceSuffix =
+    (h?.heroCardPriceSuffix ?? homePageTextFields.heroCardPriceSuffix).trim() || '/person'
   const cardSub = h?.heroCardSubprice ?? 'All inclusive · departure from Cusco'
   const cardCta = h?.heroCardCtaText ?? 'Check availability →'
   const cardCtaLink = h?.heroCardCtaLink ?? '#book'
@@ -69,7 +74,7 @@ export function Hero({ heroData }: { heroData: HomePageDoc | null }) {
       </div>
       <div className="hero-inner">
         <div>
-          <div className="hero-eyebrow">Manu Biosphere Reserve &amp; Camanti · Cusco, Perú</div>
+          <div className="hero-eyebrow">{eyebrow}</div>
           <h1 className="hero-h1">
             {headline}
             <span>{headlineLight}</span>
@@ -100,7 +105,7 @@ export function Hero({ heroData }: { heroData: HomePageDoc | null }) {
           <div className="hero-card">
             <div className="hero-card-price">
               {cardPrice}
-              <small>/person</small>
+              <small>{priceSuffix}</small>
             </div>
             <div className="hero-card-sub">{cardSub}</div>
             <div className="hero-card-div" />

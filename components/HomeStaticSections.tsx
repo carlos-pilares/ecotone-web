@@ -2,13 +2,11 @@ import { Fragment, type ReactNode } from 'react'
 import { HeadlineBlock } from '@/components/HeadlineBlock'
 import { PartnerMarkByName } from '@/components/partnerLogos'
 import { MissionItemIcon, TrustItemIcon } from '@/components/sectionIcons'
+import { TechProductsSection } from '@/components/TechProductsSection'
 import type { BlogPostDoc, HomePageDoc, PartnerDoc, TechnologyProductDoc } from '@/lib/queries'
 import { cdnImageUrl } from '@/lib/sanity'
 
 const U_MANI = 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=900&q=85'
-const U_T1 = 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=900&q=85'
-const U_T2 = 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=900&q=85'
-const U_T3 = 'https://images.unsplash.com/photo-1617575521317-d2974f3b56d2?w=900&q=85'
 const U_M1 = 'https://images.unsplash.com/photo-1564419320461-6870880221ad?w=800&q=80'
 const U_M2 = 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=500&q=80'
 const U_M3 = 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=500&q=80'
@@ -22,40 +20,6 @@ const DEFAULT_STATS: { number: string; label: string }[] = [
   { number: '1,200+', label: 'Species observed' },
   { number: '5.0 ★', label: 'Guest rating' },
 ]
-
-const DEFAULT_TECH: Array<
-  Pick<TechnologyProductDoc, '_id' | 'name' | 'number' | 'description' | 'badgeText' | 'image'>
-> = [
-  {
-    _id: 'dtech1',
-    name: 'EcoDroneView®',
-    number: '01',
-    description:
-      'A journey beyond the trails, soaring above the canopy and exploring remote landscapes inaccessible by foot.',
-    badgeText: 'Only at Ecotone',
-    image: null,
-  },
-  {
-    _id: 'dtech2',
-    name: 'ForestWhisper®',
-    number: '02',
-    description:
-      "Immerse yourself in the rainforest's enchanting sounds through premium 360° microphones and high-fidelity headphones.",
-    badgeText: 'Only at Ecotone',
-    image: null,
-  },
-  {
-    _id: 'dtech3',
-    name: 'EcoSpeciesExplorer®',
-    number: '03',
-    description:
-      'This comprehensive platform reveals all kinds of incredible species found in our conservation destinations. Live on iOS.',
-    badgeText: 'Only at Ecotone',
-    image: null,
-  },
-]
-
-const DEFAULT_TECH_IMAGES = [U_T1, U_T2, U_T3]
 
 const DEFAULT_MISSION_ITEMS: Array<{
   iconType: string
@@ -105,7 +69,6 @@ const DEFAULT_BLOG: BlogPostDoc[] = [
     category: 'Birds',
     readingMinutes: 3,
     image: null,
-    externalLink: 'https://www.ecotone.eco/blog',
   },
   {
     _id: 'bl2',
@@ -113,7 +76,6 @@ const DEFAULT_BLOG: BlogPostDoc[] = [
     category: 'Technology',
     readingMinutes: 4,
     image: null,
-    externalLink: 'https://www.ecotone.eco/blog',
   },
   {
     _id: 'bl3',
@@ -121,7 +83,6 @@ const DEFAULT_BLOG: BlogPostDoc[] = [
     category: 'Conservation',
     readingMinutes: 5,
     image: null,
-    externalLink: 'https://www.ecotone.eco/blog',
   },
 ]
 
@@ -149,28 +110,9 @@ const BlogArrow = () => (
 )
 
 function blogPostHref(p: BlogPostDoc): string {
-  if (p.externalLink) return p.externalLink
-  const s = p.slug?.current
-  if (s) return s.startsWith('http') ? s : `https://www.ecotone.eco/${s.replace(/^\//, '')}`
-  return 'https://www.ecotone.eco/blog'
-}
-
-function buildTechList(products: TechnologyProductDoc[] | null | undefined): Array<{
-  doc: TechnologyProductDoc
-  imageFallback: string
-  idx: number
-}> {
-  const def = DEFAULT_TECH as TechnologyProductDoc[]
-  const list: TechnologyProductDoc[] =
-    products && products.length > 0 ? [...products] : [...def]
-  while (list.length < 3) {
-    list.push(def[list.length]!)
-  }
-  return list.slice(0, 3).map((doc, idx) => ({
-    doc,
-    imageFallback: DEFAULT_TECH_IMAGES[idx] ?? U_T1,
-    idx,
-  }))
+  const ext = p.externalLink?.trim()
+  if (ext && /^https?:\/\//i.test(ext)) return ext
+  return '#'
 }
 
 type Props = {
@@ -207,7 +149,6 @@ export function HomeStaticSections({
 
   const prList: PartnerDoc[] = partners && partners.length > 0 ? partners : DEFAULT_PARTNERS
   const blogList: BlogPostDoc[] = blogPosts && blogPosts.length > 0 ? blogPosts : DEFAULT_BLOG
-  const techBuilt = buildTechList(techProducts)
 
   const bookingRows =
     h?.bookingCardRows && h.bookingCardRows.length > 0
@@ -280,43 +221,7 @@ export function HomeStaticSections({
 
       {betweenManifestoAndTech}
 
-      <section className="sec bg-warm" id="tech">
-        <div className="sec-inner fade">
-          <div className="eyebrow">{h?.techEyebrow ?? 'Exclusive technology'}</div>
-          <HeadlineBlock
-            text={h?.techHeadline ?? null}
-            fallback={
-              <>
-                A commitment to
-                <br />
-                preserving pristine nature
-              </>
-            }
-          />
-          <p className="body" style={{ maxWidth: 560 }}>
-            {h?.techBody ??
-              'Designed for eco-travellers seeking adventure with purpose. We combine immersive technology, sustainable lodging, and direct impact on local communities.'}
-          </p>
-          <div className="tech-grid">
-            {techBuilt.map(({ doc, imageFallback, idx }) => {
-              const img = cdnImageUrl(doc.image ?? null, 900, imageFallback)
-              return (
-                <div className="tech-card" key={doc._id || idx}>
-                  <div className="tech-img-wrap">
-                    <img src={img} alt={doc.name ?? ''} />
-                  </div>
-                  <div className="tech-card-content">
-                    <div className="tech-num">{doc.number ?? `0${idx + 1}`}</div>
-                    <div className="tech-title">{doc.name}</div>
-                    <div className="tech-desc">{doc.description}</div>
-                    {doc.badgeText ? <span className="tech-badge">{doc.badgeText}</span> : null}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
+      <TechProductsSection homeData={h} products={techProducts} />
 
       <section className="sec" id="mission">
         <div className="sec-inner fade">
@@ -379,6 +284,7 @@ export function HomeStaticSections({
           <div className="partners-label">
             {h?.partnersLabel ?? 'Certified by & affiliated with'}
           </div>
+          {h?.partnersBody?.trim() ? <p className="body partners-body">{h.partnersBody}</p> : null}
           <div className="partners-row">
             {prList.map((p, i) => {
               const name = p.name || 'Partner'
@@ -435,9 +341,10 @@ export function HomeStaticSections({
               <h2 className="h2" style={{ marginBottom: 0 }}>
                 {h?.blogHeadline ?? 'Latest from Ecotone'}
               </h2>
+              {h?.blogBody?.trim() ? <p className="body" style={{ marginTop: 10 }}>{h.blogBody}</p> : null}
             </div>
             <a
-              href="https://www.ecotone.eco/blog"
+              href="#"
               style={{
                 fontSize: 13,
                 fontWeight: 600,
@@ -520,7 +427,7 @@ export function HomeStaticSections({
                     </div>
                   ))}
                 </div>
-                <a href={h?.bookingCta1Link ?? 'https://www.ecotone.eco/services-4'} className="btn-book">
+                <a href={h?.bookingCta1Link ?? '#experiences'} className="btn-book">
                   {h?.bookingCta1Text ?? 'Explore all experiences →'}
                 </a>
                 <a

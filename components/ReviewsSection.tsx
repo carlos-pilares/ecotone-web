@@ -108,6 +108,12 @@ export function ReviewsSection({
   contentInnerClassName = 'sec-inner',
   emptyMessage = 'No guest reviews for this program yet. Be the first to share your experience.',
 }: ReviewsSectionProps) {
+  const resolvedSectionLead = (() => {
+    if (sectionLead != null && String(sectionLead).trim()) return String(sectionLead).trim()
+    const fromHome = h?.reviewsBody?.trim()
+    return fromHome || null
+  })()
+
   const quotesForDots = featuredQuoteItems.length > 0 ? featuredQuoteItems : DEFAULT_FEATURED_QUOTES
   const first = quotesForDots[0] ?? { text: '""', attr: '—' }
   const hasReviews = Array.isArray(reviews) && reviews.length > 0
@@ -169,9 +175,9 @@ export function ReviewsSection({
           </div>
         </div>
 
-        {sectionLead?.trim() ? (
+        {resolvedSectionLead ? (
           <p className="body" style={{ maxWidth: 560, marginTop: 12, marginBottom: 0 }}>
-            {sectionLead.trim()}
+            {resolvedSectionLead}
           </p>
         ) : null}
 
