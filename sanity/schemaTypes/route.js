@@ -6,6 +6,11 @@ export const route = defineType({
   type: 'document',
   fields: [
     defineField({
+      name: 'seo',
+      title: 'SEO (optional, route page)',
+      type: 'seo',
+    }),
+    defineField({
       name: 'name',
       title: 'Nombre',
       type: 'string',

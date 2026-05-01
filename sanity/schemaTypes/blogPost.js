@@ -6,6 +6,12 @@ export const blogPost = defineType({
   type: 'document',
   fields: [
     defineField({
+      name: 'seo',
+      title: 'SEO (optional, for internal landing)',
+      type: 'seo',
+      description: 'For teasers, prefer canonical URL via external link unless this becomes an on-site post.',
+    }),
+    defineField({
       name: 'title',
       title: 'Title',
       type: 'string',
@@ -16,6 +22,12 @@ export const blogPost = defineType({
       title: 'Slug',
       type: 'slug',
       options: {source: 'title', maxLength: 96},
+    }),
+    defineField({
+      name: 'excerpt',
+      title: 'Excerpt (optional)',
+      type: 'text',
+      rows: 2,
     }),
     defineField({
       name: 'category',

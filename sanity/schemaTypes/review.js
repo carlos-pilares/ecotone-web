@@ -6,6 +6,13 @@ export const review = defineType({
   type: 'document',
   fields: [
     defineField({
+      name: 'experience',
+      title: 'Experience (product)',
+      type: 'reference',
+      to: [{type: 'experience'}],
+      description: 'Optional. Links this review to a catalog experience (filters, carousels).',
+    }),
+    defineField({
       name: 'quote',
       title: 'Quote',
       type: 'text',

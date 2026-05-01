@@ -12,11 +12,32 @@ export const partner = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'category',
+      title: 'Type',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'Certification / badge', value: 'certification'},
+          {title: 'Partner / affiliate', value: 'partner'},
+          {title: 'Other', value: 'other'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'certification',
+    }),
+    defineField({
+      name: 'logoImage',
+      title: 'Logo (image)',
+      type: 'image',
+      options: {hotspot: true},
+      description: 'Prefer uploading here instead of pasting SVG, when available.',
+    }),
+    defineField({
       name: 'logoSvg',
-      title: 'Logo SVG',
+      title: 'Logo SVG (legacy)',
       type: 'text',
       rows: 6,
-      description: 'Raw SVG markup for the logo',
+      description: 'Raw SVG — optional if logo image is set.',
     }),
     defineField({
       name: 'link',

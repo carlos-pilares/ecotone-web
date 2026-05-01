@@ -12,6 +12,11 @@ export const lodge = defineType({
   type: 'document',
   fields: [
     defineField({
+      name: 'seo',
+      title: 'SEO (optional, lodge page)',
+      type: 'seo',
+    }),
+    defineField({
       name: 'name',
       title: 'Nombre',
       type: 'string',

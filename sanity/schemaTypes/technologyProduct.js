@@ -2,7 +2,7 @@ import {defineField, defineType} from 'sanity'
 
 export const technologyProduct = defineType({
   name: 'technologyProduct',
-  title: 'Technology product',
+  title: 'Tech product',
   type: 'document',
   fields: [
     defineField({
@@ -39,6 +39,18 @@ export const technologyProduct = defineType({
       title: 'Badge text',
       type: 'string',
       initialValue: 'Only at Ecotone',
+    }),
+    defineField({
+      name: 'badgeTextWhenExcluded',
+      title: 'Badge when not included in pack (optional)',
+      type: 'string',
+      description: 'E.g. “Download free on iOS” for apps not physically included.',
+    }),
+    defineField({
+      name: 'stableId',
+      title: 'Stable ID (optional)',
+      type: 'string',
+      description: 'Front-end key to match included/excluded in components (e.g. dtech1).',
     }),
     defineField({
       name: 'order',
