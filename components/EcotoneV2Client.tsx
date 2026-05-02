@@ -21,6 +21,13 @@ function applyTopNavFromSolid(solid: boolean) {
   }
 }
 
+/** Experience long-form (`#ecotone-experience-root`): main bar stays solid from load for legibility on the hero; Home unchanged. */
+function resolveMainNavSolid(scrollY: number, solidMainNavFlag: boolean) {
+  if (solidMainNavFlag) return true
+  if (typeof document !== 'undefined' && document.getElementById('ecotone-experience-root')) return true
+  return scrollY > 60
+}
+
 type FullHtmlProps = { html: string; before?: never; after?: never; children?: never; featuredQuoteItems?: never }
 type SplitBodyProps = {
   before: string
@@ -60,8 +67,7 @@ export function EcotoneV2Client(props: FullHtmlProps | SplitBodyProps | ReactShe
   )
 
   const syncMainNav = useCallback(() => {
-    const solid = solidMainNav || window.scrollY > 60
-    applyTopNavFromSolid(solid)
+    applyTopNavFromSolid(resolveMainNavSolid(window.scrollY, solidMainNav))
   }, [solidMainNav])
 
   useLayoutEffect(() => {

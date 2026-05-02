@@ -1,0 +1,178 @@
+/**
+ * Soqtapata Lodge — solo estilos propios del hero / identidad.
+ * Tipografía compartida, `.content-section`, FAQ, `.highlights`, `.fade`, etc.:
+ * `app/lodges/layout.tsx` importa `experience-surface.css`.
+ */
+
+/* ── Hero full-bleed ── */
+.lodge-hero {
+  padding-top: var(--nav-h);
+}
+
+.lodge-hero-fullbleed {
+  position: relative;
+  height: clamp(420px, 58vh, 600px);
+  overflow: hidden;
+}
+
+.lodge-hero-fullbleed > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.lodge-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.18) 0%,
+    rgba(0, 0, 0, 0.04) 30%,
+    rgba(26, 18, 9, 0.72) 65%,
+    rgba(26, 18, 9, 0.9) 100%
+  );
+}
+
+.lodge-hero-photos {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  font-family: var(--f);
+  transition: background 0.2s;
+}
+
+.lodge-hero-photos:hover {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.lodge-hero-identity {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px var(--g) 28px;
+}
+
+.lodge-hero-identity-inner {
+  max-width: var(--max);
+  margin: 0 auto;
+}
+
+.lodge-breadcrumb {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: rgba(236, 229, 213, 0.4);
+  margin-bottom: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.lodge-breadcrumb a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.lodge-breadcrumb a:hover {
+  color: rgba(236, 229, 213, 0.75);
+}
+
+.lodge-breadcrumb .current {
+  color: var(--b200);
+}
+
+.lodge-bc-sep {
+  opacity: 0.4;
+}
+
+.lodge-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 5px;
+}
+
+.lodge-hero .pill-glass {
+  color: var(--cream);
+  border: 1.5px solid rgba(255, 255, 255, 0.38);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.lodge-h1 {
+  font-size: clamp(26px, 4.5vw, 48px);
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: -0.028em;
+  color: var(--cream);
+  margin-top: 0;
+  margin-bottom: 9px;
+}
+
+.lodge-tagline {
+  font-size: 14px;
+  font-weight: 300;
+  color: rgba(236, 229, 213, 0.58);
+  line-height: 1.65;
+  max-width: 520px;
+  margin-bottom: 16px;
+}
+
+.lodge-identity-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.lodge-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lodge-rating-score {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cream);
+}
+
+.lodge-rating-reviews {
+  font-size: 13px;
+  font-weight: 300;
+  color: rgba(236, 229, 213, 0.4);
+}
+
+.lodge-rating-divider {
+  width: 1px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+}
+
+.lodge-rating-meta {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--b200);
+}
+
+@media (max-width: 560px) {
+  .lodge-identity-foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}

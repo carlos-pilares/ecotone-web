@@ -20,7 +20,7 @@ export type SectionShellProps = {
 
 /**
  * Shared long-form section wrapper (`content-section` + `content-inner` + optional header).
- * Not wired to routes yet in Phase 1; kept API-compatible with FAQ / Resources patterns.
+ * Header block uses `section-shell-head`; body stays in `children`. Rhythm CSS may target `.section-shell` (e.g. lodge-surface).
  */
 export function SectionShell({
   id,
@@ -44,19 +44,35 @@ export function SectionShell({
     .filter(Boolean)
     .join(' ')
 
+  const hasEyebrow = eyebrow != null && eyebrow !== ''
+  const hasTitle = title != null && title !== ''
+  const hasLead = lead != null && lead !== ''
+  const hasHead = hasEyebrow || hasTitle || hasLead
+
+  const leadClasses = ['section-shell-lead', leadClassName].filter(Boolean).join(' ')
+
+  const shellLayout =
+    !hasHead ? null : hasLead ? 'section-shell--has-lead' : 'section-shell--no-lead'
+
+  const innerClasses = [innerClassName, 'section-shell', shellLayout].filter(Boolean).join(' ')
+
   return (
     <section className={sectionClass} id={id}>
-      <div className={innerClassName}>
-        {eyebrow != null && eyebrow !== '' ? <div className="eyebrow">{eyebrow}</div> : null}
-        {title != null && title !== '' ? (
-          <h2 className="h2" style={titleStyle}>
-            {title}
-          </h2>
-        ) : null}
-        {lead != null && lead !== '' ? (
-          <p className={leadClassName} style={leadStyle}>
-            {lead}
-          </p>
+      <div className={innerClasses}>
+        {hasHead ? (
+          <div className="section-shell-head">
+            {hasEyebrow ? <div className="eyebrow">{eyebrow}</div> : null}
+            {hasTitle ? (
+              <h2 className="h2" style={titleStyle}>
+                {title}
+              </h2>
+            ) : null}
+            {hasLead ? (
+              <p className={leadClasses} style={leadStyle}>
+                {lead}
+              </p>
+            ) : null}
+          </div>
         ) : null}
         {children}
       </div>

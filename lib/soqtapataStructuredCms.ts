@@ -9,6 +9,7 @@ import type {
   SoqtapataAlsoCamanti,
   SoqtapataBook,
   SoqtapataRelatedCardImage,
+  SoqtapataResourceCard,
   SoqtapataWhen,
   SoqtapataWhenMonth,
 } from '@/data/soqtapataExperienceLocal'
@@ -117,6 +118,20 @@ type CmsTechProduct = {
   slug?: { current?: string | null } | null
 }
 
+type CmsExperienceResourceRow = {
+  _key?: string
+  title?: string | null
+  subtitle?: string | null
+  resourceType?: string | null
+  visualPreset?: string | null
+  previewImage?: { alt?: string | null; imageUrl?: string | null } | null
+  fileUrl?: string | null
+  fileAssetUrl?: string | null
+  ctaLabel?: string | null
+  visible?: boolean | null
+  order?: number | null
+}
+
 type CmsExperience = {
   _id: string
   name?: string | null
@@ -159,6 +174,7 @@ type CmsExperience = {
   mapPdfLabel?: string | null
   brochurePdfUrl?: string | null
   brochurePdfLabel?: string | null
+  resources?: CmsExperienceResourceRow[] | null
   faqs?: { question?: string; answer?: string }[] | null
   seo?: { title?: string | null; description?: string | null } | null
   routeDocument?: { name?: string | null; shortDescription?: string | null; slug?: { current?: string | null } | null } | null
@@ -323,6 +339,68 @@ function whenMonthFromCms(m: CmsMonthRow, base: SoqtapataWhen, idx: number): Soq
     stars: levelToStars(cc),
     highlight: m.highlight && m.highlight.trim() ? m.highlight : b.highlight,
   }
+}
+
+function cmsResourceKind(resourceType: string | null | undefined): SoqtapataResourceCard['kind'] {
+  if (resourceType === 'map') return 'map'
+  if (resourceType === 'brochure') return 'brochure'
+  if (resourceType === 'terms') return 'termsPdf'
+  return 'custom'
+}
+
+function normalizePreviewKind(
+  preset: string | null | undefined,
+  kind: SoqtapataResourceCard['kind'],
+): SoqtapataResourceCard['previewKind'] {
+  if (!preset || preset === 'auto') {
+    return kind
+  }
+  if (preset === 'terms') return 'termsPdf'
+  if (preset === 'map' || preset === 'brochure' || preset === 'custom') {
+    return preset
+  }
+  return kind
+}
+
+function mapExperienceResourcesFromCms(
+  rows: CmsExperienceResourceRow[] | null | undefined,
+): SoqtapataResourceCard[] | null {
+  if (!rows || rows.length === 0) return null
+  const indexed = rows.map((r, idx) => ({ r, idx }))
+  const visible = indexed.filter(({ r }) => r.visible !== false)
+  if (visible.length === 0) return null
+  const sorted = [...visible].sort((a, b) => {
+    const oa = a.r.order ?? 10_000
+    const ob = b.r.order ?? 10_000
+    if (oa !== ob) return oa - ob
+    return a.idx - b.idx
+  })
+  const cards: SoqtapataResourceCard[] = []
+  for (const { r, idx } of sorted) {
+    const title = (r.title && r.title.trim()) || ''
+    if (!title) continue
+    const kind = cmsResourceKind(r.resourceType)
+    const previewKind = normalizePreviewKind(r.visualPreset, kind)
+    const href =
+      (r.fileAssetUrl && String(r.fileAssetUrl).trim()) ||
+      (r.fileUrl && String(r.fileUrl).trim()) ||
+      '#'
+    const label = (r.ctaLabel && r.ctaLabel.trim()) || 'Download'
+    const meta = (r.subtitle && r.subtitle.trim()) || ''
+    const imgUrl = r.previewImage?.imageUrl?.trim()
+    const imgAlt = (r.previewImage?.alt && r.previewImage.alt.trim()) || title
+    cards.push({
+      id: r._key || `resource-${idx}`,
+      kind,
+      previewKind,
+      title,
+      meta,
+      downloadHref: href,
+      downloadLabel: label,
+      ...(imgUrl ? { previewImageSrc: imgUrl, previewImageAlt: imgAlt } : {}),
+    })
+  }
+  return cards.length > 0 ? cards : null
 }
 
 /**
@@ -594,7 +672,10 @@ export function soqtapataPartialFromStructuredRow(
     out.terms = { ...tc, cards }
   }
 
-  if (e.mapPdfUrl || e.brochurePdfUrl) {
+  const cmsResourceCards = mapExperienceResourcesFromCms(e.resources)
+  if (cmsResourceCards) {
+    out.resources = { ...l.resources, cards: cmsResourceCards }
+  } else if (e.mapPdfUrl || e.brochurePdfUrl) {
     const res = l.resources
     const cards = res.cards.map((c, i) => {
       if (i === 0 && c.kind === 'map' && e.mapPdfUrl) {

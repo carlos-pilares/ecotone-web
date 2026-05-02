@@ -14,12 +14,14 @@
     "clean:experience-page-legacy-fields": "tsx scripts/cleanExperiencePageLegacyFields.ts",
     "audit:cms": "tsx scripts/auditCms.ts",
     "audit:soqtapata": "tsx scripts/auditSoqtapataCms.ts",
-    "cleanup:soqtapata": "tsx scripts/cleanupSoqtapataDuplicates.ts"
+    "cleanup:soqtapata": "tsx scripts/cleanupSoqtapataDuplicates.ts",
+    "export:cms-excel": "tsx scripts/exportCmsExcel.ts"
   },
   "dependencies": {
     "@sanity/image-url": "^2.1.1",
     "@sanity/ui": "^3.1.14",
     "@sanity/vision": "^5.21.0",
+    "exceljs": "^4.4.0",
     "next": "16.2.4",
     "next-sanity": "^12.3.0",
     "react": "19.2.4",
@@ -28,15 +30,15 @@
     "styled-components": "^6.4.0"
   },
   "devDependencies": {
-    "dotenv": "^16.4.5",
-    "tsx": "^4.19.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^16.4.5",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
+    "tsx": "^4.19.0",
     "typescript": "^5"
   }
 }

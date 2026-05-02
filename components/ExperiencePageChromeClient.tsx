@@ -11,8 +11,8 @@ const PAST_HERO_BODY_CLASS = 'ecotone-exp-past-hero'
  * Soqtapata experience page: wildlife strip overflow + centering; hide main header Book CTA when in-page CTA is "competing" (sticky subnav at top).
  * Also sets --anchor-offset for `html` scroll-padding-top so in-page #anchors land below the fixed top nav and sticky #pageNav.
  *
- * `ecotone-exp-past-hero` toggles a slightly stronger subnav shadow once the gallery hero has scrolled away; the global `#topNav` stays
- * visible and fixed (same as Home) — the in-page bar remains `position: sticky` with `top: var(--nav-h)`.
+ * `ecotone-exp-past-hero`: cuando el hero (#top) ha salido por arriba — el #topNav se oculta vía CSS y el #pageNav pasa a `position: fixed; top: 0`
+ * (ver experience-surface.css). El offset de anclas usa solo la altura del subnav, sin --nav-h del header principal.
  */
 export function ExperiencePageChromeClient() {
   useEffect(() => {
@@ -25,13 +25,24 @@ export function ExperiencePageChromeClient() {
     const setAnchorOffset = () => {
       const pageNav = document.getElementById('pageNav')
       const h = pageNav ? pageNav.getBoundingClientRect().height : 0
-      const v = Math.round(effectiveMainNavH() + h + ANCHOR_GAP)
+      const past = document.body.classList.contains(PAST_HERO_BODY_CLASS)
+      const mainNav = past ? 0 : effectiveMainNavH()
+      const v = Math.round(mainNav + h + ANCHOR_GAP)
       document.documentElement.style.setProperty('--anchor-offset', `${v}px`)
     }
 
     const syncPnavScrollShim = () => {
       const shim = document.getElementById('pnavScrollShim') as HTMLElement | null
-      shim?.style.removeProperty('height')
+      if (!shim) return
+      const past = document.body.classList.contains(PAST_HERO_BODY_CLASS)
+      if (!past) {
+        shim.style.removeProperty('height')
+        return
+      }
+      const pageNav = document.getElementById('pageNav')
+      const ph = pageNav ? Math.round(pageNav.offsetHeight || pageNav.getBoundingClientRect().height) : 0
+      if (ph > 0) shim.style.height = `${ph}px`
+      else shim.style.removeProperty('height')
     }
 
     let pnavRo: ResizeObserver | undefined
@@ -61,9 +72,9 @@ export function ExperiencePageChromeClient() {
         return
       }
       const t = el.getBoundingClientRect().top
-      const h = effectiveMainNavH()
-      // Sticky in-page bar is pinned when its top is flush with the main nav bottom edge
-      const stuck = t <= h + 0.5
+      const past = document.body.classList.contains(PAST_HERO_BODY_CLASS)
+      const mainOff = past ? 0 : effectiveMainNavH()
+      const stuck = t <= mainOff + 0.5
       document.body.classList.toggle('ecotone-pnav-stuck', stuck)
     }
 

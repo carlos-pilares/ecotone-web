@@ -1,0 +1,2059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soqtapata Pristine Immersion — Ecotone · Cusco, Perú</title>
+<style>
+/* ═══════════════════════════════════════════════════════════
+   ECOTONE DESIGN SYSTEM — shared across all pages
+   ═══════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --brown: #906730;
+  --brown-dk: #563B12;
+  --brown-xdk: #2C1D07;
+  --cream: #ECE5D5;
+  --w: #FDFCF9;
+  --n50: #F7F4EE;
+  --n100: #EDE7DA;
+  --n200: #D8CFBF;
+  --n400: #A59880;
+  --n700: #4A3E30;
+  --n900: #1A1209;
+  --b50: #FAF3E8;
+  --b100: #EDD9B8;
+  --b200: #D4AA72;
+  --f: var(--font-lexend), system-ui, sans-serif;
+  --nav-h: 60px;
+  --g: clamp(20px, 3vw, 40px);
+  --max: 1200px;
+  --r: 14px;
+  --rl: 20px;
+  --rxl: 28px;
+}
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; /* anchor targets clear fixed top nav + sticky in-page bar (see --anchor-offset, set in ExperiencePageChromeClient) */ scroll-padding-top: var(--anchor-offset, calc(var(--nav-h) + 56px)); }
+body { font-family: var(--f); background: var(--w); color: var(--n900); overflow-x: hidden; font-weight: 300; font-size: 15px; line-height: 1.65; -webkit-font-smoothing: antialiased; }
+img { display: block; width: 100%; object-fit: cover; }
+a { color: inherit; text-decoration: none; }
+button { font-family: var(--f); cursor: pointer; }
+
+/* ── SHARED TYPOGRAPHY ── */
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--brown); display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.eyebrow::before { content: ''; width: 18px; height: 1px; background: var(--b200); flex-shrink: 0; }
+.eyebrow-lt { color: rgba(212,170,114,.72); }
+.eyebrow-lt::before { background: rgba(212,170,114,.3); }
+
+/* ── SHARED BUTTONS ── */
+.btn { display: inline-flex; align-items: center; gap: 7px; font-family: var(--f); font-size: 13px; font-weight: 700; letter-spacing: .04em; padding: 12px 26px; border-radius: 100px; border: none; cursor: pointer; transition: all .2s; white-space: nowrap; }
+.btn-primary { background: var(--brown); color: #fff; }
+.btn-primary:hover { background: var(--brown-dk); transform: translateY(-1px); }
+.btn-secondary { background: transparent; color: var(--brown); border: 1.5px solid var(--b200); }
+.btn-secondary:hover { background: var(--b50); }
+.btn-ghost { background: transparent; color: var(--n900); border: 1.5px solid var(--n200); }
+.btn-ghost:hover { border-color: var(--brown); color: var(--brown); background: var(--b50); }
+.btn-ghost-lt { background: rgba(255,255,255,.12); color: var(--cream); border: 1.5px solid rgba(255,255,255,.38); backdrop-filter: blur(14px); }
+.btn-ghost-lt:hover { background: rgba(255,255,255,.2); }
+
+/* ── SHARED PILLS ── */
+.pill { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 100px; }
+.pill-amber { background: var(--b50); border: 1px solid var(--b200); color: var(--brown-dk); }
+.pill-brown { background: var(--brown); color: #fff; }
+.pill-dark { background: rgba(0,0,0,.62); color: #fff; border: 1px solid rgba(255,255,255,.18); }
+.pill-glass { background: rgba(255,255,255,.12); border: 1.5px solid rgba(255,255,255,.40); color: #fff; backdrop-filter: blur(16px); }
+
+/* ── FADE IN ── */
+.fade { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s ease; }
+.fade.in { opacity: 1; transform: none; }
+.fade-d1 { transition-delay: .1s; }
+.fade-d2 { transition-delay: .2s; }
+
+
+/* ═══════════════════════════════════════════════════════════
+   NAV — shared component, same on every page
+   CMS controls: logo, nav links, book CTA text+link
+   ═══════════════════════════════════════════════════════════ */
+.top-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 400; height: var(--nav-h); isolation: isolate; transition: transform 0.28s ease, opacity 0.24s ease, background 0.35s, border-color 0.35s, box-shadow 0.35s; border-bottom: 1px solid transparent; }
+body.ecotone-exp-past-hero #topNav { transform: translateY(-100%); opacity: 0; pointer-events: none; }
+.top-nav.solid { background: rgba(253,252,249,.97); backdrop-filter: blur(20px); border-bottom-color: var(--n200); box-shadow: 0 1px 16px rgba(26,18,9,.05); }
+.nav-inner { max-width: var(--max); margin: 0 auto; height: var(--nav-h); display: flex; align-items: center; justify-content: space-between; padding: 0 var(--g); }
+.nav-logo { display: flex; align-items: center; gap: 10px; }
+.nav-isotipo { width: 28px; height: 27px; flex-shrink: 0; transition: color .35s; color: var(--cream); }
+.top-nav.solid .nav-isotipo { color: var(--brown); }
+.nav-wordmark { height: 18px; flex-shrink: 0; }
+.nav-links { display: flex; align-items: center; gap: 26px; list-style: none; }
+.nav-links a { font-size: 13px; font-weight: 400; color: rgba(236,229,213,.82); transition: color .2s; }
+.top-nav.solid .nav-links a { color: var(--n700); }
+.nav-links a:hover, .top-nav.solid .nav-links a:hover { color: var(--brown); }
+.nav-links .active { color: var(--cream) !important; border-bottom: 1.5px solid var(--b200); padding-bottom: 2px; }
+.top-nav.solid .nav-links .active { color: var(--brown) !important; }
+.nav-book { background: var(--brown); color: #fff; font-size: 13px; font-weight: 600; padding: 8px 20px; border-radius: 100px; border: none; cursor: pointer; transition: background .2s; }
+.nav-book:hover { background: var(--brown-dk); }
+.hamburger { display: none; position: relative; z-index: 2; background: none; border: none; padding: 4px; flex-direction: column; gap: 5px; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.hamburger span { display: block; width: 22px; height: 1.5px; background: var(--cream); transition: background .35s; }
+.top-nav.solid .hamburger span { background: var(--n900); }
+@media(max-width: 720px) { .nav-links, .nav-book.desk { display: none !important; } .hamburger { display: flex !important; } }
+.mobile-drawer { display: none; position: fixed; top: var(--nav-h); left: 0; right: 0; z-index: 399; background: var(--w); border-bottom: 1px solid var(--n200); padding: 8px var(--g) 24px; flex-direction: column; box-shadow: 0 4px 24px rgba(26,18,9,.08); }
+.mobile-drawer.open { display: flex; }
+.mobile-drawer a { display: block; padding: 13px 0; font-size: 14px; color: var(--n700); border-bottom: 1px solid var(--n200); }
+.mobile-drawer .btn-primary { margin-top: 14px; justify-content: center; }
+
+
+/* ═══════════════════════════════════════════════════════════
+   EXPERIENCE PAGE — specific styles
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── HERO ── */
+.exp-hero { padding-top: var(--nav-h); }
+
+/* Gallery grid (tabs row removed: extra height on desktop to reclaim space) */
+.gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; background: var(--n900); }
+.gallery-main { grid-row: 1/3; position: relative; height: 360px; overflow: hidden; cursor: pointer; }
+@media (min-width: 601px) { .gallery-main { height: 412px; } }
+@media(max-width: 600px) { .gallery-main { height: 220px; } .gallery-grid { grid-template-columns: 1fr; } .gallery-main { grid-row: auto; } }
+.gallery-main img { height: 100%; object-fit: cover; pointer-events: none; }
+.gallery-thumb { position: relative; height: 178px; overflow: hidden; cursor: pointer; }
+@media (min-width: 601px) { .gallery-thumb { height: 204px; } }
+@media(max-width: 600px) { .gallery-thumb { height: 120px; } }
+.gallery-thumb img { height: 100%; object-fit: cover; pointer-events: none; }
+.gallery-thumb-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.1); transition: background .18s; }
+.gallery-thumb:hover .gallery-thumb-overlay { background: rgba(0,0,0,.3); }
+.gallery-see-all { position: absolute; bottom: 10px; right: 10px; z-index: 2; font-size: 12px; font-weight: 600; background: rgba(0,0,0,.65); color: #fff; padding: 5px 13px; border-radius: 100px; border: 1px solid rgba(255,255,255,.2); cursor: pointer; }
+.gallery-label { position: absolute; bottom: 8px; left: 10px; font-size: 11px; font-weight: 600; color: rgba(236,229,213,.85); }
+
+/* Identity block — below gallery on dark bg */
+.exp-identity { background: var(--n900); padding: 20px var(--g) 24px; }
+.exp-identity-inner { max-width: var(--max); margin: 0 auto; display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: start; }
+@media(max-width: 600px) { .exp-identity-inner { grid-template-columns: 1fr; gap: 0; } }
+.exp-breadcrumb { font-size: 11px; font-weight: 400; letter-spacing: .12em; text-transform: uppercase; color: rgba(236,229,213,.45); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.exp-breadcrumb a { color: inherit; text-decoration: none; transition: color .2s; }
+.exp-breadcrumb a:hover { color: rgba(236,229,213,.75); }
+.exp-breadcrumb .current { color: var(--b200); }
+.exp-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
+.exp-identity .exp-badges .pill { font-size: 11px; font-weight: 600; }
+.exp-h1 { font-size: clamp(22px, 3.5vw, 36px); font-weight: 700; line-height: 1.05; letter-spacing: -.025em; color: var(--cream); margin-bottom: 8px; }
+.exp-tagline { font-size: 14px; font-weight: 300; color: rgba(236,229,213,.58); line-height: 1.65; max-width: 540px; margin-bottom: 12px; }
+.exp-rating { display: flex; align-items: center; gap: 8px; }
+.stars { display: flex; gap: 2px; }
+.star { width: 12px; height: 12px; background: var(--brown); clip-path: polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%); }
+/* Price block: desktop = stacked right, aligned to text column; mobile = row: titles + Book */
+.exp-price-block { text-align: right; flex-shrink: 0; }
+.exp-price-cta { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.exp-price-titles { text-align: right; }
+.exp-price-cta .exp-price { margin: 0; }
+.exp-price-cta .exp-price-sub { margin: 0; }
+/* Native <button> styles often shift the label off-center; keep .btn look, force optical centering */
+.exp-price-cta .btn.btn-primary {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-sizing: border-box;
+}
+@media (min-width: 601px) {
+  .exp-identity-inner { align-items: center; }
+  .exp-price-cta { gap: 4px; }
+  .exp-price-cta .exp-price { font-size: 34px; }
+  .exp-price-cta .exp-price-sub { font-size: 12px; }
+  .exp-price-cta .btn-primary { min-width: 128px; margin-top: 2px; padding: 10px 22px; font-size: 12px; }
+}
+@media (max-width: 600px) {
+  .exp-price-block { text-align: left; padding-top: 16px; margin-top: 16px; border-top: 1px solid rgba(255,255,255,.1); }
+  .exp-price-cta { flex-direction: row; align-items: center; justify-content: space-between; width: 100%; gap: 12px; }
+  .exp-price-titles { text-align: left; }
+}
+.exp-price { font-size: 32px; font-weight: 700; color: var(--cream); letter-spacing: -.04em; line-height: 1; }
+.exp-price-sub { font-size: 12px; font-weight: 300; color: rgba(236,229,213,.45); letter-spacing: 0.03em; }
+
+/* Snapshot bar */
+.snapshot-bar { background: var(--n100); border-bottom: 1px solid var(--n200); }
+.snapshot-inner { max-width: var(--max); margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); }
+@media(min-width: 560px) { .snapshot-inner { grid-template-columns: repeat(6, 1fr); } }
+.snap-item { padding: 16px 10px; border-right: 1px solid var(--n200); text-align: center; }
+.snap-item:last-child { border-right: none; }
+.snap-n { font-size: 17px; font-weight: 700; color: var(--n900); line-height: 1; letter-spacing: -.02em; }
+.snap-l { font-size: 11px; font-weight: 300; color: var(--n400); margin-top: 4px; letter-spacing: .03em; }
+
+/* ── INTERNAL PAGE NAV — one row: package + days | section links | From + price + Book ── */
+/* Sticky only before the hero scrolls away; after that, fixed + shim so the bar survives split HTML chunks (React injects). */
+.page-nav { background: var(--w); border-bottom: 1.5px solid var(--n200); position: sticky; top: var(--nav-h); z-index: 199; max-width: 100%; box-sizing: border-box; transition: top 0.28s ease, box-shadow 0.22s ease; }
+body.ecotone-exp-past-hero .page-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
+  top: 0;
+  z-index: 290;
+  box-shadow: 0 1px 0 rgba(26, 18, 9, 0.05), 0 6px 18px rgba(26, 18, 9, 0.05);
+}
+/* Reserves the bar’s block height in the first HTML chunk when #pageNav is fixed (prevents jump; works with long pages). */
+.pnav-scroll-shim {
+  width: 100%;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  pointer-events: none;
+  transition: height 0.2s ease;
+}
+body:not(.ecotone-exp-past-hero) .pnav-scroll-shim {
+  display: none;
+  height: 0 !important;
+  min-height: 0 !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .top-nav, body.ecotone-exp-past-hero #topNav, .page-nav, .pnav-scroll-shim { transition: none; }
+}
+/* Desktop + tablet: one row; mobile (max-width 719px): compact bar + chevron, section links in collapsible panel */
+.page-nav-grid {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 6px var(--g) 8px;
+  display: grid;
+  align-items: center;
+  box-sizing: border-box;
+  gap: 8px 12px;
+}
+.pnav-lead { min-width: 0; }
+.pnav-lead-name { font-size: 13px; font-weight: 700; color: var(--n900); line-height: 1.2; letter-spacing: -.02em; }
+.pnav-lead-days { font-size: 11px; font-weight: 600; color: var(--brown); margin-top: 2px; letter-spacing: .02em; }
+.page-nav-cols { min-width: 0; display: flex; align-items: stretch; gap: 6px 10px; }
+.page-nav-cols::-webkit-scrollbar { display: none; }
+.pnav-top { font-size: 12px; font-weight: 600; color: var(--n600, #5c5042); line-height: 1.35; padding: 10px 8px 20px; white-space: nowrap; border-bottom: 2px solid transparent; text-decoration: none; align-self: center; flex-shrink: 0; box-sizing: border-box; transition: color .2s, border-color .2s, background .2s; }
+.pnav-top:hover { color: var(--brown); }
+.pnav-top.active { color: var(--brown); border-bottom-color: var(--brown); }
+.pnav-item { font-size: 13px; font-weight: 400; color: var(--n600, #5c5042); }
+.pnav-cta { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.pnav-from-price { text-align: right; line-height: 1.15; }
+.pnav-from-label { font-size: 10px; font-weight: 500; color: var(--n400); text-transform: uppercase; letter-spacing: .06em; display: block; margin-bottom: 1px; }
+.pnav-from-num { font-size: 18px; font-weight: 700; color: var(--n900); letter-spacing: -.03em; }
+.pnav-from-sub { font-size: 10px; font-weight: 300; color: var(--n400); display: block; margin-top: 1px; }
+a.pnav-book-btn, button.pnav-book-btn { padding: 8px 18px; font-size: 12px; font-weight: 700; text-decoration: none; }
+/* Mobile expand: minimal chevron (no “button” chrome); visual order = title → chevron → price → CTA via grid */
+.pnav-mobile-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  width: 32px;
+  height: 36px;
+  margin: 0;
+  padding: 0 2px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--n600, #5c5042);
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.2s ease, transform 0.28s ease;
+}
+.pnav-mobile-toggle:hover { color: var(--brown); background: transparent; }
+.pnav-mobile-toggle:focus-visible { outline: 2px solid var(--b200); outline-offset: 2px; border-radius: 4px; }
+.pnav-mobile-chevron { display: block; width: 16px; height: 16px; transform-origin: 50% 50%; transition: transform 0.28s ease; }
+.page-nav.pnav-mobile-open .pnav-mobile-chevron { transform: rotate(180deg); }
+/* Full-screen dim + blur behind sticky bar (sibling of #pageNav; not inside nav so tap dismisses + z under bar) */
+.pnav-mobile-scrim { display: none; }
+@media (min-width: 720px) {
+  .pnav-lead { max-width: min(260px, 32vw); }
+  .page-nav-grid {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "lead links cta";
+  }
+  .pnav-lead { grid-area: lead; }
+  .page-nav-cols {
+    grid-area: links;
+    flex: 1 1 auto;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    padding: 0 4px;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x;
+    scroll-padding-inline: 12px;
+  }
+  .pnav-cta { grid-area: cta; }
+  .pnav-mobile-toggle { display: none !important; }
+}
+@media (max-width: 719px) {
+  .pnav-lead { grid-area: lead; }
+  .page-nav-cols { grid-area: links; }
+  .pnav-cta { grid-area: cta; }
+  .pnav-mobile-toggle { display: flex !important; grid-area: toggle; }
+  .page-nav-grid {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, auto);
+    align-items: center;
+    padding: 10px var(--g);
+    grid-template-areas:
+      "lead toggle cta"
+      "links links links";
+  }
+  .pnav-lead,
+  .pnav-mobile-toggle,
+  .pnav-cta {
+    align-self: center;
+  }
+  .pnav-lead {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 0;
+  }
+  .pnav-cta {
+    gap: 8px;
+    align-items: center;
+  }
+  .pnav-lead-name { line-height: 1.3; }
+  .pnav-lead-days { line-height: 1.2; margin-top: 1px; }
+  .pnav-mobile-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 188;
+    background: rgba(26, 18, 9, 0.38);
+    backdrop-filter: blur(12px) saturate(1.05);
+    -webkit-backdrop-filter: blur(12px) saturate(1.05);
+    pointer-events: none !important;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.32s ease, visibility 0.32s ease;
+  }
+  #pageNav.pnav-mobile-open ~ .pnav-mobile-scrim {
+    pointer-events: auto !important;
+    opacity: 1;
+    visibility: visible;
+  }
+  .pnav-lead-name {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 12px;
+  }
+  .pnav-from-label, .pnav-from-sub { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; white-space: nowrap; }
+  .pnav-from-price { position: relative; text-align: right; }
+  .pnav-from-num { font-size: 15px; }
+  a.pnav-book-btn { padding: 8px 14px; font-size: 11px; }
+  .page-nav-cols {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    max-height: 0;
+    min-height: 0;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid transparent;
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    transition: max-height 0.32s ease, opacity 0.25s ease, transform 0.25s ease, border-color 0.2s ease, padding 0.2s ease;
+  }
+  .page-nav.pnav-mobile-open .page-nav-cols {
+    max-height: min(52vh, 400px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    text-align: left;
+    -webkit-overflow-scrolling: touch;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    border-top-color: var(--n200);
+    margin: 0;
+    padding: 4px 0 10px;
+  }
+  .page-nav.pnav-mobile-open .pnav-top {
+    display: block;
+    text-align: left;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 15px 0 16px 12px;
+    margin: 0;
+    white-space: normal;
+    line-height: 1.4;
+    border-bottom: 1px solid var(--n200);
+    border-left: 3px solid transparent;
+  }
+  .page-nav.pnav-mobile-open .pnav-top:last-of-type { border-bottom: none; }
+  .page-nav.pnav-mobile-open .pnav-top.active {
+    background: var(--b50, #FAF3E8);
+    border-left-color: var(--brown);
+    border-bottom-color: var(--n200);
+  }
+}
+@media (max-width: 719px) and (prefers-reduced-motion: reduce) {
+  .page-nav-cols { transition: none; }
+  .pnav-mobile-chevron { transition: none; }
+  .pnav-mobile-scrim { transition: none; }
+}
+/* Oculta el CTA del header sin quitar su caja: evita reflow del menú */
+body.ecotone-pnav-stuck .top-nav a.nav-book.desk {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* ── FAQs ── */
+.faq-list { display: flex; flex-direction: column; gap: 5px; margin-top: 6px; }
+.faq-item { border: 1px solid var(--n200); border-radius: var(--r); overflow: hidden; }
+.faq-q { padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--n900); background: var(--w); transition: background .18s; }
+.faq-q:hover { background: var(--b50); }
+.faq-item.open .faq-q { background: var(--b50); border-bottom: 1px solid var(--n200); }
+.faq-chevron { flex-shrink: 0; transition: transform .25s; color: var(--n400); }
+.faq-item.open .faq-chevron { transform: rotate(180deg); color: var(--brown); }
+.faq-a { max-height: 0; overflow: hidden; transition: max-height .4s ease; }
+.faq-item.open .faq-a { max-height: 400px; }
+.faq-a-inner { padding: 16px 18px; font-size: 14px; font-weight: 300; color: var(--n700); line-height: 1.75; box-sizing: border-box; }
+
+/* Content sections */
+.content-section { padding: 56px var(--g); border-bottom: 1px solid var(--n200); }
+.content-section:last-of-type { border-bottom: none; }
+.content-inner { max-width: var(--max); margin: 0 auto; }
+.bg-warm { background: var(--n50); }
+.bg-parch { background: var(--n100); }
+.bg-cream { background: var(--b50); }
+.h2 { font-size: clamp(22px, 3vw, 34px); font-weight: 700; line-height: 1.1; letter-spacing: -.022em; color: var(--n900); margin-bottom: 14px; }
+
+/* ── OVERVIEW ── */
+.highlights { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+.highlight-item { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 300; color: var(--n700); }
+.highlight-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--brown); flex-shrink: 0; }
+
+/* ── ITINERARY ── */
+.itinerary { display: flex; flex-direction: column; gap: 8px; }
+.day-card { border: 1px solid var(--n200); border-radius: var(--rl); overflow: hidden; }
+.day-card.open .day-header { background: var(--b50); border-bottom-color: var(--n200); }
+.day-header { padding: 0; cursor: pointer; display: flex; flex-direction: column; border-bottom: 1px solid transparent; transition: background .18s; }
+.day-header:hover { background: var(--b50); }
+/* Photo strip — always visible even when collapsed */
+.day-photo-strip { position: relative; height: 64px; overflow: hidden; transition: height .35s ease; }
+.day-card.open .day-photo-strip { height: 180px; }
+.day-photo-strip img { width: 100%; height: 100%; object-fit: cover; }
+.day-photo-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.4) 0%, transparent 35%, transparent 55%, rgba(0,0,0,.6) 100%); }
+.day-photo-caption { position: absolute; bottom: 8px; left: 14px; right: 14px; font-size: 12px; font-weight: 400; color: rgba(236,229,213,.9); opacity: 0; transition: opacity .3s .1s; }
+.day-card.open .day-photo-caption { opacity: 1; }
+.day-header-row { padding: 13px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.day-num { width: 30px; height: 30px; border-radius: 50%; background: var(--brown); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.day-card:not(.open) .day-num { background: var(--n100); color: var(--n700); }
+.day-title { font-size: 14px; font-weight: 700; color: var(--n900); }
+.day-subtitle { font-size: 12px; font-weight: 300; color: var(--n400); margin-top: 2px; }
+.day-chevron { flex-shrink: 0; transition: transform .25s; }
+.day-card.open .day-chevron { transform: rotate(180deg); }
+/* Expanded content */
+.day-body { max-height: 0; overflow: hidden; transition: max-height .4s ease; }
+.day-card.open .day-body { max-height: 600px; }
+.day-body-inner { padding: 14px 16px 16px; border-top: 1px solid var(--n200); display: flex; flex-direction: column; gap: 10px; }
+.timeline-item { display: flex; gap: 12px; align-items: flex-start; }
+.timeline-time { font-size: 12px; font-weight: 600; color: var(--brown); width: 58px; flex-shrink: 0; padding-top: 1px; }
+.timeline-title { font-size: 13px; font-weight: 600; color: var(--n900); margin-bottom: 2px; }
+.timeline-desc { font-size: 13px; font-weight: 300; color: var(--n400); line-height: 1.6; }
+.day-lodge-badge { display: flex; align-items: center; gap: 7px; padding: 8px 12px; background: var(--n50); border-radius: var(--r); border: 1px solid var(--n200); margin-top: 4px; }
+.day-lodge-name { font-size: 12px; font-weight: 600; color: var(--n900); }
+.day-lodge-sub { font-size: 12px; font-weight: 300; color: var(--n400); }
+
+/* ── INCLUDES / NOT INCLUDES ── */
+.includes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media(max-width: 600px) { .includes-grid { grid-template-columns: 1fr; gap: 12px; } }
+.includes-col { border-radius: var(--rl); padding: 22px 22px 24px; }
+.includes-col-yes { background: #EAF3DE; border: 1.5px solid #97C459; }
+.includes-col-no { background: var(--n50); border: 1.5px solid var(--n200); }
+.includes-title { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 7px; }
+.includes-title-yes { color: #27500A; }
+.includes-title-no { color: var(--n400); }
+.includes-list { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+.includes-item { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 400; }
+.includes-item-yes { color: #2C5A0E; }
+.includes-item-no { color: var(--n400); font-weight: 300; }
+.inc-check { width: 18px; height: 18px; border-radius: 50%; background: #639922; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.inc-cross { width: 18px; height: 18px; border-radius: 50%; background: var(--n200); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* ── LODGES ── */
+.lodge-cards { display: flex; flex-direction: column; gap: 12px; }
+.lodge-card { border: 1px solid var(--n200); border-radius: var(--rl); overflow: hidden; display: grid; grid-template-columns: 200px 1fr; cursor: pointer; transition: border-color .18s, box-shadow .18s; }
+.lodge-card:hover { border-color: var(--b200); box-shadow: 0 4px 20px rgba(144,103,48,.1); }
+@media(max-width: 600px) { .lodge-card { grid-template-columns: 1fr; } }
+.lodge-card-img { height: 100%; min-height: 160px; overflow: hidden; }
+@media(max-width: 600px) { .lodge-card-img { height: 180px; } }
+.lodge-card-img img { height: 100%; min-height: 160px; }
+.lodge-card-body { padding: 20px 22px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; }
+.lodge-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.lodge-card-name { font-size: 18px; font-weight: 700; color: var(--n900); letter-spacing: -.015em; margin-bottom: 5px; }
+.lodge-card-meta { font-size: 13px; font-weight: 300; color: var(--n400); line-height: 1.6; }
+.lodge-card-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.lodge-chip { font-size: 12px; background: var(--n50); color: var(--n700); padding: 4px 11px; border-radius: 100px; border: 1px solid var(--n200); }
+.lodge-card-cta { font-size: 13px; font-weight: 600; color: var(--brown); display: flex; align-items: center; gap: 5px; align-self: flex-start; }
+.lodge-night-badge { display: inline-block; font-size: 12px; font-weight: 700; background: var(--b50); border: 1.5px solid var(--b200); color: var(--brown-dk); padding: 4px 12px; border-radius: 100px; }
+
+/* ── WILDLIFE HORIZONTAL STRIP (Soqtapata page) ── */
+.hscroll-wrap { position: relative; }
+.hscroll { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding: 4px 0 14px; scrollbar-width: none; }
+.hscroll::-webkit-scrollbar { display: none; }
+.hs-arrow { width: 36px; height: 36px; border-radius: 50%; background: var(--w); border: 1px solid var(--n200); box-shadow: 0 2px 14px rgba(26,18,9,.1); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5; transition: all .18s; flex-shrink: 0; }
+.hs-arrow:hover { background: var(--b50); border-color: var(--b200); }
+/* Desktop: same overlay as before — arrows to the sides of the strip */
+@media (min-width: 700px) {
+  .wildlife-hscroll { position: relative; }
+  .wildlife-hscroll .wildlife-hs-controls {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 4;
+    pointer-events: none;
+  }
+  .wildlife-hscroll .wildlife-hs-controls .hs-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-70%);
+    pointer-events: auto;
+  }
+  .wildlife-hscroll .wildlife-hs-controls .hs-arrow-l { left: -18px; }
+  .wildlife-hscroll .wildlife-hs-controls .hs-arrow-r { right: -18px; }
+}
+/* Mobile: controls below the strip — never on top of cards */
+@media (max-width: 699px) {
+  .wildlife-hscroll .hscroll { padding: 4px 0 6px; }
+  .wildlife-hscroll .wildlife-hs-controls {
+    position: static;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+    margin: 2px 0 0;
+    padding: 2px 8px 0;
+    transform: none;
+    z-index: 1;
+    flex-wrap: nowrap;
+  }
+  .wildlife-hscroll .wildlife-hs-controls .hs-arrow {
+    position: static;
+    top: auto;
+    left: auto;
+    right: auto;
+    transform: none;
+    pointer-events: auto;
+  }
+}
+.wildlife-hscroll .hscroll { justify-content: center; }
+.wildlife-hscroll.wildlife-hscroll--overflow .hscroll { justify-content: flex-start; }
+.wildlife-hscroll .hs-arrow { display: none; }
+.wildlife-hscroll.wildlife-hscroll--overflow .hs-arrow { display: flex; }
+.wildlife-card { flex-shrink: 0; width: 130px; scroll-snap-align: start; background: var(--b50); border: 1px solid var(--b200); border-radius: var(--r); padding: 13px 12px; display: flex; flex-direction: column; gap: 5px; transition: background .18s; }
+.wildlife-card:hover { background: #FAF0DD; }
+.wc-icon { width: 30px; height: 30px; border-radius: 8px; background: rgba(144,103,48,.18); border: 1px solid rgba(212,170,114,.3); display: flex; align-items: center; justify-content: center; margin-bottom: 2px; flex-shrink: 0; }
+.wc-name { font-size: 13px; font-weight: 700; color: var(--n900); line-height: 1.25; }
+.wc-sub { font-size: 11px; font-weight: 300; color: var(--n400); line-height: 1.4; }
+
+/* Tech pack block: styles live in app/globals.css (shared with the homepage). */
+
+/* ── SEE IT BEFORE YOU GO ── */
+.video-hero { position: relative; border-radius: var(--rl); overflow: hidden; cursor: pointer; }
+.video-hero img { width: 100%; height: clamp(200px, 35vw, 400px); object-fit: cover; }
+.video-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.3); display: flex; align-items: center; justify-content: center; transition: background .2s; }
+.video-hero:hover .video-overlay { background: rgba(0,0,0,.4); }
+.play-btn { width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,.92); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 24px rgba(0,0,0,.25); transition: transform .2s; }
+.video-hero:hover .play-btn { transform: scale(1.07); }
+.video-meta { position: absolute; bottom: 14px; left: 14px; right: 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.video-meta-pill { display: inline-flex; align-items: center; line-height: 1.2; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 100px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.video-meta-pill--film { color: #fff; background: rgba(0,0,0,.6); }
+.video-meta-pill--accent { color: var(--b100); font-weight: 700; background: rgba(144,103,48,.55); border: 1px solid rgba(212,170,114,.4); }
+.media-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
+.media-thumb { position: relative; border-radius: var(--r); overflow: hidden; cursor: pointer; }
+.media-thumb img { width: 100%; height: 90px; object-fit: cover; transition: transform .3s; }
+.media-thumb:hover img { transform: scale(1.05); }
+.media-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.15); transition: background .18s; }
+.media-thumb:hover .media-overlay { background: rgba(0,0,0,.3); }
+.media-play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.media-play-btn { width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,.88); display: flex; align-items: center; justify-content: center; }
+.media-label { position: absolute; bottom: 6px; left: 7px; font-size: 10px; font-weight: 600; line-height: 1.2; color: #fff; padding: 3px 8px; border-radius: 100px; white-space: nowrap; max-width: calc(100% - 14px); overflow: hidden; text-overflow: ellipsis; }
+.media-count { display: flex; align-items: center; justify-content: center; height: 90px; background: var(--n100); border-radius: var(--r); border: 1px solid var(--n200); flex-direction: column; gap: 2px; cursor: pointer; }
+
+/* ── BEST TIME — per-month wildlife highlights ── */
+.months-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-top: 28px;
+}
+@media (max-width: 900px) and (min-width: 701px) {
+  .months-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+}
+@media (max-width: 700px) {
+  .months-grid {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 14px;
+    margin-top: 28px;
+    margin-left: calc(-1 * var(--g, 20px));
+    margin-right: calc(-1 * var(--g, 20px));
+    padding: 0 var(--g, 20px) 12px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .months-grid .month-card {
+    flex: 0 0 min(82vw, 300px);
+    max-width: 300px;
+    scroll-snap-align: start;
+  }
+  .months-legend { margin-left: 0; margin-right: 0; }
+  /* Soqtapata Fase 4: sin carrusel horizontal en móvil — grid 2 columnas, todos los meses visibles */
+  .when-soqtapata-mobile .months-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 28px;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 0 0 12px;
+    overflow-x: visible;
+    flex-direction: unset;
+    flex-wrap: unset;
+    scroll-snap-type: none;
+    -webkit-overflow-scrolling: auto;
+  }
+  .when-soqtapata-mobile .months-grid .month-card {
+    flex: unset;
+    min-width: 0;
+    max-width: none;
+    scroll-snap-align: none;
+  }
+}
+.month-card {
+  border-radius: var(--r);
+  overflow: hidden;
+  border: 1px solid var(--n200);
+  background: var(--w);
+  cursor: default;
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+}
+.month-card:not(.good):not(.peak) { background: var(--w); }
+.month-card.good {
+  border: 1.5px solid var(--b200);
+  background: var(--b50);
+  box-shadow: 0 1px 0 rgba(26, 18, 9, 0.06);
+}
+.month-card.peak {
+  border: 2.5px solid var(--brown);
+  background: linear-gradient(180deg, var(--b50) 0%, #fff9f0 100%);
+  box-shadow: 0 3px 16px rgba(144, 103, 48, 0.14);
+}
+.month-bar { height: 6px; }
+.month-card.peak .month-bar { height: 8px; }
+.month-body { padding: 16px 16px 18px; }
+.month-name {
+  font-size: clamp(14px, 1.1vw, 16px);
+  font-weight: 700;
+  color: var(--n900);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.month-peak-stars { font-size: 13px; color: var(--brown-dk); line-height: 1; }
+.month-highlight {
+  font-size: clamp(12px, 0.95vw, 14px);
+  font-weight: 300;
+  color: var(--n700);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.months-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 28px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--n200);
+  max-width: 100%;
+}
+.legend-item { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 500; color: var(--n800); }
+.legend-swatch { width: 20px; height: 20px; border-radius: 5px; flex-shrink: 0; }
+.months-legend-eyebrow {
+  width: 100%;
+  flex-basis: 100%;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--n400);
+  margin-bottom: 4px;
+}
+@media (max-width: 560px) {
+  .months-legend { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .legend-item { font-size: 13px; line-height: 1.45; max-width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .month-card { transition: none; }
+}
+
+/* ── BEFORE YOU GO ── */
+.bfyg-cards { display: flex; flex-direction: column; gap: 6px; }
+.bfyg-card { border: 1px solid var(--n200); border-radius: var(--r); overflow: hidden; }
+.bfyg-header { padding: 13px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; transition: background .18s; }
+.bfyg-header:hover { background: var(--b50); }
+.bfyg-card.open .bfyg-header { background: var(--b50); border-bottom: 1px solid var(--n200); }
+.bfyg-icon { width: 30px; height: 30px; border-radius: 8px; background: var(--n50); border: 1px solid var(--n200); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.bfyg-card.open .bfyg-icon { background: var(--w); border-color: var(--b200); }
+.bfyg-title { font-size: 14px; font-weight: 700; color: var(--n900); }
+.bfyg-chevron { flex-shrink: 0; transition: transform .25s; }
+.bfyg-card.open .bfyg-chevron { transform: rotate(180deg); }
+.bfyg-body { max-height: 0; overflow: hidden; transition: max-height .4s ease; }
+.bfyg-card.open .bfyg-body { max-height: 800px; }
+.bfyg-body-inner { padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+.bfyg-item { display: flex; gap: 11px; align-items: flex-start; }
+.bfyg-item-icon { flex-shrink: 0; margin-top: 1px; }
+.bfyg-item-title { font-size: 13px; font-weight: 600; color: var(--n900); margin-bottom: 2px; }
+.bfyg-item-desc { font-size: 13px; font-weight: 300; color: var(--n700); line-height: 1.65; }
+/* Packing list grid */
+.packing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 2px; }
+.packing-item { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 300; color: var(--n700); padding: 6px 10px; background: var(--n50); border-radius: 8px; }
+
+/* ── TERMS (compact accordion) ── */
+.tcard-wrap { display: flex; flex-direction: column; gap: 6px; margin-top: 18px; }
+.tcard { border: 1px solid var(--n200); border-radius: var(--r); overflow: hidden; background: var(--w); }
+.tcard-hd {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  transition: background .18s;
+  background: var(--w);
+  border: none;
+  font: inherit;
+  text-align: left;
+}
+.tcard-hd:hover { background: var(--b50); }
+.tcard.open .tcard-hd { background: var(--b50); border-bottom: 1px solid var(--n200); }
+.tcard-hd-title { font-size: 13px; font-weight: 700; color: var(--n900); letter-spacing: -0.01em; line-height: 1.35; }
+.tcard-ch { flex-shrink: 0; transition: transform .25s; color: var(--n400); }
+.tcard.open .tcard-ch { transform: rotate(180deg); color: var(--brown); }
+.tcard-bd { max-height: 0; overflow: hidden; transition: max-height .38s ease; }
+.tcard.open .tcard-bd { max-height: min(2000px, 95vh); }
+.tcard-bd-inner {
+  padding: 16px;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--n700);
+  line-height: 1.75;
+  box-sizing: border-box;
+}
+#terms .tcard-bd-inner p { margin: 0; }
+#terms .terms-important-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+#terms .terms-important-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; font-weight: 300; color: var(--n700); line-height: 1.6; }
+#terms .terms-section-intro { text-align: left; margin: 0 0 24px; }
+#terms .terms-section-intro .eyebrow { margin-bottom: 8px; }
+#terms .terms-section-intro .h2 { margin-top: 0; margin-bottom: 10px; }
+#terms .terms-section-lead {
+  margin: 0;
+  max-width: 560px;
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--n700);
+  line-height: 1.75;
+}
+.terms-pdf-cta { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--n200); display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 10px; }
+.terms-pdf-cta .download-btn { margin: 0; }
+.book-terms-note { font-size: 11px; font-weight: 300; color: var(--n400); line-height: 1.5; text-align: center; margin-top: 14px; max-width: 420px; margin-left: auto; margin-right: auto; }
+.book-terms-note a { color: var(--brown); font-weight: 600; text-decoration: none; border-bottom: 1px solid rgba(144,103,48,.35); }
+.book-terms-note a:hover { color: var(--brown-dk); border-bottom-color: var(--brown); }
+
+/* ── MAP + BROCHURE ── */
+.downloads-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media(max-width: 900px) { .downloads-grid { grid-template-columns: 1fr 1fr; } }
+@media(max-width: 480px) { .downloads-grid { grid-template-columns: 1fr; } }
+.download-card { border: 1px solid var(--n200); border-radius: var(--rl); overflow: hidden; background: var(--w); }
+.download-card.brochure { border-color: var(--b200); background: var(--b50); }
+.download-preview { height: 100px; position: relative; overflow: hidden; }
+.download-body { padding: 12px 14px; }
+.download-title { font-size: 13px; font-weight: 700; color: var(--n900); margin-bottom: 3px; }
+.download-meta { font-size: 12px; font-weight: 300; color: var(--n400); margin-bottom: 10px; }
+.download-btn { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--brown); cursor: pointer; }
+
+/* ── RELATED EXPERIENCES ── */
+.related-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media(max-width: 480px) { .related-grid { grid-template-columns: 1fr; } }
+.related-card { border: 1px solid var(--n200); border-radius: var(--r); overflow: hidden; background: var(--w); cursor: pointer; transition: border-color .18s, box-shadow .18s; }
+.related-card:hover { border-color: var(--b200); box-shadow: 0 4px 18px rgba(144,103,48,.1); }
+.related-img { height: clamp(110px, 15vw, 150px); position: relative; overflow: hidden; }
+.related-img img { height: 100%; transition: transform .4s; }
+.related-card:hover .related-img img { transform: scale(1.04); }
+.related-img-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.52) 0%, rgba(0,0,0,.04) 45%, rgba(0,0,0,.52) 100%); }
+.related-body { padding: 12px 13px 14px; }
+.related-type { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--brown); margin-bottom: 3px; }
+.related-name { font-size: 13px; font-weight: 700; color: var(--n900); line-height: 1.3; margin-bottom: 4px; }
+.related-meta { font-size: 12px; font-weight: 300; color: var(--n400); margin-bottom: 9px; }
+.related-foot { display: flex; justify-content: space-between; align-items: center; }
+.related-price { font-size: 14px; font-weight: 700; color: var(--brown); }
+
+/* ── FINAL BOOKING CARD ── */
+.booking-card { background: var(--w); border: 1.5px solid var(--n200); border-radius: var(--rxl); padding: 28px 24px; max-width: 480px; margin: 0 auto; }
+.booking-price-big { font-size: 44px; font-weight: 700; color: var(--n900); letter-spacing: -.05em; line-height: 1; }
+.booking-price-big small { font-size: 14px; font-weight: 300; color: var(--brown); margin-left: 8px; letter-spacing: 0.04em; }
+.booking-divider { height: 1px; background: var(--n200); margin: 18px 0; }
+.booking-rows { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.booking-row { display: flex; justify-content: space-between; }
+.booking-rl { font-size: 13px; font-weight: 300; color: var(--n400); }
+.booking-rv { font-size: 13px; font-weight: 600; color: var(--n900); }
+.btn-book-main { display: block; width: 100%; text-align: center; background: var(--brown); color: #fff; font-size: 14px; font-weight: 700; letter-spacing: .04em; padding: 16px; border-radius: 100px; border: none; cursor: pointer; margin-bottom: 10px; transition: background .2s; }
+.btn-book-main:hover { background: var(--brown-dk); }
+.btn-wa-main { display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; color: var(--n700); font-size: 13px; font-weight: 400; padding: 13px; border-radius: 100px; border: 1.5px solid var(--n200); cursor: pointer; transition: all .2s; width: 100%; }
+.btn-wa-main:hover { border-color: var(--b200); background: var(--b50); }
+.trust-strip { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--n200); }
+.trust-item { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 300; color: var(--n400); }
+
+
+/* ═══════════════════════════════════════════════════════════
+   FOOTER — shared component, same on every page
+   CMS controls: logo, tagline, columns (title + links), certifications
+   ═══════════════════════════════════════════════════════════ */
+.footer { background: var(--n900); padding: 56px var(--g) 40px; position: relative; overflow: hidden; }
+.footer-brand-deco { position: absolute; right: -40px; bottom: -40px; width: 280px; height: 280px; opacity: .04; pointer-events: none; }
+.footer-inner { max-width: var(--max); margin: 0 auto; display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 52px; align-items: start; position: relative; z-index: 1; }
+@media(max-width: 640px) { .footer-inner { grid-template-columns: 1fr; gap: 36px; } }
+.foot-logo { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
+.foot-tagline { font-size: 12px; font-weight: 300; color: rgba(236,229,213,.35); letter-spacing: .04em; text-transform: uppercase; margin-top: 2px; }
+.foot-col h5 { font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: rgba(236,229,213,.28); margin-bottom: 16px; }
+.foot-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.foot-links a { font-size: 13px; font-weight: 300; color: rgba(236,229,213,.55); transition: color .2s; }
+.foot-links a:hover { color: var(--cream); }
+.foot-bottom { border-top: 1px solid rgba(236,229,213,.07); padding-top: 24px; margin-top: 32px; max-width: var(--max); margin-left: auto; margin-right: auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; position: relative; z-index: 1; }
+.foot-copy { font-size: 12px; font-weight: 300; color: rgba(236,229,213,.2); }
+.foot-certs { display: flex; gap: 14px; align-items: center; }
+.foot-cert { font-size: 11px; font-weight: 700; letter-spacing: .06em; color: rgba(236,229,213,.28); }
+.foot-cert-sep { width: 1px; height: 12px; background: rgba(236,229,213,.12); }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     NAV — shared component
+     Same HTML on every page. Only active link changes.
+     CMS: logo, links array, book CTA text+url
+     ════════════════════════════════════════════ -->
+<nav class="top-nav" id="topNav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <svg class="nav-isotipo" viewBox="0 0 105 101" fill="none" id="navIsotipo">
+        <path d="M103.703 59.25C102.343 49.75 97.3635 41.34 89.6735 35.59C89.3235 35.33 88.9635 35.07 88.6035 34.82C88.0135 15.52 72.1235 0 52.6835 0C33.6535 0 18.0434 14.86 16.8234 33.58C11.1834 37.11 6.62343 42.15 3.64343 48.28C-0.556567 56.91 -1.14654 66.66 1.98346 75.74C5.11346 84.81 11.5934 92.13 20.2234 96.33C25.2034 98.75 30.5535 99.98 35.9235 99.98C39.8735 99.98 43.8335 99.32 47.6735 98C49.0635 97.52 50.4034 96.96 51.7134 96.33L51.9534 96.46C56.9534 98.99 62.4335 100.31 68.0535 100.31C69.7735 100.31 71.5035 100.19 73.2335 99.94C82.7335 98.58 91.1434 93.6 96.8934 85.91C102.643 78.22 105.063 68.75 103.703 59.25ZM52.6835 6.51001C67.2435 6.51001 79.3634 17.14 81.7034 31.05C79.1434 30 76.4735 29.25 73.7335 28.83C70.7635 20.05 62.4535 13.72 52.6835 13.72C40.4335 13.72 30.4634 23.69 30.4634 35.94C30.4634 47.44 39.2534 56.92 50.4634 58.03C50.5834 58.31 50.6935 58.6 50.7935 58.89C51.5235 60.99 51.7835 63.18 51.6035 65.34H51.4734C35.8035 64.7 23.2535 51.76 23.2535 35.94C23.2535 19.71 36.4535 6.51001 52.6835 6.51001ZM66.4734 28.44C65.3234 28.49 64.1734 28.6 63.0234 28.77C53.5234 30.13 45.1135 35.11 39.3635 42.8C39.2035 43.01 39.0534 43.23 38.8934 43.45C37.6734 41.22 36.9734 38.66 36.9734 35.94C36.9734 27.28 44.0135 20.24 52.6735 20.24C58.6235 20.24 63.8035 23.56 66.4734 28.44ZM22.6534 55.68C28.5534 64.63 38.3535 70.79 49.6135 71.75C47.7335 75.09 44.7334 77.6 41.0734 78.86C32.8934 81.69 23.9335 77.32 21.1035 69.14C19.4935 64.47 20.2234 59.56 22.6534 55.68ZM45.5435 91.83C38.1135 94.39 30.1335 93.91 23.0635 90.47C15.9935 87.03 10.6934 81.04 8.13342 73.61C5.57342 66.18 6.05347 58.2 9.49347 51.13C11.3535 47.3 13.9634 44 17.1534 41.36C17.5734 44.12 18.3134 46.77 19.3234 49.29C14.2034 55.1 12.2534 63.43 14.9534 71.26C18.1234 80.45 26.7534 86.23 35.9734 86.23C38.3735 86.23 40.8134 85.84 43.2034 85.01C48.8134 83.07 53.3335 79.07 55.9335 73.73C58.5335 68.39 58.8934 62.37 56.9634 56.76C56.6834 55.95 56.3535 55.16 55.9935 54.4C57.6035 52.43 59.6134 50.94 61.8234 49.98C62.5834 51.38 63.2434 52.86 63.7834 54.41C66.3434 61.84 65.8635 69.82 62.4235 76.89C58.9635 83.96 52.9735 89.26 45.5435 91.83ZM91.6735 81.99C86.9635 88.28 80.0835 92.36 72.3035 93.47C67.5435 94.15 62.7935 93.67 58.3735 92.12C60.5435 90.39 62.5034 88.41 64.2234 86.21C65.5034 86.44 66.8034 86.55 68.0934 86.55C74.8534 86.55 81.5434 83.48 85.9034 77.66C89.4634 72.91 90.9535 67.06 90.1135 61.18C89.2735 55.31 86.1935 50.11 81.4435 46.55C71.6435 39.2 57.6834 41.21 50.3434 51.01C50.2434 51.14 50.1535 51.27 50.0635 51.4C47.5735 50.98 45.2734 49.97 43.3234 48.52C43.7234 47.9 44.1334 47.29 44.5834 46.69C49.2934 40.4 56.1734 36.32 63.9534 35.21C65.3734 35.01 66.7835 34.91 68.1935 34.91C74.5135 34.91 80.6334 36.94 85.7734 40.79C92.0634 45.5 96.1435 52.38 97.2535 60.16C98.3635 67.95 96.3835 75.7 91.6735 81.99ZM69.9235 52.29C69.4935 51.04 68.9935 49.83 68.4435 48.66C71.6235 48.72 74.8034 49.74 77.5334 51.78C80.8934 54.29 83.0635 57.97 83.6635 62.12C84.2635 66.27 83.2035 70.41 80.6835 73.76C77.6035 77.87 72.8835 80.04 68.1035 80.04C68.1535 79.94 68.2035 79.84 68.2535 79.74C72.4635 71.12 73.0535 61.36 69.9235 52.29Z" fill="currentColor"/>
+      </svg>
+      <svg class="nav-wordmark" id="navWordmark" viewBox="0 0 176 36" fill="none">
+        <path d="M8.08002 33.61L20.73 28.67V35.43H0V1.40997H18.01V7.16998L8.08002 3.21997V15.15H15.93V17.78H8.08002V33.61Z" fill="#ECE5D5"/>
+        <path d="M44.7401 16.55L36.6201 10.2C32.9001 11.38 30.5401 15.51 30.5401 20.4C30.5401 26.48 34.5801 30.29 39.1101 30.29C42.1001 30.29 44.6001 29.29 46.4601 27.02L46.9101 27.34C45.2801 32.15 41.3801 35.87 35.3901 35.87C28.5001 35.87 22.8301 30.29 22.8301 22.63C22.8301 14.97 28.6801 8.62 37.4801 8.62C40.6101 8.62 43.1901 9.52999 44.7401 10.43V16.55Z" fill="#ECE5D5"/>
+        <path d="M76.8098 22.04C76.8098 29.75 71.1398 35.87 63.2498 35.87C55.3598 35.87 49.0098 30.06 49.0098 22.54C49.0098 14.87 54.5398 8.62 62.6198 8.62C70.6398 8.62 76.8098 14.56 76.8098 22.04ZM69.4198 25.4C69.4198 22.59 68.5998 19.73 67.1498 17.28C65.2898 14.15 62.5198 11.7 59.1698 10.79C57.2198 12.6 56.3998 15.82 56.3998 19.04C56.3998 21.94 57.3098 24.94 58.8498 27.48C60.7098 30.43 63.4298 32.74 66.6998 33.65C68.6498 31.84 69.4198 28.62 69.4198 25.4Z" fill="#ECE5D5"/>
+        <path d="M87.3998 0V9.07001H92.6198V12.93H87.3998V35.43H79.7798V6.17999L87.3998 0Z" fill="#ECE5D5"/>
+        <path d="M120.89 22.04C120.89 29.75 115.22 35.87 107.33 35.87C99.4398 35.87 93.0898 30.06 93.0898 22.54C93.0898 14.87 98.6198 8.62 106.7 8.62C114.73 8.62 120.89 14.56 120.89 22.04ZM113.5 25.4C113.5 22.59 112.68 19.73 111.23 17.28C109.37 14.15 106.6 11.7 103.25 10.79C101.3 12.6 100.48 15.82 100.48 19.04C100.48 21.94 101.39 24.94 102.93 27.48C104.79 30.43 107.51 32.74 110.78 33.65C112.73 31.84 113.5 28.62 113.5 25.4Z" fill="#ECE5D5"/>
+        <path d="M124.27 35.42V9.07001H131.89V12.11C135.7 10.02 138.74 8.62 141.46 8.62C145.41 8.62 147.45 11.02 147.45 15.11V35.43H139.83V15.97C139.83 13.61 138.88 12.34 136.79 12.34C135.7 12.34 134.3 12.52 131.89 13.7V35.43H124.27V35.42Z" fill="#ECE5D5"/>
+        <path d="M163.88 35.88C156.31 35.88 150.55 30.3 150.55 22.41C150.55 13.93 156.85 8.62 163.11 8.62C170.55 8.62 174.31 13.9299 175.08 19.0099H158.16C158.16 19.2399 158.16 19.51 158.16 19.78C158.16 26.67 162.24 30.3 167.32 30.3C170.45 30.3 172.85 29.08 174.71 26.81L175.16 27.17C173.77 31.43 169.91 35.88 163.88 35.88ZM158.39 16.69H167.69C166.83 14.01 164.47 11.11 161.2 10.52C159.93 11.66 158.85 13.7 158.39 16.69Z" fill="#ECE5D5"/>
+      </svg>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#" class="active">Experiences</a></li>
+      <li><a href="#">Routes</a></li>
+      <li><a href="#">Lodges</a></li>
+      <li><a href="#">About</a></li>
+    </ul>
+    <button class="nav-book desk">Book now</button>
+    <button class="hamburger" id="ham"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-drawer" id="drawer">
+  <a href="#" class="active">Experiences</a>
+  <a href="#">Routes</a>
+  <a href="#">Lodges</a>
+  <a href="#">About</a>
+  <a href="#book" class="btn btn-primary">Book now</a>
+</div>
+
+<!-- ════════════════════════════════════════════
+     HERO — gallery + identity
+     ════════════════════════════════════════════ -->
+<section class="exp-hero" id="top">
+
+  <!-- Gallery grid (hero image URLs match #media .media-grid .media-thumb > img 0,1) -->
+  <div class="gallery-grid">
+    <div class="gallery-main" data-exp-lb="0" role="button" tabindex="0" aria-label="Open photo gallery, image 1">
+      <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80" alt="Trail" decoding="async">
+      <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,transparent 25%,transparent 65%,rgba(0,0,0,.55) 100%);pointer-events:none"></div>
+    </div>
+    <div class="gallery-thumb" data-exp-lb="0" role="button" tabindex="0" aria-label="Open photo gallery, image 1">
+      <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80" alt="Trail" decoding="async">
+      <div class="gallery-thumb-overlay"></div>
+      <span class="gallery-label">Forest canopy</span>
+    </div>
+    <div class="gallery-thumb" data-exp-lb="1" role="button" tabindex="0" style="position:relative" aria-label="Open photo gallery, image 2">
+      <img src="https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400&q=80" alt="EcoDroneView" decoding="async">
+      <div class="gallery-thumb-overlay"></div>
+      <span class="gallery-label">EcoDroneView® · aerial</span>
+      <span class="gallery-see-all" data-exp-lb="0" role="button" tabindex="0" aria-label="Open full photo gallery">+6 more</span>
+    </div>
+  </div>
+
+  <!-- Identity block -->
+  <div class="exp-identity">
+    <div class="exp-identity-inner">
+      <div>
+        <div class="exp-breadcrumb">
+          <a href="/">Home</a><span style="opacity:.4">›</span>
+          <a href="#">Experiences</a><span style="opacity:.4">›</span>
+          <a href="#">Camanti Route</a><span style="opacity:.4">›</span>
+          <span class="current">Soqtapata 3D/2N</span>
+        </div>
+        <div class="exp-badges">
+          <span class="pill pill-glass">Nature Core</span>
+          <span class="pill pill-glass">Camanti Route</span>
+          <span class="pill pill-glass">3D · 2N</span>
+        </div>
+        <h1 class="exp-h1">Soqtapata Pristine Immersion</h1>
+        <p class="exp-tagline">The untouched cloud forest. 10,000 ha reserve. EcoDroneView® · ForestWhisper® · Expert naturalist guide.</p>
+        <div class="exp-rating">
+          <div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div>
+          <span style="font-size:13px;font-weight:600;color:var(--cream)">5.0</span>
+          <span style="font-size:13px;font-weight:300;color:rgba(236,229,213,.45)">· 12 reviews</span>
+          <span style="width:1px;height:12px;background:rgba(255,255,255,.12)"></span>
+          <span style="font-size:12px;font-weight:500;color:var(--b200)">Soqtapata Lodge</span>
+        </div>
+      </div>
+      <div class="exp-price-block">
+        <div class="exp-price-cta">
+          <div class="exp-price-titles">
+            <div class="exp-price">$986</div>
+            <div class="exp-price-sub">per person · all inclusive</div>
+          </div>
+          <button class="btn btn-primary" type="button" onclick="location.href='https://www.wetravel.com'">Book now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Snapshot bar -->
+<div class="snapshot-bar">
+  <div class="snapshot-inner">
+    <div class="snap-item"><div class="snap-n">3D · 2N</div><div class="snap-l">Duration</div></div>
+    <div class="snap-item"><div class="snap-n">~2.5h</div><div class="snap-l">From Cusco</div></div>
+    <div class="snap-item"><div class="snap-n">1,200 m</div><div class="snap-l">Altitude</div></div>
+    <div class="snap-item"><div class="snap-n">Max 8</div><div class="snap-l">Group size</div></div>
+    <div class="snap-item"><div class="snap-n">All-in</div><div class="snap-l">Inclusive</div></div>
+    <div class="snap-item"><div class="snap-n">Cloud</div><div class="snap-l">Ecosystem</div></div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     INTERNAL PAGE NAV — package + grouped links + From + Book
+     ════════════════════════════════════════════ -->
+<nav class="page-nav" id="pageNav" aria-label="On this page">
+  <div class="page-nav-grid">
+    <div class="pnav-lead">
+      <div class="pnav-lead-name">Soqtapata Pristine Immersion</div>
+      <div class="pnav-lead-days">3D/2N</div>
+    </div>
+    <button type="button" class="pnav-mobile-toggle" id="pnavMobileToggle" aria-label="Page sections" aria-expanded="false" aria-controls="pageNavCols">
+      <svg class="pnav-mobile-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 9l6 6 6-6"/>
+      </svg>
+    </button>
+    <div class="pnav-cta">
+      <div class="pnav-from-price" aria-label="From 986 US dollars per person">
+        <span class="pnav-from-label">From</span>
+        <span class="pnav-from-num">$986</span>
+        <span class="pnav-from-sub">per person</span>
+      </div>
+      <a href="https://www.wetravel.com" class="btn btn-primary pnav-book-btn">Book now</a>
+    </div>
+    <div class="page-nav-cols" id="pageNavCols">
+      <a href="#overview" class="pnav-top pnav-item active">Overview</a>
+      <a href="#itinerary" class="pnav-top pnav-item">Itinerary</a>
+      <a href="#lodges" class="pnav-top pnav-item" data-active-when="lodges,wildlife">Lodge</a>
+      <a href="#includes" class="pnav-top pnav-item" data-active-when="includes,tech">Included</a>
+      <a href="#media" class="pnav-top pnav-item" data-active-when="media,when">Gallery</a>
+      <a href="#before-you-go" class="pnav-top pnav-item" data-active-when="before-you-go,reviews,resources">Good to know</a>
+      <a href="#terms" class="pnav-top pnav-item" data-active-when="terms">Terms</a>
+      <a href="#faq" class="pnav-top pnav-item">FAQs</a>
+      <a href="#also-camanti" class="pnav-top pnav-item" data-active-when="also-camanti,book">More</a>
+    </div>
+  </div>
+</nav>
+<div id="pnavScrollShim" class="pnav-scroll-shim" aria-hidden="true"></div>
+<div class="pnav-mobile-scrim" id="pnavMobileScrim" aria-hidden="true"></div>
+
+<!-- ════════════════════════════════════════════
+     OVERVIEW
+     ════════════════════════════════════════════ -->
+<section class="content-section bg-warm fade" id="overview">
+  <div class="content-inner">
+    <div class="eyebrow">About this experience</div>    <h2 class="h2">The cloud forest, unfiltered.</h2>
+    <p style="font-size:15px;font-weight:300;color:var(--n700);line-height:1.8;max-width:640px;margin-bottom:12px">Three days inside the Soqtapata Reserve — 10,000 hectares of primary cloud forest from 900 to 4,700 m.a.s.l. You'll track wildlife, fly the canopy with EcoDroneView®, and fall asleep to the forest at Soqtapata Lodge, adjacent to CIDS, our active research centre.</p>
+    <p style="font-size:15px;font-weight:300;color:var(--n700);line-height:1.8;max-width:640px">This is not a tour. It's an immersion run by scientists who live in the forest. Every booking directly funds conservation work managed by HERPIRO (B Corp).</p>
+    <ul class="highlights" style="max-width:560px;margin-top:20px">
+      <li class="highlight-item"><div class="highlight-dot"></div>EcoDroneView® aerial canopy flight included</li>
+      <li class="highlight-item"><div class="highlight-dot"></div>ForestWhisper® 360° sound immersion at night</li>
+      <li class="highlight-item"><div class="highlight-dot"></div>Private bungalow at Soqtapata Lodge (max 2)</li>
+      <li class="highlight-item"><div class="highlight-dot"></div>Access to CIDS research station with resident scientists</li>
+      <li class="highlight-item"><div class="highlight-dot"></div>300+ bird species · Spectacled bear · Puma · Jaguar territory</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     ITINERARY — day by day with photos
+     ════════════════════════════════════════════ -->
+<section class="content-section fade" id="itinerary">
+  <div class="content-inner">
+    <div class="eyebrow">Day by day</div>    <h2 class="h2">What you'll experience</h2>
+    <div class="itinerary">
+
+      <!-- DAY 1 — open by default -->
+      <div class="day-card open" id="day1">
+        <div class="day-header" onclick="toggleDay('day1')">
+          <div class="day-photo-strip">
+            <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=900&q=85" alt="Day 1">
+            <div class="day-photo-overlay"></div>
+            <span class="day-photo-caption">Entering the Soqtapata Reserve via the 45-min trail from the road</span>
+          </div>
+          <div class="day-header-row">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="day-num">1</div>
+              <div><div class="day-title">Into the Cloud Forest</div><div class="day-subtitle">Departure · Trek in · First wildlife walk · EcoDroneView®</div></div>
+            </div>
+            <svg class="day-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+          </div>
+        </div>
+        <div class="day-body">
+          <div class="day-body-inner">
+            <div class="timeline-item">
+              <div class="timeline-time">4:30 AM</div>
+              <div><div class="timeline-title">Pickup from Cusco</div><div class="timeline-desc">Hotel pickup or main plaza. Private 4x4 vehicle.</div></div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">~7:30 AM</div>
+              <div><div class="timeline-title">Arrival at trailhead</div><div class="timeline-desc">Gear up with rubber boots. 45-min trek into the reserve. First bird and mammal sightings begin.</div></div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">12:00 PM</div>
+              <div><div class="timeline-title">Lunch at Soqtapata Lodge</div><div class="timeline-desc">Fresh local ingredients. Meet the resident research team.</div></div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">3:00 PM</div>
+              <div><div class="timeline-title">EcoDroneView® canopy flight</div><div class="timeline-desc">Aerial survey of the reserve with your naturalist guide. Identify wildlife from the treetop perspective.</div></div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">6:00 PM</div>
+              <div><div class="timeline-title">ForestWhisper® night session</div><div class="timeline-desc">360° sound immersion as the forest comes alive — owls, insects, amphibians chorus begins.</div></div>
+            </div>
+            <div class="day-lodge-badge">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+              <span class="day-lodge-name">Overnight · Soqtapata Lodge</span>
+              <span class="day-lodge-sub">Private bungalow or double room · full board</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DAY 2 — collapsed, photo strip visible -->
+      <div class="day-card" id="day2">
+        <div class="day-header" onclick="toggleDay('day2')">
+          <div class="day-photo-strip">
+            <img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=900&q=80" alt="Day 2">
+            <div class="day-photo-overlay"></div>
+            <span class="day-photo-caption">Full-day trail through primary forest — CIDS research station visit in the afternoon</span>
+          </div>
+          <div class="day-header-row">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="day-num">2</div>
+              <div><div class="day-title">Deep in the Reserve</div><div class="day-subtitle">Full-day trail · CIDS research visit · EcoSpeciesExplorer® · Night wildlife</div></div>
+            </div>
+            <svg class="day-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--n400)" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+          </div>
+        </div>
+        <div class="day-body">
+          <div class="day-body-inner">
+            <div class="timeline-item">
+              <div class="timeline-time">5:30 AM</div>
+              <div><div class="timeline-title">Dawn birdwatch</div><div class="timeline-desc">The most active period. Your guide identifies species by call with EcoSpeciesExplorer®.</div></div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">8:00 AM</div>
+              <div><div class="timeline-title">Breakfast & full-day trail</div><div class="timeline-desc">Deep into the reserve along the primary forest trails. EcoSpeciesExplorer® in hand.</div></div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">2:00 PM</div>
+              <div><div class="timeline-title">CIDS research station visit</div><div class="timeline-desc">Meet the resident biologists. Learn about active conservation projects. See the species monitoring in action.</div></div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">7:00 PM</div>
+              <div><div class="timeline-title">Night wildlife walk</div><div class="timeline-desc">Torch-lit walk with your naturalist. Nocturnal amphibians, insects, and occasional mammal encounters.</div></div>
+            </div>
+            <div class="day-lodge-badge">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+              <span class="day-lodge-name">Overnight · Soqtapata Lodge</span>
+              <span class="day-lodge-sub">Private bungalow or double room · full board</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DAY 3 — collapsed -->
+      <div class="day-card" id="day3">
+        <div class="day-header" onclick="toggleDay('day3')">
+          <div class="day-photo-strip">
+            <img src="https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=900&q=80" alt="Day 3">
+            <div class="day-photo-overlay"></div>
+            <span class="day-photo-caption">Final dawn birdwatch before the trek out and return to Cusco</span>
+          </div>
+          <div class="day-header-row">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="day-num">3</div>
+              <div><div class="day-title">Last Morning · Return to Cusco</div><div class="day-subtitle">Dawn birdwatch · Breakfast · Trek out · Cusco by afternoon</div></div>
+            </div>
+            <svg class="day-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--n400)" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+          </div>
+        </div>
+        <div class="day-body">
+          <div class="day-body-inner">
+            <div class="timeline-item">
+              <div class="timeline-time">5:30 AM</div>
+              <div><div class="timeline-title">Final dawn birdwatch</div><div class="timeline-desc">One last morning with your guide. Cock-of-the-rock lek at sunrise.</div></div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">8:00 AM</div>
+              <div><div class="timeline-title">Breakfast · Pack & trek out</div><div class="timeline-desc">45-min trek to the trailhead. Private vehicle back to Cusco.</div></div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">~1:00 PM</div>
+              <div><div class="timeline-title">Arrival in Cusco</div><div class="timeline-desc">Drop-off at your hotel or main plaza. Your experience ends here — but rarely leaves you.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     LODGES — where you sleep
+     ════════════════════════════════════════════ -->
+<section class="content-section fade" id="lodges">
+  <div class="content-inner">
+    <div class="eyebrow">Where you'll stay</div>
+    <h2 class="h2" style="margin-bottom:6px">Your base in the forest</h2>
+    <p style="font-size:14px;font-weight:300;color:var(--n700);line-height:1.8;margin-bottom:20px">This experience stays at Soqtapata Lodge for both nights — adjacent to the CIDS research centre.</p>
+    <div class="lodge-cards">
+      <div class="lodge-card">
+        <div class="lodge-card-img">
+          <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=500&q=80" alt="Soqtapata Lodge">
+        </div>
+        <div class="lodge-card-body">
+          <div>
+            <div class="lodge-card-header">
+              <div>
+                <span class="lodge-night-badge">Nights 1 & 2</span>
+                <div class="lodge-card-name" style="margin-top:8px">Soqtapata Lodge</div>
+              </div>
+              <span class="pill pill-amber" style="font-size:11px;flex-shrink:0;white-space:nowrap">Research station</span>
+            </div>
+            <div class="lodge-card-meta" style="margin-top:6px">1,200 m.a.s.l. · Camanti Route · Max 14 guests · B Corp certified · Adjacent to CIDS research centre</div>
+          </div>
+          <div>
+            <div class="lodge-card-chips" style="margin-bottom:14px">
+              <span class="lodge-chip">Private bungalow</span>
+              <span class="lodge-chip">Hot shower</span>
+              <span class="lodge-chip">All meals included</span>
+              <span class="lodge-chip">Nature library</span>
+              <span class="lodge-chip">Rubber boots provided</span>
+            </div>
+            <a href="#" class="lodge-card-cta">
+              View full lodge page
+              <svg width="13" height="13" viewBox="0 0 12 12" fill="none" stroke="var(--brown)" stroke-width="2"><line x1="2" y1="6" x2="10" y2="6"/><polyline points="7 3 10 6 7 9"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     WILDLIFE — shared horizontal scroll component
+     Same component used in Routes page
+     ════════════════════════════════════════════ -->
+<section class="content-section bg-cream fade" id="wildlife">
+  <div class="content-inner">
+    <div class="eyebrow">What you might encounter</div>
+    <h2 class="h2" style="margin-bottom:6px">Wildlife in this reserve</h2>
+    <p style="font-size:14px;font-weight:300;color:var(--n700);line-height:1.8;margin-bottom:16px">Not guaranteed — this is wild nature. These species are regularly observed in the Soqtapata territory.</p>
+    <div class="hscroll-wrap wildlife-hscroll" id="wildlifeHscroll">
+      <div class="hscroll">
+        <div class="wildlife-card">
+          <div class="wc-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M4.22 4.22l2.12 2.12m11.32 11.32 2.12 2.12M2 12h3m14 0h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg></div>
+          <div class="wc-name">Cock-of-the-rock</div>
+          <div class="wc-sub">National bird of Perú</div>
+        </div>
+        <div class="wildlife-card">
+          <div class="wc-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><circle cx="12" cy="8" r="5"/><path d="M8 13c-3 1-5 4-5 7h18c0-3-2-6-5-7"/></svg></div>
+          <div class="wc-name">Spectacled bear</div>
+          <div class="wc-sub">Only bear in S. America</div>
+        </div>
+        <div class="wildlife-card">
+          <div class="wc-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+          <div class="wc-name">Puma</div>
+          <div class="wc-sub">Mountain lion</div>
+        </div>
+        <div class="wildlife-card">
+          <div class="wc-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg></div>
+          <div class="wc-name">Jaguar</div>
+          <div class="wc-sub">Apex predator</div>
+        </div>
+        <div class="wildlife-card">
+          <div class="wc-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M12 2a3 3 0 0 0-3 3v1H6a2 2 0 0 0-2 2v3a8 8 0 0 0 16 0V8a2 2 0 0 0-2-2h-3V5a3 3 0 0 0-3-3z"/></svg></div>
+          <div class="wc-name">300+ birds</div>
+          <div class="wc-sub">Including endemics</div>
+        </div>
+        <div class="wildlife-card">
+          <div class="wc-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+          <div class="wc-name">Woolly monkey</div>
+          <div class="wc-sub">Active research project</div>
+        </div>
+        <div class="wildlife-card">
+          <div class="wc-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+          <div class="wc-name">Andean tapir</div>
+          <div class="wc-sub">Rare sighting</div>
+        </div>
+      </div>
+      <div class="wildlife-hs-controls" role="group" aria-label="Scroll species list">
+        <button type="button" class="hs-arrow hs-arrow-l" onclick="hsScroll(this,-1)" aria-label="Scroll left"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--n700)" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <button type="button" class="hs-arrow hs-arrow-r" onclick="hsScroll(this,1)" aria-label="Scroll right"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--n700)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     INCLUDES / NOT INCLUDES
+     ════════════════════════════════════════════ -->
+<section class="content-section bg-warm fade" id="includes">
+  <div class="content-inner">
+    <div class="eyebrow">What's covered</div>
+    <h2 class="h2" style="margin-bottom:20px">Includes & not included</h2>
+    <div class="includes-grid">
+      <div class="includes-col includes-col-yes">
+        <div class="includes-title includes-title-yes">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#27500A" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          What's included
+        </div>
+        <ul class="includes-list">
+          <li class="includes-item includes-item-yes">
+            <div class="inc-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            Private transport from/to Cusco
+          </li>
+          <li class="includes-item includes-item-yes">
+            <div class="inc-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            2 nights at Soqtapata Lodge
+          </li>
+          <li class="includes-item includes-item-yes">
+            <div class="inc-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            All meals — full board (breakfast, lunch, dinner)
+          </li>
+          <li class="includes-item includes-item-yes">
+            <div class="inc-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            Expert certified naturalist guide
+          </li>
+          <li class="includes-item includes-item-yes">
+            <div class="inc-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            EcoDroneView® canopy flight session
+          </li>
+          <li class="includes-item includes-item-yes">
+            <div class="inc-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            ForestWhisper® night immersion session
+          </li>
+          <li class="includes-item includes-item-yes">
+            <div class="inc-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            CIDS research station visit
+          </li>
+          <li class="includes-item includes-item-yes">
+            <div class="inc-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            Rubber boots and rain gear (provided)
+          </li>
+          <li class="includes-item includes-item-yes">
+            <div class="inc-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            Filtered drinking water at all times
+          </li>
+        </ul>
+      </div>
+      <div class="includes-col includes-col-no">
+        <div class="includes-title includes-title-no">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--n400)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Not included
+        </div>
+        <ul class="includes-list">
+          <li class="includes-item includes-item-no">
+            <div class="inc-cross"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--n400)" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+            International or domestic flights to Cusco
+          </li>
+          <li class="includes-item includes-item-no">
+            <div class="inc-cross"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--n400)" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+            Travel insurance (recommended)
+          </li>
+          <li class="includes-item includes-item-no">
+            <div class="inc-cross"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--n400)" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+            Alcoholic beverages
+          </li>
+          <li class="includes-item includes-item-no">
+            <div class="inc-cross"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--n400)" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+            Tips for guides and staff (discretionary)
+          </li>
+          <li class="includes-item includes-item-no">
+            <div class="inc-cross"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--n400)" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+            Personal medication and first-aid items
+          </li>
+          <li class="includes-item includes-item-no">
+            <div class="inc-cross"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--n400)" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+            Laundry services
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!--ECOTONE_TECH_INJECT-->
+
+
+<!-- ════════════════════════════════════════════
+     SEE IT BEFORE YOU GO
+     ════════════════════════════════════════════ -->
+<section class="content-section fade" id="media">
+  <div class="content-inner">
+    <div class="eyebrow">See it before you go</div>
+    <h2 class="h2" style="margin-bottom:14px">The experience, unfiltered</h2>
+    <!-- Main video -->
+    <div class="video-hero">
+      <img src="https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=1200&q=85" alt="Soqtapata experience film">
+      <div class="video-overlay">
+        <div class="play-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--brown)"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </div>
+      </div>
+      <div class="video-meta">
+        <span class="video-meta-pill video-meta-pill--film">Soqtapata Pristine Immersion</span>
+        <span class="video-meta-pill video-meta-pill--accent">Official film</span>
+      </div>
+    </div>
+    <!-- Media grid: photos + secondary videos -->
+    <div class="media-grid" id="soqtapata-media-grid">
+      <div class="media-thumb" data-exp-lb="0" role="button" tabindex="0" aria-label="Open photo, Trail">
+        <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80" alt="Trail">
+        <div class="media-overlay"></div>
+        <span class="media-label" style="background:rgba(0,0,0,.55)">Trail</span>
+      </div>
+      <div class="media-thumb" data-exp-lb="1" role="button" tabindex="0" aria-label="Open photo, EcoDroneView">
+        <img src="https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400&q=80" alt="EcoDroneView">
+        <div class="media-overlay" style="background:rgba(0,0,0,.35)"></div>
+        <div class="media-play"><div class="media-play-btn"><svg width="9" height="9" viewBox="0 0 24 24" fill="var(--brown)"><polygon points="5 3 19 12 5 21 5 3"/></svg></div></div>
+        <span class="media-label" style="background:rgba(144,103,48,.75)">EcoDroneView®</span>
+      </div>
+      <div class="media-thumb" data-exp-lb="2" role="button" tabindex="0" aria-label="Open photo, Canopy">
+        <img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&q=80" alt="Canopy">
+        <div class="media-overlay"></div>
+        <span class="media-label" style="background:rgba(0,0,0,.55)">Canopy</span>
+      </div>
+      <div class="media-thumb" data-exp-lb="3" role="button" tabindex="0" aria-label="Open photo, Wildlife">
+        <img src="https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=400&q=80" alt="Wildlife">
+        <div class="media-overlay"></div>
+        <span class="media-label" style="background:rgba(0,0,0,.55)">Wildlife</span>
+      </div>
+      <div class="media-thumb" data-exp-lb="4" role="button" tabindex="0" aria-label="Open photo, ForestWhisper">
+        <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&q=80" alt="ForestWhisper">
+        <div class="media-overlay" style="background:rgba(0,0,0,.35)"></div>
+        <div class="media-play"><div class="media-play-btn"><svg width="9" height="9" viewBox="0 0 24 24" fill="var(--brown)"><polygon points="5 3 19 12 5 21 5 3"/></svg></div></div>
+        <span class="media-label" style="background:rgba(144,103,48,.75)">ForestWhisper®</span>
+      </div>
+      <div class="media-count" data-exp-lb="0" role="button" tabindex="0" aria-label="Open full photo gallery">
+        <span style="font-size:18px;font-weight:700;color:var(--n900)">+8</span>
+        <span style="font-size:12px;font-weight:300;color:var(--n400)">See all</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     BEST TIME — per-month wildlife highlights
+     ════════════════════════════════════════════ -->
+<section class="content-section bg-warm fade" id="when">
+  <div class="content-inner">
+    <div class="eyebrow">When to visit</div>
+    <h2 class="h2" style="margin-bottom:10px">Every month has something extraordinary</h2>
+    <p style="font-size:15px;font-weight:300;color:var(--n700);line-height:1.75;max-width:560px">Camanti is alive year-round. Wildlife shifts with the season — not better or worse, just different. Swipe the months on mobile.</p>
+    <div class="months-grid" role="list">
+      <div class="month-card" role="listitem"><div class="month-bar" style="background:linear-gradient(90deg,#5a8a3a,#4a7a2a)"></div><div class="month-body"><div class="month-name">January</div><div class="month-highlight">Reptiles &amp; amphibians. Lush, wet “green” season.</div></div></div>
+      <div class="month-card" role="listitem"><div class="month-bar" style="background:linear-gradient(90deg,#5a8a3a,#4a7a2a)"></div><div class="month-body"><div class="month-name">February</div><div class="month-highlight">Wild orchids. Forest colour at eye level on the trails.</div></div></div>
+      <div class="month-card" role="listitem"><div class="month-bar" style="background:linear-gradient(90deg,#4a7a2a,#3a6020)"></div><div class="month-body"><div class="month-name">March</div><div class="month-highlight">Migrants arrive. Early nesting activity and song.</div></div></div>
+      <div class="month-card good" role="listitem"><div class="month-bar" style="background:linear-gradient(90deg,var(--brown),var(--brown-dk))"></div><div class="month-body"><div class="month-name">April <span class="month-peak-stars" aria-label="Great season">★</span></div><div class="month-highlight">Cock-of-the-rock leks. Quieter visitor numbers.</div></div></div>
+      <div class="month-card good" role="listitem"><div class="month-bar" style="background:linear-gradient(90deg,var(--brown),var(--brown-dk))"></div><div class="month-body"><div class="month-name">May <span class="month-peak-stars" aria-label="Great season">★</span></div><div class="month-highlight">Drier underfoot, clearer light — great for images.</div></div></div>
+      <div class="month-card peak" role="listitem"><div class="month-bar" style="background:linear-gradient(90deg,var(--brown-dk),var(--brown-xdk))"></div><div class="month-body"><div class="month-name">June <span class="month-peak-stars" aria-label="Peak season">★★</span></div><div class="month-highlight">Top window for spectacled bear. Stable dry weather.</div></div></div>
+      <div class="month-card peak" role="listitem"><div class="month-bar" style="background:linear-gradient(90deg,var(--brown-dk),var(--brown-xdk))"></div><div class="month-body"><div class="month-name">July <span class="month-peak-stars" aria-label="Peak season">★★</span></div><div class="month-highlight">Exceptional birding — forest activity is very high.</div></div></div>
+      <div class="month-card peak" role="listitem"><div class="month-bar" style="background:linear-gradient(90deg,var(--brown-dk),var(--brown-xdk))"></div><div class="month-body"><div class="month-name">August <span class="month-peak-stars" aria-label="Peak season">★★</span></div><div class="month-highlight">Peak dry season. Fresh puma and carnivore sign.</div></div></div>
+      <div class="month-card good" role="listitem"><div class="month-bar" style="background:linear-gradient(90deg,var(--brown),var(--brown-dk))"></div><div class="month-body"><div class="month-name">September <span class="month-peak-stars" aria-label="Great season">★</span></div><div class="month-highlight">Shifting light and young animals on the move.</div></div></div>
+      <div class="month-card" role="listitem"><div class="month-bar" style="background:linear-gradient(90deg,#4a7a2a,#3a6020)"></div><div class="month-body"><div class="month-name">October</div><div class="month-highlight">Rains build. Waterfalls in full flow; frogs and streams.</div></div></div>
+      <div class="month-card" role="listitem"><div class="month-bar" style="background:linear-gradient(90deg,#5a8a3a,#4a7a2a)"></div><div class="month-body"><div class="month-name">November</div><div class="month-highlight">Butterflies in numbers. A quieter, softer forest.</div></div></div>
+      <div class="month-card" role="listitem"><div class="month-bar" style="background:linear-gradient(90deg,#5a8a3a,#4a7a2a)"></div><div class="month-body"><div class="month-name">December</div><div class="month-highlight">Orchids and bromeliads. Lush, vivid green close.</div></div></div>
+    </div>
+    <div class="months-legend" role="group" aria-label="How to read the season bands">
+      <div class="months-legend-eyebrow">Season key</div>
+      <div class="legend-item"><div class="legend-swatch" style="border:2.5px solid var(--brown); background: linear-gradient(180deg, var(--b50), #fff9f0); box-shadow:0 1px 4px rgba(144,103,48,.12);"></div><span><strong>★★ Peak</strong> — strongest wildlife &amp; weather window</span></div>
+      <div class="legend-item"><div class="legend-swatch" style="border:1.5px solid var(--b200); background: var(--b50)"></div><span><strong>★ Great</strong> — excellent; often fewer guests</span></div>
+      <div class="legend-item"><div class="legend-swatch" style="border:1px solid var(--n200); background: var(--w)"></div><span><strong>Always worthwhile</strong> — rewarding year-round (softer top bar)</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     BEFORE YOU GO — accordion
+     ════════════════════════════════════════════ -->
+<section class="content-section fade" id="before-you-go">
+  <div class="content-inner">
+    <div class="eyebrow">Traveller guide</div>
+    <h2 class="h2" style="margin-bottom:6px">Before you go</h2>
+    <p style="font-size:14px;font-weight:300;color:var(--n700);line-height:1.8;margin-bottom:20px">Everything international visitors need to know.</p>
+    <div class="bfyg-cards">
+
+      <!-- Entry requirements — open -->
+      <div class="bfyg-card open" id="bfyg1">
+        <div class="bfyg-header" onclick="toggleBFYG('bfyg1')">
+          <div style="display:flex;align-items:center;gap:11px">
+            <div class="bfyg-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+            <div class="bfyg-title">Entry requirements for Perú</div>
+          </div>
+          <svg class="bfyg-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+        </div>
+        <div class="bfyg-body">
+          <div class="bfyg-body-inner">
+            <div class="bfyg-item"><div class="bfyg-item-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div><div><div class="bfyg-item-title">Passport</div><div class="bfyg-item-desc">Valid for at least 6 months beyond your travel dates. Keep a physical and digital copy.</div></div></div>
+            <div class="bfyg-item"><div class="bfyg-item-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div><div class="bfyg-item-title">Visa</div><div class="bfyg-item-desc">Most nationalities receive a free tourist visa on arrival for up to 90 days. Check with your embassy for current requirements.</div></div></div>
+            <div class="bfyg-item"><div class="bfyg-item-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="bfyg-item-title">Vaccinations</div><div class="bfyg-item-desc">Yellow fever recommended. Hepatitis A & B, Typhoid, and Rabies advisable for jungle areas. Consult a travel health clinic at least 4 weeks before departure.</div></div></div>
+            <div class="bfyg-item"><div class="bfyg-item-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div><div class="bfyg-item-title">Travel insurance</div><div class="bfyg-item-desc">Strongly recommended. Ensure your policy covers jungle activities, altitude, and medical evacuation from remote areas.</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Packing list — closed -->
+      <div class="bfyg-card" id="bfyg2">
+        <div class="bfyg-header" onclick="toggleBFYG('bfyg2')">
+          <div style="display:flex;align-items:center;gap:11px">
+            <div class="bfyg-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>
+            <div class="bfyg-title">Packing list · Camanti cloud forest</div>
+          </div>
+          <svg class="bfyg-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--n400)" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="bfyg-body">
+          <div class="bfyg-body-inner">
+            <p style="font-size:13px;font-weight:300;color:var(--n700);line-height:1.7;margin-bottom:10px">Rubber boots and rain gear are provided at the lodge. Focus on layers — temperatures can drop significantly at night at 1,200 m.a.s.l.</p>
+            <div class="packing-grid">
+              <div class="packing-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Quick-dry trousers</div>
+              <div class="packing-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Warm mid-layer fleece</div>
+              <div class="packing-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Waterproof jacket</div>
+              <div class="packing-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Long-sleeve shirts</div>
+              <div class="packing-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Insect repellent (DEET)</div>
+              <div class="packing-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Sunscreen SPF 50+</div>
+              <div class="packing-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Binoculars (8x42+)</div>
+              <div class="packing-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Headlamp + spare batteries</div>
+              <div class="packing-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Small daypack</div>
+              <div class="packing-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Camera + extra memory</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Getting to Cusco — closed -->
+      <div class="bfyg-card" id="bfyg3">
+        <div class="bfyg-header" onclick="toggleBFYG('bfyg3')">
+          <div style="display:flex;align-items:center;gap:11px">
+            <div class="bfyg-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.6 19.79 19.79 0 0 1 1.61 5.17 2 2 0 0 1 3.58 3h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 10.9a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 17.92v-.01z"/></svg></div>
+            <div class="bfyg-title">Getting to Cusco · Flights & acclimatisation</div>
+          </div>
+          <svg class="bfyg-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--n400)" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="bfyg-body">
+          <div class="bfyg-body-inner">
+            <div class="bfyg-item"><div class="bfyg-item-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div><div><div class="bfyg-item-title">Flights to Cusco</div><div class="bfyg-item-desc">Fly into Alejandro Velasco Astete International Airport (CUZ). Direct flights from Lima (LIM) with LATAM and Avianca, ~1.5 hours. Lima connects to major international hubs.</div></div></div>
+            <div class="bfyg-item"><div class="bfyg-item-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="bfyg-item-title">Acclimatisation — important</div><div class="bfyg-item-desc">Cusco sits at 3,400 m.a.s.l. We strongly recommend arriving 1–2 days before your experience starts. Rest, drink coca tea, avoid alcohol. Your departure at 4:30 AM means resting the day before is especially important.</div></div></div>
+            <div class="bfyg-item"><div class="bfyg-item-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="bfyg-item-title">Our pickup</div><div class="bfyg-item-desc">We pick you up at 4:30–5:00 AM from your hotel or the main plaza in Cusco. Share your hotel name after booking and we'll confirm the exact time.</div></div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!--ECOTONE_REVIEWS_INJECT-->
+
+<!-- ════════════════════════════════════════════
+     TERMS — summary + full PDF (after guest reviews)
+     ════════════════════════════════════════════ -->
+<section class="content-section bg-warm fade" id="terms">
+  <div class="content-inner">
+    <div class="terms-section-intro">
+      <div class="eyebrow">Before you book</div>
+      <h2 class="h2">Terms</h2>
+      <p class="terms-section-lead">Key things to know. For the complete legal text, use the full PDF. These bullets do not replace your booking agreement.</p>
+    </div>
+    <div class="tcard-wrap" id="terms-accordion" aria-label="Terms summary">
+      <div class="tcard" id="tcard1">
+        <div class="tcard-hd" onclick="toggleTcard('tcard1')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTcard('tcard1');}">
+          <span class="tcard-hd-title">Cancellation policy</span>
+          <svg class="tcard-ch" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="tcard-bd">
+          <div class="tcard-bd-inner">Cancellations more than 15 days before the departure date from Cusco are eligible for a full refund of amounts paid to Ecotone, per the schedule on your WeTravel booking. Cancellations inside 15 days may be non-refundable or partially refundable depending on the program — see your confirmation and the full terms. No-shows are not refunded. We process refunds to the original payment method where possible.</div>
+        </div>
+      </div>
+      <div class="tcard" id="tcard2">
+        <div class="tcard-hd" onclick="toggleTcard('tcard2')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTcard('tcard2');}">
+          <span class="tcard-hd-title">Changes &amp; flexibility</span>
+          <svg class="tcard-ch" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="tcard-bd">
+          <div class="tcard-bd-inner">Date or guest-name changes are subject to availability and may carry an administrative fee. We’ll always try to help if you notify us early. Major changes to the itinerary (route, length, group size) may be treated as a new booking — our team will confirm in writing.</div>
+        </div>
+      </div>
+      <div class="tcard" id="tcard3">
+        <div class="tcard-hd" onclick="toggleTcard('tcard3')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTcard('tcard3');}">
+          <span class="tcard-hd-title">What’s included / not included</span>
+          <svg class="tcard-ch" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="tcard-bd">
+          <div class="tcard-bd-inner">Inclusions and exclusions for this program are listed in the “Includes &amp; not included” section above. International flights, personal insurance, and discretionary tips are generally not included unless stated. Technology (EcoDroneView®, etc.) is included only where the programme says so.</div>
+        </div>
+      </div>
+      <div class="tcard" id="tcard4">
+        <div class="tcard-hd" onclick="toggleTcard('tcard4')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTcard('tcard4');}">
+          <span class="tcard-hd-title">Weather &amp; nature conditions</span>
+          <svg class="tcard-ch" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="tcard-bd">
+          <div class="tcard-bd-inner">Cloud-forest conditions vary: rain, mist, and mud are normal. We may adjust daily timings or activities for your safety and for wildlife. Rare species are wild — sightings cannot be guaranteed. By joining, you accept that nature and weather shape the real experience.</div>
+        </div>
+      </div>
+      <div class="tcard" id="tcard5">
+        <div class="tcard-hd" onclick="toggleTcard('tcard5')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTcard('tcard5');}">
+          <span class="tcard-hd-title">Safety &amp; liability basics</span>
+          <svg class="tcard-ch" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="tcard-bd">
+          <div class="tcard-bd-inner">You must follow your guide’s instructions, stay on designated paths where required, and declare relevant health issues before departure. Remote travel has inherent risk. To the extent permitted by law, Ecotone limits liability as set out in the full terms. Adequate travel insurance is your responsibility.</div>
+        </div>
+      </div>
+      <div class="tcard" id="tcard6">
+        <div class="tcard-hd" onclick="toggleTcard('tcard6')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTcard('tcard6');}">
+          <span class="tcard-hd-title">Payment terms</span>
+          <svg class="tcard-ch" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="tcard-bd">
+          <div class="tcard-bd-inner">Payments are collected via our authorised booking partner (WeTravel) under their checkout terms. You may be asked for a deposit with balance by a stated date. Prices are per person in the published currency unless otherwise stated. If we must cancel a departure for our reasons, you’ll be offered a refund or reschedule per the full policy.</div>
+        </div>
+      </div>
+    </div>
+    <div class="terms-pdf-cta">
+      <a href="/ecotone-terms-conditions.pdf" class="download-btn" data-terms-pdf download>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download full terms (PDF)
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     MAP + BROCHURE (Resources) — after reviews in reading order
+     ════════════════════════════════════════════ -->
+<section class="content-section bg-warm fade" id="resources">
+  <div class="content-inner">
+    <div class="eyebrow">Resources</div>
+    <h2 class="h2" style="margin-bottom:16px">Download & plan</h2>
+    <div class="downloads-grid">
+      <div class="download-card">
+        <div class="download-preview">
+          <svg width="100%" height="100%" viewBox="0 0 300 100" style="background:linear-gradient(135deg,#e8f0d8,#c8d8a0)">
+            <path d="M0 50 Q75 30 150 50 Q225 70 300 50" fill="none" stroke="rgba(40,80,20,.25)" stroke-width="1.5"/>
+            <path d="M0 38 Q75 18 150 38 Q225 58 300 38" fill="none" stroke="rgba(40,80,20,.2)" stroke-width="1"/>
+            <path d="M0 62 Q75 42 150 62 Q225 82 300 62" fill="none" stroke="rgba(40,80,20,.2)" stroke-width="1"/>
+            <path d="M0 26 Q75 6 150 26 Q225 46 300 26" fill="none" stroke="rgba(40,80,20,.15)" stroke-width="1"/>
+            <circle cx="150" cy="50" r="5" fill="#906730" opacity=".9"/>
+            <circle cx="150" cy="50" r="10" fill="none" stroke="#906730" stroke-width="1.5" opacity=".3"/>
+            <text x="162" y="49" font-size="9" fill="#563B12" font-family="system-ui" font-weight="600">Soqtapata</text>
+            <text x="162" y="59" font-size="7" fill="#906730" font-family="system-ui">1,200 m</text>
+          </svg>
+        </div>
+        <div class="download-body">
+          <div class="download-title">Route map</div>
+          <div class="download-meta">Soqtapata · Trail overview · PDF · 2.4 MB</div>
+          <a href="#" class="download-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download PDF
+          </a>
+        </div>
+      </div>
+      <div class="download-card brochure">
+        <div class="download-preview" style="background:linear-gradient(145deg,var(--brown-xdk),var(--brown-dk));display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px">
+          <svg width="24" height="23" viewBox="0 0 105 101" fill="none"><path d="M103.703 59.25C102.343 49.75 97.3635 41.34 89.6735 35.59C89.3235 35.33 88.9635 35.07 88.6035 34.82C88.0135 15.52 72.1235 0 52.6835 0C33.6535 0 18.0434 14.86 16.8234 33.58C11.1834 37.11 6.62343 42.15 3.64343 48.28C-0.556567 56.91 -1.14654 66.66 1.98346 75.74C5.11346 84.81 11.5934 92.13 20.2234 96.33C25.2034 98.75 30.5535 99.98 35.9235 99.98C39.8735 99.98 43.8335 99.32 47.6735 98C49.0635 97.52 50.4034 96.96 51.7134 96.33L51.9534 96.46C56.9534 98.99 62.4335 100.31 68.0535 100.31C69.7735 100.31 71.5035 100.19 73.2335 99.94C82.7335 98.58 91.1434 93.6 96.8934 85.91C102.643 78.22 105.063 68.75 103.703 59.25Z" fill="#ECE5D5"/></svg>
+          <span style="font-size:10px;font-weight:600;letter-spacing:.14em;color:rgba(236,229,213,.65);text-transform:uppercase">Soqtapata · 3D/2N</span>
+        </div>
+        <div class="download-body">
+          <div class="download-title">Experience brochure</div>
+          <div class="download-meta">Full itinerary · Photos · Packing · PDF · 5.1 MB</div>
+          <a href="#" class="download-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download PDF
+          </a>
+        </div>
+      </div>
+      <div class="download-card">
+        <div class="download-preview" style="background:linear-gradient(160deg,var(--n50),var(--n100));display:flex;align-items:center;justify-content:center">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.5" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/></svg>
+        </div>
+        <div class="download-body">
+          <div class="download-title">Terms &amp; Conditions</div>
+          <div class="download-meta">Legal · Full text · PDF</div>
+          <a href="/ecotone-terms-conditions.pdf" class="download-btn" data-terms-pdf download>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download full terms (PDF)
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     FAQs
+     ════════════════════════════════════════════ -->
+<section class="content-section bg-warm fade" id="faq">
+  <div class="content-inner">
+    <div class="eyebrow">Common questions</div>
+    <h2 class="h2" style="margin-bottom:6px">Frequently asked questions</h2>
+    <p style="font-size:14px;font-weight:300;color:var(--n700);line-height:1.8;margin-bottom:22px">Everything else you might want to know before booking.</p>
+    <div class="faq-list">
+
+      <div class="faq-item" id="faq1">
+        <div class="faq-q" onclick="toggleFAQ('faq1')">
+          <span>Is this experience suitable for first-time visitors to the Amazon?</span>
+          <svg class="faq-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">Yes. Soqtapata is the most accessible of our routes — just 2.5 hours from Cusco. The terrain is cloud forest, not deep jungle, so it's appropriate for any fitness level. The 45-minute trek to the lodge is gentle. Your naturalist guide is with you at all times.</div></div>
+      </div>
+
+      <div class="faq-item" id="faq2">
+        <div class="faq-q" onclick="toggleFAQ('faq2')">
+          <span>What's the minimum and maximum group size?</span>
+          <svg class="faq-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">Minimum is 2 people. Maximum is 8 per group. This keeps the experience intimate and ensures wildlife isn't disturbed. Solo travellers can join a scheduled group departure — contact us via WhatsApp to check upcoming dates.</div></div>
+      </div>
+
+      <div class="faq-item" id="faq3">
+        <div class="faq-q" onclick="toggleFAQ('faq3')">
+          <span>What happens if the weather is bad?</span>
+          <svg class="faq-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">Cloud forest weather is unpredictable — light rain is common and part of the experience. Rubber boots and rain gear are provided. All activities are designed to work in all weather conditions. The EcoDroneView® flight may be rescheduled within the same trip if winds are too strong.</div></div>
+      </div>
+
+      <div class="faq-item" id="faq4">
+        <div class="faq-q" onclick="toggleFAQ('faq4')">
+          <span>Is altitude sickness a concern on this route?</span>
+          <svg class="faq-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">The lodge sits at 1,200 m.a.s.l., which is lower than Cusco (3,400 m). Most guests actually feel better once they're at the lodge. The drive from Cusco does pass through higher altitudes — we recommend 1-2 days of acclimatisation in Cusco before your departure.</div></div>
+      </div>
+
+      <div class="faq-item" id="faq5">
+        <div class="faq-q" onclick="toggleFAQ('faq5')">
+          <span>Is there WiFi or phone signal at the lodge?</span>
+          <svg class="faq-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">There is limited satellite WiFi available in the common area of the lodge — enough for messaging, not streaming. Phone signal is unavailable inside the reserve. Most guests find this a welcome disconnection. We'll provide emergency satellite communication if needed.</div></div>
+      </div>
+
+      <div class="faq-item" id="faq6">
+        <div class="faq-q" onclick="toggleFAQ('faq6')">
+          <span>Can I book a private departure for my group?</span>
+          <svg class="faq-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">Yes. Private departures are available for groups of 2–8 on any date, subject to lodge availability. Contact us via WhatsApp or email for private booking requests. A custom itinerary is also available through our Tailor Made program.</div></div>
+      </div>
+
+      <div class="faq-item" id="faq7">
+        <div class="faq-q" onclick="toggleFAQ('faq7')">
+          <span>What is your cancellation policy?</span>
+          <svg class="faq-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">Free cancellation up to 15 days before departure. Cancellations between 7–15 days receive a 50% refund. Cancellations under 7 days are non-refundable. All bookings are managed through WeTravel. We recommend travel insurance for all bookings.</div></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     RELATED EXPERIENCES
+     ════════════════════════════════════════════ -->
+<section class="content-section fade" id="also-camanti">
+  <div class="content-inner">
+    <div class="eyebrow">Also in Camanti</div>
+    <h2 class="h2" style="margin-bottom:14px">You might also like</h2>
+    <div class="related-grid">
+      <div class="related-card">
+        <div class="related-img">
+          <img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=600&q=80" alt="Andean Cloud Forest">
+          <div class="related-img-overlay"></div>
+          <span style="position:absolute;top:9px;left:9px" class="pill pill-dark" style="font-size:11px">Nature Core</span>
+          <span style="position:absolute;top:9px;right:9px;font-size:11px;font-weight:700;background:var(--brown);color:#fff;padding:3px 9px;border-radius:100px">4D · 3N</span>
+        </div>
+        <div class="related-body">
+          <div class="related-type">Nature Core</div>
+          <div class="related-name">Andean Cloud Forest</div>
+          <div class="related-meta">Extended trails · Night walks · Deeper forest access</div>
+          <div class="related-foot">
+            <span class="related-price">$1,200+</span>
+            <span style="font-size:12px;font-weight:600;color:var(--brown)">View →</span>
+          </div>
+        </div>
+      </div>
+      <div class="related-card" style="border-color:var(--b200);background:var(--b50)">
+        <div class="related-img" style="background:linear-gradient(145deg,var(--brown-xdk),var(--brown-dk));display:flex;align-items:center;justify-content:center">
+          <div style="text-align:center">
+            <svg width="28" height="27" viewBox="0 0 105 101" fill="none"><path d="M103.703 59.25C102.343 49.75 97.3635 41.34 89.6735 35.59C89.3235 35.33 88.9635 35.07 88.6035 34.82C88.0135 15.52 72.1235 0 52.6835 0C33.6535 0 18.0434 14.86 16.8234 33.58C11.1834 37.11 6.62343 42.15 3.64343 48.28C-0.556567 56.91 -1.14654 66.66 1.98346 75.74C5.11346 84.81 11.5934 92.13 20.2234 96.33C25.2034 98.75 30.5535 99.98 35.9235 99.98C39.8735 99.98 43.8335 99.32 47.6735 98C49.0635 97.52 50.4034 96.96 51.7134 96.33L51.9534 96.46C56.9534 98.99 62.4335 100.31 68.0535 100.31C69.7735 100.31 71.5035 100.19 73.2335 99.94C82.7335 98.58 91.1434 93.6 96.8934 85.91C102.643 78.22 105.063 68.75 103.703 59.25Z" fill="rgba(236,229,213,.5)"/></svg>
+            <div style="font-size:11px;font-weight:600;letter-spacing:.12em;color:rgba(236,229,213,.55);text-transform:uppercase;margin-top:6px">Tailor Made</div>
+          </div>
+        </div>
+        <div class="related-body">
+          <div class="related-type">Tailor Made</div>
+          <div class="related-name">Designed around you</div>
+          <div class="related-meta">Any duration · Any group size · Fully custom</div>
+          <div class="related-foot">
+            <span style="font-size:12px;font-weight:300;color:var(--n400)">Custom pricing</span>
+            <span style="font-size:12px;font-weight:600;color:var(--brown)">Enquire →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     FINAL BOOKING CTA
+     ════════════════════════════════════════════ -->
+<section class="content-section bg-warm" id="book">
+  <div class="content-inner">
+    <div class="eyebrow">Reserve your spot</div>
+    <h2 class="h2" style="margin-bottom:24px;text-align:center">Ready to go deep?</h2>
+    <div class="booking-card">
+      <div class="booking-price-big">$986<small>/ person</small></div>
+      <div style="font-size:13px;font-weight:300;color:var(--n400);margin-top:4px;margin-bottom:0">All inclusive · departure from Cusco · max 8 guests</div>
+      <div class="booking-divider"></div>
+      <div class="booking-rows">
+        <div class="booking-row"><span class="booking-rl">Route</span><span class="booking-rv">Camanti · Soqtapata Reserve</span></div>
+        <div class="booking-row"><span class="booking-rl">Duration</span><span class="booking-rv">3 days · 2 nights</span></div>
+        <div class="booking-row"><span class="booking-rl">Group size</span><span class="booking-rv">2 – 8 people</span></div>
+        <div class="booking-row"><span class="booking-rl">Pickup</span><span class="booking-rv">4:30–5:00 AM · Cusco</span></div>
+        <div class="booking-row"><span class="booking-rl">Includes</span><span class="booking-rv">Transport, lodge, all meals, guides, tech pack</span></div>
+      </div>
+      <button class="btn-book-main" onclick="window.open('https://www.wetravel.com','_blank')">Book on WeTravel →</button>
+      <button class="btn-wa-main" onclick="window.open('https://wa.me/51974781094?text=I%20want%20to%20book%20Soqtapata%203D/2N','_blank')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Ask via WhatsApp
+      </button>
+      <div class="trust-strip">
+        <div class="trust-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Secure payment</div>
+        <div class="trust-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>Free cancellation · 15 days</div>
+        <div class="trust-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>B Corp certified</div>
+      </div>
+      <p class="book-terms-note">By booking, you agree to our <a href="#terms">Terms &amp; Conditions</a>.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     FOOTER — shared component, same on every page
+     CMS controls: logo, tagline, columns, certifications
+     ════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="footer-brand-deco">
+    <svg viewBox="0 0 105 101" fill="none" style="width:100%;height:100%">
+      <path d="M103.703 59.25C102.343 49.75 97.3635 41.34 89.6735 35.59C89.3235 35.33 88.9635 35.07 88.6035 34.82C88.0135 15.52 72.1235 0 52.6835 0C33.6535 0 18.0434 14.86 16.8234 33.58C11.1834 37.11 6.62343 42.15 3.64343 48.28C-0.556567 56.91 -1.14654 66.66 1.98346 75.74C5.11346 84.81 11.5934 92.13 20.2234 96.33C25.2034 98.75 30.5535 99.98 35.9235 99.98C39.8735 99.98 43.8335 99.32 47.6735 98C49.0635 97.52 50.4034 96.96 51.7134 96.33L51.9534 96.46C56.9534 98.99 62.4335 100.31 68.0535 100.31C69.7735 100.31 71.5035 100.19 73.2335 99.94C82.7335 98.58 91.1434 93.6 96.8934 85.91C102.643 78.22 105.063 68.75 103.703 59.25Z" fill="white"/>
+    </svg>
+  </div>
+  <div class="footer-inner">
+    <div>
+      <div class="foot-logo">
+        <svg width="36" height="35" viewBox="0 0 105 101" fill="none">
+          <path d="M103.703 59.25C102.343 49.75 97.3635 41.34 89.6735 35.59C89.3235 35.33 88.9635 35.07 88.6035 34.82C88.0135 15.52 72.1235 0 52.6835 0C33.6535 0 18.0434 14.86 16.8234 33.58C11.1834 37.11 6.62343 42.15 3.64343 48.28C-0.556567 56.91 -1.14654 66.66 1.98346 75.74C5.11346 84.81 11.5934 92.13 20.2234 96.33C25.2034 98.75 30.5535 99.98 35.9235 99.98C39.8735 99.98 43.8335 99.32 47.6735 98C49.0635 97.52 50.4034 96.96 51.7134 96.33L51.9534 96.46C56.9534 98.99 62.4335 100.31 68.0535 100.31C69.7735 100.31 71.5035 100.19 73.2335 99.94C82.7335 98.58 91.1434 93.6 96.8934 85.91C102.643 78.22 105.063 68.75 103.703 59.25Z" fill="#ECE5D5"/>
+        </svg>
+        <svg viewBox="0 0 176 36" fill="none" style="height:22px;margin-top:5px">
+          <path d="M8.08002 33.61L20.73 28.67V35.43H0V1.40997H18.01V7.16998L8.08002 3.21997V15.15H15.93V17.78H8.08002V33.61Z" fill="#ECE5D5"/>
+          <path d="M44.7401 16.55L36.6201 10.2C32.9001 11.38 30.5401 15.51 30.5401 20.4C30.5401 26.48 34.5801 30.29 39.1101 30.29C42.1001 30.29 44.6001 29.29 46.4601 27.02L46.9101 27.34C45.2801 32.15 41.3801 35.87 35.3901 35.87C28.5001 35.87 22.8301 30.29 22.8301 22.63C22.8301 14.97 28.6801 8.62 37.4801 8.62C40.6101 8.62 43.1901 9.52999 44.7401 10.43V16.55Z" fill="#ECE5D5"/>
+          <path d="M76.8098 22.04C76.8098 29.75 71.1398 35.87 63.2498 35.87C55.3598 35.87 49.0098 30.06 49.0098 22.54C49.0098 14.87 54.5398 8.62 62.6198 8.62C70.6398 8.62 76.8098 14.56 76.8098 22.04ZM69.4198 25.4C69.4198 22.59 68.5998 19.73 67.1498 17.28C65.2898 14.15 62.5198 11.7 59.1698 10.79C57.2198 12.6 56.3998 15.82 56.3998 19.04C56.3998 21.94 57.3098 24.94 58.8498 27.48C60.7098 30.43 63.4298 32.74 66.6998 33.65C68.6498 31.84 69.4198 28.62 69.4198 25.4Z" fill="#ECE5D5"/>
+          <path d="M87.3998 0V9.07001H92.6198V12.93H87.3998V35.43H79.7798V6.17999L87.3998 0Z" fill="#ECE5D5"/>
+          <path d="M120.89 22.04C120.89 29.75 115.22 35.87 107.33 35.87C99.4398 35.87 93.0898 30.06 93.0898 22.54C93.0898 14.87 98.6198 8.62 106.7 8.62C114.73 8.62 120.89 14.56 120.89 22.04ZM113.5 25.4C113.5 22.59 112.68 19.73 111.23 17.28C109.37 14.15 106.6 11.7 103.25 10.79C101.3 12.6 100.48 15.82 100.48 19.04C100.48 21.94 101.39 24.94 102.93 27.48C104.79 30.43 107.51 32.74 110.78 33.65C112.73 31.84 113.5 28.62 113.5 25.4Z" fill="#ECE5D5"/>
+          <path d="M124.27 35.42V9.07001H131.89V12.11C135.7 10.02 138.74 8.62 141.46 8.62C145.41 8.62 147.45 11.02 147.45 15.11V35.43H139.83V15.97C139.83 13.61 138.88 12.34 136.79 12.34C135.7 12.34 134.3 12.52 131.89 13.7V35.43H124.27V35.42Z" fill="#ECE5D5"/>
+          <path d="M163.88 35.88C156.31 35.88 150.55 30.3 150.55 22.41C150.55 13.93 156.85 8.62 163.11 8.62C170.55 8.62 174.31 13.9299 175.08 19.0099H158.16C158.16 19.2399 158.16 19.51 158.16 19.78C158.16 26.67 162.24 30.3 167.32 30.3C170.45 30.3 172.85 29.08 174.71 26.81L175.16 27.17C173.77 31.43 169.91 35.88 163.88 35.88ZM158.39 16.69H167.69C166.83 14.01 164.47 11.11 161.2 10.52C159.93 11.66 158.85 13.7 158.39 16.69Z" fill="#ECE5D5"/>
+        </svg>
+      </div>
+      <div class="foot-tagline">People meet nature</div>
+      <p style="font-size:13px;font-weight:300;color:rgba(236,229,213,.38);line-height:1.65;margin-top:10px">Immersive nature tourism<br>Cusco, Perú · Manu & Camanti</p>
+    </div>
+    <div class="foot-col">
+      <h5>Explore</h5>
+      <ul class="foot-links">
+        <li><a href="#">Experiences</a></li>
+        <li><a href="#">Routes</a></li>
+        <li><a href="#">Lodges</a></li>
+        <li><a href="#">Programs</a></li>
+        <li><a href="#">Journal</a></li>
+      </ul>
+    </div>
+    <div class="foot-col">
+      <h5>Contact</h5>
+      <ul class="foot-links">
+        <li><a href="https://wa.me/51974781094">WhatsApp</a></li>
+        <li><a href="https://www.ecotone.eco">ecotone.eco</a></li>
+        <li><a href="#">Instagram</a></li>
+        <li><a href="#">Privacy policy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <p class="foot-copy">© 2025 Ecotone · HERPIRO · All rights reserved.</p>
+    <div class="foot-certs">
+      <span class="foot-cert">B Corp</span><div class="foot-cert-sep"></div>
+      <span class="foot-cert">ATTA Member</span><div class="foot-cert-sep"></div>
+      <span class="foot-cert">GSTC</span>
+    </div>
+  </div>
+</footer>
+
+
+<script>
+// ── Nav scroll ──
+const nav = document.getElementById('topNav');
+const stickyBar = document.getElementById('stickyBar');
+const navWordmarkPaths = document.getElementById('navWordmark').querySelectorAll('path');
+const navIsotipo = document.getElementById('navIsotipo').querySelector('path');
+let heroBottom = 0;
+
+window.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  const solid = y > 60;
+  nav.classList.toggle('solid', solid);
+  navIsotipo.setAttribute('fill', solid ? '#906730' : '#ECE5D5');
+  navWordmarkPaths.forEach(p => p.setAttribute('fill', solid ? '#906730' : '#ECE5D5'));
+  // Sticky bar
+  const identityEl = document.querySelector('.exp-identity');
+  if (identityEl) {
+    const rect = identityEl.getBoundingClientRect();
+    stickyBar.classList.toggle('visible', rect.bottom < 0);
+  }
+}, { passive: true });
+
+// ── Hamburger ──
+const ham = document.getElementById('ham');
+const drawer = document.getElementById('drawer');
+ham.addEventListener('click', () => drawer.classList.toggle('open'));
+drawer.querySelectorAll('a').forEach(a => a.addEventListener('click', () => drawer.classList.remove('open')));
+
+// ── Fade in on scroll ──
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+}, { threshold: 0.04 });
+document.querySelectorAll('.fade').forEach(f => io.observe(f));
+
+// ── Itinerary accordion ──
+function toggleDay(id) {
+  const card = document.getElementById(id);
+  const isOpen = card.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.day-card').forEach(c => c.classList.remove('open'));
+  // Toggle chevron colors
+  document.querySelectorAll('.day-chevron').forEach(c => c.setAttribute('stroke', 'var(--n400)'));
+  // Open clicked if it was closed
+  if (!isOpen) {
+    card.classList.add('open');
+    card.querySelector('.day-chevron').setAttribute('stroke', 'var(--brown)');
+  }
+}
+
+// ── Before you go accordion ──
+function toggleBFYG(id) {
+  const card = document.getElementById(id);
+  const isOpen = card.classList.contains('open');
+  document.querySelectorAll('.bfyg-card').forEach(c => c.classList.remove('open'));
+  if (!isOpen) card.classList.add('open');
+}
+
+// ── Terms accordion (independent of bfyg) ──
+function toggleTcard(id) {
+  const card = document.getElementById(id);
+  if (!card) return;
+  const isOpen = card.classList.contains('open');
+  document.querySelectorAll('.tcard').forEach(c => c.classList.remove('open'));
+  if (!isOpen) card.classList.add('open');
+}
+
+// ── Horizontal scroll arrows ──
+function hsScroll(btn, dir) {
+  var wrap = btn.closest && btn.closest('.wildlife-hscroll');
+  var hs = wrap && wrap.querySelector('.hscroll');
+  if (hs) hs.scrollBy({ left: dir * 170, behavior: 'smooth' });
+}
+
+// ── FAQ accordion ──
+function toggleFAQ(id) {
+  const item = document.getElementById(id);
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(f => f.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+// ── Page nav active state (offset = main nav + full #pageNav height) ──
+const sections = ['overview','itinerary','lodges','wildlife','includes','tech','media','when','before-you-go','reviews','terms','resources','faq','also-camanti','book'];
+function getStickySectionNavOffset() {
+  var navH = 0;
+  if (!document.body.classList.contains('ecotone-exp-past-hero')) {
+    navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h'), 10);
+    if (isNaN(navH) || navH < 40) navH = 64;
+  }
+  var pageNav = document.getElementById('pageNav');
+  var h = pageNav ? pageNav.getBoundingClientRect().height : 48;
+  return Math.round(navH + h + 8);
+}
+function updatePageNav() {
+  var pnavItems = document.querySelectorAll('#pageNav a[href^="#"]');
+  let current = sections[0];
+  const navOffset = getStickySectionNavOffset();
+  sections.forEach(function (id) {
+    const el = document.getElementById(id);
+    if (el && el.getBoundingClientRect().top <= navOffset) current = id;
+  });
+  pnavItems.forEach(function (item) {
+    const when = item.getAttribute('data-active-when');
+    if (when) {
+      const ids = when.split(/[\s,]+/).map(function (s) { return s.trim(); }).filter(Boolean);
+      item.classList.toggle('active', ids.indexOf(current) >= 0);
+    } else {
+      const href = item.getAttribute('href');
+      const hash = href && href.charAt(0) === '#' ? href.slice(1) : '';
+      item.classList.toggle('active', hash === current);
+    }
+  });
+  scrollActivePnavIntoView();
+}
+function scrollActivePnavIntoView() {
+  var cols = document.getElementById('pageNavCols') || document.querySelector('.page-nav-cols');
+  if (!cols) return;
+  var active = cols.querySelector('.pnav-top.active');
+  if (!active) return;
+  /* Mobile: never call scrollIntoView on in-sticky links — it scrolls the main document and fights hash/scroll. */
+  if (window.matchMedia('(max-width: 719px)').matches) {
+    var pageNav = document.getElementById('pageNav');
+    if (!pageNav || !pageNav.classList.contains('pnav-mobile-open')) return;
+    var cr = cols.getBoundingClientRect();
+    var ar = active.getBoundingClientRect();
+    if (ar.top < cr.top + 4) {
+      cols.scrollTop += ar.top - cr.top - 4;
+    } else if (ar.bottom > cr.bottom - 4) {
+      cols.scrollTop += ar.bottom - cr.bottom + 4;
+    }
+    return;
+  }
+  var cr = cols.getBoundingClientRect();
+  var ar = active.getBoundingClientRect();
+  if (ar.left < cr.left + 8) {
+    cols.scrollLeft += ar.left - cr.left - 12;
+  } else if (ar.right > cr.right - 8) {
+    cols.scrollLeft += ar.right - cr.right + 12;
+  }
+}
+window.addEventListener('scroll', updatePageNav, { passive: true });
+window.addEventListener('resize', updatePageNav, { passive: true });
+updatePageNav();
+if (typeof window !== 'undefined') window.__ecotoneExpSyncPnav = updatePageNav;
+document.querySelectorAll('.page-nav-cols a.pnav-top').forEach(function (a) {
+  a.addEventListener('click', function () {
+    if (window.matchMedia('(min-width: 720px)').matches) {
+      requestAnimationFrame(scrollActivePnavIntoView);
+    }
+  });
+});
+
+// ── Quote rotation — shared component ──
+// NOTE FOR CMS: quotes are fetched where review.experiences includes this experience slug
+const quotes = [
+  { text: '"Breathtaking place with amazing people <span>that changed my way of travelling."</span>', attr: '— Vanessa · London · Soqtapata 3D/2N' },
+  { text: '"Super comfortable place. <span>There are no words to describe the beauty."</span>', attr: '— Richard · California · Soqtapata 3D/2N' },
+  { text: '"The EcoDroneView above the canopy <span>was one of the most surreal moments of my life."</span>', attr: '— Sofia · Barcelona · Soqtapata 3D/2N' },
+];
+const qText = document.getElementById('quoteText');
+const qAttr = document.getElementById('quoteAttr');
+const qdots = document.querySelectorAll('.qdot');
+let qCurrent = 0;
+if (qText) {
+  qText.style.transition = 'opacity .35s';
+  qAttr.style.transition = 'opacity .35s';
+  function setQuote(i) {
+    qCurrent = i;
+    qText.style.opacity = '0'; qAttr.style.opacity = '0';
+    setTimeout(() => {
+      qText.innerHTML = quotes[i].text;
+      qAttr.textContent = quotes[i].attr;
+      qText.style.opacity = '1'; qAttr.style.opacity = '1';
+    }, 350);
+    qdots.forEach((d, idx) => d.classList.toggle('active', idx === i));
+  }
+  qdots.forEach((d, i) => d.addEventListener('click', () => { setQuote(i); clearInterval(qTimer); qTimer = setInterval(() => setQuote((qCurrent + 1) % quotes.length), 5500); }));
+  let qTimer = setInterval(() => setQuote((qCurrent + 1) % quotes.length), 5500);
+}
+</script>
+</body>
+</html>

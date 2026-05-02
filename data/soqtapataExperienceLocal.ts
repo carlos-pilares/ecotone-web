@@ -903,28 +903,20 @@ export const soqtapataPhase5 = {
   terms: soqtapataPhase5Terms,
 }
 
-export type SoqtapataResourceCard =
-  | {
-      kind: 'map'
-      title: string
-      meta: string
-      downloadHref: string
-      downloadLabel: string
-    }
-  | {
-      kind: 'brochure'
-      title: string
-      meta: string
-      downloadHref: string
-      downloadLabel: string
-    }
-  | {
-      kind: 'termsPdf'
-      title: string
-      meta: string
-      downloadHref: string
-      downloadLabel: string
-    }
+export type SoqtapataResourceCard = {
+  /** Sanity `_key` or stable id for lists */
+  id?: string
+  /** Editorial / CTA semantics */
+  kind: 'map' | 'brochure' | 'termsPdf' | 'custom'
+  /** Which built-in preview art to show when there is no image */
+  previewKind: 'map' | 'brochure' | 'termsPdf' | 'custom'
+  title: string
+  meta: string
+  downloadHref: string
+  downloadLabel: string
+  previewImageSrc?: string
+  previewImageAlt?: string
+}
 
 export type SoqtapataResources = {
   eyebrow: string
@@ -999,21 +991,27 @@ export const soqtapataPhase6Resources: SoqtapataResources = {
   h2Style: { marginBottom: 16 },
   cards: [
     {
+      id: 'local-map',
       kind: 'map',
+      previewKind: 'map',
       title: 'Route map',
       meta: 'Soqtapata · Trail overview · PDF · 2.4 MB',
       downloadHref: '#',
       downloadLabel: 'Download PDF',
     },
     {
+      id: 'local-brochure',
       kind: 'brochure',
+      previewKind: 'brochure',
       title: 'Experience brochure',
       meta: 'Full itinerary · Photos · Packing · PDF · 5.1 MB',
       downloadHref: '#',
       downloadLabel: 'Download PDF',
     },
     {
+      id: 'local-terms',
       kind: 'termsPdf',
+      previewKind: 'termsPdf',
       title: 'Terms & Conditions',
       meta: 'Legal · Full text · PDF',
       downloadHref: '/ecotone-terms-conditions.pdf',

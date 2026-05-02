@@ -18,7 +18,8 @@
   --b50: #FAF3E8;
   --b100: #EDD9B8;
   --b200: #D4AA72;
-  --f: 'Lexend', system-ui, sans-serif;
+  /* Keep in sync with app/layout.tsx next/font Lexend (--font-lexend on html) */
+  --f: var(--font-lexend), system-ui, sans-serif;
   --nav-h: 64px;
   --g: clamp(20px, 3vw, 40px);
   --max: 1200px;

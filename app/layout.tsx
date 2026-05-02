@@ -1,6 +1,17 @@
+import { Lexend } from 'next/font/google'
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import './globals.css'
+import './shell-logo-tokens.css'
+import './shell-nav-logo.css'
+
+const lexend = Lexend({
+  subsets: ['latin'],
+  weight: ['200', '300', '400', '500', '600', '700'],
+  display: 'swap',
+  variable: '--font-lexend',
+  adjustFontFallback: true,
+})
 
 export const metadata: Metadata = {
   title: 'Ecotone — Immersive Nature Experiences · Cusco, Perú',
@@ -9,15 +20,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Lexend:wght@200;300;400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="en" className={lexend.variable}>
       <body>{children}</body>
     </html>
   )
