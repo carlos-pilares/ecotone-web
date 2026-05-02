@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 import { DEFAULT_FEATURED_QUOTES } from '@/lib/homeQuoteDefaults'
 import type { HomePageDoc, ReviewDoc } from '@/lib/queries'
 
@@ -91,6 +93,8 @@ export type ReviewsSectionProps = {
   contentInnerClassName?: string
   /** CTA card at the end of the carousel (e.g. link to all Trustpilot reviews). */
   emptyMessage?: string
+  /** Optional node after review cards inside the horizontal scroller (e.g. “All reviews” link card). */
+  reviewCarouselEnd?: ReactNode
 }
 
 export function ReviewsSection({
@@ -107,6 +111,7 @@ export function ReviewsSection({
   sectionClassName = 'sec bg-cream fade',
   contentInnerClassName = 'sec-inner',
   emptyMessage = 'No guest reviews for this program yet. Be the first to share your experience.',
+  reviewCarouselEnd = null,
 }: ReviewsSectionProps) {
   const resolvedSectionLead = (() => {
     if (sectionLead != null && String(sectionLead).trim()) return String(sectionLead).trim()
@@ -235,6 +240,7 @@ export function ReviewsSection({
                 </div>
               )
             })}
+            {reviewCarouselEnd}
           </div>
           {list.length > 0 && !showEmpty ? (
             <div className="rev-card-dots" id="revCardDots" role="tablist" aria-label="Select a review">

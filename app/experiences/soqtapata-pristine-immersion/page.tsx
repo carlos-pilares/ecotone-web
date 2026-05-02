@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { ExperiencePageChromeClient } from '@/components/ExperiencePageChromeClient'
+import { InPageNavDrawerClient } from '@/components/shared/InPageNavDrawerClient'
 import { EcotoneV2Client } from '@/components/EcotoneV2Client'
 import { SoqtapataPhotoLightbox } from '@/components/SoqtapataPhotoLightbox'
 import { IsotipoDefs } from '@/components/IsotipoDefs'
@@ -28,6 +29,7 @@ import { ExperienceBookSoqtapata } from '@/components/experience/ExperienceBookS
 import { soqtapataReviewKey } from '@/lib/reviewsTypes'
 import type { ReviewsSectionProps } from '@/components/ReviewsSection'
 
+import '@/components/shared/in-page-nav.css'
 import '../experience-surface.css'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -99,6 +101,7 @@ export default async function SoqtapataPristineImmersionPage() {
         {sec.reserve !== false ? <ExperienceBookSoqtapata data={ex.book} /> : null}
       </div>
       <ExperiencePageChromeClient />
+      <InPageNavDrawerClient />
       <SiteFooter />
     </EcotoneV2Client>
   )

@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soqtapata Lodge — Ecotone · Cusco, Perú</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   ECOTONE DESIGN SYSTEM
+   ═══════════════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --brown:#906730;--brown-dk:#563B12;--brown-xdk:#2C1D07;--cream:#ECE5D5;
+  --w:#FDFCF9;--n50:#F7F4EE;--n100:#EDE7DA;--n200:#D8CFBF;
+  --n400:#A59880;--n700:#4A3E30;--n900:#1A1209;
+  --b50:#FAF3E8;--b100:#EDD9B8;--b200:#D4AA72;
+  --f:'Lexend',system-ui,sans-serif;
+  --nav-h:60px;--g:clamp(20px,3vw,40px);--max:1200px;--r:14px;--rl:20px;--rxl:28px
+}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:var(--f);background:var(--w);color:var(--n900);overflow-x:hidden;font-weight:300;font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
+img{display:block;width:100%;object-fit:cover}
+a{color:inherit;text-decoration:none}
+button{font-family:var(--f);cursor:pointer}
+
+/* ── SHARED TYPOGRAPHY ── */
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--brown);display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.eyebrow::before{content:'';width:18px;height:1px;background:var(--b200);flex-shrink:0}
+.eyebrow-lt{color:rgba(212,170,114,.72)}
+.eyebrow-lt::before{background:rgba(212,170,114,.3)}
+.h2{font-size:clamp(22px,3vw,34px);font-weight:700;line-height:1.1;letter-spacing:-.022em;color:var(--n900);margin-bottom:14px}
+
+/* ── SHARED BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:7px;font-family:var(--f);font-size:13px;font-weight:700;letter-spacing:.04em;padding:12px 26px;border-radius:100px;border:none;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-primary{background:var(--brown);color:#fff}
+.btn-primary:hover{background:var(--brown-dk);transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--n900);border:1.5px solid var(--n200)}
+.btn-ghost:hover{border-color:var(--brown);color:var(--brown);background:var(--b50)}
+
+/* ── SHARED PILLS ── */
+.pill{display:inline-flex;align-items:center;font-size:12px;font-weight:600;padding:5px 12px;border-radius:100px}
+.pill-amber{background:var(--b50);border:1px solid var(--b200);color:var(--brown-dk)}
+.pill-glass{background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.38);color:var(--cream);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.pill-brown{background:var(--brown);color:#fff}
+
+/* ── STARS ── */
+.star{width:12px;height:12px;background:var(--brown);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.stars{display:flex;gap:2px}
+
+/* ── FADE IN ── */
+.fade{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+.fade.in{opacity:1;transform:none}
+
+/* ── CONTENT SECTIONS ── */
+.content-section{padding:56px var(--g);border-bottom:1px solid var(--n200)}
+.content-inner{max-width:var(--max);margin:0 auto}
+.bg-warm{background:var(--n50)}
+.bg-parch{background:var(--n100)}
+.bg-cream{background:var(--b50)}
+
+/* ═══════════════════════════════════════════════════════════
+   NAV — mega-menu
+   ═══════════════════════════════════════════════════════════ */
+.top-nav{position:fixed;top:0;left:0;right:0;z-index:300;height:var(--nav-h);transition:background .35s,border-color .35s,transform .4s ease;border-bottom:1px solid transparent}
+.top-nav.solid{background:rgba(253,252,249,.97);backdrop-filter:blur(20px);border-bottom-color:var(--n200);box-shadow:0 1px 16px rgba(26,18,9,.05)}
+.top-nav.hidden{transform:translateY(-100%)}
+.nav-inner{max-width:var(--max);margin:0 auto;height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;padding:0 var(--g)}
+.nav-logo{display:flex;align-items:center;gap:10px}
+.nav-isotipo{width:28px;height:27px;flex-shrink:0;transition:color .35s;color:var(--cream)}
+.top-nav.solid .nav-isotipo{color:var(--brown)}
+.nav-wordmark{height:18px;flex-shrink:0}
+
+/* Nav links — pill style with chevron */
+.nav-links{display:flex;align-items:center;gap:4px;list-style:none}
+.nav-links li{position:relative}
+.nav-link-btn{display:flex;align-items:center;gap:5px;font-family:var(--f);font-size:13px;font-weight:400;color:rgba(236,229,213,.82);background:transparent;border:none;cursor:pointer;padding:7px 13px;border-radius:100px;transition:background .15s,color .15s}
+.top-nav.solid .nav-link-btn{color:var(--n700)}
+.nav-link-btn:hover,.nav-link-btn.open{background:var(--n100);color:var(--n900)!important}
+.nav-link-btn.active-page{color:var(--cream)!important;font-weight:600}
+.top-nav.solid .nav-link-btn.active-page{color:var(--brown)!important}
+.nav-link-chevron{transition:transform .22s;flex-shrink:0;opacity:.6}
+.nav-link-btn.open .nav-link-chevron{transform:rotate(180deg);opacity:1}
+
+/* Nav overlay */
+.nav-overlay{position:fixed;inset:0;background:rgba(26,18,9,.22);z-index:295;opacity:0;pointer-events:none;transition:opacity .22s}
+.nav-overlay.visible{opacity:1;pointer-events:all}
+
+/* Dropdown panel */
+.nav-dropdown{position:fixed;top:var(--nav-h);left:0;right:0;z-index:298;background:rgba(253,252,249,.98);backdrop-filter:blur(24px);border-bottom:1px solid var(--n200);box-shadow:0 16px 48px rgba(26,18,9,.12);padding:28px var(--g) 24px;display:none;animation:ddIn .18s ease}
+.nav-dropdown.open{display:block}
+@keyframes ddIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.nav-dropdown-inner{max-width:var(--max);margin:0 auto}
+
+/* Dropdown columns */
+.dd-col-label{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--brown);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.dd-col-label::before{content:'';width:14px;height:1px;background:var(--b200)}
+
+/* Experiences — 3 cols */
+.dd-exp-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 36px}
+.dd-exp-item{display:flex;align-items:flex-start;gap:11px;padding:9px 0;border-bottom:0.5px solid var(--n100);cursor:pointer;text-decoration:none}
+.dd-exp-item:last-child{border-bottom:none}
+.dd-exp-item:hover .dd-exp-name{color:var(--brown)}
+.dd-exp-thumb{width:54px;height:40px;border-radius:7px;overflow:hidden;flex-shrink:0;background:var(--n200)}
+.dd-exp-thumb img{width:100%;height:100%;object-fit:cover}
+.dd-exp-route{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--brown);margin-bottom:2px}
+.dd-exp-name{font-size:13px;font-weight:700;color:var(--n900);line-height:1.3;margin-bottom:2px;transition:color .15s}
+.dd-exp-meta{font-size:11px;font-weight:300;color:var(--n400)}
+.dd-tailor-item{background:var(--b50);border:0.5px solid var(--b200);border-radius:9px;padding:9px 11px;margin-top:5px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.dd-tailor-icon{width:40px;height:32px;border-radius:7px;background:linear-gradient(135deg,var(--brown-xdk),var(--brown-dk));display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dd-see-all{display:inline-flex;align-items:center;gap:6px;margin-top:16px;font-size:12px;font-weight:600;color:var(--brown);cursor:pointer;text-decoration:none}
+
+/* Routes — image + list */
+.dd-routes-grid{display:grid;grid-template-columns:210px 1fr;gap:28px}
+.dd-route-img{height:168px;border-radius:12px;overflow:hidden;position:relative}
+.dd-route-img img{width:100%;height:100%;object-fit:cover}
+.dd-route-img-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.3) 0%,rgba(0,0,0,.65) 100%)}
+.dd-route-img-text{position:absolute;bottom:12px;left:14px;font-size:13px;font-weight:300;color:rgba(236,229,213,.82);line-height:1.55}
+.dd-routes-list{display:flex;flex-direction:column;justify-content:center;gap:4px}
+.dd-route-item{display:flex;align-items:center;padding:11px 13px;border-radius:10px;cursor:pointer;transition:background .12s;border:0.5px solid transparent;text-decoration:none}
+.dd-route-item:hover{background:var(--n100);border-color:var(--n200)}
+.dd-route-num{width:22px;height:22px;border-radius:50%;background:var(--brown);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:11px}
+.dd-route-name{font-size:14px;font-weight:700;color:var(--n900)}
+.dd-route-sub{font-size:12px;font-weight:300;color:var(--n400);margin-top:1px}
+.dd-route-count{font-size:11px;font-weight:600;color:var(--n400);margin-left:auto;flex-shrink:0}
+
+/* Lodges — 4 cards */
+.dd-lodges-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.dd-lodge-card{border:0.5px solid var(--n200);border-radius:11px;overflow:hidden;cursor:pointer;transition:border-color .15s,box-shadow .15s;text-decoration:none;display:block;background:var(--w)}
+.dd-lodge-card:hover{border-color:var(--b200);box-shadow:0 4px 18px rgba(144,103,48,.1)}
+.dd-lodge-card.own{border-color:var(--b200)}
+.dd-lodge-img{height:86px;overflow:hidden;position:relative}
+.dd-lodge-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.dd-lodge-card:hover .dd-lodge-img img{transform:scale(1.05)}
+.dd-lodge-badge{position:absolute;top:7px;right:7px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px}
+.dd-lodge-badge.own{background:var(--brown);color:#fff}
+.dd-lodge-badge.alliance{background:rgba(0,0,0,.6);color:#fff}
+.dd-lodge-body{padding:9px 11px 11px}
+.dd-lodge-name{font-size:13px;font-weight:700;color:var(--n900);margin-bottom:2px}
+.dd-lodge-meta{font-size:11px;font-weight:300;color:var(--n400)}
+
+/* Mobile nav */
+.hamburger{display:none;background:none;border:none;padding:4px;flex-direction:column;gap:5px;cursor:pointer}
+.hamburger span{display:block;width:22px;height:1.5px;background:var(--cream);transition:background .35s}
+.top-nav.solid .hamburger span{background:var(--n900)}
+@media(max-width:720px){.nav-links,.nav-book.desk{display:none!important}.hamburger{display:flex!important}}
+
+/* Mobile drawer — accordion */
+.mobile-drawer{display:none;position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;z-index:296;background:var(--w);overflow-y:auto;flex-direction:column}
+.mobile-drawer.open{display:flex}
+.mob-section-btn{display:flex;align-items:center;justify-content:space-between;padding:15px var(--g);font-family:var(--f);font-size:15px;font-weight:600;color:var(--n900);background:none;border:none;border-bottom:0.5px solid var(--n200);cursor:pointer;width:100%;text-align:left}
+.mob-section-btn svg{transition:transform .22s;flex-shrink:0;color:var(--n400)}
+.mob-section-btn.open svg{transform:rotate(180deg)}
+.mob-section-content{display:none;padding:8px var(--g) 16px;border-bottom:0.5px solid var(--n200);flex-direction:column;gap:2px}
+.mob-section-content.open{display:flex}
+.mob-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;font-size:14px;font-weight:400;color:var(--n700);text-decoration:none;cursor:pointer;transition:background .12s}
+.mob-link:hover{background:var(--n100)}
+.mob-link-thumb{width:40px;height:32px;border-radius:6px;overflow:hidden;flex-shrink:0;background:var(--n200)}
+.mob-link-thumb img{width:100%;height:100%;object-fit:cover}
+.mob-link-text{font-size:13px;font-weight:600;color:var(--n900)}
+.mob-link-sub{font-size:11px;font-weight:300;color:var(--n400)}
+.mob-direct{display:block;padding:14px var(--g);font-size:15px;font-weight:400;color:var(--n700);border-bottom:0.5px solid var(--n200);text-decoration:none}
+.mob-footer{padding:16px var(--g) 32px;margin-top:auto}
+.mob-book{display:block;width:100%;text-align:center;background:var(--brown);color:#fff;font-size:14px;font-weight:700;padding:14px;border-radius:100px;border:none;cursor:pointer;font-family:var(--f)}
+
+/* ═══════════════════════════════════════════════════════════
+   LODGE PAGE — specific styles
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── HERO FULL-BLEED ── */
+.lodge-hero{padding-top:var(--nav-h)}
+.lodge-hero-fullbleed{position:relative;height:clamp(420px,58vh,600px);overflow:hidden}
+.lodge-hero-fullbleed>img{width:100%;height:100%;object-fit:cover;display:block}
+.lodge-hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.18) 0%,rgba(0,0,0,.04) 30%,rgba(26,18,9,.72) 65%,rgba(26,18,9,.9) 100%)}
+.lodge-hero-photos{position:absolute;top:16px;right:16px;background:rgba(0,0,0,.6);color:#fff;font-size:12px;font-weight:600;padding:6px 14px;border-radius:100px;border:1px solid rgba(255,255,255,.2);cursor:pointer;font-family:var(--f);transition:background .2s}
+.lodge-hero-photos:hover{background:rgba(0,0,0,.85)}
+.lodge-hero-identity{position:absolute;bottom:0;left:0;right:0;padding:24px var(--g) 28px}
+.lodge-hero-identity-inner{max-width:var(--max);margin:0 auto}
+.lodge-breadcrumb{font-size:11px;font-weight:400;letter-spacing:.1em;color:rgba(236,229,213,.4);margin-bottom:13px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.lodge-breadcrumb a{color:inherit;text-decoration:none;transition:color .2s}
+.lodge-breadcrumb a:hover{color:rgba(236,229,213,.75)}
+.lodge-breadcrumb .current{color:var(--b200)}
+.lodge-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:11px}
+.lodge-h1{font-size:clamp(26px,4.5vw,48px);font-weight:700;line-height:1.04;letter-spacing:-.028em;color:var(--cream);margin-bottom:9px}
+.lodge-tagline{font-size:14px;font-weight:300;color:rgba(236,229,213,.58);line-height:1.65;max-width:520px;margin-bottom:16px}
+.lodge-identity-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.lodge-rating{display:flex;align-items:center;gap:8px}
+@media(max-width:560px){.lodge-identity-foot{flex-direction:column;align-items:flex-start;gap:12px}}
+
+/* Snapshot bar — icon cards */
+.snapshot-bar{background:var(--w);border-bottom:1px solid var(--n200)}
+.snapshot-cards-inner{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr);gap:8px;padding:12px var(--g)}
+@media(max-width:860px){.snapshot-cards-inner{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:480px){.snapshot-cards-inner{grid-template-columns:repeat(2,1fr)}}
+.snap-card{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--n50);border-radius:10px;border:0.5px solid var(--n200)}
+.snap-card-bcorp{background:var(--b50);border-color:var(--b200)}
+.snap-icon{width:32px;height:32px;border-radius:8px;background:var(--b50);border:1px solid var(--b200);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.snap-icon-bcorp{background:var(--brown);border-color:var(--brown)}
+.snap-n{font-size:13px;font-weight:700;color:var(--n900);line-height:1;letter-spacing:-.01em}
+.snap-l{font-size:11px;font-weight:300;color:var(--n400);margin-top:3px}
+
+/* Page nav */
+.page-nav{background:var(--w);border-bottom:1.5px solid var(--n200);position:sticky;top:var(--nav-h);z-index:199;transition:box-shadow .3s}
+.page-nav.scrolled{box-shadow:0 2px 16px rgba(26,18,9,.06)}
+.page-nav-inner{max-width:var(--max);margin:0 auto;display:flex;align-items:center;gap:0;overflow-x:auto;scrollbar-width:none;padding:0 var(--g)}
+.page-nav-inner::-webkit-scrollbar{display:none}
+.page-nav-left{display:flex;flex-direction:column;justify-content:center;padding:10px 20px 10px 0;flex-shrink:0;min-width:140px}
+.page-nav-title{font-size:13px;font-weight:700;color:var(--n900);white-space:nowrap}
+.page-nav-sub{font-size:11px;font-weight:300;color:var(--n400);white-space:nowrap}
+.page-nav-links{display:flex;flex:1;overflow-x:auto;scrollbar-width:none}
+.page-nav-links::-webkit-scrollbar{display:none}
+.pnav-item{font-size:13px;font-weight:400;color:var(--n400);padding:14px 16px;white-space:nowrap;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;cursor:pointer;flex-shrink:0;text-decoration:none;display:block}
+.pnav-item:hover{color:var(--brown)}
+.pnav-item.active{color:var(--brown);font-weight:600;border-bottom-color:var(--brown)}
+.pnav-cta{display:flex;align-items:center;padding:0 0 0 16px;flex-shrink:0}
+@media(max-width:600px){.pnav-item{font-size:12px;padding:12px 12px}.page-nav-left{display:none}}
+
+/* ── OVERVIEW — highlight chips ── */
+.highlights-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:600px}
+@media(max-width:480px){.highlights-grid{grid-template-columns:1fr}}
+.highlight-chip{display:flex;align-items:flex-start;gap:11px;padding:12px 13px;background:var(--n50);border-radius:10px;border:0.5px solid var(--n200)}
+.highlight-chip-icon{width:32px;height:32px;border-radius:8px;background:var(--b50);border:1px solid var(--b200);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.highlight-chip-title{font-size:13px;font-weight:700;color:var(--n900);line-height:1.3}
+.highlight-chip-sub{font-size:11px;font-weight:300;color:var(--n400);margin-top:3px}
+
+/* ── ROOMS ── */
+.room-card{border:1px solid var(--n200);border-radius:var(--rl);overflow:hidden;display:grid;grid-template-columns:180px 1fr;transition:border-color .18s,box-shadow .18s;cursor:pointer}
+.room-card:hover{border-color:var(--b200);box-shadow:0 4px 20px rgba(144,103,48,.1)}
+.room-card.featured{border:1.5px solid var(--b200);background:var(--b50)}
+@media(max-width:560px){.room-card{grid-template-columns:1fr}.room-img{height:160px!important}}
+.room-img{overflow:hidden}
+.room-img img{height:100%}
+.room-body{padding:20px 22px;display:flex;flex-direction:column;justify-content:space-between;gap:14px}
+.room-name{font-size:16px;font-weight:700;color:var(--n900);letter-spacing:-.01em}
+.room-meta{font-size:13px;font-weight:300;color:var(--n400);margin-top:4px;line-height:1.6}
+.room-chips{display:flex;gap:6px;flex-wrap:wrap}
+.room-chip{font-size:12px;background:var(--w);color:var(--n700);padding:4px 11px;border-radius:100px;border:1px solid var(--n200)}
+.room-card.featured .room-chip{background:var(--b50);border-color:var(--b200)}
+
+/* ── AMENITIES ── */
+.amenity-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:680px){.amenity-grid{grid-template-columns:repeat(3,1fr)}}
+.amenity-card{background:var(--w);border:1px solid var(--n200);border-radius:var(--r);padding:14px 16px;display:flex;align-items:flex-start;gap:12px}
+.amenity-icon{width:32px;height:32px;border-radius:9px;background:var(--b50);border:1px solid var(--b200);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* ── LOCATION ── */
+.map-container{border-radius:var(--rl);overflow:hidden;border:1px solid var(--n200);margin-bottom:16px}
+.journey-step{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--n50);border-radius:var(--r);border:1px solid var(--n200)}
+.journey-step.highlight{background:var(--b50);border-color:var(--b200)}
+.journey-time{font-size:12px;font-weight:600;color:var(--brown);width:58px;flex-shrink:0}
+
+/* ── RESEARCH ── */
+.research-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.stat-card{background:var(--w);border:1px solid var(--n200);border-radius:var(--r);padding:14px;text-align:center}
+.stat-n{font-size:24px;font-weight:700;color:var(--brown);letter-spacing:-.03em;line-height:1}
+.stat-l{font-size:12px;font-weight:300;color:var(--n400);margin-top:5px;line-height:1.4}
+
+/* ── SCROLL OFFSET — compensate for page nav when main nav is hidden ── */
+[id]{scroll-margin-top:calc(48px + 20px)}
+
+/* ── NAV — hides on scroll past hero, page nav takes over ── */
+.top-nav{position:fixed;top:0;left:0;right:0;z-index:300;height:var(--nav-h);transition:background .35s,border-color .35s,transform .4s ease;border-bottom:1px solid transparent}
+.top-nav.solid{background:rgba(253,252,249,.97);backdrop-filter:blur(20px);border-bottom-color:var(--n200);box-shadow:0 1px 16px rgba(26,18,9,.05)}
+.top-nav.hidden{transform:translateY(-100%)}
+
+/* Page nav — sticks to very top when main nav scrolls away */
+.page-nav{background:var(--w);border-bottom:1.5px solid var(--n200);position:sticky;top:var(--nav-h);z-index:199;transition:top .35s ease,box-shadow .3s}
+.page-nav.at-top{top:0;box-shadow:0 2px 16px rgba(26,18,9,.08)}
+
+/* ── EXPERIENCE CARDS — same as homepage explorer ── */
+.exp-cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:760px){.exp-cards-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.exp-cards-grid{grid-template-columns:1fr}}
+.exp-card-v{background:var(--w);border:1px solid var(--n200);border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .2s;display:flex;flex-direction:column}
+.exp-card-v:hover{border-color:var(--b200);box-shadow:0 8px 32px rgba(144,103,48,.12);transform:translateY(-3px)}
+.exp-card-v-img{position:relative;height:clamp(140px,18vw,190px);overflow:hidden;background:var(--n900)}
+.exp-card-v-img img{height:100%;transition:transform .5s ease}
+.exp-card-v:hover .exp-card-v-img img{transform:scale(1.06)}
+.exp-card-v-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.52) 0%,rgba(0,0,0,.04) 45%,rgba(0,0,0,.52) 100%)}
+.exp-card-v-type{position:absolute;top:10px;left:10px;font-size:11px;font-weight:700;background:rgba(0,0,0,.65);color:#fff;padding:3px 9px;border-radius:100px}
+.exp-card-v-route{position:absolute;bottom:10px;left:10px;font-size:11px;font-weight:600;background:rgba(0,0,0,.65);color:rgba(236,229,213,.9);padding:3px 9px;border-radius:100px}
+.exp-card-v-dur{position:absolute;top:10px;right:10px;font-size:11px;font-weight:700;background:var(--brown);color:#fff;padding:3px 9px;border-radius:100px}
+.exp-card-v-body{padding:14px 14px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
+.exp-card-v-name{font-size:14px;font-weight:700;color:var(--n900);line-height:1.25;letter-spacing:-.01em}
+.exp-card-v-desc{font-size:12px;font-weight:300;color:var(--n400);line-height:1.6;flex:1}
+.exp-card-v-foot{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--n200);margin-top:auto}
+.exp-card-v-price{font-size:16px;font-weight:700;color:var(--brown);letter-spacing:-.02em}
+.exp-card-v-cta{font-size:12px;font-weight:600;color:var(--brown);display:flex;align-items:center;gap:3px}
+.exp-card-tailor{grid-column:1/-1;border:1.5px solid var(--b200);border-radius:var(--rl);background:linear-gradient(135deg,var(--brown-xdk),var(--brown-dk));padding:24px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px;cursor:pointer;transition:opacity .18s}
+.exp-card-tailor:hover{opacity:.9}
+@media(max-width:560px){.exp-card-tailor{flex-direction:column;align-items:flex-start}}
+.common-areas-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;border-radius:var(--rl);overflow:hidden}
+.common-photo{position:relative;overflow:hidden;cursor:pointer}
+.common-photo img{width:100%;height:100%;object-fit:cover;transition:transform .4s ease}
+.common-photo:hover img{transform:scale(1.04)}
+.common-photo-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.2) 0%,transparent 40%,rgba(0,0,0,.55) 100%)}
+.common-photo-label{position:absolute;bottom:12px;left:14px;font-size:13px;font-weight:600;color:var(--cream)}
+.common-photo-sub{position:absolute;bottom:12px;right:14px;font-size:11px;font-weight:400;color:rgba(236,229,213,.75)}
+
+/* ── EXPERIENCES GRID ── */
+.exp-cards-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:560px){.exp-cards-grid{grid-template-columns:1fr}}
+.exp-card-v{border:1px solid var(--n200);border-radius:var(--rl);overflow:hidden;background:var(--w);cursor:pointer;transition:border-color .18s,box-shadow .2s;display:flex;flex-direction:column}
+.exp-card-v:hover{border-color:var(--b200);box-shadow:0 8px 32px rgba(144,103,48,.12);transform:translateY(-2px)}
+.exp-card-v-img{position:relative;height:clamp(160px,22vw,220px);overflow:hidden}
+.exp-card-v-img img{height:100%;transition:transform .5s ease}
+.exp-card-v:hover .exp-card-v-img img{transform:scale(1.05)}
+.exp-card-v-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.5) 0%,rgba(0,0,0,.04) 45%,rgba(0,0,0,.55) 100%)}
+.exp-card-v-type{position:absolute;top:12px;left:12px;font-size:11px;font-weight:700;background:rgba(0,0,0,.65);color:#fff;padding:4px 10px;border-radius:100px}
+.exp-card-v-dur{position:absolute;top:12px;right:12px;font-size:11px;font-weight:700;background:var(--brown);color:#fff;padding:4px 10px;border-radius:100px}
+.exp-card-v-body{padding:16px 16px 18px;display:flex;flex-direction:column;gap:8px;flex:1}
+.exp-card-v-name{font-size:15px;font-weight:700;color:var(--n900);line-height:1.25;letter-spacing:-.01em}
+.exp-card-v-desc{font-size:13px;font-weight:300;color:var(--n400);line-height:1.6}
+.exp-card-v-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:10px;border-top:1px solid var(--n200)}
+.exp-card-v-price{font-size:17px;font-weight:700;color:var(--brown);letter-spacing:-.02em}
+.exp-card-v-cta{font-size:12px;font-weight:700;color:var(--brown);display:flex;align-items:center;gap:4px}
+.exp-card-tailor{grid-column:1/-1;border:1.5px solid var(--b200);border-radius:var(--rl);background:linear-gradient(135deg,var(--brown-xdk),var(--brown-dk));padding:24px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px;cursor:pointer;transition:opacity .18s}
+.exp-card-tailor:hover{opacity:.92}
+@media(max-width:560px){.exp-card-tailor{flex-direction:column;align-items:flex-start}}
+
+/* ── REVIEWS — shared component ── */
+.reviews-header{display:grid;grid-template-columns:1fr auto;align-items:start;gap:20px;margin-bottom:24px}
+.big-score{font-size:52px;font-weight:700;color:var(--n900);line-height:1;letter-spacing:-.05em}
+.tp-badge{display:flex;align-items:center;gap:4px;margin-top:5px}
+.tp-icon{width:15px;height:15px;background:#00B67A;border-radius:2px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.quote-featured{text-align:center;padding:22px 12px 20px}
+.quote-text{font-size:clamp(18px,3vw,28px);font-weight:700;color:var(--n900);line-height:1.18;letter-spacing:-.02em;margin-bottom:10px}
+.quote-text span{font-weight:300;color:var(--n700)}
+.quote-attr{font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--brown);margin-bottom:16px}
+.quote-dots{display:flex;justify-content:center;gap:7px}
+.qdot{width:7px;height:7px;border-radius:50%;background:var(--n200);border:none;padding:0;cursor:pointer;transition:background .2s}
+.qdot.active{background:var(--brown)}
+.rev-scroll{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:4px;scrollbar-width:none}
+.rev-scroll::-webkit-scrollbar{display:none}
+.rev-card{flex-shrink:0;width:clamp(230px,52vw,280px);scroll-snap-align:start;background:var(--w);border:1px solid var(--n200);border-radius:var(--r);padding:16px}
+.rev-q{font-size:13px;font-weight:300;font-style:italic;color:var(--n700);line-height:1.65;margin-bottom:14px}
+.rev-author{display:flex;align-items:center;gap:9px}
+.rev-av{width:32px;height:32px;border-radius:50%;background:var(--b100);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--brown-dk);flex-shrink:0}
+.rev-name{font-size:13px;font-weight:600;color:var(--n900)}
+.rev-loc{font-size:12px;font-weight:300;color:var(--n400)}
+.rev-exp-tag{font-size:11px;font-weight:500;color:var(--brown);margin-top:2px}
+
+/* ── FAQs ── */
+.faq-item{border:1px solid var(--n200);border-radius:var(--r);overflow:hidden}
+.faq-q{padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;cursor:pointer;font-size:14px;font-weight:600;color:var(--n900);background:var(--w);transition:background .18s;border:none;width:100%;text-align:left;font-family:var(--f)}
+.faq-q:hover{background:var(--b50)}
+.faq-item.open .faq-q{background:var(--b50);border-bottom:1px solid var(--n200)}
+.faq-chevron{flex-shrink:0;transition:transform .25s;color:var(--n400)}
+.faq-item.open .faq-chevron{transform:rotate(180deg);color:var(--brown)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .4s ease}
+.faq-item.open .faq-a{max-height:400px}
+.faq-a-inner{padding:14px 18px 18px;font-size:14px;font-weight:300;color:var(--n700);line-height:1.75}
+
+/* ── BOOKING CTA ── */
+.booking-card{background:var(--w);border:1.5px solid var(--n200);border-radius:var(--rxl);padding:28px 24px;max-width:520px;margin:0 auto}
+.trust-strip{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid var(--n200)}
+.trust-item{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:300;color:var(--n400)}
+
+/* ═══════════════════════════════════════════════════════════
+   FOOTER — shared component
+   ═══════════════════════════════════════════════════════════ */
+.footer{background:var(--n900);padding:56px var(--g) 40px;position:relative;overflow:hidden}
+.footer-deco{position:absolute;right:-40px;bottom:-40px;width:280px;height:280px;opacity:.04;pointer-events:none}
+.footer-inner{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:52px;align-items:start;position:relative;z-index:1}
+@media(max-width:640px){.footer-inner{grid-template-columns:1fr;gap:36px}}
+.foot-tagline{font-size:12px;font-weight:300;color:rgba(236,229,213,.35);letter-spacing:.04em;text-transform:uppercase;margin-top:5px}
+.foot-col h5{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(236,229,213,.28);margin-bottom:16px}
+.foot-links{list-style:none;display:flex;flex-direction:column;gap:10px}
+.foot-links a{font-size:13px;font-weight:300;color:rgba(236,229,213,.55);transition:color .2s}
+.foot-links a:hover{color:var(--cream)}
+.foot-bottom{border-top:1px solid rgba(236,229,213,.07);padding-top:24px;margin-top:32px;max-width:var(--max);margin-left:auto;margin-right:auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;position:relative;z-index:1}
+.foot-copy{font-size:12px;font-weight:300;color:rgba(236,229,213,.2)}
+.foot-certs{display:flex;gap:14px;align-items:center}
+.foot-cert{font-size:11px;font-weight:700;letter-spacing:.06em;color:rgba(236,229,213,.28)}
+.foot-cert-sep{width:1px;height:12px;background:rgba(236,229,213,.12)}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     NAV + MEGA-MENU
+     ════════════════════════════════════════ -->
+<div class="nav-overlay" id="navOverlay"></div>
+
+<nav class="top-nav" id="topNav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <svg class="nav-isotipo" id="navIsotipo" viewBox="0 0 105 101" fill="none">
+        <path d="M103.703 59.25C102.343 49.75 97.3635 41.34 89.6735 35.59C89.3235 35.33 88.9635 35.07 88.6035 34.82C88.0135 15.52 72.1235 0 52.6835 0C33.6535 0 18.0434 14.86 16.8234 33.58C11.1834 37.11 6.62343 42.15 3.64343 48.28C-0.556567 56.91 -1.14654 66.66 1.98346 75.74C5.11346 84.81 11.5934 92.13 20.2234 96.33C25.2034 98.75 30.5535 99.98 35.9235 99.98C39.8735 99.98 43.8335 99.32 47.6735 98C49.0635 97.52 50.4034 96.96 51.7134 96.33L51.9534 96.46C56.9534 98.99 62.4335 100.31 68.0535 100.31C69.7735 100.31 71.5035 100.19 73.2335 99.94C82.7335 98.58 91.1434 93.6 96.8934 85.91C102.643 78.22 105.063 68.75 103.703 59.25Z" fill="currentColor"/>
+      </svg>
+      <svg class="nav-wordmark" id="navWordmark" viewBox="0 0 176 36" fill="none">
+        <path d="M8.08002 33.61L20.73 28.67V35.43H0V1.40997H18.01V7.16998L8.08002 3.21997V15.15H15.93V17.78H8.08002V33.61Z" fill="#ECE5D5"/>
+        <path d="M44.7401 16.55L36.6201 10.2C32.9001 11.38 30.5401 15.51 30.5401 20.4C30.5401 26.48 34.5801 30.29 39.1101 30.29C42.1001 30.29 44.6001 29.29 46.4601 27.02L46.9101 27.34C45.2801 32.15 41.3801 35.87 35.3901 35.87C28.5001 35.87 22.8301 30.29 22.8301 22.63C22.8301 14.97 28.6801 8.62 37.4801 8.62C40.6101 8.62 43.1901 9.52999 44.7401 10.43V16.55Z" fill="#ECE5D5"/>
+        <path d="M76.8098 22.04C76.8098 29.75 71.1398 35.87 63.2498 35.87C55.3598 35.87 49.0098 30.06 49.0098 22.54C49.0098 14.87 54.5398 8.62 62.6198 8.62C70.6398 8.62 76.8098 14.56 76.8098 22.04ZM69.4198 25.4C69.4198 22.59 68.5998 19.73 67.1498 17.28C65.2898 14.15 62.5198 11.7 59.1698 10.79C57.2198 12.6 56.3998 15.82 56.3998 19.04C56.3998 21.94 57.3098 24.94 58.8498 27.48C60.7098 30.43 63.4298 32.74 66.6998 33.65C68.6498 31.84 69.4198 28.62 69.4198 25.4Z" fill="#ECE5D5"/>
+        <path d="M87.3998 0V9.07001H92.6198V12.93H87.3998V35.43H79.7798V6.17999L87.3998 0Z" fill="#ECE5D5"/>
+        <path d="M120.89 22.04C120.89 29.75 115.22 35.87 107.33 35.87C99.4398 35.87 93.0898 30.06 93.0898 22.54C93.0898 14.87 98.6198 8.62 106.7 8.62C114.73 8.62 120.89 14.56 120.89 22.04ZM113.5 25.4C113.5 22.59 112.68 19.73 111.23 17.28C109.37 14.15 106.6 11.7 103.25 10.79C101.3 12.6 100.48 15.82 100.48 19.04C100.48 21.94 101.39 24.94 102.93 27.48C104.79 30.43 107.51 32.74 110.78 33.65C112.73 31.84 113.5 28.62 113.5 25.4Z" fill="#ECE5D5"/>
+        <path d="M124.27 35.42V9.07001H131.89V12.11C135.7 10.02 138.74 8.62 141.46 8.62C145.41 8.62 147.45 11.02 147.45 15.11V35.43H139.83V15.97C139.83 13.61 138.88 12.34 136.79 12.34C135.7 12.34 134.3 12.52 131.89 13.7V35.43H124.27V35.42Z" fill="#ECE5D5"/>
+        <path d="M163.88 35.88C156.31 35.88 150.55 30.3 150.55 22.41C150.55 13.93 156.85 8.62 163.11 8.62C170.55 8.62 174.31 13.9299 175.08 19.0099H158.16C158.16 19.2399 158.16 19.51 158.16 19.78C158.16 26.67 162.24 30.3 167.32 30.3C170.45 30.3 172.85 29.08 174.71 26.81L175.16 27.17C173.77 31.43 169.91 35.88 163.88 35.88ZM158.39 16.69H167.69C166.83 14.01 164.47 11.11 161.2 10.52C159.93 11.66 158.85 13.7 158.39 16.69Z" fill="#ECE5D5"/>
+      </svg>
+    </a>
+    <ul class="nav-links">
+      <li>
+        <button class="nav-link-btn" data-dd="dd-experiences">
+          Experiences
+          <svg class="nav-link-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </li>
+      <li>
+        <button class="nav-link-btn" data-dd="dd-routes">
+          Routes
+          <svg class="nav-link-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </li>
+      <li>
+        <button class="nav-link-btn active-page" data-dd="dd-lodges">
+          Lodges
+          <svg class="nav-link-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </li>
+      <li><a href="#" class="nav-link-btn">About</a></li>
+    </ul>
+    <button class="nav-book desk">Book now</button>
+    <button class="hamburger" id="ham"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<!-- ── DROPDOWN: EXPERIENCES ── -->
+<div class="nav-dropdown" id="dd-experiences">
+  <div class="nav-dropdown-inner">
+    <div class="dd-exp-grid">
+      <div>
+        <div class="dd-col-label">Nature Core</div>
+        <a href="#" class="dd-exp-item">
+          <div class="dd-exp-thumb"><img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=200&q=70" alt=""></div>
+          <div><div class="dd-exp-route">Camanti</div><div class="dd-exp-name">Soqtapata Pristine Immersion</div><div class="dd-exp-meta">3D · 2N · from $986</div></div>
+        </a>
+        <a href="#" class="dd-exp-item">
+          <div class="dd-exp-thumb"><img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=200&q=70" alt=""></div>
+          <div><div class="dd-exp-route">Camanti</div><div class="dd-exp-name">Andean Cloud Forest</div><div class="dd-exp-meta">4D · 3N · from $1,200</div></div>
+        </a>
+        <a href="#" class="dd-exp-item">
+          <div class="dd-exp-thumb"><img src="https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=200&q=70" alt=""></div>
+          <div><div class="dd-exp-route">Manu Road</div><div class="dd-exp-name">Manu Gradient</div><div class="dd-exp-meta">3D · 2N · Enquire</div></div>
+        </a>
+      </div>
+      <div>
+        <div class="dd-col-label">Signature</div>
+        <a href="#" class="dd-exp-item">
+          <div class="dd-exp-thumb"><img src="https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=200&q=70" alt=""></div>
+          <div><div class="dd-exp-route">Manu Core</div><div class="dd-exp-name">Manu Core Frontier</div><div class="dd-exp-meta">6D · 5N · Enquire</div></div>
+        </a>
+        <a href="#" class="dd-exp-item">
+          <div class="dd-exp-thumb"><img src="https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=200&q=70" alt=""></div>
+          <div><div class="dd-exp-route">Manu Core</div><div class="dd-exp-name">Family Discovery Quest</div><div class="dd-exp-meta">5D · 4N · Enquire</div></div>
+        </a>
+      </div>
+      <div>
+        <div class="dd-col-label">Learning & Tailor Made</div>
+        <a href="#" class="dd-exp-item">
+          <div class="dd-exp-thumb"><img src="https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=200&q=70" alt=""></div>
+          <div><div class="dd-exp-route">Camanti</div><div class="dd-exp-name">Schools & Universities</div><div class="dd-exp-meta">2–6 weeks · Custom</div></div>
+        </a>
+        <div class="dd-tailor-item">
+          <div class="dd-tailor-icon">
+            <svg width="20" height="19" viewBox="0 0 105 101" fill="none"><path d="M103.703 59.25C102.343 49.75 97.3635 41.34 89.6735 35.59C89.3235 35.33 88.9635 35.07 88.6035 34.82C88.0135 15.52 72.1235 0 52.6835 0C33.6535 0 18.0434 14.86 16.8234 33.58C11.1834 37.11 6.62343 42.15 3.64343 48.28C-0.556567 56.91 -1.14654 66.66 1.98346 75.74C5.11346 84.81 11.5934 92.13 20.2234 96.33C25.2034 98.75 30.5535 99.98 35.9235 99.98C39.8735 99.98 43.8335 99.32 47.6735 98C49.0635 97.52 50.4034 96.96 51.7134 96.33L51.9534 96.46C56.9534 98.99 62.4335 100.31 68.0535 100.31C69.7735 100.31 71.5035 100.19 73.2335 99.94C82.7335 98.58 91.1434 93.6 96.8934 85.91C102.643 78.22 105.063 68.75 103.703 59.25Z" fill="#ECE5D5"/></svg>
+          </div>
+          <div><div class="dd-exp-route">Tailor Made</div><div class="dd-exp-name">Design your program</div><div class="dd-exp-meta">Any duration · Any group</div></div>
+        </div>
+        <a href="#" class="dd-see-all">
+          See all experiences
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--brown)" stroke-width="2"><line x1="2" y1="6" x2="10" y2="6"/><polyline points="7 3 10 6 7 9"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── DROPDOWN: ROUTES ── -->
+<div class="nav-dropdown" id="dd-routes">
+  <div class="nav-dropdown-inner">
+    <div class="dd-routes-grid">
+      <div class="dd-route-img">
+        <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=500&q=80" alt="">
+        <div class="dd-route-img-overlay"></div>
+        <div class="dd-route-img-text">Andes to Amazon<br><span style="font-size:11px;opacity:.65">3 territories · Cusco, Perú</span></div>
+      </div>
+      <div class="dd-routes-list">
+        <a href="#" class="dd-route-item">
+          <div class="dd-route-num">1</div>
+          <div style="flex:1"><div class="dd-route-name">Camanti</div><div class="dd-route-sub">Cloud forest · 900–4,700 m · ~2.5h from Cusco</div></div>
+          <div class="dd-route-count">3 experiences →</div>
+        </a>
+        <a href="#" class="dd-route-item">
+          <div class="dd-route-num">2</div>
+          <div style="flex:1"><div class="dd-route-name">Manu Road</div><div class="dd-route-sub">Gradient · 800–2,000 m · ~5h from Cusco</div></div>
+          <div class="dd-route-count">2 experiences →</div>
+        </a>
+        <a href="#" class="dd-route-item">
+          <div class="dd-route-num">3</div>
+          <div style="flex:1"><div class="dd-route-name">Manu Core</div><div class="dd-route-sub">Deep jungle · 300–500 m · ~8h from Cusco</div></div>
+          <div class="dd-route-count">2 experiences →</div>
+        </a>
+        <a href="#" class="dd-see-all" style="margin-top:14px">
+          Compare all routes
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--brown)" stroke-width="2"><line x1="2" y1="6" x2="10" y2="6"/><polyline points="7 3 10 6 7 9"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── DROPDOWN: LODGES ── -->
+<div class="nav-dropdown" id="dd-lodges">
+  <div class="nav-dropdown-inner">
+    <div class="dd-col-label" style="margin-bottom:16px">Our lodges</div>
+    <div class="dd-lodges-grid">
+      <a href="#" class="dd-lodge-card own">
+        <div class="dd-lodge-img">
+          <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300&q=70" alt="">
+          <span class="dd-lodge-badge own">Own</span>
+        </div>
+        <div class="dd-lodge-body"><div class="dd-lodge-name">Soqtapata Lodge</div><div class="dd-lodge-meta">1,200 m · Camanti · Research station</div></div>
+      </a>
+      <a href="#" class="dd-lodge-card own">
+        <div class="dd-lodge-img">
+          <img src="https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=300&q=70" alt="">
+          <span class="dd-lodge-badge own">Own</span>
+        </div>
+        <div class="dd-lodge-body"><div class="dd-lodge-name">Romero Lodge</div><div class="dd-lodge-meta">400 m · Manu Core · Inside NP</div></div>
+      </a>
+      <a href="#" class="dd-lodge-card">
+        <div class="dd-lodge-img">
+          <img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=300&q=70" alt="">
+          <span class="dd-lodge-badge alliance">Alliance</span>
+        </div>
+        <div class="dd-lodge-body"><div class="dd-lodge-name">Manu Bio-Lodge</div><div class="dd-lodge-meta">800 m · Manu Road · Cloud forest</div></div>
+      </a>
+      <a href="#" class="dd-lodge-card">
+        <div class="dd-lodge-img">
+          <img src="https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=300&q=70" alt="">
+          <span class="dd-lodge-badge alliance">Alliance</span>
+        </div>
+        <div class="dd-lodge-body"><div class="dd-lodge-name">Wayqecha</div><div class="dd-lodge-meta">3,000 m · Manu Road · High cloud</div></div>
+      </a>
+    </div>
+    <a href="#" class="dd-see-all" style="margin-top:16px">
+      View all lodges
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--brown)" stroke-width="2"><line x1="2" y1="6" x2="10" y2="6"/><polyline points="7 3 10 6 7 9"/></svg>
+    </a>
+  </div>
+</div>
+
+<!-- ── MOBILE DRAWER ── -->
+<div class="mobile-drawer" id="drawer">
+  <button class="mob-section-btn" onclick="toggleMob('mob-exp')">
+    Experiences
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+  </button>
+  <div class="mob-section-content" id="mob-exp">
+    <a href="#" class="mob-link"><div class="mob-link-thumb"><img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=120&q=70" alt=""></div><div><div class="mob-link-text">Soqtapata Pristine Immersion</div><div class="mob-link-sub">3D · 2N · $986</div></div></a>
+    <a href="#" class="mob-link"><div class="mob-link-thumb"><img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=120&q=70" alt=""></div><div><div class="mob-link-text">Andean Cloud Forest</div><div class="mob-link-sub">4D · 3N · $1,200+</div></div></a>
+    <a href="#" class="mob-link"><div class="mob-link-thumb"><img src="https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=120&q=70" alt=""></div><div><div class="mob-link-text">Manu Core Frontier</div><div class="mob-link-sub">6D · 5N · Enquire</div></div></a>
+    <a href="#" class="mob-link" style="color:var(--brown);font-weight:600">See all experiences →</a>
+  </div>
+  <button class="mob-section-btn" onclick="toggleMob('mob-routes')">
+    Routes
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+  </button>
+  <div class="mob-section-content" id="mob-routes">
+    <a href="#" class="mob-link"><div style="width:28px;height:28px;border-radius:50%;background:var(--brown);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div><div><div class="mob-link-text">Camanti</div><div class="mob-link-sub">Cloud forest · ~2.5h</div></div></a>
+    <a href="#" class="mob-link"><div style="width:28px;height:28px;border-radius:50%;background:var(--brown);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div><div><div class="mob-link-text">Manu Road</div><div class="mob-link-sub">Gradient · ~5h</div></div></a>
+    <a href="#" class="mob-link"><div style="width:28px;height:28px;border-radius:50%;background:var(--brown);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div><div><div class="mob-link-text">Manu Core</div><div class="mob-link-sub">Deep jungle · ~8h</div></div></a>
+  </div>
+  <button class="mob-section-btn" onclick="toggleMob('mob-lodges')">
+    Lodges
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+  </button>
+  <div class="mob-section-content" id="mob-lodges">
+    <a href="#" class="mob-link"><div class="mob-link-thumb"><img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=120&q=70" alt=""></div><div><div class="mob-link-text">Soqtapata Lodge</div><div class="mob-link-sub">1,200 m · Own</div></div></a>
+    <a href="#" class="mob-link"><div class="mob-link-thumb"><img src="https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=120&q=70" alt=""></div><div><div class="mob-link-text">Romero Lodge</div><div class="mob-link-sub">400 m · Own</div></div></a>
+    <a href="#" class="mob-link"><div class="mob-link-thumb"><img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=120&q=70" alt=""></div><div><div class="mob-link-text">Manu Bio-Lodge</div><div class="mob-link-sub">800 m · Alliance</div></div></a>
+    <a href="#" class="mob-link"><div class="mob-link-thumb"><img src="https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=120&q=70" alt=""></div><div><div class="mob-link-text">Wayqecha</div><div class="mob-link-sub">3,000 m · Alliance</div></div></a>
+  </div>
+  <a href="#" class="mob-direct">About</a>
+  <div class="mob-footer">
+    <button class="mob-book">Book now</button>
+  </div>
+</div>
+
+<!-- Sticky bar removed — lodge page uses page nav instead -->
+
+<!-- ════════════════════════════════════════
+     HERO
+     ════════════════════════════════════════ -->
+<section class="lodge-hero" id="top">
+
+  <!-- Hero full-bleed — foto ocupa todo, identidad superpuesta -->
+  <div class="lodge-hero-fullbleed">
+    <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1600&q=85" alt="Soqtapata Lodge — cloud forest">
+    <div class="lodge-hero-overlay"></div>
+
+    <!-- Top right: photo count -->
+    <button class="lodge-hero-photos">+12 photos</button>
+
+    <!-- Bottom: all identity content -->
+    <div class="lodge-hero-identity">
+      <div class="lodge-hero-identity-inner">
+
+      <!-- Breadcrumb -->
+      <div class="lodge-breadcrumb">
+        <a href="#">Lodges</a><span style="opacity:.4">›</span>
+        <a href="#">Camanti Route</a><span style="opacity:.4">›</span>
+        <span class="current">Soqtapata Lodge</span>
+      </div>
+
+      <!-- Pills -->
+      <div class="lodge-badges">
+        <span class="pill pill-glass">Camanti Route</span>
+        <span class="pill pill-glass">Research station</span>
+        <span class="pill pill-glass">B Corp</span>
+      </div>
+
+      <!-- Name + tagline -->
+      <h1 class="lodge-h1">Soqtapata Lodge</h1>
+      <p class="lodge-tagline">The only lodge inside the Soqtapata Reserve. Adjacent to CIDS, our active research centre. Maximum 14 guests.</p>
+
+      <!-- Rating + CTA -->
+      <div class="lodge-identity-foot">
+        <div class="lodge-rating">
+          <div class="stars">
+            <div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div>
+          </div>
+          <span style="font-size:13px;font-weight:600;color:var(--cream)">5.0</span>
+          <span style="font-size:13px;font-weight:300;color:rgba(236,229,213,.4)">· 12 reviews</span>
+          <span style="width:1px;height:12px;background:rgba(255,255,255,.12)"></span>
+          <span style="font-size:12px;font-weight:500;color:var(--b200)">3 experiences</span>
+        </div>
+        <button class="btn btn-primary" onclick="document.getElementById('experiences').scrollIntoView({behavior:'smooth'})">See experiences</button>
+      </div>
+
+    </div>
+    </div>
+  </div>
+</section>
+
+<!-- Snapshot bar — cards con iconos -->
+<div class="snapshot-bar">
+  <div class="snapshot-cards-inner">
+
+    <div class="snap-card">
+      <div class="snap-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <div><div class="snap-n">7 rooms</div><div class="snap-l">1 cottage · 6 double</div></div>
+    </div>
+
+    <div class="snap-card">
+      <div class="snap-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div><div class="snap-n">Max 14</div><div class="snap-l">Guests total</div></div>
+    </div>
+
+    <div class="snap-card">
+      <div class="snap-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div><div class="snap-n">~2.5h</div><div class="snap-l">From Cusco</div></div>
+    </div>
+
+    <div class="snap-card">
+      <div class="snap-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+      </div>
+      <div><div class="snap-n">1,200 m</div><div class="snap-l">Altitude</div></div>
+    </div>
+
+    <div class="snap-card">
+      <div class="snap-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div><div class="snap-n">Cloud forest</div><div class="snap-l">Ecosystem</div></div>
+    </div>
+
+    <div class="snap-card snap-card-bcorp">
+      <div class="snap-icon snap-icon-bcorp">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div><div class="snap-n" style="color:var(--brown-dk)">B Corp</div><div class="snap-l" style="color:var(--brown)">HERPIRO certified</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Page nav -->
+<nav class="page-nav" id="pageNav">
+  <div class="page-nav-inner">
+    <div class="page-nav-left">
+      <div class="page-nav-title">Soqtapata Lodge</div>
+      <div class="page-nav-sub">Camanti Route · 1,200 m</div>
+    </div>
+    <div class="page-nav-links">
+      <a href="#overview" class="pnav-item active">Overview</a>
+      <a href="#rooms" class="pnav-item">Rooms</a>
+      <a href="#facilities" class="pnav-item">Facilities</a>
+      <a href="#location" class="pnav-item">Location</a>
+      <a href="#research" class="pnav-item">Research</a>
+      <a href="#experiences" class="pnav-item">Experiences</a>
+      <a href="#reviews" class="pnav-item">Reviews</a>
+      <a href="#faq" class="pnav-item">FAQs</a>
+    </div>
+    <div class="pnav-cta">
+      <a href="#experiences" class="btn btn-primary" style="font-size:12px;padding:8px 18px">Explore experiences</a>
+    </div>
+  </div>
+</nav>
+
+
+<!-- ════════════════════════════════════════
+     OVERVIEW
+     ════════════════════════════════════════ -->
+<section class="content-section bg-warm fade" id="overview">
+  <div class="content-inner">
+    <div class="eyebrow">About this lodge</div>
+    <h2 class="h2">The forest, your home.</h2>
+    <p style="font-size:15px;font-weight:300;color:var(--n700);line-height:1.8;max-width:640px;margin-bottom:12px">Soqtapata Lodge is the only accommodation inside the Soqtapata Reserve — 10,000 hectares of primary cloud forest from 900 to 4,700 m.a.s.l. Accessible only on foot, a 45-minute guided walk from the road.</p>
+    <p style="font-size:15px;font-weight:300;color:var(--n700);line-height:1.8;max-width:640px;margin-bottom:20px">Adjacent to CIDS, our active Conservation, Investigation & Development Station, the lodge is run by resident biologists and naturalists who live in the forest year-round. Every booking directly funds conservation work managed by HERPIRO (B Corp).</p>
+    <div class="highlights-grid">
+
+      <div class="highlight-chip">
+        <div class="highlight-chip-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div><div class="highlight-chip-title">Inside the reserve</div><div class="highlight-chip-sub">10,000 ha of primary forest</div></div>
+      </div>
+
+      <div class="highlight-chip">
+        <div class="highlight-chip-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M10 2v7.31"/><path d="M14 9.3V1.99"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/></svg>
+        </div>
+        <div><div class="highlight-chip-title">CIDS adjacent</div><div class="highlight-chip-sub">Active research station</div></div>
+      </div>
+
+      <div class="highlight-chip">
+        <div class="highlight-chip-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><circle cx="12" cy="8" r="5"/><path d="M8 13c-3 1-5 4-5 7h18c0-3-2-6-5-7"/></svg>
+        </div>
+        <div><div class="highlight-chip-title">Resident biologists</div><div class="highlight-chip-sub">Not a tour operator</div></div>
+      </div>
+
+      <div class="highlight-chip">
+        <div class="highlight-chip-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M4.22 4.22l2.12 2.12m11.32 11.32 2.12 2.12M2 12h3m14 0h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+        </div>
+        <div><div class="highlight-chip-title">300+ bird species</div><div class="highlight-chip-sub">From the lodge terrace</div></div>
+      </div>
+
+      <div class="highlight-chip">
+        <div class="highlight-chip-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <div><div class="highlight-chip-title">Every stay funds conservation</div><div class="highlight-chip-sub">HERPIRO B Corp certified</div></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════
+     ROOMS
+     ════════════════════════════════════════ -->
+<section class="content-section fade" id="rooms">
+  <div class="content-inner">
+    <div class="eyebrow">Where you'll sleep</div>
+    <h2 class="h2" style="margin-bottom:6px">Accommodation options</h2>
+    <p style="font-size:14px;font-weight:300;color:var(--n700);line-height:1.8;margin-bottom:22px">7 rooms total — 1 private cottage and 6 double rooms. All meals, guides, and transport included in every experience.</p>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+
+      <!-- Private Cottage — featured -->
+      <div class="room-card featured">
+        <div class="room-img" style="height:160px;">
+          <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=500&q=80" alt="Private Cottage">
+        </div>
+        <div class="room-body">
+          <div>
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:5px">
+              <div class="room-name">Private Cottage</div>
+              <span class="pill pill-brown" style="font-size:11px;flex-shrink:0">Most popular</span>
+            </div>
+            <div class="room-meta">1 cottage · Up to 2 guests · En-suite bathroom · Private terrace</div>
+          </div>
+          <div>
+            <div class="room-chips">
+              <span class="room-chip">Private terrace</span>
+              <span class="room-chip">Forest view</span>
+              <span class="room-chip">Hot shower</span>
+              <span class="room-chip">Solar power</span>
+            </div>
+            <div style="margin-top:12px;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--brown);cursor:pointer">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              View cottage photos
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Double Room -->
+      <div class="room-card">
+        <div class="room-img" style="height:140px;">
+          <img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=500&q=80" alt="Double Room">
+        </div>
+        <div class="room-body">
+          <div>
+            <div class="room-name" style="margin-bottom:5px">Double Room</div>
+            <div class="room-meta">6 rooms · Up to 2 guests · Shared bathroom facilities · Garden view</div>
+          </div>
+          <div>
+            <div class="room-chips">
+              <span class="room-chip">Garden view</span>
+              <span class="room-chip">Hot shower</span>
+              <span class="room-chip">Reading area</span>
+            </div>
+            <div style="margin-top:12px;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--brown);cursor:pointer">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              View room photos
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="margin-top:16px;padding:12px 16px;background:var(--b50);border:1px solid var(--b200);border-radius:var(--r);display:flex;align-items:center;gap:10px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span style="font-size:13px;font-weight:300;color:var(--n700)">Room type is assigned at booking. Cottage subject to availability — book early. Max 2 guests per room.</span>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════
+     FACILITIES — common areas + amenities merged
+     ════════════════════════════════════════ -->
+<section class="content-section bg-warm fade" id="facilities">
+  <div class="content-inner">
+    <div class="eyebrow">Facilities</div>
+    <h2 class="h2" style="margin-bottom:6px">Common areas & amenities</h2>
+    <p style="font-size:14px;font-weight:300;color:var(--n700);line-height:1.8;margin-bottom:20px">The lodge was designed to blur the boundary between indoors and the forest. Most guests spend their evenings on the main terrace — the forest sounds do the rest.</p>
+
+    <!-- Photo grid -->
+    <div class="common-areas-grid" style="margin-bottom:16px">
+      <div class="common-photo" style="height:340px;grid-row:1/3">
+        <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=85" alt="Main terrace">
+        <div class="common-photo-overlay"></div>
+        <span class="common-photo-label">Main terrace & dining</span>
+        <span class="common-photo-sub">Forest-facing · 180° views</span>
+      </div>
+      <div class="common-photo" style="height:168px">
+        <img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=600&q=80" alt="Nature library">
+        <div class="common-photo-overlay"></div>
+        <span class="common-photo-label">Nature library</span>
+      </div>
+      <div class="common-photo" style="height:168px">
+        <img src="https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=600&q=80" alt="Research common area">
+        <div class="common-photo-overlay"></div>
+        <span class="common-photo-label">Research common area</span>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;border-radius:var(--r);overflow:hidden;margin-bottom:32px">
+      <div class="common-photo" style="height:120px">
+        <img src="https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=400&q=80" alt="Trail entrance">
+        <div class="common-photo-overlay"></div>
+        <span class="common-photo-label" style="font-size:12px">Trail entrance</span>
+      </div>
+      <div class="common-photo" style="height:120px">
+        <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&q=80" alt="ForestWhisper lounge">
+        <div class="common-photo-overlay"></div>
+        <span class="common-photo-label" style="font-size:12px">ForestWhisper® lounge</span>
+      </div>
+      <div class="common-photo" style="height:120px;position:relative;cursor:pointer">
+        <img src="https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400&q=80" alt="More photos">
+        <div style="position:absolute;inset:0;background:rgba(26,18,9,.65);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px">
+          <span style="font-size:20px;font-weight:700;color:#fff">+12</span>
+          <span style="font-size:12px;font-weight:400;color:rgba(255,255,255,.75)">View all photos</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Amenities grid -->
+    <div class="eyebrow" style="margin-bottom:16px">What's included</div>
+    <div class="amenity-grid">
+
+      <div class="amenity-card">
+        <div class="amenity-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
+        <div><div style="font-size:13px;font-weight:700;color:var(--n900);margin-bottom:3px">Full board meals</div><div style="font-size:12px;font-weight:300;color:var(--n400)">Breakfast, lunch & dinner. Fresh local ingredients.</div></div>
+      </div>
+
+      <div class="amenity-card">
+        <div class="amenity-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><circle cx="12" cy="8" r="5"/><path d="M8 13c-3 1-5 4-5 7h18c0-3-2-6-5-7"/></svg></div>
+        <div><div style="font-size:13px;font-weight:700;color:var(--n900);margin-bottom:3px">Expert naturalist guide</div><div style="font-size:12px;font-weight:300;color:var(--n400)">Certified bilingual naturalist all day.</div></div>
+      </div>
+
+      <div class="amenity-card">
+        <div class="amenity-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+        <div><div style="font-size:13px;font-weight:700;color:var(--n900);margin-bottom:3px">Private 4x4 transport</div><div style="font-size:12px;font-weight:300;color:var(--n400)">Pickup & return from Cusco.</div></div>
+      </div>
+
+      <div class="amenity-card">
+        <div class="amenity-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M12 2a3 3 0 0 0-3 3v1H6a2 2 0 0 0-2 2v3a8 8 0 0 0 16 0V8a2 2 0 0 0-2-2h-3V5a3 3 0 0 0-3-3z"/></svg></div>
+        <div><div style="font-size:13px;font-weight:700;color:var(--n900);margin-bottom:3px">Rubber boots & rain gear</div><div style="font-size:12px;font-weight:300;color:var(--n400)">Full kit provided at the lodge.</div></div>
+      </div>
+
+      <div class="amenity-card">
+        <div class="amenity-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M10 2v7.31"/><path d="M14 9.3V1.99"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/></svg></div>
+        <div><div style="font-size:13px;font-weight:700;color:var(--n900);margin-bottom:3px">CIDS station access</div><div style="font-size:12px;font-weight:300;color:var(--n400)">Visit active conservation research.</div></div>
+      </div>
+
+      <div class="amenity-card">
+        <div class="amenity-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg></div>
+        <div><div style="font-size:13px;font-weight:700;color:var(--n900);margin-bottom:3px">Satellite WiFi</div><div style="font-size:12px;font-weight:300;color:var(--n400)">Limited — common area only.</div></div>
+      </div>
+
+      <div class="amenity-card">
+        <div class="amenity-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div><div style="font-size:13px;font-weight:700;color:var(--n900);margin-bottom:3px">Hot showers</div><div style="font-size:12px;font-weight:300;color:var(--n400)">Solar-heated water. 220V outlets.</div></div>
+      </div>
+
+      <div class="amenity-card">
+        <div class="amenity-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+        <div><div style="font-size:13px;font-weight:700;color:var(--n900);margin-bottom:3px">Nature library</div><div style="font-size:12px;font-weight:300;color:var(--n400)">Field guides, species books & maps.</div></div>
+      </div>
+
+      <div class="amenity-card">
+        <div class="amenity-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="1.8"><circle cx="12" cy="12" r="2"/><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/></svg></div>
+        <div><div style="font-size:13px;font-weight:700;color:var(--n900);margin-bottom:3px">Filtered drinking water</div><div style="font-size:12px;font-weight:300;color:var(--n400)">Available throughout the day.</div></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════
+     LOCATION
+     ════════════════════════════════════════ -->
+<section class="content-section fade" id="location">
+  <div class="content-inner">
+    <div class="eyebrow">Getting here</div>
+    <h2 class="h2" style="margin-bottom:6px">Inside the Soqtapata Reserve</h2>
+    <p style="font-size:14px;font-weight:300;color:var(--n700);line-height:1.8;margin-bottom:20px">Accessible only on foot — a 45-minute guided walk from the road. Your guide meets you at the trailhead. Private 4x4 from Cusco included in all experiences.</p>
+
+    <!-- Map -->
+    <div class="map-container">
+      <svg width="100%" height="180" viewBox="0 0 600 180" style="display:block;background:linear-gradient(135deg,#e8f0d8,#d0e0b0,#b8d085)">
+        <!-- Topo lines -->
+        <path d="M0 90 Q150 60 300 80 Q450 100 600 75" fill="none" stroke="rgba(40,80,20,.2)" stroke-width="2"/>
+        <path d="M0 70 Q150 40 300 60 Q450 80 600 55" fill="none" stroke="rgba(40,80,20,.15)" stroke-width="1.5"/>
+        <path d="M0 110 Q150 80 300 100 Q450 120 600 95" fill="none" stroke="rgba(40,80,20,.15)" stroke-width="1.5"/>
+        <path d="M0 130 Q150 100 300 120 Q450 140 600 115" fill="none" stroke="rgba(40,80,20,.12)" stroke-width="1"/>
+        <path d="M0 50 Q150 20 300 40 Q450 60 600 35" fill="none" stroke="rgba(40,80,20,.1)" stroke-width="1"/>
+        <!-- Road -->
+        <path d="M80 90 Q200 78 320 85" fill="none" stroke="var(--brown-dk)" stroke-width="3" stroke-dasharray="10 5" opacity=".6"/>
+        <!-- Cusco -->
+        <circle cx="80" cy="90" r="6" fill="var(--brown)" opacity=".8"/>
+        <text x="94" y="89" font-size="12" fill="var(--brown-xdk)" font-family="Lexend,system-ui" font-weight="600">Cusco</text>
+        <text x="94" y="102" font-size="10" fill="var(--brown)" font-family="Lexend,system-ui">3,400 m · ~2.5h drive</text>
+        <!-- Trailhead -->
+        <circle cx="320" cy="85" r="4" fill="var(--brown-dk)" opacity=".7"/>
+        <text x="330" y="83" font-size="10" fill="var(--brown-dk)" font-family="Lexend,system-ui">Trailhead</text>
+        <!-- Walking path -->
+        <path d="M320 85 Q370 75 430 70" fill="none" stroke="var(--brown)" stroke-width="2.5" stroke-dasharray="5 4" opacity=".8"/>
+        <!-- Lodge marker -->
+        <circle cx="430" cy="70" r="9" fill="var(--brown)"/>
+        <circle cx="430" cy="70" r="16" fill="none" stroke="var(--brown)" stroke-width="1.5" opacity=".3"/>
+        <text x="449" y="68" font-size="12" fill="var(--brown-xdk)" font-family="Lexend,system-ui" font-weight="700">Soqtapata Lodge</text>
+        <text x="449" y="82" font-size="10" fill="var(--brown)" font-family="Lexend,system-ui">1,200 m.a.s.l.</text>
+        <!-- Distance label -->
+        <text x="340" y="65" font-size="10" fill="var(--brown-dk)" font-family="Lexend,system-ui" opacity=".8">45 min walk</text>
+      </svg>
+    </div>
+
+    <!-- Journey steps -->
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div class="journey-step">
+        <div class="journey-time">4:30 AM</div>
+        <div style="font-size:14px;font-weight:300;color:var(--n700)">Private 4x4 pickup from Cusco — hotel or main plaza</div>
+      </div>
+      <div class="journey-step">
+        <div class="journey-time">~7:15 AM</div>
+        <div style="font-size:14px;font-weight:300;color:var(--n700)">Arrival at trailhead · Gear up with rubber boots</div>
+      </div>
+      <div class="journey-step">
+        <div class="journey-time">~8:00 AM</div>
+        <div style="font-size:14px;font-weight:300;color:var(--n700)">45-minute guided walk into the reserve — first wildlife sightings</div>
+      </div>
+      <div class="journey-step highlight">
+        <div class="journey-time">~8:45 AM</div>
+        <div style="font-size:14px;font-weight:700;color:var(--n900)">Welcome at Soqtapata Lodge — breakfast served</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════
+     RESEARCH STATION
+     ════════════════════════════════════════ -->
+<section class="content-section bg-warm fade" id="research">
+  <div class="content-inner">
+    <div class="eyebrow">CIDS Research Centre</div>
+    <h2 class="h2" style="margin-bottom:6px">Science is part of the stay</h2>
+    <p style="font-size:15px;font-weight:300;color:var(--n700);line-height:1.8;max-width:640px;margin-bottom:20px">CIDS — the Conservation, Investigation & Development Station — operates adjacent to the lodge. Guests can visit active research projects, meet resident biologists, and understand the conservation work that their booking funds.</p>
+
+    <div class="research-stats">
+      <div class="stat-card">
+        <div class="stat-n">47+</div>
+        <div class="stat-l">Active research projects</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-n">10,000</div>
+        <div class="stat-l">Hectares protected</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-n">B Corp</div>
+        <div class="stat-l">HERPIRO certified</div>
+      </div>
+    </div>
+
+    <!-- Research areas -->
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      <div style="background:var(--w);border:1px solid var(--n200);border-radius:var(--r);padding:13px 16px;display:flex;align-items:flex-start;gap:12px">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--brown);margin-top:4px;flex-shrink:0"></div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--n900);margin-bottom:2px">Wildlife monitoring & tracking</div>
+          <div style="font-size:13px;font-weight:300;color:var(--n400)">Camera traps and bioacoustic monitoring of spectacled bear, puma, woolly monkey, and 300+ bird species.</div>
+        </div>
+      </div>
+      <div style="background:var(--w);border:1px solid var(--n200);border-radius:var(--r);padding:13px 16px;display:flex;align-items:flex-start;gap:12px">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--brown);margin-top:4px;flex-shrink:0"></div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--n900);margin-bottom:2px">Cloud forest restoration</div>
+          <div style="font-size:12px;font-weight:300;color:var(--n400)">Active reforestation with native species. Guests can participate in planting sessions.</div>
+        </div>
+      </div>
+      <div style="background:var(--w);border:1px solid var(--n200);border-radius:var(--r);padding:13px 16px;display:flex;align-items:flex-start;gap:12px">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--brown);margin-top:4px;flex-shrink:0"></div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--n900);margin-bottom:2px">Herpetology studies</div>
+          <div style="font-size:12px;font-weight:300;color:var(--n400)">Reptile and amphibian surveys — HERPIRO's founding research focus. Night walks include active species ID.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:13px 16px;background:var(--w);border-radius:var(--r);border:1px solid var(--n200);display:flex;align-items:center;gap:10px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span style="font-size:13px;font-weight:300;color:var(--n700)">Every booking at Soqtapata Lodge directly funds ongoing conservation operations at CIDS.</span>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════
+     EXPERIENCES
+     ════════════════════════════════════════ -->
+<section class="content-section fade" id="experiences">
+  <div class="content-inner">
+    <div class="eyebrow">Experiences</div>
+    <h2 class="h2" style="margin-bottom:6px">Experiences at this lodge</h2>
+    <p style="font-size:14px;font-weight:300;color:var(--n700);line-height:1.8;margin-bottom:20px">All experiences include transport from Cusco, full board, expert guide, and tech pack. Choose by duration and depth.</p>
+
+    <div class="exp-cards-grid">
+
+        <div class="exp-card-v">
+          <div class="exp-card-v-img">
+            <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80" alt="Soqtapata Pristine Immersion">
+            <div class="exp-card-v-overlay"></div>
+            <span class="exp-card-v-type">Nature Core</span>
+            <span class="exp-card-v-dur">3D · 2N</span>
+            <span class="exp-card-v-route">Camanti Route</span>
+          </div>
+          <div class="exp-card-v-body">
+            <div class="exp-card-v-name">Soqtapata Pristine Immersion</div>
+            <div class="exp-card-v-desc">EcoDroneView® · ForestWhisper® · CIDS visit · Expert naturalist guide</div>
+            <div class="exp-card-v-foot">
+              <div><div class="exp-card-v-price">$986</div><div style="font-size:11px;font-weight:300;color:var(--n400)">per person</div></div>
+              <div class="exp-card-v-cta">View <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="6" x2="10" y2="6"/><polyline points="7 3 10 6 7 9"/></svg></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card-v">
+          <div class="exp-card-v-img">
+            <img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=600&q=80" alt="Andean Cloud Forest">
+            <div class="exp-card-v-overlay"></div>
+            <span class="exp-card-v-type">Nature Core</span>
+            <span class="exp-card-v-dur">4D · 3N</span>
+            <span class="exp-card-v-route">Camanti Route</span>
+          </div>
+          <div class="exp-card-v-body">
+            <div class="exp-card-v-name">Andean Cloud Forest</div>
+            <div class="exp-card-v-desc">Extended trails · Night walks · Full reserve access · All 3 tech products</div>
+            <div class="exp-card-v-foot">
+              <div><div class="exp-card-v-price">$1,200+</div><div style="font-size:11px;font-weight:300;color:var(--n400)">per person</div></div>
+              <div class="exp-card-v-cta">View <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="6" x2="10" y2="6"/><polyline points="7 3 10 6 7 9"/></svg></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card-v">
+          <div class="exp-card-v-img">
+            <img src="https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=600&q=80" alt="Schools & Universities">
+            <div class="exp-card-v-overlay"></div>
+            <span class="exp-card-v-type">Exp. Learning</span>
+            <span class="exp-card-v-dur">2–6 weeks</span>
+            <span class="exp-card-v-route">Camanti Route</span>
+          </div>
+          <div class="exp-card-v-body">
+            <div class="exp-card-v-name">Schools & Universities</div>
+            <div class="exp-card-v-desc">Custom academic program · Research participation · Volunteer · Groups</div>
+            <div class="exp-card-v-foot">
+              <div><div style="font-size:14px;font-weight:700;color:var(--brown)">Enquire</div><div style="font-size:11px;font-weight:300;color:var(--n400)">custom pricing</div></div>
+              <div class="exp-card-v-cta">View <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="6" x2="10" y2="6"/><polyline points="7 3 10 6 7 9"/></svg></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card-tailor">
+          <div>
+            <div style="font-size:11px;font-weight:600;color:rgba(212,170,114,.7);letter-spacing:.14em;text-transform:uppercase;margin-bottom:7px">Tailor Made</div>
+            <div style="font-size:20px;font-weight:700;color:var(--cream);letter-spacing:-.02em;margin-bottom:8px">Design your own program</div>
+            <div style="font-size:14px;font-weight:300;color:rgba(236,229,213,.55);line-height:1.65">Any duration · Any group size · Fully custom itinerary · We build it around your goals</div>
+          </div>
+          <div style="flex-shrink:0">
+            <div style="font-size:13px;font-weight:700;background:var(--brown);color:#fff;padding:12px 22px;border-radius:100px;cursor:pointer;white-space:nowrap">Enquire →</div>
+          </div>
+        </div>
+
+      </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════
+     REVIEWS — shared component
+     CMS: reviews where lodge ref = soqtapata
+     ════════════════════════════════════════ -->
+<section class="content-section bg-cream fade" id="reviews">
+  <div class="content-inner">
+    <div class="reviews-header">
+      <div>
+        <div class="eyebrow">What guests say</div>
+        <h2 class="h2" style="margin-bottom:0">Real stays</h2>
+      </div>
+      <div style="text-align:right">
+        <div class="big-score">5.0</div>
+        <div class="stars" style="justify-content:flex-end;margin:4px 0">
+          <div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div>
+        </div>
+        <div style="font-size:12px;font-weight:300;color:var(--n400);margin-bottom:4px">12 verified reviews</div>
+        <div class="tp-badge" style="justify-content:flex-end">
+          <div class="tp-icon"><svg width="9" height="9" viewBox="0 0 24 24" fill="white"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></div>
+          <span style="font-size:11px;font-weight:600;color:var(--n700)">Trustpilot</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Featured quote — no box, on #FAF3E8 bg -->
+    <div class="quote-featured">
+      <div class="quote-text" id="quoteText">
+        "Super comfortable place with no words to describe
+        <span> the beauty of this forest."</span>
+      </div>
+      <div class="quote-attr" id="quoteAttr">— Richard · California · Soqtapata 3D/2N</div>
+      <div class="quote-dots">
+        <button class="qdot active" data-q="0"></button>
+        <button class="qdot" data-q="1"></button>
+        <button class="qdot" data-q="2"></button>
+      </div>
+    </div>
+
+    <!-- Review cards scroll -->
+    <div class="rev-scroll">
+      <div class="rev-card">
+        <div class="stars" style="margin-bottom:10px"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div>
+        <p class="rev-q">"Super comfortable place. There are no words to describe the beauty of this place."</p>
+        <div class="rev-author">
+          <div class="rev-av">R</div>
+          <div><div class="rev-name">Richard</div><div class="rev-loc">California, US</div><div class="rev-exp-tag">Soqtapata 3D/2N</div></div>
+        </div>
+      </div>
+      <div class="rev-card">
+        <div class="stars" style="margin-bottom:10px"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div>
+        <p class="rev-q">"Breathtaking place with amazing people that changed my way of travelling."</p>
+        <div class="rev-author">
+          <div class="rev-av">V</div>
+          <div><div class="rev-name">Vanessa</div><div class="rev-loc">London, UK</div><div class="rev-exp-tag">Soqtapata 3D/2N</div></div>
+        </div>
+      </div>
+      <div class="rev-card">
+        <div class="stars" style="margin-bottom:10px"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div>
+        <p class="rev-q">"Waking up to birds I'd never heard before. The CIDS visit with the scientists was extraordinary."</p>
+        <div class="rev-author">
+          <div class="rev-av">S</div>
+          <div><div class="rev-name">Sofia</div><div class="rev-loc">Barcelona, ES</div><div class="rev-exp-tag">Andean Cloud Forest</div></div>
+        </div>
+      </div>
+      <div class="rev-card" style="display:flex;align-items:center;justify-content:center;border-style:dashed">
+        <span style="font-size:13px;font-weight:600;color:var(--brown)">All 12 reviews →</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════
+     FAQs
+     ════════════════════════════════════════ -->
+<section class="content-section fade" id="faq">
+  <div class="content-inner">
+    <div class="eyebrow">Common questions</div>
+    <h2 class="h2" style="margin-bottom:6px">About Soqtapata Lodge</h2>
+    <p style="font-size:14px;font-weight:300;color:var(--n700);line-height:1.8;margin-bottom:22px">Everything you need to know before arriving.</p>
+    <div style="display:flex;flex-direction:column;gap:5px">
+
+      <div class="faq-item open" id="f1">
+        <button class="faq-q" onclick="toggleFAQ('f1')">
+          <span>Is there electricity and hot water?</span>
+          <svg class="faq-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner">Yes — solar-powered electricity with 220V outlets in each room for phone and camera charging. Hot water showers are available all day, heated by solar panels. Evening lighting throughout the lodge and common areas.</div>
+        </div>
+      </div>
+
+      <div class="faq-item" id="f2">
+        <button class="faq-q" onclick="toggleFAQ('f2')">
+          <span>Can I visit the lodge without booking an experience?</span>
+          <svg class="faq-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner">No — the lodge is only accessible through one of our programs. This is to protect the reserve and ensure every guest has a guide. The shortest program is 3 days / 2 nights (Soqtapata Pristine Immersion).</div>
+        </div>
+      </div>
+
+      <div class="faq-item" id="f3">
+        <button class="faq-q" onclick="toggleFAQ('f3')">
+          <span>What is the fitness level required?</span>
+          <svg class="faq-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner">Moderate. The walk from the trailhead to the lodge is 45 minutes over uneven terrain. Daily trails vary — some are gentle, others more demanding. A reasonable level of fitness is expected. Minimum age is 8 years.</div>
+        </div>
+      </div>
+
+      <div class="faq-item" id="f4">
+        <button class="faq-q" onclick="toggleFAQ('f4')">
+          <span>Is the lodge suitable for families with children?</span>
+          <svg class="faq-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner">Yes — from age 8. Families often find the lodge environment extraordinary for children. The guides are experienced with young guests and adapt the pace accordingly. The Soqtapata 3D/2N program is the most popular for families.</div>
+        </div>
+      </div>
+
+      <div class="faq-item" id="f5">
+        <button class="faq-q" onclick="toggleFAQ('f5')">
+          <span>What should I pack for the lodge?</span>
+          <svg class="faq-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner">Rubber boots and rain gear are provided. Bring: quick-dry trousers, warm mid-layer fleece (temperatures drop at night at 1,200 m), waterproof jacket, insect repellent (DEET), sunscreen, binoculars, headlamp, and camera. Pack light — you're walking 45 minutes with your bag.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════
+     FINAL CTA
+     ════════════════════════════════════════ -->
+<section class="content-section bg-warm" id="book">
+  <div class="content-inner">
+    <div class="eyebrow">Ready to stay here?</div>
+    <h2 class="h2" style="margin-bottom:24px;text-align:center">Choose your experience</h2>
+    <div class="booking-card">
+      <div style="margin-bottom:18px">
+        <div style="font-size:14px;font-weight:700;color:var(--n900);margin-bottom:4px">Soqtapata Lodge · Camanti Route</div>
+        <div style="font-size:13px;font-weight:300;color:var(--n400)">All-inclusive · Departure from Cusco · Max 14 guests · Year-round</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--n200)">
+        <div style="display:flex;justify-content:space-between">
+          <span style="font-size:13px;font-weight:300;color:var(--n400)">Shortest program</span>
+          <span style="font-size:13px;font-weight:600;color:var(--n900)">3 days · 2 nights</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="font-size:13px;font-weight:300;color:var(--n400)">Starting from</span>
+          <span style="font-size:13px;font-weight:600;color:var(--brown)">USD 986 per person</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="font-size:13px;font-weight:300;color:var(--n400)">Group size</span>
+          <span style="font-size:13px;font-weight:600;color:var(--n900)">2 – 14 people</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="font-size:13px;font-weight:300;color:var(--n400)">Availability</span>
+          <span style="font-size:13px;font-weight:600;color:var(--n900)">Year-round</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:14px;padding:16px;margin-bottom:10px" onclick="document.getElementById('experiences').scrollIntoView({behavior:'smooth'})">
+        See all experiences at this lodge
+      </button>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center;font-size:13px;padding:13px" onclick="window.open('https://wa.me/51974781094?text=Hi%21%20I%27m%20interested%20in%20Soqtapata%20Lodge.%20Could%20you%20send%20me%20more%20information%3F','_blank')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Ask on WhatsApp
+      </button>
+      <div class="trust-strip">
+        <div class="trust-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Free cancellation · 15 days</div>
+        <div class="trust-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>All inclusive from Cusco</div>
+        <div class="trust-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>B Corp certified</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════
+     FOOTER — shared component
+     ════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="footer-deco">
+    <svg viewBox="0 0 105 101" fill="none" style="width:100%;height:100%">
+      <path d="M103.703 59.25C102.343 49.75 97.3635 41.34 89.6735 35.59C89.3235 35.33 88.9635 35.07 88.6035 34.82C88.0135 15.52 72.1235 0 52.6835 0C33.6535 0 18.0434 14.86 16.8234 33.58C11.1834 37.11 6.62343 42.15 3.64343 48.28C-0.556567 56.91 -1.14654 66.66 1.98346 75.74C5.11346 84.81 11.5934 92.13 20.2234 96.33C25.2034 98.75 30.5535 99.98 35.9235 99.98C39.8735 99.98 43.8335 99.32 47.6735 98C49.0635 97.52 50.4034 96.96 51.7134 96.33L51.9534 96.46C56.9534 98.99 62.4335 100.31 68.0535 100.31C69.7735 100.31 71.5035 100.19 73.2335 99.94C82.7335 98.58 91.1434 93.6 96.8934 85.91C102.643 78.22 105.063 68.75 103.703 59.25Z" fill="white"/>
+    </svg>
+  </div>
+  <div class="footer-inner">
+    <div>
+      <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:4px">
+        <svg width="36" height="35" viewBox="0 0 105 101" fill="none"><path d="M103.703 59.25C102.343 49.75 97.3635 41.34 89.6735 35.59C89.3235 35.33 88.9635 35.07 88.6035 34.82C88.0135 15.52 72.1235 0 52.6835 0C33.6535 0 18.0434 14.86 16.8234 33.58C11.1834 37.11 6.62343 42.15 3.64343 48.28C-0.556567 56.91 -1.14654 66.66 1.98346 75.74C5.11346 84.81 11.5934 92.13 20.2234 96.33C25.2034 98.75 30.5535 99.98 35.9235 99.98C39.8735 99.98 43.8335 99.32 47.6735 98C49.0635 97.52 50.4034 96.96 51.7134 96.33L51.9534 96.46C56.9534 98.99 62.4335 100.31 68.0535 100.31C69.7735 100.31 71.5035 100.19 73.2335 99.94C82.7335 98.58 91.1434 93.6 96.8934 85.91C102.643 78.22 105.063 68.75 103.703 59.25Z" fill="#ECE5D5"/></svg>
+        <svg viewBox="0 0 176 36" fill="none" style="height:22px;margin-top:5px"><path d="M8.08002 33.61L20.73 28.67V35.43H0V1.40997H18.01V7.16998L8.08002 3.21997V15.15H15.93V17.78H8.08002V33.61Z" fill="#ECE5D5"/><path d="M44.7401 16.55L36.6201 10.2C32.9001 11.38 30.5401 15.51 30.5401 20.4C30.5401 26.48 34.5801 30.29 39.1101 30.29C42.1001 30.29 44.6001 29.29 46.4601 27.02L46.9101 27.34C45.2801 32.15 41.3801 35.87 35.3901 35.87C28.5001 35.87 22.8301 30.29 22.8301 22.63C22.8301 14.97 28.6801 8.62 37.4801 8.62C40.6101 8.62 43.1901 9.52999 44.7401 10.43V16.55Z" fill="#ECE5D5"/><path d="M76.8098 22.04C76.8098 29.75 71.1398 35.87 63.2498 35.87C55.3598 35.87 49.0098 30.06 49.0098 22.54C49.0098 14.87 54.5398 8.62 62.6198 8.62C70.6398 8.62 76.8098 14.56 76.8098 22.04ZM69.4198 25.4C69.4198 22.59 68.5998 19.73 67.1498 17.28C65.2898 14.15 62.5198 11.7 59.1698 10.79C57.2198 12.6 56.3998 15.82 56.3998 19.04C56.3998 21.94 57.3098 24.94 58.8498 27.48C60.7098 30.43 63.4298 32.74 66.6998 33.65C68.6498 31.84 69.4198 28.62 69.4198 25.4Z" fill="#ECE5D5"/><path d="M87.3998 0V9.07001H92.6198V12.93H87.3998V35.43H79.7798V6.17999L87.3998 0Z" fill="#ECE5D5"/><path d="M120.89 22.04C120.89 29.75 115.22 35.87 107.33 35.87C99.4398 35.87 93.0898 30.06 93.0898 22.54C93.0898 14.87 98.6198 8.62 106.7 8.62C114.73 8.62 120.89 14.56 120.89 22.04ZM113.5 25.4C113.5 22.59 112.68 19.73 111.23 17.28C109.37 14.15 106.6 11.7 103.25 10.79C101.3 12.6 100.48 15.82 100.48 19.04C100.48 21.94 101.39 24.94 102.93 27.48C104.79 30.43 107.51 32.74 110.78 33.65C112.73 31.84 113.5 28.62 113.5 25.4Z" fill="#ECE5D5"/><path d="M124.27 35.42V9.07001H131.89V12.11C135.7 10.02 138.74 8.62 141.46 8.62C145.41 8.62 147.45 11.02 147.45 15.11V35.43H139.83V15.97C139.83 13.61 138.88 12.34 136.79 12.34C135.7 12.34 134.3 12.52 131.89 13.7V35.43H124.27V35.42Z" fill="#ECE5D5"/><path d="M163.88 35.88C156.31 35.88 150.55 30.3 150.55 22.41C150.55 13.93 156.85 8.62 163.11 8.62C170.55 8.62 174.31 13.9299 175.08 19.0099H158.16C158.16 19.2399 158.16 19.51 158.16 19.78C158.16 26.67 162.24 30.3 167.32 30.3C170.45 30.3 172.85 29.08 174.71 26.81L175.16 27.17C173.77 31.43 169.91 35.88 163.88 35.88ZM158.39 16.69H167.69C166.83 14.01 164.47 11.11 161.2 10.52C159.93 11.66 158.85 13.7 158.39 16.69Z" fill="#ECE5D5"/></svg>
+      </div>
+      <div class="foot-tagline">People meet nature</div>
+      <p style="font-size:13px;font-weight:300;color:rgba(236,229,213,.38);line-height:1.65;margin-top:10px">Immersive nature tourism<br>Cusco, Perú · Manu & Camanti</p>
+    </div>
+    <div class="foot-col">
+      <h5>Explore</h5>
+      <ul class="foot-links">
+        <li><a href="#">Experiences</a></li>
+        <li><a href="#">Routes</a></li>
+        <li><a href="#">Lodges</a></li>
+        <li><a href="#">Programs</a></li>
+        <li><a href="#">Journal</a></li>
+      </ul>
+    </div>
+    <div class="foot-col">
+      <h5>Contact</h5>
+      <ul class="foot-links">
+        <li><a href="https://wa.me/51974781094">WhatsApp</a></li>
+        <li><a href="https://www.ecotone.eco">ecotone.eco</a></li>
+        <li><a href="#">Instagram</a></li>
+        <li><a href="#">Privacy policy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <p class="foot-copy">© 2025 Ecotone · HERPIRO · All rights reserved.</p>
+    <div class="foot-certs">
+      <span class="foot-cert">B Corp</span><div class="foot-cert-sep"></div>
+      <span class="foot-cert">ATTA Member</span><div class="foot-cert-sep"></div>
+      <span class="foot-cert">GSTC</span>
+    </div>
+  </div>
+</footer>
+
+
+<script>
+// ── Nav scroll ──
+const nav = document.getElementById('topNav');
+const pageNav = document.getElementById('pageNav');
+const navOverlay = document.getElementById('navOverlay');
+const navIsotipo = document.getElementById('navIsotipo').querySelector('path');
+const navWordmarkPaths = document.getElementById('navWordmark').querySelectorAll('path');
+
+function getHeroBottom() {
+  const identity = document.querySelector('.lodge-identity');
+  return identity ? identity.getBoundingClientRect().bottom + window.scrollY : 500;
+}
+
+window.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  const heroBottom = getHeroBottom();
+  const pastHero = y > heroBottom;
+  nav.classList.toggle('solid', y > 60 && !pastHero);
+  nav.classList.toggle('hidden', pastHero);
+  navIsotipo.style.fill = y > 60 ? '#906730' : '#ECE5D5';
+  navWordmarkPaths.forEach(p => p.setAttribute('fill', y > 60 ? '#906730' : '#ECE5D5'));
+  pageNav.classList.toggle('at-top', pastHero);
+  if (pastHero) closeAllDropdowns();
+}, { passive: true });
+
+// ── Mega-menu ──
+let currentDD = null;
+
+function closeAllDropdowns() {
+  document.querySelectorAll('.nav-dropdown.open').forEach(d => d.classList.remove('open'));
+  document.querySelectorAll('.nav-link-btn.open').forEach(b => b.classList.remove('open'));
+  navOverlay.classList.remove('visible');
+  currentDD = null;
+}
+
+function openDropdown(ddId, btn) {
+  if (currentDD === ddId) { closeAllDropdowns(); return; }
+  closeAllDropdowns();
+  const dd = document.getElementById(ddId);
+  if (!dd) return;
+  dd.classList.add('open');
+  btn.classList.add('open');
+  navOverlay.classList.add('visible');
+  currentDD = ddId;
+}
+
+document.querySelectorAll('.nav-link-btn[data-dd]').forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    openDropdown(btn.dataset.dd, btn);
+  });
+  btn.addEventListener('mouseenter', () => {
+    if (currentDD) openDropdown(btn.dataset.dd, btn);
+  });
+});
+
+document.querySelectorAll('.nav-dropdown').forEach(dd => {
+  dd.addEventListener('mouseleave', closeAllDropdowns);
+});
+
+navOverlay.addEventListener('click', closeAllDropdowns);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllDropdowns(); });
+
+// ── Hamburger ──
+const ham = document.getElementById('ham');
+const drawer = document.getElementById('drawer');
+ham.addEventListener('click', () => drawer.classList.toggle('open'));
+
+// ── Mobile accordion ──
+function toggleMob(id) {
+  const el = document.getElementById(id);
+  const btn = el.previousElementSibling;
+  const isOpen = el.classList.contains('open');
+  document.querySelectorAll('.mob-section-content.open').forEach(c => {
+    c.classList.remove('open');
+    c.previousElementSibling.classList.remove('open');
+  });
+  if (!isOpen) { el.classList.add('open'); btn.classList.add('open'); }
+}
+
+// ── Fade in ──
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+}, { threshold: 0.04 });
+document.querySelectorAll('.fade').forEach(f => io.observe(f));
+
+// ── Page nav active ──
+const pnavItems = document.querySelectorAll('.pnav-item');
+const sections = ['overview','rooms','facilities','location','research','experiences','reviews','faq'];
+function updatePageNav() {
+  let current = sections[0];
+  const offset = pageNav.classList.contains('at-top') ? 68 : 120;
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.getBoundingClientRect().top <= offset) current = id;
+  });
+  pnavItems.forEach(item => {
+    const href = item.getAttribute('href');
+    item.classList.toggle('active', href === '#' + current);
+  });
+}
+window.addEventListener('scroll', updatePageNav, { passive: true });
+
+// ── FAQ ──
+function toggleFAQ(id) {
+  const item = document.getElementById(id);
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(f => f.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+// ── Quote rotation ──
+const quotes = [
+  { text: '"Super comfortable place with no words to describe <span>the beauty of this forest."</span>', attr: '— Richard · California · Soqtapata 3D/2N' },
+  { text: '"Breathtaking place with amazing people <span>that changed my way of travelling."</span>', attr: '— Vanessa · London · Soqtapata 3D/2N' },
+  { text: '"Waking up to birds I\'d never heard before. <span>The CIDS visit was extraordinary."</span>', attr: '— Sofia · Barcelona · Soqtapata 3D/2N' },
+];
+const qText = document.getElementById('quoteText');
+const qAttr = document.getElementById('quoteAttr');
+const qdots = document.querySelectorAll('.qdot');
+let qCurrent = 0;
+qText.style.transition = 'opacity .35s';
+qAttr.style.transition = 'opacity .35s';
+function setQuote(i) {
+  qCurrent = i;
+  qText.style.opacity = '0'; qAttr.style.opacity = '0';
+  setTimeout(() => {
+    qText.innerHTML = quotes[i].text;
+    qAttr.textContent = quotes[i].attr;
+    qText.style.opacity = '1'; qAttr.style.opacity = '1';
+  }, 350);
+  qdots.forEach((d, idx) => d.classList.toggle('active', idx === i));
+}
+qdots.forEach((d, i) => d.addEventListener('click', () => { setQuote(i); clearInterval(qTimer); qTimer = setInterval(() => setQuote((qCurrent + 1) % quotes.length), 5500); }));
+let qTimer = setInterval(() => setQuote((qCurrent + 1) % quotes.length), 5500);
+</script>
+</body>
+</html>

@@ -2,7 +2,8 @@
 
 import { useEffect } from 'react'
 
-const ANCHOR_GAP = 8
+import { refreshInPageNavAnchorMetrics } from '@/lib/inPageNavAnchorMetrics'
+
 const HASH_SCROLL_MAX_RETRIES = 40
 const HASH_SCROLL_RETRY_MS = 50
 const PAST_HERO_BODY_CLASS = 'ecotone-exp-past-hero'
@@ -10,6 +11,8 @@ const PAST_HERO_BODY_CLASS = 'ecotone-exp-past-hero'
 /**
  * Soqtapata experience page: wildlife strip overflow + centering; hide main header Book CTA when in-page CTA is "competing" (sticky subnav at top).
  * Also sets --anchor-offset for `html` scroll-padding-top so in-page #anchors land below the fixed top nav and sticky #pageNav.
+ *
+ * Mobile in-page drawer: `InPageNavDrawerClient` (paired with `InPageNav`).
  *
  * `ecotone-exp-past-hero`: cuando el hero (#top) ha salido por arriba — el #topNav se oculta vía CSS y el #pageNav pasa a `position: fixed; top: 0`
  * (ver experience-surface.css). El offset de anclas usa solo la altura del subnav, sin --nav-h del header principal.
@@ -22,35 +25,11 @@ export function ExperiencePageChromeClient() {
       return Number.isFinite(n) && n > 20 ? n : 64
     }
 
-    const setAnchorOffset = () => {
-      const pageNav = document.getElementById('pageNav')
-      const h = pageNav ? pageNav.getBoundingClientRect().height : 0
-      const past = document.body.classList.contains(PAST_HERO_BODY_CLASS)
-      const mainNav = past ? 0 : effectiveMainNavH()
-      const v = Math.round(mainNav + h + ANCHOR_GAP)
-      document.documentElement.style.setProperty('--anchor-offset', `${v}px`)
-    }
-
-    const syncPnavScrollShim = () => {
-      const shim = document.getElementById('pnavScrollShim') as HTMLElement | null
-      if (!shim) return
-      const past = document.body.classList.contains(PAST_HERO_BODY_CLASS)
-      if (!past) {
-        shim.style.removeProperty('height')
-        return
-      }
-      const pageNav = document.getElementById('pageNav')
-      const ph = pageNav ? Math.round(pageNav.offsetHeight || pageNav.getBoundingClientRect().height) : 0
-      if (ph > 0) shim.style.height = `${ph}px`
-      else shim.style.removeProperty('height')
-    }
-
     let pnavRo: ResizeObserver | undefined
     const pageNav = document.getElementById('pageNav')
     if (pageNav && typeof ResizeObserver !== 'undefined') {
       pnavRo = new ResizeObserver(() => {
-        setAnchorOffset()
-        syncPnavScrollShim()
+        refreshInPageNavAnchorMetrics()
       })
       pnavRo.observe(pageNav)
     }
@@ -86,12 +65,10 @@ export function ExperiencePageChromeClient() {
       if (past && !wasPast) {
         document.getElementById('drawer')?.classList.remove('open')
       }
-      setAnchorOffset()
-      syncPnavScrollShim()
+      refreshInPageNavAnchorMetrics()
       setPnavStuck()
       requestAnimationFrame(() => {
-        syncPnavScrollShim()
-        setAnchorOffset()
+        refreshInPageNavAnchorMetrics()
         setPnavStuck()
         const w = window as unknown as { __ecotoneExpSyncPnav?: () => void }
         w.__ecotoneExpSyncPnav?.()
@@ -111,7 +88,7 @@ export function ExperiencePageChromeClient() {
         return
       }
       requestAnimationFrame(() => {
-        setAnchorOffset()
+        refreshInPageNavAnchorMetrics()
         el.scrollIntoView({ block: 'start', behavior: 'auto' })
         requestAnimationFrame(() => {
           updatePastHero()
@@ -126,8 +103,7 @@ export function ExperiencePageChromeClient() {
       heroRo.observe(hero)
     }
 
-    setAnchorOffset()
-    syncPnavScrollShim()
+    refreshInPageNavAnchorMetrics()
     fixHashScroll(0)
     updatePastHero()
 
@@ -135,8 +111,7 @@ export function ExperiencePageChromeClient() {
     window.addEventListener('hashchange', onHashChange)
 
     const onLayoutLoad = () => {
-      setAnchorOffset()
-      syncPnavScrollShim()
+      refreshInPageNavAnchorMetrics()
       setWildlifeScroll()
       fixHashScroll(0)
       updatePastHero()
@@ -151,124 +126,12 @@ export function ExperiencePageChromeClient() {
     }
     setWildlifeScroll()
 
-    /** Mobile (≤719px): single-height sticky bar; chevron opens section links in a panel (see experience-surface.css / #pageNav). */
-    const pnavEls = {
-      root: pageNav,
-      btn: document.getElementById('pnavMobileToggle') as HTMLButtonElement | null,
-      cols: document.getElementById('pageNavCols') as HTMLDivElement | null,
-    }
-    const mqMobilePnav = window.matchMedia('(max-width: 719px)')
-
-    const setMobilePnavOpen = (open: boolean) => {
-      if (!pnavEls.root || !pnavEls.btn || !pnavEls.cols) return
-      pnavEls.root.classList.toggle('pnav-mobile-open', open)
-      pnavEls.btn.setAttribute('aria-expanded', open ? 'true' : 'false')
-      if (mqMobilePnav.matches && !open) {
-        pnavEls.cols.setAttribute('aria-hidden', 'true')
-      } else {
-        pnavEls.cols.removeAttribute('aria-hidden')
-      }
-      pnavEls.cols.querySelectorAll<HTMLAnchorElement>('a.pnav-top[href^="#"]').forEach((a) => {
-        a.tabIndex = !mqMobilePnav.matches || open ? 0 : -1
-      })
-      pnavEls.btn.tabIndex = mqMobilePnav.matches ? 0 : -1
-    }
-
-    const syncMobilePnavA11y = () => {
-      if (!pnavEls.btn || !pnavEls.cols) return
-      const mobile = mqMobilePnav.matches
-      pnavEls.btn.tabIndex = mobile ? 0 : -1
-      const open = mobile && pnavEls.root?.classList.contains('pnav-mobile-open')
-      if (mobile && !open) {
-        pnavEls.cols.setAttribute('aria-hidden', 'true')
-      } else {
-        pnavEls.cols.removeAttribute('aria-hidden')
-      }
-      pnavEls.cols.querySelectorAll<HTMLAnchorElement>('a.pnav-top[href^="#"]').forEach((a) => {
-        a.tabIndex = !mobile || open ? 0 : -1
-      })
-    }
-
-    const onPnavMobileToggle = () => {
-      if (!pnavEls.root || !mqMobilePnav.matches) return
-      const open = !pnavEls.root.classList.contains('pnav-mobile-open')
-      setMobilePnavOpen(open)
-      setAnchorOffset()
-      requestAnimationFrame(() => {
-        syncPnavScrollShim()
-        setAnchorOffset()
-      })
-    }
-    pnavEls.btn?.addEventListener('click', onPnavMobileToggle)
-
-    const onPnavHashLink = (e: MouseEvent) => {
-      if (!mqMobilePnav.matches || !pnavEls.cols) return
-      const raw = e.target
-      const el =
-        raw instanceof Element ? raw : raw instanceof Text ? raw.parentElement : null
-      const t = el?.closest('a[href^="#"]')
-      if (t && pnavEls.cols.contains(t)) {
-        setMobilePnavOpen(false)
-        setAnchorOffset()
-        requestAnimationFrame(() => {
-          const w = window as unknown as { __ecotoneExpSyncPnav?: () => void }
-          w.__ecotoneExpSyncPnav?.()
-        })
-      }
-    }
-    pnavEls.cols?.addEventListener('click', onPnavHashLink)
-
-    const onDocClickClosePnav = (e: MouseEvent) => {
-      if (!mqMobilePnav.matches || !pnavEls.root?.classList.contains('pnav-mobile-open')) return
-      const target = e.target
-      if (target instanceof Node && pnavEls.root?.contains(target)) return
-      setMobilePnavOpen(false)
-      setAnchorOffset()
-    }
-    document.addEventListener('click', onDocClickClosePnav, true)
-
-    const onKeydownClosePnav = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || !mqMobilePnav.matches) return
-      if (!pnavEls.root?.classList.contains('pnav-mobile-open')) return
-      setMobilePnavOpen(false)
-      setAnchorOffset()
-      pnavEls.btn?.focus()
-    }
-    document.addEventListener('keydown', onKeydownClosePnav)
-
-    const onMqMobilePnavChange = () => {
-      if (!mqMobilePnav.matches) {
-        setMobilePnavOpen(false)
-      }
-      syncMobilePnavA11y()
-      setAnchorOffset()
-      requestAnimationFrame(() => {
-        syncPnavScrollShim()
-        setAnchorOffset()
-      })
-    }
-    if (typeof mqMobilePnav.addEventListener === 'function') {
-      mqMobilePnav.addEventListener('change', onMqMobilePnavChange)
-    } else {
-      mqMobilePnav.addListener(onMqMobilePnavChange)
-    }
-    syncMobilePnavA11y()
-
     const onScroll = () => {
       updatePastHero()
-      if (mqMobilePnav.matches && pnavEls.root?.classList.contains('pnav-mobile-open')) {
-        setMobilePnavOpen(false)
-        setAnchorOffset()
-        requestAnimationFrame(() => {
-          syncPnavScrollShim()
-          setAnchorOffset()
-        })
-      }
     }
     const onResize = () => {
       updatePastHero()
       setWildlifeScroll()
-      onMqMobilePnavChange()
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onResize, { passive: true })
@@ -276,28 +139,14 @@ export function ExperiencePageChromeClient() {
     onResize()
 
     return () => {
-      pnavEls.btn?.removeEventListener('click', onPnavMobileToggle)
-      pnavEls.cols?.removeEventListener('click', onPnavHashLink)
-      document.removeEventListener('click', onDocClickClosePnav, true)
-      document.removeEventListener('keydown', onKeydownClosePnav)
-      if (typeof mqMobilePnav.addEventListener === 'function') {
-        mqMobilePnav.removeEventListener('change', onMqMobilePnavChange)
-      } else {
-        mqMobilePnav.removeListener?.(onMqMobilePnavChange)
-      }
-      pnavEls.root?.classList.remove('pnav-mobile-open')
-      document.getElementById('pnavScrollShim')?.style.removeProperty('height')
-      if (pnavEls.btn) pnavEls.btn.tabIndex = 0
-      pnavEls.cols?.querySelectorAll<HTMLAnchorElement>('a.pnav-top[href^="#"]').forEach((a) => {
-        a.removeAttribute('tabindex')
-      })
       window.removeEventListener('hashchange', onHashChange)
       window.removeEventListener('load', onLayoutLoad)
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onResize)
-      hRo?.disconnect()
+      document.getElementById('pnavScrollShim')?.style.removeProperty('height')
       pnavRo?.disconnect()
       heroRo?.disconnect()
+      hRo?.disconnect()
       document.documentElement.style.removeProperty('--anchor-offset')
       document.body.classList.remove('ecotone-pnav-stuck')
       document.body.classList.remove(PAST_HERO_BODY_CLASS)

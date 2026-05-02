@@ -8,7 +8,7 @@ import { FAQAccordion } from '@/components/shared/FAQAccordion'
  */
 export function LodgeFaq({ data }: { data: SoqtapataFaq }) {
   return (
-    <section className="content-section bg-warm fade" id="faq">
+    <section className="content-section bg-warm" id="faq">
       <div className="content-inner">
         <div className="eyebrow">{data.eyebrow}</div>
         <h2 className="h2" style={data.h2Style}>

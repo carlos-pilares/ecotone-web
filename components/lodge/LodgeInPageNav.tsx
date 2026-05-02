@@ -8,6 +8,7 @@ import {
   activeHrefFromHash,
   computeActiveHrefFromScroll,
 } from '@/lib/inPageNavScroll'
+import { refreshInPageNavAnchorMetrics } from '@/lib/inPageNavAnchorMetrics'
 
 const ANCHOR_GAP = 8
 const HASH_SCROLL_MAX_RETRIES = 40
@@ -51,35 +52,11 @@ export function LodgeInPageNav({ nav }: LodgeInPageNavProps) {
       return Number.isFinite(n) && n > 20 ? n : 64
     }
 
-    const setAnchorOffset = () => {
-      const pageNav = document.getElementById('pageNav')
-      const h = pageNav ? pageNav.getBoundingClientRect().height : 0
-      const past = document.body.classList.contains(PAST_HERO_BODY_CLASS)
-      const mainNav = past ? 0 : effectiveMainNavH()
-      const v = Math.round(mainNav + h + ANCHOR_GAP)
-      document.documentElement.style.setProperty('--anchor-offset', `${v}px`)
-    }
-
-    const syncPnavScrollShim = () => {
-      const shim = document.getElementById('pnavScrollShim') as HTMLElement | null
-      if (!shim) return
-      const past = document.body.classList.contains(PAST_HERO_BODY_CLASS)
-      if (!past) {
-        shim.style.removeProperty('height')
-        return
-      }
-      const pageNav = document.getElementById('pageNav')
-      const ph = pageNav ? Math.round(pageNav.offsetHeight || pageNav.getBoundingClientRect().height) : 0
-      if (ph > 0) shim.style.height = `${ph}px`
-      else shim.style.removeProperty('height')
-    }
-
     let pnavRo: ResizeObserver | undefined
     const pageNavEl = document.getElementById('pageNav')
     if (pageNavEl && typeof ResizeObserver !== 'undefined') {
       pnavRo = new ResizeObserver(() => {
-        setAnchorOffset()
-        syncPnavScrollShim()
+        refreshInPageNavAnchorMetrics()
       })
       pnavRo.observe(pageNavEl)
     }
@@ -105,12 +82,10 @@ export function LodgeInPageNav({ nav }: LodgeInPageNavProps) {
       if (past && !wasPast) {
         document.getElementById('drawer')?.classList.remove('open')
       }
-      setAnchorOffset()
-      syncPnavScrollShim()
+      refreshInPageNavAnchorMetrics()
       setPnavStuck()
       requestAnimationFrame(() => {
-        syncPnavScrollShim()
-        setAnchorOffset()
+        refreshInPageNavAnchorMetrics()
         setPnavStuck()
       })
     }
@@ -127,7 +102,7 @@ export function LodgeInPageNav({ nav }: LodgeInPageNavProps) {
         return
       }
       requestAnimationFrame(() => {
-        setAnchorOffset()
+        refreshInPageNavAnchorMetrics()
         el.scrollIntoView({ block: 'start', behavior: 'auto' })
         requestAnimationFrame(() => {
           updatePastHero()
@@ -142,8 +117,7 @@ export function LodgeInPageNav({ nav }: LodgeInPageNavProps) {
       heroRo.observe(hero)
     }
 
-    setAnchorOffset()
-    syncPnavScrollShim()
+    refreshInPageNavAnchorMetrics()
     fixHashScroll(0)
     updatePastHero()
 
@@ -158,8 +132,7 @@ export function LodgeInPageNav({ nav }: LodgeInPageNavProps) {
     window.addEventListener('hashchange', onHashChange)
 
     const onLayoutLoad = () => {
-      setAnchorOffset()
-      syncPnavScrollShim()
+      refreshInPageNavAnchorMetrics()
       fixHashScroll(0)
       updatePastHero()
     }

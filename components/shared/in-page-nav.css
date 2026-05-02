@@ -92,22 +92,44 @@
   gap: 12px;
 }
 
-@media (max-width: 600px) {
-  .ipnav.lodge-page-nav:not(.exp-soqtapata-pnav) .page-nav-links .ipnav-link {
+/**
+ * Mobile drawer (≤719px): `.ipnav.lodge-page-nav` rules above use 3-class selectors
+ * (`white-space: nowrap`, `min-width: 140px`, `flex-shrink: 0`) and override the
+ * 2-class rules in `experience-surface.css`. These 4-class overrides restore 2-line
+ * titles + flexible lead column without affecting desktop (drawer hidden ≥720px).
+ */
+@media (max-width: 719px) {
+  .ipnav--mobile-drawer.lodge-page-nav .page-nav-left {
+    flex: 1;
+    min-width: 0;
+    flex-shrink: 1;
+    padding-right: 8px;
+  }
+
+  .ipnav--mobile-drawer.lodge-page-nav .page-nav-title {
     font-size: 12px;
-    padding: 12px 12px;
+    white-space: normal;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    line-height: 1.3;
+    word-break: break-word;
   }
 
-  .ipnav.lodge-page-nav:not(.exp-soqtapata-pnav) .page-nav-left {
-    display: none;
+  .ipnav--mobile-drawer.lodge-page-nav .page-nav-sub {
+    white-space: normal;
+    line-height: 1.2;
+    margin-top: 2px;
   }
+}
 
-  .ipnav.lodge-page-nav:not(.exp-soqtapata-pnav) .pnav-cta {
-    padding-left: 8px;
-  }
-
-  .ipnav.lodge-page-nav:not(.exp-soqtapata-pnav) .pnav-cta .btn {
-    padding: 8px 12px !important;
-    font-size: 11px !important;
+/* Narrow phones: keep price + Book on one row; slightly tighter primary CTA */
+@media (max-width: 400px) {
+  .ipnav--mobile-drawer.lodge-page-nav .pnav-cta a.btn-primary,
+  .ipnav--mobile-drawer.lodge-page-nav .pnav-cta a.pnav-book-btn {
+    padding: 7px 12px;
+    font-size: 11px;
   }
 }

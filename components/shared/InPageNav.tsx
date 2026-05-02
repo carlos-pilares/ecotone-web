@@ -23,8 +23,8 @@ export type InPageNavProps = {
 }
 
 /**
- * Shared sticky subnav for long lodge/experience pages.
- * Experience mode: `#pnavMobileToggle`, `#pageNavCols`, scrim — used by `ExperiencePageChromeClient`.
+ * Shared sticky sub-page nav. Mobile (≤719px): Apple-style compact bar + chevron + panel + scrim (`InPageNavDrawerClient`).
+ * Experience adds `exp-soqtapata-pnav` for price+Book CTA spacing.
  */
 export function InPageNav({
   title,
@@ -43,7 +43,14 @@ export function InPageNav({
   return (
     <>
       <nav
-        className={['ipnav', 'page-nav', 'lodge-page-nav', isExperience ? 'exp-soqtapata-pnav' : '', navClassName]
+        className={[
+          'ipnav',
+          'page-nav',
+          'lodge-page-nav',
+          'ipnav--mobile-drawer',
+          isExperience ? 'exp-soqtapata-pnav' : '',
+          navClassName,
+        ]
           .filter(Boolean)
           .join(' ')}
         id="pageNav"
@@ -54,42 +61,35 @@ export function InPageNav({
             <div className="page-nav-title">{title}</div>
             <div className="page-nav-sub">{subtitle}</div>
           </div>
-          {isExperience ? (
-            <button
-              type="button"
-              className="pnav-mobile-toggle"
-              id="pnavMobileToggle"
-              aria-label="Page sections"
-              aria-expanded="false"
-              aria-controls="pageNavCols"
-            >
-              <svg
-                className="pnav-mobile-chevron"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </button>
-          ) : null}
-          <div
-            className={['page-nav-links', isExperience ? 'page-nav-cols' : ''].filter(Boolean).join(' ')}
-            id={isExperience ? 'pageNavCols' : undefined}
+          <button
+            type="button"
+            className="pnav-mobile-toggle"
+            id="pnavMobileToggle"
+            aria-label="Page sections"
+            aria-expanded="false"
+            aria-controls="pageNavCols"
           >
+            <svg
+              className="pnav-mobile-chevron"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+          <div className="page-nav-links page-nav-cols" id="pageNavCols">
             {links.map((l) => {
               const active = normalizeHashHref(l.href) === navActive
               return (
                 <a
                   key={l.href + l.label}
                   href={l.href}
-                  className={['ipnav-link', isExperience ? 'pnav-top' : '', active ? 'ipnav-link--active' : '']
-                    .filter(Boolean)
-                    .join(' ')}
+                  className={['ipnav-link', 'pnav-top', active ? 'ipnav-link--active' : ''].filter(Boolean).join(' ')}
                   {...(l.dataActiveWhen != null && l.dataActiveWhen !== ''
                     ? { 'data-active-when': l.dataActiveWhen }
                     : {})}
@@ -112,9 +112,7 @@ export function InPageNav({
         </div>
       </nav>
       <div id="pnavScrollShim" className="pnav-scroll-shim" aria-hidden="true" />
-      {isExperience ? (
-        <div className="pnav-mobile-scrim" id="pnavMobileScrim" aria-hidden="true" />
-      ) : null}
+      <div className="pnav-mobile-scrim" id="pnavMobileScrim" aria-hidden="true" />
     </>
   )
 }

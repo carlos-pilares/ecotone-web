@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import '@/components/shared/in-page-nav.css'
 import '../experiences/experience-surface.css'
 import './lodge-surface.css'
 
