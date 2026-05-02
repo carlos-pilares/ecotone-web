@@ -1,0 +1,113 @@
+/* Shared in-page nav layout + links (Lodge + Experience). Sticky / past-hero: experience-surface.css `.page-nav`. */
+
+.ipnav.page-nav.lodge-page-nav.scrolled {
+  box-shadow: 0 2px 16px rgba(26, 18, 9, 0.06);
+}
+
+.ipnav.page-nav.lodge-page-nav .page-nav-inner {
+  max-width: var(--max);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0 var(--g);
+}
+
+.ipnav.page-nav.lodge-page-nav .page-nav-inner::-webkit-scrollbar {
+  display: none;
+}
+
+.ipnav.lodge-page-nav .page-nav-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 10px 20px 10px 0;
+  flex-shrink: 0;
+  min-width: 140px;
+}
+
+.ipnav.lodge-page-nav .page-nav-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--n900);
+  white-space: nowrap;
+}
+
+.ipnav.lodge-page-nav .page-nav-sub {
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--n400);
+  white-space: nowrap;
+}
+
+.ipnav.lodge-page-nav .page-nav-links {
+  display: flex;
+  flex: 1;
+  align-items: stretch;
+  overflow-x: auto;
+  scrollbar-width: none;
+  gap: 0;
+}
+
+.ipnav.lodge-page-nav .page-nav-links::-webkit-scrollbar {
+  display: none;
+}
+
+.ipnav.lodge-page-nav .page-nav-links .ipnav-link {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--n400);
+  padding: 14px 16px;
+  white-space: nowrap;
+  border-bottom: none;
+  text-decoration: none;
+  transition: color 0.2s;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  line-height: 1.35;
+}
+
+.ipnav.lodge-page-nav .page-nav-links .ipnav-link:hover {
+  color: var(--brown);
+}
+
+.ipnav.lodge-page-nav .page-nav-links .ipnav-link.ipnav-link--active {
+  font-weight: 700;
+  color: var(--brown);
+}
+
+.ipnav.lodge-page-nav .pnav-cta {
+  display: flex;
+  align-items: center;
+  padding: 0 0 0 16px;
+  flex-shrink: 0;
+}
+
+.ipnav.lodge-page-nav.exp-soqtapata-pnav .pnav-cta {
+  gap: 12px;
+}
+
+@media (max-width: 600px) {
+  .ipnav.lodge-page-nav:not(.exp-soqtapata-pnav) .page-nav-links .ipnav-link {
+    font-size: 12px;
+    padding: 12px 12px;
+  }
+
+  .ipnav.lodge-page-nav:not(.exp-soqtapata-pnav) .page-nav-left {
+    display: none;
+  }
+
+  .ipnav.lodge-page-nav:not(.exp-soqtapata-pnav) .pnav-cta {
+    padding-left: 8px;
+  }
+
+  .ipnav.lodge-page-nav:not(.exp-soqtapata-pnav) .pnav-cta .btn {
+    padding: 8px 12px !important;
+    font-size: 11px !important;
+  }
+}
