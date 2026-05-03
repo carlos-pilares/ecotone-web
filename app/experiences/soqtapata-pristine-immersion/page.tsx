@@ -8,7 +8,7 @@ import { ReviewsSection } from '@/components/ReviewsSection'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
 import { TechProductsSection } from '@/components/TechProductsSection'
-import { buildFeaturedQuoteItems } from '@/lib/featuredQuotes'
+import { buildFeaturedQuoteItemsForExperience } from '@/lib/experienceFeaturedQuotes'
 import { getSoqtapataPageCms, soqtapataPristineSeoDefault } from '@/lib/soqtapataCmsV1'
 import { ExperienceHeroSoqtapata } from '@/components/experience/ExperienceHeroSoqtapata'
 import { ExperienceStatsBarSoqtapata } from '@/components/experience/ExperienceStatsBarSoqtapata'
@@ -26,7 +26,6 @@ import { ExperienceResourcesSoqtapata } from '@/components/experience/Experience
 import { ExperienceFaqSoqtapata } from '@/components/experience/ExperienceFaqSoqtapata'
 import { ExperienceAlsoCamantiSoqtapata } from '@/components/experience/ExperienceAlsoCamantiSoqtapata'
 import { ExperienceBookSoqtapata } from '@/components/experience/ExperienceBookSoqtapata'
-import { soqtapataReviewKey } from '@/lib/reviewsTypes'
 import type { ReviewsSectionProps } from '@/components/ReviewsSection'
 
 import '@/components/shared/in-page-nav.css'
@@ -41,7 +40,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function SoqtapataPristineImmersionPage() {
-  const { displayName } = soqtapataReviewKey()
   const {
     experience: ex,
     reviewsLayout,
@@ -50,20 +48,14 @@ export default async function SoqtapataPristineImmersionPage() {
   } = await getSoqtapataPageCms()
 
   const localReviews = ex.reviews
-  const featuredQuoteItems = buildFeaturedQuoteItems(localReviews)
-  const secondaryLine =
-    localReviews.length > 0
-      ? `${localReviews.length} verified ${localReviews.length === 1 ? 'review' : 'reviews'}`
-      : null
+  const featuredQuoteItems = buildFeaturedQuoteItemsForExperience(localReviews)
 
   const reviewsProps: ReviewsSectionProps = {
     ...reviewsLayout,
     reviews: localReviews,
     featuredQuoteItems,
     homeData: null,
-    secondaryRatingLine: secondaryLine,
     sectionLead: reviewsSectionLead,
-    emptyMessage: `No guest reviews for ${displayName} yet. Be the first to share your experience.`,
   }
 
   return (

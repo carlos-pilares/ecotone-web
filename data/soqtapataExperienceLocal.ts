@@ -5,7 +5,6 @@
 
 import type { CSSProperties } from 'react'
 import type { ReviewDoc, TechnologyProductDoc } from '@/lib/queries'
-import { soqtapataExperienceReviewFallbacks } from '@/lib/soqtapataReviewFallbacks'
 
 export type SoqtapataPhase1GalleryCell = {
   kind: 'main' | 'thumb'
@@ -734,7 +733,8 @@ export const soqtapataPhase4 = {
   when: soqtapataPhase4When,
 }
 
-export const soqtapataPhase5Reviews: ReviewDoc[] = soqtapataExperienceReviewFallbacks
+/** Sin CMS: sin tarjetas inventadas; el bloque reseñas usa emptyMessage del resolver. */
+export const soqtapataPhase5Reviews: ReviewDoc[] = []
 
 export type BfygEntryItem = { title: string; body: string }
 
@@ -983,6 +983,10 @@ export type SoqtapataBook = {
   whatsappLabel: string
   termsNote: string
   termsHash: string
+  /** Texto del enlace legal junto a `termsNote` (p. ej. Terms & Conditions). */
+  termsLinkLabel: string
+  /** Hasta 3 líneas bajo CTAs (confianza). */
+  trustStripItems: readonly { text: string }[]
 }
 
 export const soqtapataPhase6Resources: SoqtapataResources = {
@@ -1120,6 +1124,12 @@ export const soqtapataPhase6Book: SoqtapataBook = {
   whatsappLabel: 'Ask via WhatsApp',
   termsNote: 'By booking, you agree to our ',
   termsHash: '#terms',
+  termsLinkLabel: 'Terms & Conditions',
+  trustStripItems: [
+    { text: 'Secure payment' },
+    { text: 'Free cancellation · 15 days' },
+    { text: 'B Corp certified' },
+  ],
 }
 
 export const soqtapataPhase6 = {
@@ -1151,4 +1161,9 @@ export const soqtapataExperienceReviewsLayout = {
   sectionClassName: 'content-section bg-cream fade',
   contentInnerClassName: 'content-inner',
   useHomepageSampleReviewsIfEmpty: false,
+  sourceLabel: 'Trustpilot',
+  /** Vacío en datos: el resolver rellena desde el conteo de reseñas CMS. */
+  secondaryRatingLine: '',
+  /** Vacío en datos: el resolver rellena con nombre de programa. */
+  emptyMessage: '',
 } as const

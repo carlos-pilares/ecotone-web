@@ -45,5 +45,27 @@ export const reviewsLayoutBlock = defineType({
       initialValue: false,
       description: 'Comportamiento de fallback del componente; las reseñas reales siguen viniendo de la librería cuando existen.',
     }),
+    defineField({
+      name: 'sourceLabel',
+      title: 'Etiqueta bajo las estrellas (p. ej. Trustpilot)',
+      type: 'string',
+      validation: (r) => r.max(40),
+      description: 'Vacío = el sitio usa el valor por defecto técnico de esta landing.',
+    }),
+    defineField({
+      name: 'secondaryRatingLine',
+      title: 'Línea secundaria bajo la valoración (p. ej. «12 verified reviews»)',
+      type: 'string',
+      validation: (r) => r.max(120),
+      description: 'Vacío = el front puede derivar un conteo desde las reseñas seleccionadas (fallback técnico).',
+    }),
+    defineField({
+      name: 'emptyMessage',
+      title: 'Mensaje si no hay tarjetas de reseña',
+      type: 'text',
+      rows: 2,
+      validation: (r) => r.max(400),
+      description: 'Vacío = mensaje técnico genérico con el nombre del programa.',
+    }),
   ],
 })

@@ -22,6 +22,8 @@ import {
   type SoqtapataPageModuleRow,
 } from '@/lib/soqtapataSectionPresentation'
 import type { SectionModuleKey } from '@/lib/sectionPresentationTypes'
+import { applyExperienceReviewsLayoutResolvers } from '@/lib/experienceReviewsPresentation'
+import type { ExperienceReviewsLayoutMutable } from '@/lib/experienceReviewsPresentation'
 
 export type SoqtapataExperience = typeof soqtapataExperience & {
   techEyebrow?: string
@@ -39,6 +41,9 @@ export type SoqtapataCmsV1Payload = {
     sectionClassName: string
     contentInnerClassName: string
     useHomepageSampleReviewsIfEmpty: boolean
+    sourceLabel: string
+    secondaryRatingLine: string | null
+    emptyMessage: string
   }>
 }
 
@@ -136,18 +141,36 @@ export function mergeFromCmsV1(
   payload: SoqtapataCmsV1Payload | null,
 ): {
   experience: SoqtapataExperience
-  reviewsLayout: typeof soqtapataExperienceReviewsLayout
+  reviewsLayout: ExperienceReviewsLayoutMutable
 } {
   if (!payload) {
-    return { experience: local, reviewsLayout: localReviewsLayout }
+    return {
+      experience: local,
+      reviewsLayout: reviewsLayoutFromRow(null, localReviewsLayout),
+    }
   }
   const merged = normalizeMergedExperience(
     deepMergeWithLocalFallback(local, payload.experience) as SoqtapataExperience,
   )
-  const reviewsLayout = {
-    ...localReviewsLayout,
-    ...(payload.reviewsLayout && typeof payload.reviewsLayout === 'object' ? payload.reviewsLayout : {}),
-  } as typeof soqtapataExperienceReviewsLayout
+  const p = payload.reviewsLayout && typeof payload.reviewsLayout === 'object' ? payload.reviewsLayout : {}
+  const reviewsLayout: ExperienceReviewsLayoutMutable = {
+    ...reviewsLayoutFromRow(null, localReviewsLayout),
+    ...(p.eyebrow?.trim() ? { eyebrow: p.eyebrow.trim() } : {}),
+    ...(p.headline?.trim() ? { headline: p.headline.trim() } : {}),
+    ...(p.averageRating?.trim() ? { averageRating: p.averageRating.trim() } : {}),
+    ...(p.sectionClassName?.trim() ? { sectionClassName: p.sectionClassName.trim() } : {}),
+    ...(p.contentInnerClassName?.trim() ? { contentInnerClassName: p.contentInnerClassName.trim() } : {}),
+    ...(p.useHomepageSampleReviewsIfEmpty != null
+      ? { useHomepageSampleReviewsIfEmpty: p.useHomepageSampleReviewsIfEmpty }
+      : {}),
+    ...(p.sourceLabel?.trim() ? { sourceLabel: p.sourceLabel.trim() } : {}),
+    ...(p.secondaryRatingLine !== undefined && p.secondaryRatingLine !== null
+      ? { secondaryRatingLine: String(p.secondaryRatingLine).trim() || '' }
+      : {}),
+    ...(p.emptyMessage !== undefined && p.emptyMessage !== null
+      ? { emptyMessage: String(p.emptyMessage).trim() || '' }
+      : {}),
+  }
   return { experience: merged, reviewsLayout }
 }
 
@@ -178,7 +201,7 @@ export const getSoqtapataPageCms = cache(async () => {
 
   function finalizePayload(params: {
     experience: SoqtapataExperience
-    reviewsLayout: typeof defaultsRl
+    reviewsLayout: ExperienceReviewsLayoutMutable
     doc: SoqtapataCmsPageDoc
     cmsError: string | null
     seo: { title: string; description: string }
@@ -189,6 +212,11 @@ export const getSoqtapataPageCms = cache(async () => {
       reviewsLayout: params.reviewsLayout,
       sectionModules: params.sectionModules ?? null,
     })
+    applyExperienceReviewsLayoutResolvers(
+      params.reviewsLayout,
+      params.experience.reviews?.length ?? 0,
+      params.experience.hero?.h1?.trim() || 'this program',
+    )
     return {
       experience: params.experience,
       reviewsLayout: params.reviewsLayout,
@@ -202,7 +230,7 @@ export const getSoqtapataPageCms = cache(async () => {
 
   if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || !process.env.NEXT_PUBLIC_SANITY_DATASET) {
     const experience = structuredClone(local) as SoqtapataExperience
-    const reviewsLayout = { ...defaultsRl }
+    const reviewsLayout = reviewsLayoutFromRow(null, defaultsRl)
     return finalizePayload({
       experience,
       reviewsLayout,
@@ -223,7 +251,7 @@ export const getSoqtapataPageCms = cache(async () => {
   }
   if (!row?.experience) {
     const experience = structuredClone(local) as SoqtapataExperience
-    const reviewsLayout = { ...defaultsRl }
+    const reviewsLayout = reviewsLayoutFromRow(row ?? null, defaultsRl)
     return finalizePayload({
       experience,
       reviewsLayout,
@@ -237,8 +265,6 @@ export const getSoqtapataPageCms = cache(async () => {
     ...soqtapataPartialFromStructuredRow(row),
     ...alsoBookFromStructuredRow(row, local),
   }
-  const r = reviewsFromRow(row)
-  if (r) partial.reviews = r
   const t = techProductsFromRow(row)
   if (t) partial.techProducts = t
   const inc = includedIdsFromRow(row)
@@ -246,6 +272,10 @@ export const getSoqtapataPageCms = cache(async () => {
   let experience = normalizeMergedExperience(
     deepMergeWithLocalFallback(local, partial) as SoqtapataExperience,
   )
+  const curatedReviews = reviewsFromRow(row)
+  if (curatedReviews !== null) {
+    experience = normalizeMergedExperience({ ...experience, reviews: curatedReviews })
+  }
   const pageNavFromCms = mergeInternalNavIntoPageNav(row.internalNav, experience.pageNav)
   if (pageNavFromCms) {
     experience = { ...experience, pageNav: pageNavFromCms }

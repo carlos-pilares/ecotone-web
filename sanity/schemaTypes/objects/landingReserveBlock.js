@@ -103,5 +103,34 @@ export const landingReserveBlock = defineType({
       type: 'string',
       description: 'Vacío = ancla/URL de términos de «Actual en la web».',
     }),
+    defineField({
+      name: 'termsLinkLabel',
+      title: 'Texto del enlace a términos (junto a la nota legal)',
+      type: 'string',
+      validation: (r) => r.max(80),
+      description: 'P. ej. «Terms & Conditions». Vacío = etiqueta por defecto técnica del sitio.',
+    }),
+    defineField({
+      name: 'trustStripItems',
+      title: 'Franja de confianza (3 líneas bajo los botones)',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          name: 'reserveTrustStripLine',
+          fields: [
+            defineField({
+              name: 'text',
+              title: 'Texto',
+              type: 'string',
+              validation: (r) => r.max(120),
+            }),
+          ],
+          preview: {select: {t: 'text'}, prepare: ({t}) => ({title: t || 'Line'})},
+        },
+      ],
+      validation: (r) => r.max(3),
+      description: 'Hasta 3 líneas (pago seguro, cancelación, certificación). Array vacío = textos por defecto técnicos de la web.',
+    }),
   ],
 })

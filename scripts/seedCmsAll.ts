@@ -360,6 +360,18 @@ export async function seedCmsAll() {
       sectionClassName: soqtapataExperienceReviewsLayout.sectionClassName,
       contentInnerClassName: soqtapataExperienceReviewsLayout.contentInnerClassName,
       useHomepageSampleReviewsIfEmpty: soqtapataExperienceReviewsLayout.useHomepageSampleReviewsIfEmpty,
+      sourceLabel: soqtapataExperienceReviewsLayout.sourceLabel,
+      secondaryRatingLine: '',
+      emptyMessage: '',
+    },
+    reserveBlock: {
+      _type: 'landingReserveBlock' as const,
+      termsLinkLabel: 'Terms & Conditions',
+      trustStripItems: [
+        { _key: 'ts1', _type: 'reserveTrustStripLine' as const, text: 'Secure payment' },
+        { _key: 'ts2', _type: 'reserveTrustStripLine' as const, text: 'Free cancellation · 15 days' },
+        { _key: 'ts3', _type: 'reserveTrustStripLine' as const, text: 'B Corp certified' },
+      ],
     },
     reviewRefs: [
       { _type: 'reference' as const, _ref: 'seed-review-1', _key: 'rv1' },

@@ -10,6 +10,7 @@ import type {
   SectionModuleKey,
 } from '@/lib/sectionPresentationTypes'
 import type { soqtapataExperience } from '@/data/soqtapataExperienceLocal'
+import type { ExperienceReviewsLayoutMutable } from '@/lib/experienceReviewsPresentation'
 
 /** Experiencia fusionada (CMS + local) con campos opcionales que solo setea la capa de presentación. */
 export type SoqtapataExperienceMerged = typeof soqtapataExperience & {
@@ -66,10 +67,7 @@ export function landingOverridesFromSectionModules(
 
 export function buildExperiencePresentationSlice(
   ex: SoqtapataExperienceMerged,
-  reviewsLayout: {
-    eyebrow?: string | null
-    headline?: string | null
-  },
+  reviewsLayout: Pick<ExperienceReviewsLayoutMutable, 'eyebrow' | 'headline'>,
 ): ExperiencePresentationSlice {
   const td = SECTION_DEFAULTS.tech
   return {
@@ -163,14 +161,7 @@ function emptyVisibility(): Record<SectionModuleKey, boolean> {
  */
 export function applySoqtapataSectionPresentation(params: {
   experience: SoqtapataExperienceMerged
-  reviewsLayout: {
-    eyebrow: string
-    headline: string
-    averageRating: string
-    sectionClassName: string
-    contentInnerClassName: string
-    useHomepageSampleReviewsIfEmpty: boolean
-  }
+  reviewsLayout: ExperienceReviewsLayoutMutable
   sectionModules: SoqtapataPageModuleRow[] | null | undefined
 }): {
   sectionVisibility: Record<SectionModuleKey, boolean>

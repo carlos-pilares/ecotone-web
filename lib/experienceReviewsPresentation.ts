@@ -1,0 +1,37 @@
+/** Layout del bloque reseñas en experience (post-CMS + overrides de sección). */
+export type ExperienceReviewsLayoutMutable = {
+  eyebrow: string
+  headline: string
+  averageRating: string
+  sectionClassName: string
+  contentInnerClassName: string
+  useHomepageSampleReviewsIfEmpty: boolean
+  sourceLabel: string
+  secondaryRatingLine: string | null
+  emptyMessage: string
+}
+
+/**
+ * Rellena `sourceLabel`, `secondaryRatingLine` y `emptyMessage` cuando el CMS los deja vacíos
+ * (fallback técnico — mismo comportamiento que la página antes de CMS explícito).
+ */
+export function applyExperienceReviewsLayoutResolvers(
+  rl: ExperienceReviewsLayoutMutable,
+  reviewCount: number,
+  programTitle: string,
+): void {
+  const m = rl
+  if (!String(m.sourceLabel || '').trim()) {
+    m.sourceLabel = 'Trustpilot'
+  }
+  if (m.secondaryRatingLine == null || !String(m.secondaryRatingLine).trim()) {
+    m.secondaryRatingLine =
+      reviewCount > 0
+        ? `${reviewCount} verified ${reviewCount === 1 ? 'review' : 'reviews'}`
+        : null
+  }
+  if (!String(m.emptyMessage || '').trim()) {
+    const name = programTitle.trim() || 'this program'
+    m.emptyMessage = `No guest reviews for ${name} yet. Be the first to share your experience.`
+  }
+}

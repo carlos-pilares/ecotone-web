@@ -72,6 +72,8 @@ type CmsReserveBlock = {
   whatsappLabel?: string | null
   legalNote?: string | null
   legalTermsLink?: string | null
+  termsLinkLabel?: string | null
+  trustStripItems?: { text?: string | null }[] | null
 }
 
 type CmsPageHero = {
@@ -93,6 +95,9 @@ type CmsReviewsLayout = {
   sectionClassName?: string | null
   contentInnerClassName?: string | null
   useHomepageSampleReviewsIfEmpty?: boolean | null
+  sourceLabel?: string | null
+  secondaryRatingLine?: string | null
+  emptyMessage?: string | null
 } | null
 
 type CmsReviewDoc = {
@@ -721,9 +726,15 @@ export function soqtapataPartialFromStructuredRow(
   return out
 }
 
-export function reviewsFromRow(row: SoqtapataStructuredPageRow): ReviewDoc[] | null {
-  const docs = row?.reviewDocs
-  if (!docs || docs.length === 0) return null
+/**
+ * Reseñas curadas en `experiencePage.reviewRefs`. Con documento Sanity cargado y experiencia resuelta:
+ * lista vacía si no hay refs (no se reutilizan tarjetas locales inventadas).
+ * `null` solo si no aplica override (sin fila / sin experiencia).
+ */
+export function reviewsFromRow(row: SoqtapataStructuredPageRow | null | undefined): ReviewDoc[] | null {
+  if (!row?.experience) return null
+  const docs = row.reviewDocs
+  if (!docs || docs.length === 0) return []
   return docs.map((d) => reviewToDoc(d)).filter((x): x is ReviewDoc => x != null)
 }
 
@@ -746,19 +757,36 @@ export function includedIdsFromRow(row: SoqtapataStructuredPageRow): string[] | 
 }
 
 export function reviewsLayoutFromRow(
-  row: SoqtapataStructuredPageRow,
+  row: SoqtapataStructuredPageRow | null | undefined,
   defaults: typeof import('@/data/soqtapataExperienceLocal').soqtapataExperienceReviewsLayout,
-): typeof import('@/data/soqtapataExperienceLocal').soqtapataExperienceReviewsLayout {
+): import('@/lib/experienceReviewsPresentation').ExperienceReviewsLayoutMutable {
+  const d = defaults
   const r = row?.reviewsLayout
-  if (!r) return { ...defaults }
-  const out = { ...defaults } as Record<string, unknown>
-  if (r.eyebrow?.trim()) out.eyebrow = r.eyebrow.trim()
-  if (r.headline?.trim()) out.headline = r.headline.trim()
-  if (r.averageRating?.trim()) out.averageRating = r.averageRating.trim()
-  if (r.sectionClassName?.trim()) out.sectionClassName = r.sectionClassName.trim()
-  if (r.contentInnerClassName?.trim()) out.contentInnerClassName = r.contentInnerClassName.trim()
-  if (r.useHomepageSampleReviewsIfEmpty != null) out.useHomepageSampleReviewsIfEmpty = r.useHomepageSampleReviewsIfEmpty
-  return out as typeof import('@/data/soqtapataExperienceLocal').soqtapataExperienceReviewsLayout
+  if (!r) {
+    return {
+      eyebrow: d.eyebrow,
+      headline: d.headline,
+      averageRating: d.averageRating,
+      sectionClassName: d.sectionClassName,
+      contentInnerClassName: d.contentInnerClassName,
+      useHomepageSampleReviewsIfEmpty: d.useHomepageSampleReviewsIfEmpty,
+      sourceLabel: d.sourceLabel,
+      secondaryRatingLine: d.secondaryRatingLine?.trim() ? d.secondaryRatingLine : '',
+      emptyMessage: d.emptyMessage?.trim() ? d.emptyMessage : '',
+    }
+  }
+  return {
+    eyebrow: r.eyebrow?.trim() || d.eyebrow,
+    headline: r.headline?.trim() || d.headline,
+    averageRating: r.averageRating?.trim() || d.averageRating,
+    sectionClassName: r.sectionClassName?.trim() || d.sectionClassName,
+    contentInnerClassName: r.contentInnerClassName?.trim() || d.contentInnerClassName,
+    useHomepageSampleReviewsIfEmpty:
+      r.useHomepageSampleReviewsIfEmpty != null ? r.useHomepageSampleReviewsIfEmpty : d.useHomepageSampleReviewsIfEmpty,
+    sourceLabel: r.sourceLabel?.trim() || d.sourceLabel,
+    secondaryRatingLine: r.secondaryRatingLine?.trim() ?? '',
+    emptyMessage: r.emptyMessage?.trim() ?? '',
+  }
 }
 
 export function seoFromStructuredRow(
@@ -893,6 +921,13 @@ export function alsoBookFromStructuredRow(
     whatsappLabel: strOrNull(rb?.whatsappLabel) ?? lBook.whatsappLabel,
     termsNote: strOrNull(rb?.legalNote) ?? lBook.termsNote,
     termsHash: strOrNull(rb?.legalTermsLink) ?? lBook.termsHash,
+    termsLinkLabel: strOrNull(rb?.termsLinkLabel) ?? lBook.termsLinkLabel,
+    trustStripItems:
+      rb?.trustStripItems && rb.trustStripItems.length > 0
+        ? rb.trustStripItems
+            .map((t) => ({ text: (t?.text && String(t.text).trim()) || '' }))
+            .filter((t) => t.text)
+        : lBook.trustStripItems,
   }
 
   return { also, book }

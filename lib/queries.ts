@@ -293,7 +293,9 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       whatsappUrl,
       whatsappLabel,
       legalNote,
-      legalTermsLink
+      legalTermsLink,
+      termsLinkLabel,
+      trustStripItems[] { text }
     },
     "experience": experience-> {
       _id,
