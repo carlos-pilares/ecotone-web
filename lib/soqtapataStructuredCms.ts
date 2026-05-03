@@ -41,9 +41,18 @@ export type SoqtapataStructuredPageRow = {
   relatedRefIds?: string[] | null
   relatedExperiencesFromLanding?: CmsRelatedExperience[] | null
   reserveBlock?: CmsReserveBlock | null
+  /** Landing: prioridad sobre `experience.resources` para tarjetas + preview map/brochure. */
+  resources?: CmsExperiencePageResources | null
   internalNav?: CmsInternalNav | null
   experience?: CmsExperience | null
 } | null
+
+type CmsExperiencePageResources = {
+  mapPreviewTitle?: string | null
+  mapPreviewSubtitle?: string | null
+  brochurePreviewBadge?: string | null
+  cards?: CmsExperienceResourceRow[] | null
+}
 
 type CmsRelatedExperience = {
   _id: string
@@ -677,9 +686,23 @@ export function soqtapataPartialFromStructuredRow(
     out.terms = { ...tc, cards }
   }
 
-  const cmsResourceCards = mapExperienceResourcesFromCms(e.resources)
-  if (cmsResourceCards) {
-    out.resources = { ...l.resources, cards: cmsResourceCards }
+  const pageRes = row.resources
+  const pageCards = mapExperienceResourcesFromCms(pageRes?.cards ?? null)
+  const expCards = mapExperienceResourcesFromCms(e.resources)
+  const previewBase = {
+    mapPreviewTitle:
+      (pageRes?.mapPreviewTitle && pageRes.mapPreviewTitle.trim()) || l.resources.mapPreviewTitle,
+    mapPreviewSubtitle:
+      (pageRes?.mapPreviewSubtitle && pageRes.mapPreviewSubtitle.trim()) || l.resources.mapPreviewSubtitle,
+    brochurePreviewBadge:
+      (pageRes?.brochurePreviewBadge && pageRes.brochurePreviewBadge.trim()) ||
+      l.resources.brochurePreviewBadge,
+  }
+
+  if (pageCards) {
+    out.resources = { ...l.resources, ...previewBase, cards: pageCards }
+  } else if (expCards) {
+    out.resources = { ...l.resources, ...previewBase, cards: expCards }
   } else if (e.mapPdfUrl || e.brochurePdfUrl) {
     const res = l.resources
     const cards = res.cards.map((c, i) => {
@@ -691,7 +714,13 @@ export function soqtapataPartialFromStructuredRow(
       }
       return c
     })
-    out.resources = { ...res, cards }
+    out.resources = { ...res, ...previewBase, cards }
+  } else if (
+    pageRes?.mapPreviewTitle?.trim() ||
+    pageRes?.mapPreviewSubtitle?.trim() ||
+    pageRes?.brochurePreviewBadge?.trim()
+  ) {
+    out.resources = { ...l.resources, ...previewBase, cards: l.resources.cards }
   }
 
   if (e.faqs && e.faqs.length > 0) {

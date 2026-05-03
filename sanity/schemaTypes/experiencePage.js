@@ -283,6 +283,14 @@ export const experiencePage = defineType({
       'resources',
       'Contenido base de recursos y descargas.',
     ),
+    defineField({
+      name: 'resources',
+      title: 'Resources: tarjetas y preview (esta URL)',
+      type: 'experiencePageResources',
+      group: 'resources',
+      description:
+        '**Prioridad 1** sobre la lista del documento Experiencia. Eyebrow / título / intro del bloque siguen en *sectionModules* (pestaña Resources).',
+    }),
     previewField(
       'stPrevFaq',
       '1. Fuente',

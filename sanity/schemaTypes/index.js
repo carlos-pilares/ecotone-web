@@ -5,6 +5,7 @@ import {review} from './review'
 import {linkWithLabel} from './objects/linkWithLabel'
 import {landingHero} from './objects/landingHero'
 import {experienceResourceCard} from './objects/experienceResourceCard'
+import {experiencePageResources} from './objects/experiencePageResources'
 import {landingReserveBlock} from './objects/landingReserveBlock'
 import {lodgePageSectionCopy} from './objects/lodgePageSectionCopy'
 import {lodgeSnapshotKeyPick} from './objects/lodgeSnapshotKeyPick'
@@ -31,6 +32,7 @@ const objects = [
   cta,
   imageWithAlt,
   experienceResourceCard,
+  experiencePageResources,
   internalNavItem,
   experiencePageInternalNav,
   experiencePageSnapshotStatPick,

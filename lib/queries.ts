@@ -297,6 +297,28 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       termsLinkLabel,
       trustStripItems[] { text }
     },
+    resources {
+      mapPreviewTitle,
+      mapPreviewSubtitle,
+      brochurePreviewBadge,
+      cards[] {
+        _key,
+        title,
+        subtitle,
+        resourceType,
+        visualPreset,
+        previewImage {
+          alt,
+          image,
+          "imageUrl": image.asset->url
+        },
+        fileUrl,
+        "fileAssetUrl": file.asset->url,
+        ctaLabel,
+        visible,
+        order
+      }
+    },
     "experience": experience-> {
       _id,
       name, tagline, programType, route, status,

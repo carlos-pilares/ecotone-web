@@ -924,6 +924,11 @@ export type SoqtapataResources = {
   h2Style: { marginBottom: number }
   /** Intro opcional bajo el H2 (presentación CMS). */
   lead?: string
+  /** Preview SVG “mapa” (sin imagen de tarjeta). */
+  mapPreviewTitle: string
+  mapPreviewSubtitle: string
+  /** Preview plantilla brochure (sin imagen). */
+  brochurePreviewBadge: string
   cards: SoqtapataResourceCard[]
 }
 
@@ -993,6 +998,9 @@ export const soqtapataPhase6Resources: SoqtapataResources = {
   eyebrow: 'Resources',
   h2: 'Download & plan',
   h2Style: { marginBottom: 16 },
+  mapPreviewTitle: 'Soqtapata',
+  mapPreviewSubtitle: '1,200 m',
+  brochurePreviewBadge: 'Soqtapata · 3D/2N',
   cards: [
     {
       id: 'local-map',

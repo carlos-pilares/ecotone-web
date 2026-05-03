@@ -373,6 +373,13 @@ export async function seedCmsAll() {
         { _key: 'ts3', _type: 'reserveTrustStripLine' as const, text: 'B Corp certified' },
       ],
     },
+    resources: {
+      _type: 'experiencePageResources' as const,
+      mapPreviewTitle: 'Soqtapata',
+      mapPreviewSubtitle: '1,200 m',
+      brochurePreviewBadge: 'Soqtapata · 3D/2N',
+      cards: resourcesCardsSeed,
+    },
     reviewRefs: [
       { _type: 'reference' as const, _ref: 'seed-review-1', _key: 'rv1' },
       { _type: 'reference' as const, _ref: 'seed-review-3', _key: 'rv3' },
