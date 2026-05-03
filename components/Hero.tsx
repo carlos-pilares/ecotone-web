@@ -1,9 +1,6 @@
-import { homePageTextFields } from '@/data/cmsApproved/homePageFields'
-import type { HomePageDoc } from '@/lib/queries'
+import type { ResolvedHomePage } from '@/lib/homePageDefaults'
+import { HOME_HERO_BACKGROUND_FALLBACK_URL } from '@/lib/homePageImageFallbacks'
 import { cdnImageUrl } from '@/lib/sanity'
-
-const DEFAULT_HERO_BG =
-  'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=1800&q=85'
 
 const PILL_ICONS = [
   <svg key="0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
@@ -22,42 +19,13 @@ const PILL_ICONS = [
   </svg>,
 ]
 
-const DEFAULT_ROWS: { label: string; value: string }[] = [
-  { label: 'Routes', value: '3 territories' },
-  { label: 'Experiences', value: '~10 programs' },
-  { label: 'Group', value: 'Up to 8 people' },
-  { label: 'Duration', value: '3 days – 6 weeks' },
-]
-
-const DEFAULT_PILLS = ['3 Routes', '~10 Experiences', 'Max 8 per group', 'All inclusive']
-
-export function Hero({ heroData }: { heroData: HomePageDoc | null }) {
+export function Hero({ heroData }: { heroData: ResolvedHomePage }) {
   const h = heroData
-  const eyebrow =
-    (h?.heroEyebrow ?? homePageTextFields.heroEyebrow).trim() || homePageTextFields.heroEyebrow
-  const headline = h?.heroHeadline ?? 'The forest'
-  const headlineLight = h?.heroHeadlineLight ?? 'is waiting for you.'
-  const sub = h?.heroSubheadline ?? 'Immersive all-inclusive experiences in the most biodiverse ecosystems on Earth. All-inclusive from Cusco.'
-  const pills = Array.isArray(h?.heroPills) && h!.heroPills!.length > 0 ? h!.heroPills! : DEFAULT_PILLS
-  const cta1Text = h?.heroCta1Text ?? 'Explore experiences'
-  const cta1Link = h?.heroCta1Link ?? '#experiences'
-  const cta2Text = h?.heroCta2Text ?? 'Our routes ↓'
-  const cta2Link = h?.heroCta2Link ?? '#routes'
-  const cardPrice = h?.heroCardPrice ?? 'from $380'
-  const priceSuffix =
-    (h?.heroCardPriceSuffix ?? homePageTextFields.heroCardPriceSuffix).trim() || '/person'
-  const cardSub = h?.heroCardSubprice ?? 'All inclusive · departure from Cusco'
-  const cardCta = h?.heroCardCtaText ?? 'Check availability →'
-  const cardCtaLink = h?.heroCardCtaLink ?? '#book'
-  const rowsFromCms = h?.heroCardRows
-  const rows =
-    Array.isArray(rowsFromCms) && rowsFromCms.length > 0
-      ? rowsFromCms
-          .map((r) => ({ label: r?.label ?? '', value: r?.value ?? '' }))
-          .filter((r) => r.label || r.value)
-      : DEFAULT_ROWS
-
-  const bgUrl = cdnImageUrl(h?.heroImage ?? null, 1800, DEFAULT_HERO_BG)
+  const bgFallback = h.heroImageFallbackUrl?.trim() || HOME_HERO_BACKGROUND_FALLBACK_URL
+  const bgUrl = cdnImageUrl(h.heroImage ?? null, 1800, bgFallback)
+  const rows = (h.heroCardRows ?? [])
+    .map((r) => ({ label: (r?.label ?? '').trim(), value: (r?.value ?? '').trim() }))
+    .filter((r) => r.label && r.value)
 
   return (
     <section className="hero" id="top">
@@ -74,14 +42,14 @@ export function Hero({ heroData }: { heroData: HomePageDoc | null }) {
       </div>
       <div className="hero-inner">
         <div>
-          <div className="hero-eyebrow">{eyebrow}</div>
+          <div className="hero-eyebrow">{h.heroEyebrow ?? ''}</div>
           <h1 className="hero-h1">
-            {headline}
-            <span>{headlineLight}</span>
+            {h.heroHeadline ?? ''}
+            <span>{h.heroHeadlineLight ?? ''}</span>
           </h1>
-          <p className="hero-sub">{sub}</p>
+          <p className="hero-sub">{h.heroSubheadline ?? ''}</p>
           <div className="hero-pills">
-            {pills.map((p, i) => (
+            {(h.heroPills ?? []).map((p, i) => (
               <div key={i} className="hero-pill">
                 {PILL_ICONS[i % PILL_ICONS.length]}
                 {p}
@@ -89,25 +57,25 @@ export function Hero({ heroData }: { heroData: HomePageDoc | null }) {
             ))}
           </div>
           <div className="hero-ctas">
-            <a href={cta1Link} className="btn-primary">
-              {cta1Text}{' '}
+            <a href={h.heroCta1Link ?? '#'} className="btn-primary">
+              {h.heroCta1Text ?? ''}{' '}
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
                 <line x1="5" y1="12" x2="19" y2="12" />
                 <polyline points="12 5 19 12 12 19" />
               </svg>
             </a>
-            <a href={cta2Link} className="hero-ghost">
-              {cta2Text}
+            <a href={h.heroCta2Link ?? '#'} className="hero-ghost">
+              {h.heroCta2Text ?? ''}
             </a>
           </div>
         </div>
         <div className="hero-right">
           <div className="hero-card">
             <div className="hero-card-price">
-              {cardPrice}
-              <small>{priceSuffix}</small>
+              {h.heroCardPrice ?? ''}
+              <small>{h.heroCardPriceSuffix ?? ''}</small>
             </div>
-            <div className="hero-card-sub">{cardSub}</div>
+            <div className="hero-card-sub">{h.heroCardSubprice ?? ''}</div>
             <div className="hero-card-div" />
             <div className="hero-card-rows">
               {rows.map((row, i) => (
@@ -117,15 +85,15 @@ export function Hero({ heroData }: { heroData: HomePageDoc | null }) {
                 </div>
               ))}
             </div>
-            <a className="btn-hero-book" href={cardCtaLink}>
-              {cardCta}
+            <a className="btn-hero-book" href={h.heroCardCtaLink ?? '#'}>
+              {h.heroCardCtaText ?? ''}
             </a>
           </div>
         </div>
       </div>
       <div className="hero-scroll">
         <div className="scroll-line" />
-        <span>scroll</span>
+        <span>{h.heroScrollLabel ?? ''}</span>
       </div>
     </section>
   )

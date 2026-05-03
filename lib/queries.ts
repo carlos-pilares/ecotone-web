@@ -73,6 +73,10 @@ export type HomePageDoc = {
   heroCardRows?: Array<{ _key?: string; _type?: string; label?: string; value?: string }> | null
   heroCardCtaText?: string | null
   heroCardCtaLink?: string | null
+  /** Label next to hero scroll line (e.g. “scroll”). */
+  heroScrollLabel?: string | null
+  /** Technical fallback when `heroImage` is unset. */
+  heroImageFallbackUrl?: string | null
   heroImage?: SanityImageSource | null
   stats?: Array<{ _key?: string; _type?: string; number?: string; label?: string }> | null
   manifestoEyebrow?: string | null
@@ -154,6 +158,8 @@ export type HomePageDoc = {
   bookingBody?: string | null
   bookingTrustItems?: Array<{ _key?: string; iconType?: string; text?: string }> | null
   bookingPrice?: string | null
+  /** Small suffix beside booking price (e.g. “/ person”). */
+  bookingPriceSuffixSmall?: string | null
   bookingPriceSubtext?: string | null
   bookingCardRows?: Array<{ _key?: string; label?: string; value?: string }> | null
   bookingCta1Text?: string | null
@@ -174,6 +180,8 @@ export const homePageQuery = groq`
     heroHeadline, heroHeadlineLight, heroSubheadline,
     heroPills, heroCta1Text, heroCta1Link, heroCta2Text, heroCta2Link,
     heroCardPrice, heroCardPriceSuffix, heroCardSubprice, heroCardRows, heroCardCtaText, heroCardCtaLink,
+    heroScrollLabel,
+    heroImageFallbackUrl,
     heroEyebrow,
     heroImage,
     stats,
@@ -231,7 +239,7 @@ export const homePageQuery = groq`
       _id, title, category, readingMinutes, image, externalLink, slug
     },
     bookingEyebrow, bookingHeadline, bookingBody, bookingTrustItems,
-    bookingPrice, bookingPriceSubtext, bookingCardRows,
+    bookingPrice, bookingPriceSuffixSmall, bookingPriceSubtext, bookingCardRows,
     bookingCta1Text, bookingCta1Link, bookingCta2Text, bookingCta2Link,
   }
 `

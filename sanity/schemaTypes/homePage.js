@@ -204,6 +204,20 @@ export const homePage = defineType({
     defineField({name: 'heroCardRows', title: 'Hero card — rows', type: 'array', of: [heroCardRow], group: 'hero'}),
     defineField({name: 'heroCardCtaText', title: 'Hero card — CTA text', type: 'string', group: 'hero'}),
     defineField({name: 'heroCardCtaLink', title: 'Hero card — CTA link', type: 'string', group: 'hero'}),
+    defineField({
+      name: 'heroScrollLabel',
+      title: 'Scroll indicator label',
+      type: 'string',
+      description: 'Short word next to the scroll line (e.g. “scroll”).',
+      group: 'hero',
+    }),
+    defineField({
+      name: 'heroImageFallbackUrl',
+      title: 'Hero image fallback URL',
+      type: 'url',
+      description: 'Used when no hero image asset is set (technical fallback).',
+      group: 'hero',
+    }),
 
     defineField({
       name: 'stats',
@@ -560,6 +574,13 @@ export const homePage = defineType({
     defineField({name: 'bookingBody', title: 'Body', type: 'text', group: 'booking', rows: 4}),
     defineField({name: 'bookingTrustItems', title: 'Trust items', type: 'array', of: [bookingTrustItem], group: 'booking'}),
     defineField({name: 'bookingPrice', title: 'Price line', type: 'string', group: 'booking'}),
+    defineField({
+      name: 'bookingPriceSuffixSmall',
+      title: 'Price suffix (small)',
+      type: 'string',
+      description: 'Small text beside the price (e.g. “/ person”).',
+      group: 'booking',
+    }),
     defineField({name: 'bookingPriceSubtext', title: 'Price subtext', type: 'string', group: 'booking'}),
     defineField({name: 'bookingCardRows', title: 'Card rows (label / value)', type: 'array', of: [labelValue], group: 'booking'}),
     defineField({name: 'bookingCta1Text', title: 'CTA 1 text', type: 'string', group: 'booking'}),

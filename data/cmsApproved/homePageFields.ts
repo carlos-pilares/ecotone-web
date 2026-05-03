@@ -4,6 +4,7 @@
  * Images are added at seed time (`buildHomePageDocument`).
  */
 import { DEFAULT_WHATSAPP_URL } from '@/data/cmsApproved/siteSettingsApprovedContent'
+import { HOME_HERO_BACKGROUND_FALLBACK_URL } from '@/lib/homePageImageFallbacks'
 
 const key = (id: string) => ({ _key: id })
 
@@ -35,6 +36,9 @@ export const homePageTextFields = {
   ],
   heroCardCtaText: 'Check availability →',
   heroCardCtaLink: '#book',
+  heroScrollLabel: 'scroll',
+  /** URL técnica cuando no hay `heroImage` en Sanity (misma lógica que antes en el componente). */
+  heroImageFallbackUrl: HOME_HERO_BACKGROUND_FALLBACK_URL,
 
   stats: [
     { ...key('s0'), _type: 'homeStat' as const, number: '3', label: 'Routes' },
@@ -44,7 +48,7 @@ export const homePageTextFields = {
   ],
 
   manifestoEyebrow: 'Our purpose',
-  manifestoHeadline: 'Not a tour. An immersion.',
+  manifestoHeadline: 'Not a tour.\nAn immersion.',
   manifestoBody1:
     'We design all-inclusive journeys where technology deepens your connection with nature — not replaces it. Every trail, every sound, every species encountered becomes part of a story you carry home.',
   manifestoBody2:
@@ -93,7 +97,7 @@ export const homePageTextFields = {
     'Designed for eco-travellers seeking adventure with purpose. We combine immersive technology, sustainable lodging, and direct impact on local communities.',
 
   missionEyebrow: 'Why travel with us',
-  missionHeadline: 'Travel deeper. Protect what matters.',
+  missionHeadline: 'Travel deeper.\nProtect what matters.',
   missionBody: 'Every booking directly funds conservation in the Manu Biosphere Reserve and Camanti cloud forest.',
   missionItems: [
     {
@@ -161,6 +165,7 @@ export const homePageTextFields = {
     { ...key('b3'), _type: 'bookingTrustItem' as const, iconType: 'clock' as const, text: 'All-inclusive from Cusco — pickup from your hotel' },
   ],
   bookingPrice: 'from $380',
+  bookingPriceSuffixSmall: '/ person',
   bookingPriceSubtext: 'All inclusive · departure from Cusco',
   bookingCardRows: [
     { ...key('bc0'), _type: 'labelValue' as const, label: 'Routes', value: 'Camanti · Manu Route · Core' },

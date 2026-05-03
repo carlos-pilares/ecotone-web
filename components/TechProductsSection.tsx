@@ -1,5 +1,6 @@
 import { HeadlineBlock } from '@/components/HeadlineBlock'
 import { TechProductsGrid } from '@/components/TechProductsGrid'
+import type { ResolvedHomePage } from '@/lib/homePageDefaults'
 import type { HomePageDoc, TechnologyProductDoc } from '@/lib/queries'
 
 const DEFAULT_EXPERIENCE_DESCRIPTION =
@@ -10,7 +11,7 @@ const DEFAULT_HOME_BODY =
 
 type TechProductsHomeProps = {
   variant?: 'home'
-  homeData: HomePageDoc | null
+  homeData: ResolvedHomePage | HomePageDoc | null
   products: TechnologyProductDoc[] | null | undefined
   includedProductIds?: string[] | null
   capAtThree?: boolean
