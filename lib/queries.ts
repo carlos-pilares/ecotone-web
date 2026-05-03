@@ -97,6 +97,7 @@ export type HomePageDoc = {
   explorerTailorDescriptionFallback?: string | null
   explorerTailorCtaText?: string | null
   explorerTailorWhatsappUrl?: string | null
+  explorerCardImageFallbackUrl?: string | null
   explorerLearningBadgeLabels?: string[] | null
   explorerEmptyGridMessage?: string | null
   explorerEmptyGridLinkLabel?: string | null
@@ -132,6 +133,8 @@ export type HomePageDoc = {
   partnersLabel?: string | null
   /** Optional intro under partners label on Home. */
   partnersBody?: string | null
+  partnersEmptyMessage?: string | null
+  partnerNameFallback?: string | null
   /** Curated partners for Home (order preserved). Empty / omit → use `partnersQuery`. */
   homeSelectedPartners?: PartnerDoc[] | null
   blogEyebrow?: string | null
@@ -141,6 +144,8 @@ export type HomePageDoc = {
   blogReadLabel?: string | null
   blogFallbackCategory?: string | null
   blogFallbackReadingMinutes?: number | null
+  blogEmptyMessage?: string | null
+  blogFallbackPostHref?: string | null
   blogBody?: string | null
   /** Curated blog posts for Home (order preserved). Empty / omit → use `blogPostsQuery`. */
   homeSelectedBlogPosts?: BlogPostDoc[] | null
@@ -185,6 +190,7 @@ export const homePageQuery = groq`
     explorerTailorDescriptionFallback,
     explorerTailorCtaText,
     explorerTailorWhatsappUrl,
+    explorerCardImageFallbackUrl,
     explorerLearningBadgeLabels,
     explorerEmptyGridMessage,
     explorerEmptyGridLinkLabel,
@@ -209,7 +215,7 @@ export const homePageQuery = groq`
     missionEyebrow, missionHeadline, missionBody, missionItems,
     missionCtaText, missionCtaLink,
     missionPhoto1, missionPhoto2, missionPhoto3,
-    partnersLabel, partnersBody,
+    partnersLabel, partnersBody, partnersEmptyMessage, partnerNameFallback,
     "homeSelectedPartners": homeSelectedPartners[]-> {
       _id, name, logoSvg, link, order
     },
@@ -219,6 +225,8 @@ export const homePageQuery = groq`
     blogReadLabel,
     blogFallbackCategory,
     blogFallbackReadingMinutes,
+    blogEmptyMessage,
+    blogFallbackPostHref,
     "homeSelectedBlogPosts": homeSelectedBlogPosts[]-> {
       _id, title, category, readingMinutes, image, externalLink, slug
     },

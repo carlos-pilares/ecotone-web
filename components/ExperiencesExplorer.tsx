@@ -9,9 +9,6 @@ import {
 } from '@/lib/homeExperienceCatalogLabels'
 import { HOME_EXPLORER_DEFAULTS } from '@/lib/homeExplorerDefaults'
 
-const IMG_PLACEHOLDER =
-  'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=700&q=80'
-
 function dataTypeFromProgram(programType: string | null | undefined): 'nature' | 'family' | 'learning' | 'tailor' {
   if (!programType) return 'nature'
   return HOME_EXPERIENCE_PROGRAM_TO_FILTER[programType] ?? 'nature'
@@ -21,12 +18,14 @@ function formatUsd(n: number) {
   return `USD ${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
 }
 
-function mainImageUrl(mainImage: ExperienceFromSanity['mainImage']): string {
-  if (!mainImage) return IMG_PLACEHOLDER
+function cardImageUrl(doc: ExperienceFromSanity, fallback: string): string {
+  const direct = doc.mainImageUrl?.trim()
+  if (direct) return direct
+  if (!doc.mainImage) return fallback
   try {
-    return String(urlFor(mainImage).width(900).quality(85).url())
+    return String(urlFor(doc.mainImage).width(900).quality(85).url())
   } catch {
-    return IMG_PLACEHOLDER
+    return fallback
   }
 }
 
@@ -51,6 +50,8 @@ type ExplorerGridCopy = ReturnType<typeof resolveExplorerGridCopy>
 function resolveExplorerGridCopy(e: HomePageDoc | null | undefined) {
   const d = HOME_EXPLORER_DEFAULTS
   const booking = e?.bookingCta2Link?.trim() || ''
+  const cardImageFallback =
+    e?.explorerCardImageFallbackUrl?.trim() || d.cardImageFallbackUrl
   return {
     priceEnquire: e?.explorerPriceEnquireLabel?.trim() || d.priceEnquire,
     priceCustom: e?.explorerPriceCustomLabel?.trim() || d.priceCustom,
@@ -67,15 +68,25 @@ function resolveExplorerGridCopy(e: HomePageDoc | null | undefined) {
       e?.explorerLearningBadgeLabels && e.explorerLearningBadgeLabels.length > 0
         ? e.explorerLearningBadgeLabels
         : [...d.learningBadgeLabels],
+    cardImageFallback,
   }
 }
 
 function priceLabel(doc: ExperienceFromSanity, copy: ExplorerGridCopy): { text: string; muted?: boolean } {
-  if (doc.status === 'coming-soon') return { text: copy.priceEnquire }
+  const pl = doc.priceLabel?.trim()
+  if (doc.status === 'coming-soon') {
+    if (pl) return { text: pl }
+    return { text: copy.priceEnquire }
+  }
   if (doc.programType === 'experiential-learning' && (doc.price == null || doc.price === 0)) {
+    if (pl) return { text: pl, muted: true }
     return { text: copy.priceCustom, muted: true }
   }
-  if (doc.price != null && doc.price > 0) return { text: formatUsd(doc.price) }
+  if (doc.price != null && doc.price > 0) {
+    if (pl) return { text: pl }
+    return { text: formatUsd(doc.price) }
+  }
+  if (pl) return { text: pl }
   return { text: copy.priceEnquire }
 }
 
@@ -96,7 +107,7 @@ function CmsGrid({ list, copy }: { list: ExperienceFromSanity[]; copy: ExplorerG
           ? HOME_EXPERIENCE_PROGRAM_BADGE[doc.programType] ?? copy.nameFallbackBadge
           : copy.nameFallbackBadge
         const route = doc.route ? HOME_EXPERIENCE_ROUTE_LABEL[doc.route] ?? doc.route : null
-        const imageUrl = mainImageUrl(doc.mainImage)
+        const imageUrl = cardImageUrl(doc, copy.cardImageFallback)
         const desc = doc.shortDescription ?? ''
         const href = isTailor
           ? copy.tailorWhatsapp

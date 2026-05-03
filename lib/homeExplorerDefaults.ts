@@ -17,4 +17,7 @@ export const HOME_EXPLORER_DEFAULTS = {
   nameFallbackTailor: 'Tailor made',
   nameFallbackBadge: 'Ecotone',
   learningBadgeLabels: ['2w', '4w', '6w'] as const,
+  /** Imagen si la experiencia no tiene `mainImage` / `mainImageUrl`. */
+  cardImageFallbackUrl:
+    'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=700&q=80',
 } as const

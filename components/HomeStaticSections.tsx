@@ -6,15 +6,12 @@ import { TechProductsSection } from '@/components/TechProductsSection'
 import type { BlogPostDoc, HomePageDoc, PartnerDoc, TechnologyProductDoc } from '@/lib/queries'
 import { cdnImageUrl } from '@/lib/sanity'
 import { homePageTextFields } from '@/data/cmsApproved/homePageFields'
+import { HOME_BLOG_CARD_IMAGE_FALLBACKS } from '@/lib/homeBlogDefaults'
 
 const U_MANI = 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=900&q=85'
 const U_M1 = 'https://images.unsplash.com/photo-1564419320461-6870880221ad?w=800&q=80'
 const U_M2 = 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=500&q=80'
 const U_M3 = 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=500&q=80'
-const U_B1 = 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=600&q=80'
-const U_B2 = 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80'
-const U_B3 = 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80'
-
 const DEFAULT_STATS: { number: string; label: string }[] = [
   { number: '3', label: 'Routes' },
   { number: '~10', label: 'Experiences' },
@@ -54,41 +51,6 @@ const DEFAULT_MISSION_ITEMS: Array<{
   },
 ]
 
-const DEFAULT_PARTNERS: PartnerDoc[] = [
-  { _id: 'p1', name: 'B Corp' },
-  { _id: 'p2', name: 'ATTA' },
-  { _id: 'p3', name: 'Rainforest Alliance' },
-  { _id: 'p4', name: 'GSTC' },
-  { _id: 'p5', name: 'IUCN Partner' },
-  { _id: 'p6', name: 'UN Tourism' },
-]
-
-const DEFAULT_BLOG: BlogPostDoc[] = [
-  {
-    _id: 'bl1',
-    title: '5 birds you can only see in the Manu Reserve',
-    category: 'Birds',
-    readingMinutes: 3,
-    image: null,
-  },
-  {
-    _id: 'bl2',
-    title: 'How ForestWhisper® changes the way you hear the jungle',
-    category: 'Technology',
-    readingMinutes: 4,
-    image: null,
-  },
-  {
-    _id: 'bl3',
-    title: 'Why we choose Camanti: the last cloud forest nobody talks about',
-    category: 'Conservation',
-    readingMinutes: 5,
-    image: null,
-  },
-]
-
-const DEFAULT_BLOG_IMAGES = [U_B1, U_B2, U_B3]
-
 const DEFAULT_TRUST: Array<{ iconType: string; text: string }> = [
   { iconType: 'shield', text: 'Secure payment — multiple methods accepted' },
   { iconType: 'chart', text: 'Free cancellation up to 15 days before departure' },
@@ -110,10 +72,17 @@ const BlogArrow = () => (
   </svg>
 )
 
-function blogPostHref(p: BlogPostDoc): string {
+function blogPostHref(p: BlogPostDoc, fallbackHref: string): string {
   const ext = p.externalLink?.trim()
   if (ext && /^https?:\/\//i.test(ext)) return ext
-  return '#'
+  const raw = p.slug?.current?.trim()
+  if (raw) {
+    if (/^https?:\/\//i.test(raw)) return raw
+    const path = raw.replace(/^\//, '')
+    if (path.startsWith('blog/')) return `/${path}`
+    return `/blog/${path}`
+  }
+  return fallbackHref
 }
 
 type Props = {
@@ -148,8 +117,16 @@ export function HomeStaticSections({
   const missionItems =
     h?.missionItems && h.missionItems.length > 0 ? h.missionItems : DEFAULT_MISSION_ITEMS
 
-  const prList: PartnerDoc[] = partners && partners.length > 0 ? partners : DEFAULT_PARTNERS
-  const blogList: BlogPostDoc[] = blogPosts && blogPosts.length > 0 ? blogPosts : DEFAULT_BLOG
+  const prList: PartnerDoc[] = partners && partners.length > 0 ? partners : []
+  const partnersEmptyMsg =
+    h?.partnersEmptyMessage?.trim() || homePageTextFields.partnersEmptyMessage?.trim()
+  const showPartnersBand = prList.length > 0 || Boolean(partnersEmptyMsg)
+  const partnerNameFb = h?.partnerNameFallback?.trim() || homePageTextFields.partnerNameFallback
+
+  const blogList: BlogPostDoc[] = blogPosts && blogPosts.length > 0 ? blogPosts : []
+  const blogEmptyDisplay = h?.blogEmptyMessage?.trim() || homePageTextFields.blogEmptyMessage
+  const blogPostLinkFallback =
+    h?.blogFallbackPostHref?.trim() || homePageTextFields.blogFallbackPostHref
 
   const bookingRows =
     h?.bookingCardRows && h.bookingCardRows.length > 0
@@ -280,51 +257,59 @@ export function HomeStaticSections({
         </div>
       </section>
 
-      <div className="partners-band fade">
-        <div className="partners-inner">
-          <div className="partners-label">
-            {h?.partnersLabel ?? 'Certified by & affiliated with'}
-          </div>
-          {h?.partnersBody?.trim() ? <p className="body partners-body">{h.partnersBody}</p> : null}
-          <div className="partners-row">
-            {prList.map((p, i) => {
-              const name = p.name || 'Partner'
-              const markFromCms =
-                p.logoSvg && p.logoSvg.trim() ? (
-                  <span
-                    // eslint-disable-next-line react/no-danger
-                    dangerouslySetInnerHTML={{ __html: p.logoSvg }}
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                  />
-                ) : null
-              const mark = markFromCms ?? <PartnerMarkByName name={name} />
-              const logoBlock = (
-                <div className="partner-logo">
-                  {mark}
-                  <div className="partner-wordmark">{name}</div>
-                </div>
-              )
-              return (
-                <Fragment key={p._id}>
-                  {i > 0 ? <div className="partner-sep" /> : null}
-                  {p.link ? (
-                    <a
-                      href={p.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ textDecoration: 'none', color: 'inherit' }}
-                    >
-                      {logoBlock}
-                    </a>
-                  ) : (
-                    logoBlock
-                  )}
-                </Fragment>
-              )
-            })}
+      {showPartnersBand ? (
+        <div className="partners-band fade">
+          <div className="partners-inner">
+            <div className="partners-label">
+              {h?.partnersLabel ?? homePageTextFields.partnersLabel}
+            </div>
+            {h?.partnersBody?.trim() ? <p className="body partners-body">{h.partnersBody}</p> : null}
+            {prList.length > 0 ? (
+              <div className="partners-row">
+                {prList.map((p, i) => {
+                  const name = p.name?.trim() || partnerNameFb
+                  const markFromCms =
+                    p.logoSvg && p.logoSvg.trim() ? (
+                      <span
+                        // eslint-disable-next-line react/no-danger
+                        dangerouslySetInnerHTML={{ __html: p.logoSvg }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      />
+                    ) : null
+                  const mark = markFromCms ?? <PartnerMarkByName name={name} />
+                  const logoBlock = (
+                    <div className="partner-logo">
+                      {mark}
+                      <div className="partner-wordmark">{name}</div>
+                    </div>
+                  )
+                  return (
+                    <Fragment key={p._id}>
+                      {i > 0 ? <div className="partner-sep" /> : null}
+                      {p.link ? (
+                        <a
+                          href={p.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ textDecoration: 'none', color: 'inherit' }}
+                        >
+                          {logoBlock}
+                        </a>
+                      ) : (
+                        logoBlock
+                      )}
+                    </Fragment>
+                  )
+                })}
+              </div>
+            ) : partnersEmptyMsg ? (
+              <p className="body partners-body" style={{ marginBottom: 0 }}>
+                {partnersEmptyMsg}
+              </p>
+            ) : null}
           </div>
         </div>
-      </div>
+      ) : null}
 
       <section className="sec bg-warm" id="blog">
         <div className="sec-inner fade">
@@ -377,9 +362,17 @@ export function HomeStaticSections({
             })()}
           </div>
           <div className="blog-scroll">
+            {blogList.length === 0 ? (
+              <p className="body" style={{ maxWidth: 560 }}>
+                {blogEmptyDisplay}
+              </p>
+            ) : null}
             {blogList.map((post, i) => {
-              const href = blogPostHref(post)
-              const img = cdnImageUrl(post.image ?? null, 600, DEFAULT_BLOG_IMAGES[i] ?? U_B1)
+              const href = blogPostHref(post, blogPostLinkFallback)
+              const fbImg =
+                HOME_BLOG_CARD_IMAGE_FALLBACKS[i % HOME_BLOG_CARD_IMAGE_FALLBACKS.length] ??
+                HOME_BLOG_CARD_IMAGE_FALLBACKS[0]!
+              const img = cdnImageUrl(post.image ?? null, 600, fbImg)
               const fbMin = h?.blogFallbackReadingMinutes ?? homePageTextFields.blogFallbackReadingMinutes
               const min = post.readingMinutes != null ? `${post.readingMinutes} min` : `${fbMin} min`
               const cat =

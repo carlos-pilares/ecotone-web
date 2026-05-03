@@ -73,6 +73,7 @@ export const homePageTextFields = {
   explorerTailorDescriptionFallback: 'We design every detail for your group.',
   explorerTailorCtaText: 'Design my journey →',
   explorerTailorWhatsappUrl: '',
+  explorerCardImageFallbackUrl: '',
   explorerLearningBadgeLabels: ['2w', '4w', '6w'],
   explorerEmptyGridMessage:
     'Experience programs are not available right now. When your CMS connection is working, they will appear here.',
@@ -135,6 +136,8 @@ export const homePageTextFields = {
   missionCtaLink: '#',
 
   partnersLabel: 'Certified by & affiliated with',
+  partnersEmptyMessage: '',
+  partnerNameFallback: 'Partner',
 
   blogEyebrow: 'From the field',
   blogHeadline: 'Latest from Ecotone',
@@ -143,6 +146,9 @@ export const homePageTextFields = {
   blogReadLabel: 'Read',
   blogFallbackCategory: 'News',
   blogFallbackReadingMinutes: 3,
+  blogEmptyMessage:
+    'No journal posts are available to show here yet. Visit our blog for the latest from the field.',
+  blogFallbackPostHref: '#blog',
 
   bookingEyebrow: 'Reserve your spot',
   bookingHeadline: 'Ready to disconnect?',

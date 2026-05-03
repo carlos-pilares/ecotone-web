@@ -310,6 +310,13 @@ export const homePage = defineType({
       group: 'explorer',
     }),
     defineField({
+      name: 'explorerCardImageFallbackUrl',
+      title: 'Card image fallback URL',
+      type: 'url',
+      group: 'explorer',
+      description: 'When an experience has no main image. Leave empty to use the built-in technical placeholder.',
+    }),
+    defineField({
       name: 'explorerCatalogReadout',
       title: 'Experience catalog (read-only)',
       type: 'text',
@@ -424,6 +431,21 @@ export const homePage = defineType({
       description: 'Optional text under the partners heading on Home (when the site reads this field).',
     }),
     defineField({
+      name: 'partnersEmptyMessage',
+      title: 'When no partners load — message (optional)',
+      type: 'text',
+      rows: 3,
+      group: 'partners',
+      description:
+        'If the partner list is empty, show this text instead of the logo row. Leave empty to hide the whole partners band.',
+    }),
+    defineField({
+      name: 'partnerNameFallback',
+      title: 'Fallback partner name (missing name on document)',
+      type: 'string',
+      group: 'partners',
+    }),
+    defineField({
       name: 'partnersCatalogReadout',
       title: 'Partner catalog (read-only)',
       type: 'text',
@@ -483,6 +505,20 @@ export const homePage = defineType({
       title: 'Fallback reading time (minutes)',
       type: 'number',
       group: 'blog',
+    }),
+    defineField({
+      name: 'blogEmptyMessage',
+      title: 'When no posts load — message',
+      type: 'text',
+      rows: 3,
+      group: 'blog',
+    }),
+    defineField({
+      name: 'blogFallbackPostHref',
+      title: 'Card link fallback (no external URL / slug)',
+      type: 'string',
+      group: 'blog',
+      description: 'e.g. #blog or https://… Used when a post has no external link or slug.',
     }),
     defineField({
       name: 'blogBody',

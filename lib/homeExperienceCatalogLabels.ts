@@ -1,4 +1,7 @@
-/** Maps Sanity `experience` enums to visible labels on Home (explorer). Not lodge/experience-page specific. */
+/**
+ * Resolver defaults: visible labels for `experience.programType` / `experience.route` enum values on Home.
+ * Per-experience overrides can use `priceLabel` (Sanity) for card pricing; badges use these maps unless extended later.
+ */
 export const HOME_EXPERIENCE_PROGRAM_TO_FILTER: Record<string, 'nature' | 'family' | 'learning' | 'tailor'> = {
   'nature-core': 'nature',
   'family-adventure': 'family',
