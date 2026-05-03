@@ -44,6 +44,11 @@ export type SoqtapataCmsV1Payload = {
     sourceLabel: string
     secondaryRatingLine: string | null
     emptyMessage: string
+    reviewsRegionAriaLabel: string
+    reviewTablistAriaLabel: string
+    quoteDotAriaLabelPrefix: string
+    reviewDotAriaLabelPrefix: string
+    guestFallbackName: string
   }>
 }
 
@@ -170,6 +175,11 @@ export function mergeFromCmsV1(
     ...(p.emptyMessage !== undefined && p.emptyMessage !== null
       ? { emptyMessage: String(p.emptyMessage).trim() || '' }
       : {}),
+    ...(p.reviewsRegionAriaLabel?.trim() ? { reviewsRegionAriaLabel: p.reviewsRegionAriaLabel.trim() } : {}),
+    ...(p.reviewTablistAriaLabel?.trim() ? { reviewTablistAriaLabel: p.reviewTablistAriaLabel.trim() } : {}),
+    ...(p.quoteDotAriaLabelPrefix?.trim() ? { quoteDotAriaLabelPrefix: p.quoteDotAriaLabelPrefix.trim() } : {}),
+    ...(p.reviewDotAriaLabelPrefix?.trim() ? { reviewDotAriaLabelPrefix: p.reviewDotAriaLabelPrefix.trim() } : {}),
+    ...(p.guestFallbackName?.trim() ? { guestFallbackName: p.guestFallbackName.trim() } : {}),
   }
   return { experience: merged, reviewsLayout }
 }

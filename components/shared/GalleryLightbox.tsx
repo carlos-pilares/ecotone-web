@@ -8,12 +8,22 @@ import {
   type GalleryItem,
   type GalleryOpenDetail,
 } from '@/lib/galleryLightboxBus'
+import {
+  GALLERY_LIGHTBOX_UI_DEFAULTS,
+  type GalleryLightboxUiDefaults,
+} from '@/lib/galleryLightboxUiDefaults'
+
+export type GalleryLightboxProps = {
+  /** Sustituye solo las claves indicadas; el resto sigue los defaults compartidos. */
+  ui?: Partial<GalleryLightboxUiDefaults>
+}
 
 /**
  * Full-screen gallery host: subscribes to `openGallery()` / `GALLERY_OPEN_EVENT`.
  * Mount once per page that uses programmatic galleries (Lodge, Experience via `SoqtapataPhotoLightbox`).
  */
-export function GalleryLightbox() {
+export function GalleryLightbox({ ui }: GalleryLightboxProps = {}) {
+  const labels = { ...GALLERY_LIGHTBOX_UI_DEFAULTS, ...ui }
   const [open, setOpen] = useState(false)
   const [ix, setIx] = useState(0)
   const [items, setItems] = useState<GalleryItem[]>([])
@@ -65,7 +75,7 @@ export function GalleryLightbox() {
           <div
             role="dialog"
             aria-modal
-            aria-label="Photo gallery"
+            aria-label={labels.dialogAriaLabel}
             style={{
               position: 'fixed',
               inset: 0,
@@ -82,7 +92,7 @@ export function GalleryLightbox() {
           >
             <button
               type="button"
-              aria-label="Close gallery"
+              aria-label={labels.closeAriaLabel}
               onClick={(e) => {
                 e.stopPropagation()
                 setOpen(false)
@@ -112,7 +122,7 @@ export function GalleryLightbox() {
             {n > 1 && (
               <button
                 type="button"
-                aria-label="Previous photo"
+                aria-label={labels.previousAriaLabel}
                 onClick={(e) => {
                   e.stopPropagation()
                   setIx((i) => (i - 1 + n) % n)
@@ -137,7 +147,7 @@ export function GalleryLightbox() {
             {n > 1 && (
               <button
                 type="button"
-                aria-label="Next photo"
+                aria-label={labels.nextAriaLabel}
                 onClick={(e) => {
                   e.stopPropagation()
                   setIx((i) => (i + 1) % n)

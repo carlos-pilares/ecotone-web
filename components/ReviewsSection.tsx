@@ -95,6 +95,12 @@ export type ReviewsSectionProps = {
   emptyMessage?: string
   /** Optional node after review cards inside the horizontal scroller (e.g. “All reviews” link card). */
   reviewCarouselEnd?: ReactNode
+  /** Experience `reviewsLayout`; Home/Lodge omiten y usan los mismos valores por defecto. */
+  reviewsRegionAriaLabel?: string
+  reviewTablistAriaLabel?: string
+  quoteDotAriaLabelPrefix?: string
+  reviewDotAriaLabelPrefix?: string
+  guestFallbackName?: string
 }
 
 export function ReviewsSection({
@@ -112,6 +118,11 @@ export function ReviewsSection({
   contentInnerClassName = 'sec-inner',
   emptyMessage = 'No guest reviews for this program yet. Be the first to share your experience.',
   reviewCarouselEnd = null,
+  reviewsRegionAriaLabel = 'Guest reviews',
+  reviewTablistAriaLabel = 'Select a review',
+  quoteDotAriaLabelPrefix = 'Quote',
+  reviewDotAriaLabelPrefix = 'Review',
+  guestFallbackName = 'Guest',
 }: ReviewsSectionProps) {
   const resolvedSectionLead = (() => {
     if (sectionLead != null && String(sectionLead).trim()) return String(sectionLead).trim()
@@ -203,7 +214,7 @@ export function ReviewsSection({
                 type="button"
                 className={'qdot' + (i === 0 ? ' active' : '')}
                 data-q={i}
-                aria-label={`Quote ${i + 1}`}
+                aria-label={`${quoteDotAriaLabelPrefix} ${i + 1}`}
               />
             ))}
           </div>
@@ -219,11 +230,11 @@ export function ReviewsSection({
             className="rev-scroll"
             id="revScroll"
             role="region"
-            aria-label="Guest reviews"
+            aria-label={reviewsRegionAriaLabel}
             style={showEmpty ? { display: 'none' } : undefined}
           >
             {list.map((r) => {
-              const initial = (r.authorName || 'G').trim().slice(0, 1).toUpperCase()
+              const initial = (r.authorName || guestFallbackName || 'G').trim().slice(0, 1).toUpperCase()
               const q = r.quote || ''
               return (
                 <div className="rev-card" key={r._id}>
@@ -232,7 +243,7 @@ export function ReviewsSection({
                   <div className="rev-author">
                     <div className="rev-av">{initial}</div>
                     <div>
-                      <div className="rev-name">{r.authorName || 'Guest'}</div>
+                      <div className="rev-name">{r.authorName || guestFallbackName}</div>
                       <div className="rev-loc">{locLabel(r)}</div>
                       {r.experienceName ? <div className="rev-exp">{r.experienceName}</div> : null}
                     </div>
@@ -243,7 +254,7 @@ export function ReviewsSection({
             {reviewCarouselEnd}
           </div>
           {list.length > 0 && !showEmpty ? (
-            <div className="rev-card-dots" id="revCardDots" role="tablist" aria-label="Select a review">
+            <div className="rev-card-dots" id="revCardDots" role="tablist" aria-label={reviewTablistAriaLabel}>
               {list.map((r, i) => (
                 <button
                   key={r._id}
@@ -252,7 +263,7 @@ export function ReviewsSection({
                   data-rev={i}
                   role="tab"
                   aria-selected={i === 0}
-                  aria-label={`Review ${i + 1} of ${list.length}`}
+                  aria-label={`${reviewDotAriaLabelPrefix} ${i + 1} of ${list.length}`}
                 />
               ))}
             </div>

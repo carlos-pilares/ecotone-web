@@ -855,6 +855,10 @@ export type SoqtapataTerms = {
   h2: string
   lead: string
   pdfHref: string
+  /** Accesibilidad del acordeón (`#terms-accordion`). */
+  accordionAriaLabel: string
+  /** Texto visible del CTA PDF bajo el acordeón. */
+  pdfDownloadLabel: string
   cards: SoqtapataTermCard[]
 }
 
@@ -863,6 +867,8 @@ export const soqtapataPhase5Terms: SoqtapataTerms = {
   h2: 'Terms',
   lead: 'Key things to know. For the complete legal text, use the full PDF. These bullets do not replace your booking agreement.',
   pdfHref: '/ecotone-terms-conditions.pdf',
+  accordionAriaLabel: 'Terms summary',
+  pdfDownloadLabel: 'Download full terms (PDF)',
   cards: [
     {
       id: 'tcard1',
@@ -1174,4 +1180,9 @@ export const soqtapataExperienceReviewsLayout = {
   secondaryRatingLine: '',
   /** Vacío en datos: el resolver rellena con nombre de programa. */
   emptyMessage: '',
+  reviewsRegionAriaLabel: 'Guest reviews',
+  reviewTablistAriaLabel: 'Select a review',
+  quoteDotAriaLabelPrefix: 'Quote',
+  reviewDotAriaLabelPrefix: 'Review',
+  guestFallbackName: 'Guest',
 } as const

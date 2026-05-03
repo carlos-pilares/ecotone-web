@@ -19,6 +19,7 @@ import type { ReviewDoc, TechnologyProductDoc } from '@/lib/queries'
 import type { CmsInternalNav } from '@/lib/soqtapataInternalNav'
 import type { SoqtapataPageModuleRow } from '@/lib/soqtapataSectionPresentation'
 import { urlFor } from '@/lib/sanity'
+import { DEFAULT_EXPERIENCE_RESOURCE_DOWNLOAD_CTA_LABEL } from '@/lib/experienceResourceCmsDefaults'
 
 // --- public row shape (subset of GROQ result) ---
 
@@ -107,6 +108,11 @@ type CmsReviewsLayout = {
   sourceLabel?: string | null
   secondaryRatingLine?: string | null
   emptyMessage?: string | null
+  reviewsRegionAriaLabel?: string | null
+  reviewTablistAriaLabel?: string | null
+  quoteDotAriaLabelPrefix?: string | null
+  reviewDotAriaLabelPrefix?: string | null
+  guestFallbackName?: string | null
 } | null
 
 type CmsReviewDoc = {
@@ -399,7 +405,7 @@ function mapExperienceResourcesFromCms(
       (r.fileAssetUrl && String(r.fileAssetUrl).trim()) ||
       (r.fileUrl && String(r.fileUrl).trim()) ||
       '#'
-    const label = (r.ctaLabel && r.ctaLabel.trim()) || 'Download'
+    const label = (r.ctaLabel && r.ctaLabel.trim()) || DEFAULT_EXPERIENCE_RESOURCE_DOWNLOAD_CTA_LABEL
     const meta = (r.subtitle && r.subtitle.trim()) || ''
     const imgUrl = r.previewImage?.imageUrl?.trim()
     const imgAlt = (r.previewImage?.alt && r.previewImage.alt.trim()) || title
@@ -802,6 +808,11 @@ export function reviewsLayoutFromRow(
       sourceLabel: d.sourceLabel,
       secondaryRatingLine: d.secondaryRatingLine?.trim() ? d.secondaryRatingLine : '',
       emptyMessage: d.emptyMessage?.trim() ? d.emptyMessage : '',
+      reviewsRegionAriaLabel: d.reviewsRegionAriaLabel,
+      reviewTablistAriaLabel: d.reviewTablistAriaLabel,
+      quoteDotAriaLabelPrefix: d.quoteDotAriaLabelPrefix,
+      reviewDotAriaLabelPrefix: d.reviewDotAriaLabelPrefix,
+      guestFallbackName: d.guestFallbackName,
     }
   }
   return {
@@ -815,6 +826,11 @@ export function reviewsLayoutFromRow(
     sourceLabel: r.sourceLabel?.trim() || d.sourceLabel,
     secondaryRatingLine: r.secondaryRatingLine?.trim() ?? '',
     emptyMessage: r.emptyMessage?.trim() ?? '',
+    reviewsRegionAriaLabel: r.reviewsRegionAriaLabel?.trim() || d.reviewsRegionAriaLabel,
+    reviewTablistAriaLabel: r.reviewTablistAriaLabel?.trim() || d.reviewTablistAriaLabel,
+    quoteDotAriaLabelPrefix: r.quoteDotAriaLabelPrefix?.trim() || d.quoteDotAriaLabelPrefix,
+    reviewDotAriaLabelPrefix: r.reviewDotAriaLabelPrefix?.trim() || d.reviewDotAriaLabelPrefix,
+    guestFallbackName: r.guestFallbackName?.trim() || d.guestFallbackName,
   }
 }
 
