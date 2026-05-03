@@ -320,6 +320,8 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       _id, stableId, name, number, description, image, badgeText, badgeTextWhenExcluded, slug
     },
     includedTechProductIds,
+    lodgeCtaLabel,
+    "lodgePageSlug": lodgePageLink->slug.current,
     relatedSectionEyebrow,
     relatedSectionTitle,
     "relatedRefIds": relatedExperienceRefs[]._ref,

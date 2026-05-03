@@ -3,6 +3,8 @@ import type { SoqtapataLodge } from '@/data/soqtapataExperienceLocal'
 /** `section#lodges` — paridad con `ecotone-experience_2.html`. */
 export function ExperienceLodgeSoqtapata({ data }: { data: SoqtapataLodge }) {
   const c = data.card
+  const ctaHref = data.ctaHref ?? c.ctaHref
+  const ctaLabel = data.ctaLabel ?? c.ctaLabel
   return (
     <section className="content-section fade" id="lodges">
       <div className="content-inner">
@@ -41,8 +43,8 @@ export function ExperienceLodgeSoqtapata({ data }: { data: SoqtapataLodge }) {
                     </span>
                   ))}
                 </div>
-                <a href={c.ctaHref} className="lodge-card-cta">
-                  {c.ctaLabel}
+                <a href={ctaHref} className="lodge-card-cta">
+                  {ctaLabel}
                   <svg width="13" height="13" viewBox="0 0 12 12" fill="none" stroke="var(--brown)" strokeWidth={2}>
                     <line x1="2" y1="6" x2="10" y2="6" />
                     <polyline points="7 3 10 6 7 9" />

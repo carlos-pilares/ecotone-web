@@ -186,6 +186,24 @@ export const experiencePage = defineType({
       'lodge',
       'Contenido base del lodge vinculado.',
     ),
+    defineField({
+      name: 'lodgePageLink',
+      title: '4. Selección / link — Lodge page',
+      type: 'reference',
+      to: [{type: 'lodgePage'}],
+      group: 'lodge',
+      options: {disableNew: false},
+      description:
+        'Landing del lodge para el botón bajo la tarjeta. El sitio usa `/lodges/{slug}`. Vacío = enlace por defecto del sitio.',
+    }),
+    defineField({
+      name: 'lodgeCtaLabel',
+      title: 'CTA label (texto del botón)',
+      type: 'string',
+      group: 'lodge',
+      initialValue: 'View full lodge page',
+      description: 'Texto del botón. Vacío = etiqueta por defecto del sitio.',
+    }),
     previewField(
       'stPrevWildlife',
       '1. Fuente',

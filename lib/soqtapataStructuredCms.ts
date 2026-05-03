@@ -45,6 +45,10 @@ export type SoqtapataStructuredPageRow = {
   /** Landing: prioridad sobre `experience.resources` para tarjetas + preview map/brochure. */
   resources?: CmsExperiencePageResources | null
   internalNav?: CmsInternalNav | null
+  /** `lodgePageLink` dereferenciado en GROQ (`slug.current`). */
+  lodgePageSlug?: string | null
+  /** Etiqueta del botón «View full lodge page» en esta landing. */
+  lodgeCtaLabel?: string | null
   experience?: CmsExperience | null
 } | null
 
@@ -278,6 +282,33 @@ const W_ICON: Record<string, 0 | 1 | 2 | 3 | 4 | 5 | 6> = {
 }
 
 const DAY_IDS = ['day1', 'day2', 'day3', 'day4', 'day5', 'day6', 'day7', 'day8', 'day9', 'day10'] as const
+
+/** Segmento de ruta seguro para `/lodges/{slug}` (evita valores raros desde CMS). */
+const LODGE_PAGE_SLUG_SEGMENT = /^[a-z0-9][a-z0-9-]*$/i
+
+function applyExperiencePageLodgeLandingCta(
+  row: SoqtapataStructuredPageRow | null | undefined,
+  out: Partial<SoqtapataExperience>,
+  local: SoqtapataExperience,
+): void {
+  if (!row) return
+  const rawSlug = row.lodgePageSlug?.trim()
+  const slugOk = rawSlug && LODGE_PAGE_SLUG_SEGMENT.test(rawSlug) ? rawSlug : ''
+  const labelFromRow = row.lodgeCtaLabel?.trim()
+  if (!slugOk && !labelFromRow) return
+
+  const base = out.lodge ?? local.lodge
+  const hrefDefault = base.card.ctaHref
+  const labelDefault = base.card.ctaLabel
+  const href = slugOk ? `/lodges/${slugOk}` : hrefDefault
+  const label = labelFromRow || labelDefault
+  out.lodge = {
+    ...base,
+    ctaHref: href,
+    ctaLabel: label,
+    card: { ...base.card, ctaHref: href, ctaLabel: label },
+  }
+}
 
 function imgW(src: string | null | undefined, w: number): string | null {
   if (!src) return null
@@ -605,6 +636,8 @@ export function soqtapataPartialFromStructuredRow(
             .join(' · ') || ld.card.meta,
         chips: (e.lodge.amenities && e.lodge.amenities.length > 0 ? e.lodge.amenities : ld.card.chips) as string[],
       },
+      ctaHref: ld.ctaHref,
+      ctaLabel: ld.ctaLabel,
     }
   }
 
@@ -757,6 +790,8 @@ export function soqtapataPartialFromStructuredRow(
       },
     }
   }
+
+  applyExperiencePageLodgeLandingCta(row, out, l)
 
   return out
 }

@@ -11,6 +11,7 @@ import type { SanityClient } from '@sanity/client'
 
 import { CMS_IDS } from '@/data/cmsApproved/ids'
 import {
+  DEFAULT_WHATSAPP_URL,
   FOOTER,
   FOOTER_CONTACT_LINKS,
   FOOTER_EXPLORE_LINKS,
@@ -118,6 +119,7 @@ export async function buildSiteSettingsDocument(client: SanityClient) {
     },
     socialLinks: mapLinks(SOCIAL_LINKS),
     copyright: SOCIAL.copyright,
+    defaultWhatsappUrl: DEFAULT_WHATSAPP_URL,
   }
 }
 

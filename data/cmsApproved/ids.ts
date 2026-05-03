@@ -4,6 +4,8 @@ export const CMS_IDS = {
   siteSettings: 'siteSettings',
   routeCamanti: 'routeCamanti',
   lodgeSoqtapata: 'lodgeSoqtapata',
+  /** `lodgePage` Soqtapata (mismo `_id` que `scripts/seedSoqtapataLodge.ts`). */
+  lodgePageSoqtapata: 'lodgePage-soqtapata-lodge',
   experienceSoqtapata: 'experienceSoqtapataPristine',
   experiencePageSoqtapata: 'experiencePageSoqtapataPristine',
   tech1: 'seed-tech-01',

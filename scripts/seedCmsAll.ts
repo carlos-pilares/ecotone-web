@@ -391,6 +391,9 @@ export async function seedCmsAll() {
       { _type: 'reference' as const, _ref: CMS_IDS.tech3, _key: 'k3' },
     ],
     includedTechProductIds: ['dtech1', 'dtech2'],
+    /** Tras `npm run seed:soqtapata-lodge` el destino existe; si no, Studio permite corregir la ref. */
+    lodgePageLink: {_type: 'reference' as const, _ref: CMS_IDS.lodgePageSoqtapata},
+    lodgeCtaLabel: 'View full lodge page',
     sectionModules: buildPageModules(),
   }
 

@@ -316,6 +316,9 @@ export type SoqtapataLodge = {
   h2Style: { marginBottom: number }
   intro: string
   introStyle: { fontSize: number; fontWeight: number; color: string; lineHeight: number; marginBottom: number }
+  /** CTA resuelta (experiencePage → lodgePage o fallback local). */
+  ctaHref: string
+  ctaLabel: string
   card: {
     imageSrc: string
     imageAlt: string
@@ -389,6 +392,8 @@ export const soqtapataPhase3: { lodge: SoqtapataLodge; wildlife: SoqtapataWildli
       ctaHref: '#',
       ctaLabel: 'View full lodge page',
     },
+    ctaHref: '#',
+    ctaLabel: 'View full lodge page',
   },
   wildlife: {
     eyebrow: 'What you might encounter',
