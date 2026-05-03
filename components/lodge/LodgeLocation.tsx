@@ -29,7 +29,7 @@ export function LodgeLocation({ data }: LodgeLocationProps) {
         />
 
         <div className="map-container">
-          <LodgeLocationMap />
+          <LodgeLocationMap labels={data.mapLabels} />
         </div>
 
         <div className="lodge-journey-stack">

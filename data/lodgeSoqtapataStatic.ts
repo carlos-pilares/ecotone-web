@@ -104,6 +104,8 @@ const lodgeHeroGallery = [
 export const lodgeSoqtapataHero = {
   imageSrc: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1600&q=85',
   imageAlt: 'Soqtapata Lodge — cloud forest',
+  /** A11y — mismo origen que copy visible (CMS vía merge cuando exista campo en `lodge` / `lodgePage`). */
+  galleryOpenAriaLabel: 'Open photo gallery',
   photoCountLabel: '+12 photos',
   gallery: lodgeHeroGallery,
   breadcrumbs: [
@@ -124,7 +126,10 @@ export const lodgeSoqtapataHero = {
   },
 } as const
 
-export type LodgeHeroData = typeof lodgeSoqtapataHero
+/** `galleryOpenAriaLabel` es `string` para permitir override CMS; el resto sigue el literal del const. */
+export type LodgeHeroData = Omit<typeof lodgeSoqtapataHero, 'galleryOpenAriaLabel'> & {
+  galleryOpenAriaLabel: string
+}
 
 /** Sticky in-page nav — labels/structure alineados a `reference/ecotone-lodge_11.html`. */
 export type LodgeInPageNavItem = { readonly id: string; readonly label: string }
@@ -342,6 +347,12 @@ export type LodgeFacilitiesData = LodgeSectionHeaderFields & {
   amenities: readonly LodgeAmenityRow[]
   /** All common-area slides for the lightbox (order matches on-page tiles where possible). */
   commonAreasGallery: readonly LodgeGalleryPhoto[]
+  /** Prefijo aria-label botones mosaico, p. ej. "Open gallery:" → `{prefix} ${label}`. */
+  galleryTileAriaLabelPrefix: string
+  /** aria-label del tile “+N fotos”. */
+  galleryStripMoreAriaLabel: string
+  /** Rótulo sobre la rejilla de amenidades. */
+  amenitiesEyebrow: string
 }
 
 /** Copia de contenido de `ecotone-lodge_11.html` — Facilities. */
@@ -472,6 +483,9 @@ export const lodgeSoqtapataFacilities = {
       sub: 'Available throughout the day.',
     },
   ],
+  galleryTileAriaLabelPrefix: 'Open gallery:',
+  galleryStripMoreAriaLabel: 'Open common areas photo gallery',
+  amenitiesEyebrow: "What's included",
 } as const satisfies LodgeFacilitiesData
 
 export type LodgeSnapshotIconId = 'home' | 'users' | 'clock' | 'compass' | 'shield' | 'bcorp'
@@ -499,8 +513,18 @@ export type LodgeJourneyStep = {
   highlight?: boolean
 }
 
+export type LodgeLocationMapDiagramLabels = {
+  cuscoTitle: string
+  cuscoSubtitle: string
+  trailheadLabel: string
+  walkHint: string
+  lodgeTitle: string
+  lodgeSubtitle: string
+}
+
 export type LodgeLocationData = LodgeSectionHeaderFields & {
   journeySteps: readonly LodgeJourneyStep[]
+  mapLabels: LodgeLocationMapDiagramLabels
 }
 
 /** `reference/ecotone-lodge_11.html` — Location. */
@@ -528,6 +552,14 @@ export const lodgeSoqtapataLocation = {
       highlight: true,
     },
   ],
+  mapLabels: {
+    cuscoTitle: 'Cusco',
+    cuscoSubtitle: '3,400 m · ~2.5h drive',
+    trailheadLabel: 'Trailhead',
+    walkHint: '45 min walk',
+    lodgeTitle: 'Soqtapata Lodge',
+    lodgeSubtitle: '1,200 m.a.s.l.',
+  },
 } as const satisfies LodgeLocationData
 
 export type LodgeResearchStat = {
@@ -620,6 +652,8 @@ export type LodgeExperiencesTailor = {
 export type LodgeExperiencesData = LodgeSectionHeaderFields & {
   cards: readonly LodgeExperienceCard[]
   tailor: LodgeExperiencesTailor
+  /** Texto del CTA en cada tarjeta (p. ej. "View"). */
+  programCardCtaLabel: string
 }
 
 /** `reference/ecotone-lodge_11.html` — Experiences grid + tailor card. */
@@ -674,6 +708,7 @@ export const lodgeSoqtapataExperiences = {
     ctaLabel: 'Enquire →',
     href: '/experiences/soqtapata-pristine-immersion',
   },
+  programCardCtaLabel: 'View',
 } as const satisfies LodgeExperiencesData
 
 /** Guest review cards — `reference/ecotone-lodge_11.html` (static until CMS). */
@@ -709,11 +744,15 @@ export const lodgeSoqtapataReviewCards: ReviewDoc[] = [
   },
 ]
 
+export type LodgeBookRowKey = 'shortestProgram' | 'startingFrom' | 'groupSize' | 'availability'
+
 export type LodgeBookDetailRow = {
   label: string
   value: string
   /** Highlight value in brand brown (e.g. starting price). */
   valueAccent?: boolean
+  /** Clave estable para `lodge.bookingDetailRowLabels` en CMS. */
+  rowKey?: LodgeBookRowKey
 }
 
 export type LodgeBookTrustItem = {
@@ -739,10 +778,10 @@ export const lodgeSoqtapataBook = {
   cardTitle: 'Soqtapata Lodge · Camanti Route',
   cardSubtitle: 'All-inclusive · Departure from Cusco · Max 14 guests · Year-round',
   rows: [
-    { label: 'Shortest program', value: '3 days · 2 nights' },
-    { label: 'Starting from', value: 'USD 986 per person', valueAccent: true },
-    { label: 'Group size', value: '2 – 14 people' },
-    { label: 'Availability', value: 'Year-round' },
+    { rowKey: 'shortestProgram', label: 'Shortest program', value: '3 days · 2 nights' },
+    { rowKey: 'startingFrom', label: 'Starting from', value: 'USD 986 per person', valueAccent: true },
+    { rowKey: 'groupSize', label: 'Group size', value: '2 – 14 people' },
+    { rowKey: 'availability', label: 'Availability', value: 'Year-round' },
   ],
   primaryCta: {
     label: 'See all experiences at this lodge',

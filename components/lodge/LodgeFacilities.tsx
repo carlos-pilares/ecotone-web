@@ -131,7 +131,7 @@ export function LodgeFacilities({ data }: LodgeFacilitiesProps) {
             type="button"
             className="common-photo common-photo--tall common-photo--clickable"
             onClick={() => openAt(0)}
-            aria-label={`Open gallery: ${hero.label}`}
+            aria-label={`${data.galleryTileAriaLabelPrefix} ${hero.label}`}
           >
             <img src={hero.image} alt={hero.imageAlt} width={800} height={680} loading="lazy" />
             <div className="common-photo-overlay" aria-hidden />
@@ -142,7 +142,7 @@ export function LodgeFacilities({ data }: LodgeFacilitiesProps) {
             type="button"
             className="common-photo common-photo--short common-photo--clickable"
             onClick={() => openAt(1)}
-            aria-label={`Open gallery: ${tile1.label}`}
+            aria-label={`${data.galleryTileAriaLabelPrefix} ${tile1.label}`}
           >
             <img src={tile1.image} alt={tile1.imageAlt} width={600} height={336} loading="lazy" />
             <div className="common-photo-overlay" aria-hidden />
@@ -152,7 +152,7 @@ export function LodgeFacilities({ data }: LodgeFacilitiesProps) {
             type="button"
             className="common-photo common-photo--short common-photo--clickable"
             onClick={() => openAt(2)}
-            aria-label={`Open gallery: ${tile2.label}`}
+            aria-label={`${data.galleryTileAriaLabelPrefix} ${tile2.label}`}
           >
             <img src={tile2.image} alt={tile2.imageAlt} width={600} height={336} loading="lazy" />
             <div className="common-photo-overlay" aria-hidden />
@@ -165,7 +165,7 @@ export function LodgeFacilities({ data }: LodgeFacilitiesProps) {
             type="button"
             className="common-photo common-photo--strip common-photo--clickable"
             onClick={() => openAt(3)}
-            aria-label={`Open gallery: ${stripA.label}`}
+            aria-label={`${data.galleryTileAriaLabelPrefix} ${stripA.label}`}
           >
             <img src={stripA.image} alt={stripA.imageAlt} width={400} height={120} loading="lazy" />
             <div className="common-photo-overlay" aria-hidden />
@@ -175,7 +175,7 @@ export function LodgeFacilities({ data }: LodgeFacilitiesProps) {
             type="button"
             className="common-photo common-photo--strip common-photo--clickable"
             onClick={() => openAt(4)}
-            aria-label={`Open gallery: ${stripB.label}`}
+            aria-label={`${data.galleryTileAriaLabelPrefix} ${stripB.label}`}
           >
             <img src={stripB.image} alt={stripB.imageAlt} width={400} height={120} loading="lazy" />
             <div className="common-photo-overlay" aria-hidden />
@@ -185,17 +185,17 @@ export function LodgeFacilities({ data }: LodgeFacilitiesProps) {
             type="button"
             className="common-photo common-photo--strip common-photo--more common-photo--clickable"
             onClick={() => openAt(5)}
-            aria-label="Open common areas photo gallery"
+            aria-label={data.galleryStripMoreAriaLabel}
           >
             <img src={stripMore.image} alt={stripMore.imageAlt} width={400} height={120} loading="lazy" />
             <div className="common-photo-more-overlay" aria-hidden>
-              <span className="common-photo-more-n">{stripMore.moreCount ?? '+12'}</span>
-              <span className="common-photo-more-txt">{stripMore.moreLabel ?? 'View all photos'}</span>
+              <span className="common-photo-more-n">{stripMore.moreCount}</span>
+              <span className="common-photo-more-txt">{stripMore.moreLabel}</span>
             </div>
           </button>
         </div>
 
-        <div className="eyebrow lodge-facilities-amenity-eyebrow">What&apos;s included</div>
+        <div className="eyebrow lodge-facilities-amenity-eyebrow">{data.amenitiesEyebrow}</div>
         <div className="amenity-grid">
           {data.amenities.map((a) => (
             <AmenityCard key={a.title} iconId={a.iconId} title={a.title} sub={a.sub} />

@@ -55,6 +55,36 @@ export const structure = (S) =>
                     .title('Home page'),
                 ),
               S.listItem()
+                .title('Lodge Pages')
+                .icon(DocumentTextIcon)
+                .id('lodgePages')
+                .child(
+                  S.list()
+                    .title('Pages · Lodge landings')
+                    .items([
+                      S.listItem()
+                        .title('Soqtapata Lodge — landing')
+                        .icon(DocumentTextIcon)
+                        .id('lodgePageSoqtapataPinned')
+                        .child(
+                          S.document()
+                            .schemaType('lodgePage')
+                            .documentId('lodgePage-soqtapata-lodge')
+                            .title('Soqtapata Lodge — landing'),
+                        ),
+                      S.divider(),
+                      S.listItem()
+                        .title('All lodge pages')
+                        .icon(DocumentTextIcon)
+                        .id('lodgePageListItem')
+                        .child(
+                          S.documentTypeList('lodgePage')
+                            .id('lodgePageList')
+                            .title('All lodge pages'),
+                        ),
+                    ]),
+                ),
+              S.listItem()
                 .title('Experience landings (URLs)')
                 .icon(DocumentTextIcon)
                 .id('experiencePages')

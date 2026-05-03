@@ -26,7 +26,7 @@ export function LodgeHero({ data }: LodgeHeroProps) {
         <button
           type="button"
           className="lodge-hero-photos"
-          aria-label="Open photo gallery"
+          aria-label={data.galleryOpenAriaLabel}
           onClick={() => openGallery(galleryItems, 0)}
         >
           {data.photoCountLabel}

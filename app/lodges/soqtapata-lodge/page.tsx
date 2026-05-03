@@ -18,68 +18,65 @@ import { InPageNavDrawerClient } from '@/components/shared/InPageNavDrawerClient
 import { SnapshotBar } from '@/components/shared/SnapshotBar'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
-import {
-  lodgeSoqtapataBook,
-  lodgeSoqtapataExperiences,
-  lodgeSoqtapataFacilities,
-  lodgeSoqtapataFaq,
-  lodgeSoqtapataFeaturedQuotes,
-  lodgeSoqtapataHero,
-  lodgeSoqtapataLocation,
-  lodgeSoqtapataPageNav,
-  lodgeSoqtapataOverview,
-  lodgeSoqtapataResearch,
-  lodgeSoqtapataReviewCards,
-  lodgeSoqtapataRooms,
-  lodgeSoqtapataSnapshot,
-} from '@/data/lodgeSoqtapataStatic'
+import type { SoqtapataFaq } from '@/data/soqtapataExperienceLocal'
+import { getSoqtapataLodgePageCms } from '@/lib/lodgePageCms'
+import { lodgeSoqtapataSeoDefault } from '@/lib/lodgePageCmsTypes'
 
-export const metadata: Metadata = {
-  title: 'Soqtapata Lodge — Ecotone · Cusco, Perú',
-  description:
-    'The only lodge inside the Soqtapata Reserve. Cloud forest stays adjacent to CIDS research station — Camanti Route, Cusco.',
+/** ISR: la landing lee `lodgePage` en build; sin revalidate los overrides CMS no llegan hasta el próximo deploy. */
+export const revalidate = 60
+
+export async function generateMetadata(): Promise<Metadata> {
+  const resolved = await getSoqtapataLodgePageCms()
+  return {
+    title: resolved.seo.title || lodgeSoqtapataSeoDefault.title,
+    description: resolved.seo.description || lodgeSoqtapataSeoDefault.description,
+  }
 }
 
-const lodgeFeaturedQuotes = [...lodgeSoqtapataFeaturedQuotes]
+export default async function SoqtapataLodgePage() {
+  const resolved = await getSoqtapataLodgePageCms()
+  const lodgeFeaturedQuotes = [...resolved.featuredQuotes]
 
-export default function SoqtapataLodgePage() {
   return (
     <EcotoneV2Client solidMainNav featuredQuoteItems={lodgeFeaturedQuotes}>
       <IsotipoDefs />
       <SiteHeader mainNavSolid />
       <div className="lodge-page" id="ecotone-experience-root">
-        <LodgeHero data={lodgeSoqtapataHero} />
+        <LodgeHero data={resolved.hero} />
         <SnapshotBar
-          items={lodgeSoqtapataSnapshot.map((s) => ({ value: s.snapN, label: s.snapL }))}
+          items={resolved.snapshot.map((s) => ({ value: s.snapN, label: s.snapL }))}
         />
-        <LodgeInPageNav nav={lodgeSoqtapataPageNav} />
-        <LodgeOverview data={lodgeSoqtapataOverview} />
-        <LodgeRooms data={lodgeSoqtapataRooms} />
-        <LodgeFacilities data={lodgeSoqtapataFacilities} />
-        <LodgeLocation data={lodgeSoqtapataLocation} />
-        <LodgeResearch data={lodgeSoqtapataResearch} />
-        <LodgeExperiences data={lodgeSoqtapataExperiences} />
+        <LodgeInPageNav nav={resolved.pageNav} />
+        <LodgeOverview data={resolved.overview} />
+        <LodgeRooms data={resolved.rooms} />
+        <LodgeFacilities data={resolved.facilities} />
+        <LodgeLocation data={resolved.location} />
+        <LodgeResearch data={resolved.research} />
+        <LodgeExperiences data={resolved.experiences} />
         <ReviewsSection
-          reviews={lodgeSoqtapataReviewCards}
+          reviews={resolved.reviews}
           featuredQuoteItems={lodgeFeaturedQuotes}
           useHomepageSampleReviewsIfEmpty={false}
           sectionClassName="content-section bg-cream"
           contentInnerClassName="content-inner"
-          eyebrow="What guests say"
-          headline="Real stays"
-          averageRating="5.0"
-          secondaryRatingLine="12 verified reviews"
+          eyebrow={resolved.reviewsSection.eyebrow}
+          headline={resolved.reviewsSection.headline}
+          averageRating={resolved.reviewsSection.averageRating}
+          sourceLabel={resolved.reviewsSection.sourceLabel}
+          secondaryRatingLine={resolved.reviewsSection.secondaryRatingLine}
+          sectionLead={resolved.reviewsSection.sectionLead}
+          emptyMessage={resolved.reviewsSection.emptyMessage}
           reviewCarouselEnd={
             <a
               className="rev-card lodge-rev-card-all"
-              href="/experiences/soqtapata-pristine-immersion#reviews"
+              href={resolved.reviewsSection.carouselEndHref}
             >
-              <span>All 12 reviews →</span>
+              <span>{resolved.reviewsSection.carouselEndLabel}</span>
             </a>
           }
         />
-        <LodgeFaq data={lodgeSoqtapataFaq} />
-        <LodgeBookCta data={lodgeSoqtapataBook} />
+        <LodgeFaq data={resolved.faq as SoqtapataFaq} />
+        <LodgeBookCta data={resolved.book} />
       </div>
       <GalleryLightbox />
       <InPageNavDrawerClient />

@@ -359,6 +359,180 @@ export const soqtapataStructuredPageBySlugQuery = groq`
   }
 `
 
+/** Lodge landing: `lodgePage` + dereferenced `lodge` + curated experiences/reviews. */
+export const lodgeStructuredPageBySlugQuery = groq`
+  *[_type == "lodgePage" && slug.current == $slug][0] {
+    _id,
+    internalTitle,
+    slug,
+    seo,
+    heroImage,
+    heroHighlights[]{ key },
+    heroCTA { label, href, openInNewTab },
+    snapshotSelection[]{ key },
+    navTitle,
+    navSubtitle,
+    navCTA { label, href, openInNewTab },
+    sections {
+      overview { eyebrow, title, body },
+      accommodation { eyebrow, title, body },
+      facilities { eyebrow, title, body },
+      location { eyebrow, title, body },
+      research { eyebrow, title, body },
+      experiences { eyebrow, title, body },
+      reviews { eyebrow, title, body },
+      faq { eyebrow, title, body },
+      booking { eyebrow, title, body },
+    },
+    featuredRoomStableId,
+    experiencesSelection[]-> {
+      _id,
+      name,
+      tagline,
+      programType,
+      route,
+      duration,
+      price,
+      priceLabel,
+      shortDescription,
+      mainImage,
+      "mainImageUrl": mainImage.asset->url,
+      "slug": slug.current
+    },
+    fallbackToLodgeRelations,
+    reviewsSelection[]-> {
+      _id,
+      quote,
+      authorName,
+      authorCity,
+      authorCountry,
+      experienceName,
+      rating,
+      isFeatured
+    },
+    bookingCta {
+      title,
+      body,
+      ctas[]{ label, href, openInNewTab },
+      trustItemsOverride[]{ title, subtitle }
+    },
+    reviewsPresentation {
+      sourceLabel,
+      averageRating,
+      secondaryRatingLine,
+      carouselEndLabel,
+      carouselEndHref,
+      emptyMessage
+    },
+    "lodge": lodge-> {
+      _id,
+      name,
+      slug,
+      route,
+      location,
+      altitude,
+      certifications[]{ label, detail, url },
+      shortDescription,
+      longDescription,
+      keyElements,
+      snapshotItems[]{ key, label, value },
+      gallery[]{
+        title,
+        description,
+        category,
+        image,
+        "imageUrl": image.asset->url
+      },
+      rooms[]{
+        stableId,
+        name,
+        numberOfRooms,
+        capacity,
+        highlights,
+        gallery[]{
+          title,
+          description,
+          image,
+          "imageUrl": image.asset->url
+        }
+      },
+      commonAreas[]{
+        title,
+        description,
+        image,
+        "imageUrl": image.asset->url
+      },
+      amenities[]{ icon, title, description },
+      mapImage,
+      "mapImageUrl": mapImage.asset->url,
+      journeySteps[]{ title, description },
+      highlights[]{ title, subtitle },
+      researchAreas[]{ title, description },
+      specialMessage,
+      experiences[]-> {
+        _id,
+        name,
+        tagline,
+        programType,
+        route,
+        duration,
+        price,
+        priceLabel,
+        shortDescription,
+        mainImage,
+        "mainImageUrl": mainImage.asset->url,
+        "slug": slug.current
+      },
+      reviews[]-> {
+        _id,
+        quote,
+        authorName,
+        authorCity,
+        authorCountry,
+        experienceName,
+        rating,
+        isFeatured
+      },
+      faqs[]{ question, answer },
+      startingPrice,
+      currency,
+      maxGroupSize,
+      availabilityNote,
+      bookingMessage,
+      trustItems[]{ title, subtitle },
+      seo,
+      seoTitle,
+      seoDescription,
+      ogImage,
+      mainImage,
+      "mainImageUrl": mainImage.asset->url,
+      heroGalleryOpenAriaLabel,
+      facilitiesAmenitiesEyebrow,
+      facilitiesGalleryTileAriaPrefix,
+      facilitiesGalleryStripMoreAriaLabel,
+      facilitiesStripMoreCount,
+      facilitiesStripMoreLabel,
+      locationMapLabels {
+        cuscoTitle,
+        cuscoSubtitle,
+        trailheadLabel,
+        walkHint,
+        lodgeTitle,
+        lodgeSubtitle
+      },
+      experienceCardCtaLabel,
+      experienceCardPricePrefix,
+      experienceCardPriceSuffix,
+      bookingDetailRowLabels {
+        shortestProgram,
+        startingFrom,
+        groupSize,
+        availability
+      }
+    }
+  }
+`
+
 export type TechnologyProductDoc = {
   _id: string
   name?: string | null

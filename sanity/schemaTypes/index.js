@@ -6,6 +6,9 @@ import {linkWithLabel} from './objects/linkWithLabel'
 import {landingHero} from './objects/landingHero'
 import {experienceResourceCard} from './objects/experienceResourceCard'
 import {landingReserveBlock} from './objects/landingReserveBlock'
+import {lodgePageSectionCopy} from './objects/lodgePageSectionCopy'
+import {lodgeSnapshotKeyPick} from './objects/lodgeSnapshotKeyPick'
+import {lodgePageBookingBlock} from './objects/lodgePageBookingBlock'
 import {experiencePageSnapshotStatPick} from './objects/experiencePageSnapshotStatPick'
 import {experiencePageInternalNav} from './objects/experiencePageInternalNav'
 import {internalNavItem} from './objects/internalNavItem'
@@ -16,6 +19,7 @@ import {experience} from './experience'
 import {experiencePage} from './experiencePage'
 import {homePage} from './homePage'
 import {lodge} from './lodge'
+import {lodgePage} from './lodgePage'
 import {partner} from './partner'
 import {route} from './route'
 import {siteSettings} from './siteSettings'
@@ -34,11 +38,15 @@ const objects = [
   reviewsLayoutBlock,
   landingHero,
   landingReserveBlock,
+  lodgePageSectionCopy,
+  lodgeSnapshotKeyPick,
+  lodgePageBookingBlock,
 ]
 
 const documents = [
   siteSettings,
   lodge,
+  lodgePage,
   route,
   experience,
   experiencePage,

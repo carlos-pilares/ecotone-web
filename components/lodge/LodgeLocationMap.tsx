@@ -1,5 +1,11 @@
-/** Ilustración mapa — copia del SVG en `reference/ecotone-lodge_11.html` (Location). */
-export function LodgeLocationMap() {
+import type { LodgeLocationMapDiagramLabels } from '@/data/lodgeSoqtapataStatic'
+
+type LodgeLocationMapProps = {
+  labels: LodgeLocationMapDiagramLabels
+}
+
+/** Ilustración mapa — textos desde `resolved.location.mapLabels` (CMS vía merge / fallback estático). */
+export function LodgeLocationMap({ labels }: LodgeLocationMapProps) {
   return (
     <svg
       width="100%"
@@ -23,14 +29,14 @@ export function LodgeLocationMap() {
       />
       <circle cx="80" cy="90" r="6" fill="var(--brown)" opacity="0.8" />
       <text x="94" y="89" fontSize="12" fill="var(--brown-xdk)" fontFamily="var(--f),system-ui,sans-serif" fontWeight="600">
-        Cusco
+        {labels.cuscoTitle}
       </text>
       <text x="94" y="102" fontSize="10" fill="var(--brown)" fontFamily="var(--f),system-ui,sans-serif">
-        3,400 m · ~2.5h drive
+        {labels.cuscoSubtitle}
       </text>
       <circle cx="320" cy="85" r="4" fill="var(--brown-dk)" opacity="0.7" />
       <text x="330" y="83" fontSize="10" fill="var(--brown-dk)" fontFamily="var(--f),system-ui,sans-serif">
-        Trailhead
+        {labels.trailheadLabel}
       </text>
       <path
         d="M320 85 Q370 75 430 70"
@@ -43,13 +49,13 @@ export function LodgeLocationMap() {
       <circle cx="430" cy="70" r="9" fill="var(--brown)" />
       <circle cx="430" cy="70" r="16" fill="none" stroke="var(--brown)" strokeWidth="1.5" opacity="0.3" />
       <text x="449" y="68" fontSize="12" fill="var(--brown-xdk)" fontFamily="var(--f),system-ui,sans-serif" fontWeight="700">
-        Soqtapata Lodge
+        {labels.lodgeTitle}
       </text>
       <text x="449" y="82" fontSize="10" fill="var(--brown)" fontFamily="var(--f),system-ui,sans-serif">
-        1,200 m.a.s.l.
+        {labels.lodgeSubtitle}
       </text>
       <text x="340" y="65" fontSize="10" fill="var(--brown-dk)" fontFamily="var(--f),system-ui,sans-serif" opacity="0.8">
-        45 min walk
+        {labels.walkHint}
       </text>
     </svg>
   )

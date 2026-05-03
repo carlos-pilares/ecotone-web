@@ -61,7 +61,7 @@ export function LodgeExperiences({ data }: LodgeExperiencesProps) {
                     ) : null}
                   </div>
                   <div className="lodge-exp-card-v-cta">
-                    View <ViewArrow />
+                    {data.programCardCtaLabel} <ViewArrow />
                   </div>
                 </div>
               </div>
