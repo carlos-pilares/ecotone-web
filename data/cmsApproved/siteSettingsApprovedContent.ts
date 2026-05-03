@@ -14,6 +14,10 @@ export type SiteSettingsApprovedLink = {
 
 export const SITE_NAME = 'Ecotone'
 
+/** Fallback when `homePage.bookingCta2Link` is empty — mirrored on `siteSettings.defaultWhatsappUrl` in seed. */
+export const DEFAULT_WHATSAPP_URL =
+  'https://wa.me/51974781094?text=I%20want%20information%20about%20Ecotone%20experiences'
+
 export const SITE_DEFAULT_SEO = {
   title: 'Ecotone — Immersive nature in Peru',
   description:

@@ -2,8 +2,6 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, type ReactNode } from 'react'
 
-import { DEFAULT_FEATURED_QUOTES } from '@/lib/homeQuoteDefaults'
-
 function applyTopNavFromSolid(solid: boolean) {
   if (typeof document === 'undefined') return
   const topNav = document.getElementById('topNav')
@@ -61,8 +59,7 @@ export function EcotoneV2Client(props: FullHtmlProps | SplitBodyProps | ReactShe
   const children = 'children' in props ? props.children : null
   const rawFeatured = 'featuredQuoteItems' in props ? props.featuredQuoteItems : undefined
   const quoteList = useMemo(
-    () =>
-      Array.isArray(rawFeatured) && rawFeatured.length > 0 ? rawFeatured : DEFAULT_FEATURED_QUOTES,
+    () => (Array.isArray(rawFeatured) && rawFeatured.length > 0 ? rawFeatured : []),
     [rawFeatured],
   )
 
@@ -139,7 +136,7 @@ export function EcotoneV2Client(props: FullHtmlProps | SplitBodyProps | ReactShe
     const qText = document.getElementById('quoteText')
     const qAttr = document.getElementById('quoteAttr')
     const qdots = root.querySelectorAll('.qdot')
-    if (qText && qAttr) {
+    if (qText && qAttr && quoteList.length > 0) {
       let qCurrent = 0
       let fadeTimer: number | undefined
       let qTimer: number | undefined

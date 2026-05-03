@@ -109,6 +109,37 @@ const labelValue = {
   },
 }
 
+const explorerFilterTab = {
+  type: 'object',
+  name: 'homeExplorerFilterTab',
+  title: 'Filter tab',
+  fields: [
+    {
+      name: 'filterKey',
+      title: 'Filter',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'All', value: 'all'},
+          {title: 'Nature Core', value: 'nature'},
+          {title: 'Family Adventure', value: 'family'},
+          {title: 'Exp. Learning', value: 'learning'},
+          {title: 'Tailor Made', value: 'tailor'},
+        ],
+        layout: 'dropdown',
+      },
+      validation: (Rule) => Rule.required(),
+    },
+    {name: 'label', title: 'Label (visible)', type: 'string', validation: (Rule) => Rule.required()},
+  ],
+  preview: {
+    select: {k: 'filterKey', l: 'label'},
+    prepare({k, l}) {
+      return {title: l || k || 'Tab', subtitle: k}
+    },
+  },
+}
+
 export const homePage = defineType({
   name: 'homePage',
   title: 'Home page',
@@ -204,6 +235,81 @@ export const homePage = defineType({
     defineField({name: 'explorerHeadline', title: 'Headline', type: 'string', group: 'explorer'}),
     defineField({name: 'explorerSubheadline', title: 'Subheadline', type: 'text', group: 'explorer', rows: 3}),
     defineField({
+      name: 'explorerFilterTabs',
+      title: 'Filter tabs (labels)',
+      type: 'array',
+      of: [explorerFilterTab],
+      group: 'explorer',
+      description: 'Order matches display. Keys must align with experience program types (data-type on cards).',
+    }),
+    defineField({
+      name: 'explorerPriceEnquireLabel',
+      title: 'Price label — enquire / coming soon',
+      type: 'string',
+      group: 'explorer',
+    }),
+    defineField({
+      name: 'explorerPriceCustomLabel',
+      title: 'Price label — custom programs',
+      type: 'string',
+      group: 'explorer',
+    }),
+    defineField({name: 'explorerCardCtaViewLabel', title: 'Card CTA — view program', type: 'string', group: 'explorer'}),
+    defineField({
+      name: 'explorerCardCtaEnquireLabel',
+      title: 'Card CTA — enquire',
+      type: 'string',
+      group: 'explorer',
+    }),
+    defineField({
+      name: 'explorerTailorRouteDurationLabel',
+      title: 'Tailor card — route/duration badge',
+      type: 'string',
+      group: 'explorer',
+    }),
+    defineField({
+      name: 'explorerTailorDescriptionFallback',
+      title: 'Tailor card — description fallback',
+      type: 'text',
+      rows: 2,
+      group: 'explorer',
+    }),
+    defineField({name: 'explorerTailorCtaText', title: 'Tailor card — CTA text', type: 'string', group: 'explorer'}),
+    defineField({
+      name: 'explorerTailorWhatsappUrl',
+      title: 'Tailor card — WhatsApp URL (optional)',
+      type: 'url',
+      group: 'explorer',
+      description: 'If empty, uses Booking CTA 2 link or Site settings default WhatsApp.',
+    }),
+    defineField({
+      name: 'explorerLearningBadgeLabels',
+      title: 'Exp. learning — duration badges (3)',
+      type: 'array',
+      of: [{type: 'string'}],
+      validation: (Rule) => Rule.max(3),
+      group: 'explorer',
+    }),
+    defineField({
+      name: 'explorerEmptyGridMessage',
+      title: 'Empty grid — message (no experiences loaded)',
+      type: 'text',
+      rows: 3,
+      group: 'explorer',
+    }),
+    defineField({
+      name: 'explorerEmptyGridLinkLabel',
+      title: 'Empty grid — link label',
+      type: 'string',
+      group: 'explorer',
+    }),
+    defineField({
+      name: 'explorerEmptyGridLinkHref',
+      title: 'Empty grid — link URL',
+      type: 'string',
+      group: 'explorer',
+    }),
+    defineField({
       name: 'explorerCatalogReadout',
       title: 'Experience catalog (read-only)',
       type: 'text',
@@ -230,6 +336,20 @@ export const homePage = defineType({
       type: 'string',
       initialValue: '5.0',
       group: 'reviews',
+    }),
+    defineField({
+      name: 'reviewsSourceLabel',
+      title: 'Source label (e.g. Trustpilot)',
+      type: 'string',
+      group: 'reviews',
+    }),
+    defineField({
+      name: 'reviewsEmptyMessage',
+      title: 'Empty state — no review documents',
+      type: 'text',
+      rows: 3,
+      group: 'reviews',
+      description: 'Shown when there are no reviews to list on Home.',
     }),
     defineField({
       name: 'homeSelectedReviews',
@@ -332,6 +452,38 @@ export const homePage = defineType({
 
     defineField({name: 'blogEyebrow', title: 'Eyebrow', type: 'string', group: 'blog'}),
     defineField({name: 'blogHeadline', title: 'Headline', type: 'string', group: 'blog'}),
+    defineField({
+      name: 'blogAllPostsLabel',
+      title: '“All posts” link label',
+      type: 'string',
+      group: 'blog',
+    }),
+    defineField({
+      name: 'blogAllPostsUrl',
+      title: '“All posts” URL',
+      type: 'url',
+      group: 'blog',
+      description: 'External blog index or in-site path. Avoid a bare “#”.',
+    }),
+    defineField({
+      name: 'blogReadLabel',
+      title: 'Card “Read” link label',
+      type: 'string',
+      group: 'blog',
+    }),
+    defineField({
+      name: 'blogFallbackCategory',
+      title: 'Fallback category tag',
+      type: 'string',
+      group: 'blog',
+      description: 'When a post has no category in CMS.',
+    }),
+    defineField({
+      name: 'blogFallbackReadingMinutes',
+      title: 'Fallback reading time (minutes)',
+      type: 'number',
+      group: 'blog',
+    }),
     defineField({
       name: 'blogBody',
       title: 'Intro / body',

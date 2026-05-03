@@ -88,11 +88,26 @@ export type HomePageDoc = {
   explorerEyebrow?: string | null
   explorerHeadline?: string | null
   explorerSubheadline?: string | null
+  explorerFilterTabs?: Array<{ _key?: string; filterKey?: string; label?: string }> | null
+  explorerPriceEnquireLabel?: string | null
+  explorerPriceCustomLabel?: string | null
+  explorerCardCtaViewLabel?: string | null
+  explorerCardCtaEnquireLabel?: string | null
+  explorerTailorRouteDurationLabel?: string | null
+  explorerTailorDescriptionFallback?: string | null
+  explorerTailorCtaText?: string | null
+  explorerTailorWhatsappUrl?: string | null
+  explorerLearningBadgeLabels?: string[] | null
+  explorerEmptyGridMessage?: string | null
+  explorerEmptyGridLinkLabel?: string | null
+  explorerEmptyGridLinkHref?: string | null
   reviewsEyebrow?: string | null
   reviewsHeadline?: string | null
   /** Intro under reviews heading on Home. */
   reviewsBody?: string | null
   reviewsScore?: string | null
+  reviewsSourceLabel?: string | null
+  reviewsEmptyMessage?: string | null
   /** Curated reviews for Home (order preserved). Empty / omit → use all `review` docs. */
   homeSelectedReviews?: ReviewDoc[] | null
   techEyebrow?: string | null
@@ -121,6 +136,11 @@ export type HomePageDoc = {
   homeSelectedPartners?: PartnerDoc[] | null
   blogEyebrow?: string | null
   blogHeadline?: string | null
+  blogAllPostsLabel?: string | null
+  blogAllPostsUrl?: string | null
+  blogReadLabel?: string | null
+  blogFallbackCategory?: string | null
+  blogFallbackReadingMinutes?: number | null
   blogBody?: string | null
   /** Curated blog posts for Home (order preserved). Empty / omit → use `blogPostsQuery`. */
   homeSelectedBlogPosts?: BlogPostDoc[] | null
@@ -156,7 +176,22 @@ export const homePageQuery = groq`
     manifestoImage, manifestoImageCaption,
     manifestoCta1Text, manifestoCta1Link, manifestoCta2Text, manifestoCta2Link,
     explorerEyebrow, explorerHeadline, explorerSubheadline,
+    explorerFilterTabs,
+    explorerPriceEnquireLabel,
+    explorerPriceCustomLabel,
+    explorerCardCtaViewLabel,
+    explorerCardCtaEnquireLabel,
+    explorerTailorRouteDurationLabel,
+    explorerTailorDescriptionFallback,
+    explorerTailorCtaText,
+    explorerTailorWhatsappUrl,
+    explorerLearningBadgeLabels,
+    explorerEmptyGridMessage,
+    explorerEmptyGridLinkLabel,
+    explorerEmptyGridLinkHref,
     reviewsEyebrow, reviewsHeadline, reviewsBody, reviewsScore,
+    reviewsSourceLabel,
+    reviewsEmptyMessage,
     "homeSelectedReviews": homeSelectedReviews[]-> {
       _id,
       quote,
@@ -179,6 +214,11 @@ export const homePageQuery = groq`
       _id, name, logoSvg, link, order
     },
     blogEyebrow, blogHeadline, blogBody,
+    blogAllPostsLabel,
+    blogAllPostsUrl,
+    blogReadLabel,
+    blogFallbackCategory,
+    blogFallbackReadingMinutes,
     "homeSelectedBlogPosts": homeSelectedBlogPosts[]-> {
       _id, title, category, readingMinutes, image, externalLink, slug
     },
@@ -855,6 +895,7 @@ export const siteSettingsLogosQuery = groq`
 
 /** Global shell: header nav/CTA + footer copy/links + logos (single fetch for `SiteHeader` / `SiteFooter`). */
 export type SiteSettingsShellRow = {
+  defaultWhatsappUrl?: string | null
   homePath: string | null
   mobileMenuAriaLabel: string | null
   mainNav: Array<{ label?: string; href?: string; openInNewTab?: boolean }> | null
@@ -878,6 +919,7 @@ export type SiteSettingsShellRow = {
 
 export const siteSettingsShellQuery = groq`
   *[_id == "siteSettings"][0]{
+    defaultWhatsappUrl,
     "homePath": header.homePath,
     "mobileMenuAriaLabel": header.mobileMenuAriaLabel,
     "mainNav": header.mainNav,

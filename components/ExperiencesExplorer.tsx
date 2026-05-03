@@ -1,33 +1,20 @@
 import { urlFor } from '@/lib/sanity'
 import type { ExperienceFromSanity, HomePageDoc } from '@/lib/queries'
 import { HeadlineBlock } from '@/components/HeadlineBlock'
-
-const PROGRAM_TO_FILTER: Record<string, 'nature' | 'family' | 'learning' | 'tailor'> = {
-  'nature-core': 'nature',
-  'family-adventure': 'family',
-  'experiential-learning': 'learning',
-  'tailor-made': 'tailor',
-}
-
-const PROGRAM_BADGE: Record<string, string> = {
-  'nature-core': 'Nature Core',
-  'family-adventure': 'Family Adventure',
-  'experiential-learning': 'Exp. Learning',
-  'tailor-made': 'Tailor Made',
-}
-
-const ROUTE_LABEL: Record<string, string> = {
-  camanti: 'Camanti Route',
-  'manu-road': 'Manu Route',
-  'manu-core': 'Manu Core',
-}
+import { homePageTextFields } from '@/data/cmsApproved/homePageFields'
+import {
+  HOME_EXPERIENCE_PROGRAM_BADGE,
+  HOME_EXPERIENCE_PROGRAM_TO_FILTER,
+  HOME_EXPERIENCE_ROUTE_LABEL,
+} from '@/lib/homeExperienceCatalogLabels'
+import { HOME_EXPLORER_DEFAULTS } from '@/lib/homeExplorerDefaults'
 
 const IMG_PLACEHOLDER =
   'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=700&q=80'
 
 function dataTypeFromProgram(programType: string | null | undefined): 'nature' | 'family' | 'learning' | 'tailor' {
   if (!programType) return 'nature'
-  return PROGRAM_TO_FILTER[programType] ?? 'nature'
+  return HOME_EXPERIENCE_PROGRAM_TO_FILTER[programType] ?? 'nature'
 }
 
 function formatUsd(n: number) {
@@ -59,13 +46,37 @@ function tourHref(doc: Pick<ExperienceFromSanity, 'slug'>): string {
   return `/experiences/${path}`
 }
 
-function priceLabel(doc: ExperienceFromSanity): { text: string; muted?: boolean } {
-  if (doc.status === 'coming-soon') return { text: 'Enquire' }
+type ExplorerGridCopy = ReturnType<typeof resolveExplorerGridCopy>
+
+function resolveExplorerGridCopy(e: HomePageDoc | null | undefined) {
+  const d = HOME_EXPLORER_DEFAULTS
+  const booking = e?.bookingCta2Link?.trim() || ''
+  return {
+    priceEnquire: e?.explorerPriceEnquireLabel?.trim() || d.priceEnquire,
+    priceCustom: e?.explorerPriceCustomLabel?.trim() || d.priceCustom,
+    cardCtaView: e?.explorerCardCtaViewLabel?.trim() || d.cardCtaView,
+    cardCtaEnquire: e?.explorerCardCtaEnquireLabel?.trim() || d.cardCtaEnquire,
+    tailorRouteDuration: e?.explorerTailorRouteDurationLabel?.trim() || d.tailorRouteDurationLabel,
+    tailorDescFallback: e?.explorerTailorDescriptionFallback?.trim() || d.tailorDescriptionFallback,
+    tailorCta: e?.explorerTailorCtaText?.trim() || d.tailorCta,
+    tailorWhatsapp: e?.explorerTailorWhatsappUrl?.trim() || booking || d.tailorWhatsappFallback,
+    learningWhatsapp: booking || d.learningWhatsappFallback,
+    nameFallbackTailor: d.nameFallbackTailor,
+    nameFallbackBadge: d.nameFallbackBadge,
+    learningBadges:
+      e?.explorerLearningBadgeLabels && e.explorerLearningBadgeLabels.length > 0
+        ? e.explorerLearningBadgeLabels
+        : [...d.learningBadgeLabels],
+  }
+}
+
+function priceLabel(doc: ExperienceFromSanity, copy: ExplorerGridCopy): { text: string; muted?: boolean } {
+  if (doc.status === 'coming-soon') return { text: copy.priceEnquire }
   if (doc.programType === 'experiential-learning' && (doc.price == null || doc.price === 0)) {
-    return { text: 'Custom pricing', muted: true }
+    return { text: copy.priceCustom, muted: true }
   }
   if (doc.price != null && doc.price > 0) return { text: formatUsd(doc.price) }
-  return { text: 'Enquire' }
+  return { text: copy.priceEnquire }
 }
 
 const Arrow = () => (
@@ -75,22 +86,24 @@ const Arrow = () => (
   </svg>
 )
 
-function CmsGrid({ list }: { list: ExperienceFromSanity[] }) {
+function CmsGrid({ list, copy }: { list: ExperienceFromSanity[]; copy: ExplorerGridCopy }) {
   return (
     <>
       {list.map((doc) => {
         const dataType = dataTypeFromProgram(doc.programType)
         const isTailor = doc.programType === 'tailor-made'
-        const badge = doc.programType ? (PROGRAM_BADGE[doc.programType] ?? 'Ecotone') : 'Ecotone'
-        const route = doc.route ? (ROUTE_LABEL[doc.route] ?? doc.route) : null
+        const badge = doc.programType
+          ? HOME_EXPERIENCE_PROGRAM_BADGE[doc.programType] ?? copy.nameFallbackBadge
+          : copy.nameFallbackBadge
+        const route = doc.route ? HOME_EXPERIENCE_ROUTE_LABEL[doc.route] ?? doc.route : null
         const imageUrl = mainImageUrl(doc.mainImage)
         const desc = doc.shortDescription ?? ''
         const href = isTailor
-          ? 'https://wa.me/51974781094?text=I%20want%20to%20design%20a%20tailor%20made%20Ecotone%20experience'
+          ? copy.tailorWhatsapp
           : doc.programType === 'experiential-learning'
-            ? 'https://wa.me/51974781094'
+            ? copy.learningWhatsapp
             : tourHref(doc)
-        const price = priceLabel(doc)
+        const price = priceLabel(doc, copy)
 
         if (isTailor) {
           return (
@@ -113,16 +126,14 @@ function CmsGrid({ list }: { list: ExperienceFromSanity[] }) {
                     borderRadius: 100,
                   }}
                 >
-                  Any route · Any duration
+                  {copy.tailorRouteDuration}
                 </span>
               </div>
               <div className="exp-card-tailor-body">
-                <div className="exp-card-tailor-title">{doc.name || 'Tailor made'}</div>
-                <div className="exp-card-tailor-desc">
-                  {desc || 'We design every detail for your group.'}
-                </div>
+                <div className="exp-card-tailor-title">{doc.name || copy.nameFallbackTailor}</div>
+                <div className="exp-card-tailor-desc">{desc || copy.tailorDescFallback}</div>
                 <a href={href} className="btn-tailor">
-                  Design my journey →
+                  {copy.tailorCta}
                 </a>
               </div>
             </div>
@@ -137,45 +148,22 @@ function CmsGrid({ list }: { list: ExperienceFromSanity[] }) {
               <span className="badge-type">{badge}</span>
               {doc.duration ? <span className="badge-dur">{doc.duration}</span> : null}
               {doc.programType === 'experiential-learning' ? (
-                <div
-                  style={{ position: 'absolute', top: 9, right: 9, display: 'flex', gap: 3 }}
-                >
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      background: 'var(--brown)',
-                      color: '#fff',
-                      padding: '4px 7px',
-                      borderRadius: 100,
-                    }}
-                  >
-                    2w
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      background: 'var(--brown)',
-                      color: '#fff',
-                      padding: '4px 7px',
-                      borderRadius: 100,
-                    }}
-                  >
-                    4w
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      background: 'var(--brown)',
-                      color: '#fff',
-                      padding: '4px 7px',
-                      borderRadius: 100,
-                    }}
-                  >
-                    6w
-                  </span>
+                <div style={{ position: 'absolute', top: 9, right: 9, display: 'flex', gap: 3 }}>
+                  {copy.learningBadges.slice(0, 3).map((label, bi) => (
+                    <span
+                      key={`${doc._id}-lb-${bi}`}
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        background: 'var(--brown)',
+                        color: '#fff',
+                        padding: '4px 7px',
+                        borderRadius: 100,
+                      }}
+                    >
+                      {label}
+                    </span>
+                  ))}
                 </div>
               ) : null}
               {route ? <span className="badge-route">{route}</span> : null}
@@ -190,7 +178,8 @@ function CmsGrid({ list }: { list: ExperienceFromSanity[] }) {
                   <span className="exp-card-price">{price.text}</span>
                 )}
                 <a href={href} className="exp-card-cta">
-                  {doc.programType === 'experiential-learning' ? 'Enquire' : 'View'} <Arrow />
+                  {doc.programType === 'experiential-learning' ? copy.cardCtaEnquire : copy.cardCtaView}{' '}
+                  <Arrow />
                 </a>
               </div>
             </div>
@@ -201,11 +190,18 @@ function CmsGrid({ list }: { list: ExperienceFromSanity[] }) {
   )
 }
 
-function ExperiencesFallback() {
+function ExperiencesFallback({ explorer }: { explorer: HomePageDoc | null | undefined }) {
+  const e = explorer
+  const body =
+    e?.explorerEmptyGridMessage?.trim() || homePageTextFields.explorerEmptyGridMessage
+  const linkLabel =
+    e?.explorerEmptyGridLinkLabel?.trim() || homePageTextFields.explorerEmptyGridLinkLabel
+  const linkHref =
+    e?.explorerEmptyGridLinkHref?.trim() || homePageTextFields.explorerEmptyGridLinkHref
   return (
     <p className="body" style={{ maxWidth: 560, gridColumn: '1 / -1' }}>
-      Experience programs are not available right now. When your CMS connection is working, they will
-      appear here. You can still <a href="#book">plan a trip</a>.
+      {body}{' '}
+      <a href={linkHref}>{linkLabel}</a>.
     </p>
   )
 }
@@ -219,11 +215,17 @@ export function ExperiencesExplorer({
 }) {
   const fromCms = Array.isArray(experiences) && experiences.length > 0
   const e = explorer
+  const gridCopy = resolveExplorerGridCopy(e)
+  const filterTabs =
+    e?.explorerFilterTabs && e.explorerFilterTabs.length > 0
+      ? e.explorerFilterTabs
+      : homePageTextFields.explorerFilterTabs
+
   return (
     <section className="sec" id="experiences">
       <div className="sec-inner">
         <div className="fade">
-          <div className="eyebrow">{e?.explorerEyebrow ?? 'Find your journey'}</div>
+          <div className="eyebrow">{e?.explorerEyebrow ?? homePageTextFields.explorerEyebrow}</div>
           <HeadlineBlock
             text={e?.explorerHeadline ?? null}
             fallback={
@@ -235,29 +237,27 @@ export function ExperiencesExplorer({
             }
           />
           <p className="body" style={{ maxWidth: 540, marginBottom: 0 }}>
-            {e?.explorerSubheadline ??
-              '4 ways to travel with purpose. All-inclusive from Cusco. Filter by experience type.'}
+            {e?.explorerSubheadline ?? homePageTextFields.explorerSubheadline}
           </p>
         </div>
         <div className="filter-tabs fade fade-d1" id="filterTabs">
-          <button type="button" className="filter-tab active" data-filter="all">
-            All
-          </button>
-          <button type="button" className="filter-tab" data-filter="nature">
-            Nature Core
-          </button>
-          <button type="button" className="filter-tab" data-filter="family">
-            Family Adventure
-          </button>
-          <button type="button" className="filter-tab" data-filter="learning">
-            Exp. Learning
-          </button>
-          <button type="button" className="filter-tab tailor" data-filter="tailor">
-            Tailor Made
-          </button>
+          {filterTabs.map((tab, i) => {
+            const key = tab.filterKey ?? `tab-${i}`
+            const isTailor = tab.filterKey === 'tailor'
+            return (
+              <button
+                key={key}
+                type="button"
+                className={'filter-tab' + (i === 0 ? ' active' : '') + (isTailor ? ' tailor' : '')}
+                data-filter={tab.filterKey ?? 'all'}
+              >
+                {tab.label}
+              </button>
+            )
+          })}
         </div>
         <div className="exp-grid fade fade-d2" id="expGrid">
-          {fromCms && experiences ? <CmsGrid list={experiences} /> : <ExperiencesFallback />}
+          {fromCms && experiences ? <CmsGrid list={experiences} copy={gridCopy} /> : <ExperiencesFallback explorer={e} />}
         </div>
       </div>
     </section>

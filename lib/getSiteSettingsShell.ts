@@ -20,6 +20,8 @@ export type ShellNavLink = {
 }
 
 export type GlobalSiteSettingsShell = {
+  /** Site-wide fallback when Home booking / explorer omit WhatsApp URL. */
+  defaultWhatsappUrl: string | null
   headerLogoLightUrl: string | null
   headerLogoDarkUrl: string | null
   footerLogoUrl: string | null
@@ -111,6 +113,7 @@ function pickCertText(raw: string[] | null | undefined): string[] {
  */
 export const getSiteSettingsShell = cache(async (): Promise<GlobalSiteSettingsShell> => {
   const empty: GlobalSiteSettingsShell = {
+    defaultWhatsappUrl: null,
     headerLogoLightUrl: null,
     headerLogoDarkUrl: null,
     footerLogoUrl: null,
@@ -151,7 +154,9 @@ export const getSiteSettingsShell = cache(async (): Promise<GlobalSiteSettingsSh
   }
 
   const ft = row.footer
+  const defaultWa = row.defaultWhatsappUrl?.trim() || null
   return {
+    defaultWhatsappUrl: defaultWa,
     headerLogoLightUrl: toUrl(row.headerLogoLight),
     headerLogoDarkUrl: toUrl(row.headerLogoDark),
     footerLogoUrl: toUrl(row.footerLogo),

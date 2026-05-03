@@ -3,6 +3,8 @@
  * (same strings as the previous `seedHomePage.ts` inline object).
  * Images are added at seed time (`buildHomePageDocument`).
  */
+import { DEFAULT_WHATSAPP_URL } from '@/data/cmsApproved/siteSettingsApprovedContent'
+
 const key = (id: string) => ({ _key: id })
 
 export const homePageTextFields = {
@@ -56,10 +58,33 @@ export const homePageTextFields = {
   explorerEyebrow: 'Find your journey',
   explorerHeadline: 'Choose how you want to go deep',
   explorerSubheadline: '4 ways to travel with purpose. All-inclusive from Cusco. Filter by experience type.',
+  explorerFilterTabs: [
+    { ...key('exf0'), _type: 'homeExplorerFilterTab' as const, filterKey: 'all', label: 'All' },
+    { ...key('exf1'), _type: 'homeExplorerFilterTab' as const, filterKey: 'nature', label: 'Nature Core' },
+    { ...key('exf2'), _type: 'homeExplorerFilterTab' as const, filterKey: 'family', label: 'Family Adventure' },
+    { ...key('exf3'), _type: 'homeExplorerFilterTab' as const, filterKey: 'learning', label: 'Exp. Learning' },
+    { ...key('exf4'), _type: 'homeExplorerFilterTab' as const, filterKey: 'tailor', label: 'Tailor Made' },
+  ],
+  explorerPriceEnquireLabel: 'Enquire',
+  explorerPriceCustomLabel: 'Custom pricing',
+  explorerCardCtaViewLabel: 'View',
+  explorerCardCtaEnquireLabel: 'Enquire',
+  explorerTailorRouteDurationLabel: 'Any route · Any duration',
+  explorerTailorDescriptionFallback: 'We design every detail for your group.',
+  explorerTailorCtaText: 'Design my journey →',
+  explorerTailorWhatsappUrl: '',
+  explorerLearningBadgeLabels: ['2w', '4w', '6w'],
+  explorerEmptyGridMessage:
+    'Experience programs are not available right now. When your CMS connection is working, they will appear here.',
+  explorerEmptyGridLinkLabel: 'Plan a trip',
+  explorerEmptyGridLinkHref: '#book',
 
   reviewsEyebrow: 'What guests say',
   reviewsHeadline: 'Real experiences',
   reviewsScore: '5.0',
+  reviewsSourceLabel: 'Trustpilot',
+  reviewsEmptyMessage:
+    'We are adding new guest stories. Explore our programs below or book to experience the forest firsthand.',
 
   techEyebrow: 'Exclusive technology',
   techHeadline: 'A commitment to preserving pristine nature',
@@ -113,6 +138,11 @@ export const homePageTextFields = {
 
   blogEyebrow: 'From the field',
   blogHeadline: 'Latest from Ecotone',
+  blogAllPostsLabel: 'All posts',
+  blogAllPostsUrl: 'https://www.ecotone.eco/blog',
+  blogReadLabel: 'Read',
+  blogFallbackCategory: 'News',
+  blogFallbackReadingMinutes: 3,
 
   bookingEyebrow: 'Reserve your spot',
   bookingHeadline: 'Ready to disconnect?',
@@ -135,6 +165,5 @@ export const homePageTextFields = {
   bookingCta1Text: 'Explore all experiences →',
   bookingCta1Link: '#experiences',
   bookingCta2Text: 'Ask via WhatsApp',
-  bookingCta2Link:
-    'https://wa.me/51974781094?text=I%20want%20information%20about%20Ecotone%20experiences',
+  bookingCta2Link: DEFAULT_WHATSAPP_URL,
 }

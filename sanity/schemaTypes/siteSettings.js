@@ -134,6 +134,14 @@ export const siteSettings = defineType({
       group: 'social',
     }),
     defineField({name: 'copyright', title: 'Copyright line', type: 'string', group: 'social', validation: (r) => r.max(200)}),
+    defineField({
+      name: 'defaultWhatsappUrl',
+      title: 'Default WhatsApp URL (site-wide)',
+      type: 'url',
+      group: 'social',
+      description:
+        'Used when Home booking or explorer CTAs omit a WhatsApp link. Include https://wa.me/… with optional ?text=.',
+    }),
   ],
   preview: {prepare: () => ({title: 'Site settings'})},
 })

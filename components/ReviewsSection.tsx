@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 
-import { DEFAULT_FEATURED_QUOTES } from '@/lib/homeQuoteDefaults'
 import type { HomePageDoc, ReviewDoc } from '@/lib/queries'
 
 const StarRow = () => (
@@ -12,55 +11,6 @@ const StarRow = () => (
     <div className="star" />
   </div>
 )
-
-const FALLBACK_CARDS: ReviewDoc[] = [
-  {
-    _id: 'fr1',
-    quote:
-      'Breathtaking place with amazing people that changed my way of travelling and understanding nature.',
-    authorName: 'Vanessa',
-    authorCity: 'London',
-    authorCountry: 'UK',
-    experienceName: 'Soqtapata 3D/2N',
-    rating: 5,
-  },
-  {
-    _id: 'fr2',
-    quote: 'Absolutely out of this world experience. Will definitely make the trip back someday.',
-    authorName: 'Morgan',
-    authorCity: 'New York',
-    authorCountry: 'US',
-    experienceName: 'Manu Gradient',
-    rating: 5,
-  },
-  {
-    _id: 'fr3',
-    quote: 'Super comfortable place. There are no words to describe the beauty of this place.',
-    authorName: 'Richard',
-    authorCity: 'California',
-    authorCountry: 'US',
-    experienceName: 'Soqtapata 3D/2N',
-    rating: 5,
-  },
-  {
-    _id: 'fr4',
-    quote: 'The ForestWhisper experience at night — I still get goosebumps thinking about it.',
-    authorName: 'Lucas',
-    authorCity: 'São Paulo',
-    authorCountry: 'BR',
-    experienceName: 'Family Quest',
-    rating: 5,
-  },
-  {
-    _id: 'fr5',
-    quote: 'Birdwatching at 5 AM — over 20 species before breakfast. Life-changing morning.',
-    authorName: 'Sofia',
-    authorCity: 'Barcelona',
-    authorCountry: 'ES',
-    experienceName: 'Soqtapata 3D/2N',
-    rating: 5,
-  },
-]
 
 function locLabel(r: ReviewDoc) {
   const a = r.authorCity?.trim()
@@ -87,7 +37,7 @@ export type ReviewsSectionProps = {
   secondaryRatingLine?: string | null
   /** Optional intro under eyebrow/H2 (CMS landing module). */
   sectionLead?: string | null
-  /** When true, empty `reviews` uses global homepage static cards. */
+  /** @deprecated No longer used; demo review cards were removed. */
   useHomepageSampleReviewsIfEmpty?: boolean
   sectionClassName?: string
   contentInnerClassName?: string
@@ -110,13 +60,13 @@ export function ReviewsSection({
   eyebrow: eyebrowProp,
   headline: headlineProp,
   averageRating: averageRatingProp,
-  sourceLabel = 'Trustpilot',
+  sourceLabel: sourceLabelProp,
   secondaryRatingLine = null,
   sectionLead = null,
-  useHomepageSampleReviewsIfEmpty = true,
+  useHomepageSampleReviewsIfEmpty: _legacyUseHomepageSampleReviews = true,
   sectionClassName = 'sec bg-cream fade',
   contentInnerClassName = 'sec-inner',
-  emptyMessage = 'No guest reviews for this program yet. Be the first to share your experience.',
+  emptyMessage: emptyMessageProp,
   reviewCarouselEnd = null,
   reviewsRegionAriaLabel = 'Guest reviews',
   reviewTablistAriaLabel = 'Select a review',
@@ -124,26 +74,29 @@ export function ReviewsSection({
   reviewDotAriaLabelPrefix = 'Review',
   guestFallbackName = 'Guest',
 }: ReviewsSectionProps) {
+  void _legacyUseHomepageSampleReviews
+
   const resolvedSectionLead = (() => {
     if (sectionLead != null && String(sectionLead).trim()) return String(sectionLead).trim()
     const fromHome = h?.reviewsBody?.trim()
     return fromHome || null
   })()
 
-  const quotesForDots = featuredQuoteItems.length > 0 ? featuredQuoteItems : DEFAULT_FEATURED_QUOTES
-  const first = quotesForDots[0] ?? { text: '""', attr: '—' }
+  const quotesForDots = featuredQuoteItems.length > 0 ? featuredQuoteItems : []
+  const first = quotesForDots[0]
   const hasReviews = Array.isArray(reviews) && reviews.length > 0
-  const list = hasReviews
-    ? reviews!
-    : useHomepageSampleReviewsIfEmpty
-      ? FALLBACK_CARDS
-      : []
+  const list = hasReviews ? reviews! : []
 
   const eyebrow = eyebrowProp ?? h?.reviewsEyebrow ?? 'What guests say'
   const headline = headlineProp ?? h?.reviewsHeadline ?? 'Real experiences'
   const averageRating = (averageRatingProp ?? h?.reviewsScore)?.trim() || '5.0'
+  const sourceLabel = (sourceLabelProp ?? h?.reviewsSourceLabel?.trim()) || 'Trustpilot'
+  const emptyMessage =
+    emptyMessageProp ??
+    (h?.reviewsEmptyMessage?.trim() ||
+      'No guest reviews for this program yet. Be the first to share your experience.')
 
-  const showEmpty = list.length === 0 && !useHomepageSampleReviewsIfEmpty
+  const showEmpty = list.length === 0
 
   return (
     <section className={sectionClassName} id="reviews">
@@ -197,28 +150,30 @@ export function ReviewsSection({
           </p>
         ) : null}
 
-        <div className="quote-featured">
-          <div
-            className="quote-text"
-            id="quoteText"
-            // eslint-disable-next-line react/no-danger
-            dangerouslySetInnerHTML={{ __html: first.text }}
-          />
-          <div className="quote-attr" id="quoteAttr">
-            {first.attr}
+        {first ? (
+          <div className="quote-featured">
+            <div
+              className="quote-text"
+              id="quoteText"
+              // eslint-disable-next-line react/no-danger
+              dangerouslySetInnerHTML={{ __html: first.text }}
+            />
+            <div className="quote-attr" id="quoteAttr">
+              {first.attr}
+            </div>
+            <div className="quote-dots">
+              {quotesForDots.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className={'qdot' + (i === 0 ? ' active' : '')}
+                  data-q={i}
+                  aria-label={`${quoteDotAriaLabelPrefix} ${i + 1}`}
+                />
+              ))}
+            </div>
           </div>
-          <div className="quote-dots">
-            {quotesForDots.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                className={'qdot' + (i === 0 ? ' active' : '')}
-                data-q={i}
-                aria-label={`${quoteDotAriaLabelPrefix} ${i + 1}`}
-              />
-            ))}
-          </div>
-        </div>
+        ) : null}
 
         <div className="rev-carousel">
           {showEmpty ? (

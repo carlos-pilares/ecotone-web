@@ -1,4 +1,3 @@
-import { DEFAULT_FEATURED_QUOTES } from '@/lib/homeQuoteDefaults'
 import type { ReviewDoc } from '@/lib/queries'
 
 function formatQuoteHtml(quote: string): string {
@@ -19,15 +18,22 @@ function formatAttr(r: ReviewDoc): string {
   return `— ${name}${loc ? ` · ${loc}` : ''}${exp ? ` · ${exp}` : ''}`
 }
 
-/** Uses `isFeatured` reviews for rotation; falls back to DEFAULT_FEATURED_QUOTES. */
+const MAX_HOME_FEATURED = 5
+
+/**
+ * Home featured quotes: `isFeatured` first, else first reviews with quotes.
+ * Returns [] when there is no review content (no invented defaults).
+ */
 export function buildFeaturedQuoteItems(reviews: ReviewDoc[] | null | undefined): {
   text: string
   attr: string
 }[] {
   const list = Array.isArray(reviews) ? reviews : []
-  const featured = list.filter((r) => r.isFeatured && r.quote && r.quote.trim())
-  if (featured.length === 0) return DEFAULT_FEATURED_QUOTES
-  return featured.map((r) => ({
+  const withQuote = list.filter((r) => r.quote && r.quote.trim())
+  if (withQuote.length === 0) return []
+  const featured = withQuote.filter((r) => r.isFeatured)
+  const source = featured.length > 0 ? featured : withQuote.slice(0, MAX_HOME_FEATURED)
+  return source.map((r) => ({
     text: formatQuoteHtml(r.quote!.trim()),
     attr: formatAttr(r),
   }))

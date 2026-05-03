@@ -46,9 +46,24 @@ export const defaultHomePageDoc: ResolvedHomePage = {
   explorerEyebrow: t.explorerEyebrow,
   explorerHeadline: t.explorerHeadline,
   explorerSubheadline: t.explorerSubheadline,
+  explorerFilterTabs: t.explorerFilterTabs.map((x) => ({ ...x })),
+  explorerPriceEnquireLabel: t.explorerPriceEnquireLabel,
+  explorerPriceCustomLabel: t.explorerPriceCustomLabel,
+  explorerCardCtaViewLabel: t.explorerCardCtaViewLabel,
+  explorerCardCtaEnquireLabel: t.explorerCardCtaEnquireLabel,
+  explorerTailorRouteDurationLabel: t.explorerTailorRouteDurationLabel,
+  explorerTailorDescriptionFallback: t.explorerTailorDescriptionFallback,
+  explorerTailorCtaText: t.explorerTailorCtaText,
+  explorerTailorWhatsappUrl: t.explorerTailorWhatsappUrl,
+  explorerLearningBadgeLabels: [...t.explorerLearningBadgeLabels],
+  explorerEmptyGridMessage: t.explorerEmptyGridMessage,
+  explorerEmptyGridLinkLabel: t.explorerEmptyGridLinkLabel,
+  explorerEmptyGridLinkHref: t.explorerEmptyGridLinkHref,
   reviewsEyebrow: t.reviewsEyebrow,
   reviewsHeadline: t.reviewsHeadline,
   reviewsScore: t.reviewsScore,
+  reviewsSourceLabel: t.reviewsSourceLabel,
+  reviewsEmptyMessage: t.reviewsEmptyMessage,
   techEyebrow: t.techEyebrow,
   techHeadline: t.techHeadline,
   techBody: t.techBody,
@@ -64,6 +79,11 @@ export const defaultHomePageDoc: ResolvedHomePage = {
   partnersLabel: t.partnersLabel,
   blogEyebrow: t.blogEyebrow,
   blogHeadline: t.blogHeadline,
+  blogAllPostsLabel: t.blogAllPostsLabel,
+  blogAllPostsUrl: t.blogAllPostsUrl,
+  blogReadLabel: t.blogReadLabel,
+  blogFallbackCategory: t.blogFallbackCategory,
+  blogFallbackReadingMinutes: t.blogFallbackReadingMinutes,
   bookingEyebrow: t.bookingEyebrow,
   bookingHeadline: t.bookingHeadline,
   bookingBody: t.bookingBody,
@@ -103,10 +123,23 @@ const STR_KEYS = [
   'explorerEyebrow',
   'explorerHeadline',
   'explorerSubheadline',
+  'explorerPriceEnquireLabel',
+  'explorerPriceCustomLabel',
+  'explorerCardCtaViewLabel',
+  'explorerCardCtaEnquireLabel',
+  'explorerTailorRouteDurationLabel',
+  'explorerTailorDescriptionFallback',
+  'explorerTailorCtaText',
+  'explorerTailorWhatsappUrl',
+  'explorerEmptyGridMessage',
+  'explorerEmptyGridLinkLabel',
+  'explorerEmptyGridLinkHref',
   'reviewsEyebrow',
   'reviewsHeadline',
   'reviewsBody',
   'reviewsScore',
+  'reviewsSourceLabel',
+  'reviewsEmptyMessage',
   'techEyebrow',
   'techHeadline',
   'techBody',
@@ -120,6 +153,10 @@ const STR_KEYS = [
   'blogEyebrow',
   'blogHeadline',
   'blogBody',
+  'blogAllPostsLabel',
+  'blogAllPostsUrl',
+  'blogReadLabel',
+  'blogFallbackCategory',
   'bookingEyebrow',
   'bookingHeadline',
   'bookingBody',
@@ -138,7 +175,11 @@ const ARR_KEYS = [
   'missionItems',
   'bookingTrustItems',
   'bookingCardRows',
+  'explorerFilterTabs',
+  'explorerLearningBadgeLabels',
 ] as const satisfies ReadonlyArray<keyof ResolvedHomePage>
+
+const NUM_KEYS = ['blogFallbackReadingMinutes'] as const satisfies ReadonlyArray<keyof ResolvedHomePage>
 
 const IMG_KEYS = [
   'heroImage',
@@ -168,6 +209,10 @@ export function mergeHomePageWithDefaults(cms: HomePageDoc | null): ResolvedHome
   for (const k of ARR_KEYS) {
     const v: unknown = cms[k as keyof HomePageDoc]
     if (Array.isArray(v) && v.length > 0) o[k] = v
+  }
+  for (const k of NUM_KEYS) {
+    const v = cms[k as keyof HomePageDoc]
+    if (typeof v === 'number' && Number.isFinite(v) && v > 0) o[k] = v
   }
   for (const k of IMG_KEYS) {
     const v = cms[k as keyof HomePageDoc]
