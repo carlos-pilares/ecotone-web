@@ -651,7 +651,8 @@ export type LodgeExperiencesTailor = {
 
 export type LodgeExperiencesData = LodgeSectionHeaderFields & {
   cards: readonly LodgeExperienceCard[]
-  tailor: LodgeExperiencesTailor
+  /** Solo en fallback estático o si el CMS define una banda “tailor” en el futuro; no se fusiona con tarjetas CMS. */
+  tailor?: LodgeExperiencesTailor
   /** Texto del CTA en cada tarjeta (p. ej. "View"). */
   programCardCtaLabel: string
 }

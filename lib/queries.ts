@@ -512,9 +512,21 @@ export const lodgeStructuredPageBySlugQuery = groq`
       shortDescription,
       mainImage,
       "mainImageUrl": mainImage.asset->url,
-      "slug": slug.current
+      "slug": slug.current,
+      "experienceLandingSlug": *[_type == "experiencePage" && experience._ref == ^._id][0].slug.current,
+      lodgeEnquireSmartLink { ${GROQ_SMART_LINK_FIELDS} }
     },
     fallbackToLodgeRelations,
+    experiencesTailorCta {
+      enabled,
+      eyebrow,
+      title,
+      description,
+      image,
+      "imageUrl": image.asset->url,
+      imageAlt,
+      ctaSmartLink { ${GROQ_SMART_LINK_FIELDS} }
+    },
     reviewsSelection[]-> {
       _id,
       quote,
@@ -554,9 +566,15 @@ export const lodgeStructuredPageBySlugQuery = groq`
       keyElements,
       snapshotItems[]{ key, label, value },
       gallery[]{
+        stableKey,
         title,
         description,
+        alt,
+        usageSection,
+        roomStableId,
         category,
+        relatedRoomStableId,
+        relatedCommonAreaKey,
         image,
         "imageUrl": image.asset->url
       },
@@ -566,6 +584,7 @@ export const lodgeStructuredPageBySlugQuery = groq`
         numberOfRooms,
         capacity,
         highlights,
+        galleryItemKeys[]{ galleryStableKey },
         gallery[]{
           title,
           description,
@@ -574,6 +593,8 @@ export const lodgeStructuredPageBySlugQuery = groq`
         }
       },
       commonAreas[]{
+        stableKey,
+        galleryStableKey,
         title,
         description,
         image,
@@ -598,7 +619,9 @@ export const lodgeStructuredPageBySlugQuery = groq`
         shortDescription,
         mainImage,
         "mainImageUrl": mainImage.asset->url,
-        "slug": slug.current
+        "slug": slug.current,
+        "experienceLandingSlug": *[_type == "experiencePage" && experience._ref == ^._id][0].slug.current,
+        lodgeEnquireSmartLink { ${GROQ_SMART_LINK_FIELDS} }
       },
       reviews[]-> {
         _id,

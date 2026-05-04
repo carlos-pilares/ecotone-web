@@ -80,6 +80,7 @@ export type AboutPageSanityDoc = {
   finalTitle?: string | null
   finalBody?: string | null
   finalButtons?: Array<{
+    smartLink?: SmartLinkGroq | null
     label?: string | null
     href?: string | null
     variant?: string | null
@@ -164,7 +165,13 @@ export const aboutPageQuery = groq`
     finalEyebrow,
     finalTitle,
     finalBody,
-    finalButtons[]{ label, href, variant, openInNewTab },
+    finalButtons[]{
+      smartLink { ${GROQ_SMART_LINK_FIELDS} },
+      label,
+      href,
+      variant,
+      openInNewTab
+    },
     finalTrustItems[]{ iconKey, text }
   }
 `

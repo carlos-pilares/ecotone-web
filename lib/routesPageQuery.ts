@@ -52,6 +52,10 @@ export type RoutesPageSanityDoc = {
   experiencesIntro?: string | null
   experiencesAllLabel?: string | null
   experiencesAllHref?: string | null
+  experiencesAllSmartLink?: SmartLinkGroq | null
+  selectedExperiences?: RoutesPageSanityExperienceRef[] | null
+  fallbackToAllExperiences?: boolean | null
+  allExperiences?: RoutesPageSanityExperienceRef[] | null
   experiencesFilters?: Array<{ filterId?: string | null; label?: string | null }> | null
   experienceCards?: RoutesPageSanityExpCard[] | null
   reviewsFeaturedQuotes?: Array<{ quoteHtml?: string | null; attribution?: string | null }> | null
@@ -87,12 +91,14 @@ export type RoutesPageSanityRouteCard = {
   description?: string | null
   chips?: string[] | null
   footPriceHtml?: string | null
-  cta?: { label?: string | null; href?: string | null } | null
+  ctaSmartLink?: SmartLinkGroq | null
+  cta?: { label?: string | null; href?: string | null; openInNewTab?: boolean | null } | null
   ctaButtonVariant?: string | null
 }
 
 export type RoutesPageSanityExpCard = {
   routeKey?: string | null
+  hrefSmartLink?: SmartLinkGroq | null
   href?: string | null
   imageUrl?: string | null
   imageAlt?: string | null
@@ -103,6 +109,23 @@ export type RoutesPageSanityExpCard = {
   description?: string | null
   priceKind?: string | null
   priceText?: string | null
+}
+
+export type RoutesPageSanityExperienceRef = {
+  _id: string
+  name?: string | null
+  slug?: string | null
+  /** `experiencePage.slug` vinculada (URL pública). */
+  experienceLandingSlug?: string | null
+  route?: string | null
+  duration?: string | null
+  programType?: string | null
+  shortDescription?: string | null
+  tagline?: string | null
+  price?: number | null
+  priceLabel?: string | null
+  mainImageUrl?: string | null
+  lodgeEnquireSmartLink?: SmartLinkGroq | null
 }
 
 export type RoutesPageSanityCompareRow =
@@ -187,6 +210,7 @@ export const routesPageQuery = groq`
       description,
       chips,
       footPriceHtml,
+      ctaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
       cta,
       ctaButtonVariant
     },
@@ -218,9 +242,42 @@ export const routesPageQuery = groq`
     experiencesIntro,
     experiencesAllLabel,
     experiencesAllHref,
+    experiencesAllSmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    selectedExperiences[]->{
+      _id,
+      name,
+      "slug": slug.current,
+      "experienceLandingSlug": *[_type == "experiencePage" && experience._ref == ^._id][0].slug.current,
+      route,
+      duration,
+      programType,
+      shortDescription,
+      tagline,
+      price,
+      priceLabel,
+      "mainImageUrl": mainImage.asset->url,
+      lodgeEnquireSmartLink { ${GROQ_SMART_LINK_FIELDS} }
+    },
+    fallbackToAllExperiences,
+    "allExperiences": *[_type == "experience"] | order(_createdAt desc){
+      _id,
+      name,
+      "slug": slug.current,
+      "experienceLandingSlug": *[_type == "experiencePage" && experience._ref == ^._id][0].slug.current,
+      route,
+      duration,
+      programType,
+      shortDescription,
+      tagline,
+      price,
+      priceLabel,
+      "mainImageUrl": mainImage.asset->url,
+      lodgeEnquireSmartLink { ${GROQ_SMART_LINK_FIELDS} }
+    },
     experiencesFilters[]{ filterId, label },
     experienceCards[]{
       routeKey,
+      hrefSmartLink { ${GROQ_SMART_LINK_FIELDS} },
       href,
       "imageUrl": image.asset->url,
       imageAlt,

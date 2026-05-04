@@ -56,9 +56,18 @@ export type LodgeSnapshotItemRow = {
 }
 
 export type LodgeGalleryItemRow = {
+  stableKey?: string | null
   title?: string | null
   description?: string | null
+  alt?: string | null
+  usageSection?: 'hero' | 'accommodation' | 'commonAreas' | string | null
+  roomStableId?: string | null
+  /** @deprecated legacy categorization */
   category?: string | null
+  /** @deprecated legacy relation */
+  relatedRoomStableId?: string | null
+  /** @deprecated legacy relation */
+  relatedCommonAreaKey?: string | null
   image?: SanityImageSource | null
   imageUrl?: string | null
 }
@@ -70,16 +79,26 @@ export type LodgeRoomGalleryItemRow = {
   imageUrl?: string | null
 }
 
+export type LodgeRoomGalleryPickRow = {
+  galleryStableKey?: string | null
+}
+
 export type LodgeRoomRow = {
   stableId?: string | null
   name?: string | null
   numberOfRooms?: number | null
   capacity?: number | null
   highlights?: string[] | null
+  /** @deprecated legacy picks from `lodge.gallery` by `stableKey`. */
+  galleryItemKeys?: LodgeRoomGalleryPickRow[] | null
+  /** @deprecated Upload images only on Global gallery; use galleryItemKeys. */
   gallery?: LodgeRoomGalleryItemRow[] | null
 }
 
 export type LodgeCommonAreaRow = {
+  stableKey?: string | null
+  /** References `lodge.gallery[].stableKey` (preferred over legacy `image`). */
+  galleryStableKey?: string | null
   title?: string | null
   description?: string | null
   image?: SanityImageSource | null
@@ -137,6 +156,10 @@ export type LodgeCmsExperienceCardRow = {
   mainImage?: SanityImageSource | null
   mainImageUrl?: string | null
   slug?: string | null
+  /** `experiencePage.slug` vinculada a esta experiencia (URL pública `/experiences/...`). */
+  experienceLandingSlug?: string | null
+  /** Si la tarjeta del lodge es “Enquire”, destino del clic cuando no es la landing de experiencia. */
+  lodgeEnquireSmartLink?: SmartLinkGroq | null
 }
 
 export type LodgeDocumentRow = {
@@ -210,6 +233,17 @@ export type LodgePageReviewsPresentationRow = {
   emptyMessage?: string | null
 } | null
 
+export type LodgePageExperiencesTailorCtaRow = {
+  enabled?: boolean | null
+  eyebrow?: string | null
+  title?: string | null
+  description?: string | null
+  image?: SanityImageSource | null
+  imageUrl?: string | null
+  imageAlt?: string | null
+  ctaSmartLink?: SmartLinkGroq | null
+} | null
+
 export type LodgeStructuredPageRow = {
   _id?: string
   internalTitle?: string | null
@@ -228,6 +262,7 @@ export type LodgeStructuredPageRow = {
   featuredRoomStableId?: string | null
   experiencesSelection?: LodgeCmsExperienceCardRow[] | null
   fallbackToLodgeRelations?: boolean | null
+  experiencesTailorCta?: LodgePageExperiencesTailorCtaRow
   reviewsSelection?: ReviewDoc[] | null
   reviewsPresentation?: LodgePageReviewsPresentationRow
   bookingCta?: {

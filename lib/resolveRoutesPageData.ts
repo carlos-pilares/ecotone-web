@@ -3,8 +3,18 @@
  * al shape que consumen `app/routes/page.tsx` y `getRoutesPage` (objetos anidados tipo `RoutesTerritoryStatic`).
  */
 import type { ReviewDoc } from '@/lib/queries'
+import {
+  buildGenericExperienceEnquireWhatsappHref,
+  enrichSmartLinkWithLabelFallback,
+  resolveExperiencePublicHrefOrFallback,
+} from '@/lib/resolveExperiencePublicHref'
 import { resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
-import type { RoutesPageSanityDoc, RoutesPageSanityExpCard, RoutesPageSanityRouteCard } from '@/lib/routesPageQuery'
+import type {
+  RoutesPageSanityDoc,
+  RoutesPageSanityExpCard,
+  RoutesPageSanityExperienceRef,
+  RoutesPageSanityRouteCard,
+} from '@/lib/routesPageQuery'
 import {
   routesCards as fallbackRoutesCards,
   routesCompareColumns as fallbackCompareColumns,
@@ -178,10 +188,18 @@ function mapRouteCards(cards: RoutesPageSanityRouteCard[] | null | undefined): R
   const out: RoutesCardStatic[] = []
   for (const c of cards) {
     const id = c.stableId?.trim()
-    const href = c.cta?.href?.trim()
-    const label = c.cta?.label?.trim()
     const imageSrc = c.imageUrl?.trim()
-    if (!id || !href || !label || !imageSrc || !c.name?.trim()) continue
+    if (!id || !imageSrc || !c.name?.trim()) continue
+    const staticCard = fallbackRoutesCards.find((x) => x.id === id)
+    const fbCta = staticCard?.cta ?? { label: '', href: '', buttonVariant: 'secondary' as const }
+    const resolved = resolveSmartLinkOrLegacy(
+      c.ctaSmartLink,
+      { label: c.cta?.label, href: c.cta?.href, openInNewTab: c.cta?.openInNewTab },
+      { label: fbCta.label, href: fbCta.href, openInNewTab: false },
+    )
+    const href = resolved.href?.trim()
+    const label = resolved.label?.trim()
+    if (!href || !label) continue
     const variant = c.variant === 'featured' ? 'featured' : 'default'
     const badges: RoutesCardBadge[] = (c.badges ?? [])
       .map((b) => {
@@ -221,14 +239,90 @@ function isPriceKind(s: string | null | undefined): s is RoutesExpCardStatic['pr
   return s === 'amount' || s === 'enquire' || s === 'custom'
 }
 
+function routeFilterFromExperience(route: string | null | undefined): Exclude<RoutesExpRouteFilter, 'all'> | null {
+  const r = route?.trim().toLowerCase()
+  if (r === 'camanti') return 'camanti'
+  if (r === 'manu-road' || r === 'manuroad' || r === 'manu road') return 'manu-road'
+  if (r === 'manu-core' || r === 'manucore' || r === 'manu core') return 'manu-core'
+  return null
+}
+
+function routeLineLabel(route: Exclude<RoutesExpRouteFilter, 'all'>): string {
+  if (route === 'camanti') return 'Camanti Route'
+  if (route === 'manu-road') return 'Manu Road'
+  return 'Manu Core'
+}
+
+function typePillLabel(programType: string | null | undefined): string {
+  const p = programType?.trim().toLowerCase()
+  if (p === 'signature') return 'Signature'
+  if (p === 'custom') return 'Custom'
+  return 'Nature Core'
+}
+
+function mapExperienceRefsToCards(experiences: RoutesPageSanityExperienceRef[] | null | undefined): RoutesExpCardStatic[] | null {
+  if (!Array.isArray(experiences) || experiences.length === 0) return null
+  const out: RoutesExpCardStatic[] = []
+  for (const e of experiences) {
+    const documentSlug = e.slug?.trim()
+    const name = e.name?.trim()
+    const imageSrc = e.mainImageUrl?.trim()
+    const route = routeFilterFromExperience(e.route)
+    if (!name || !imageSrc || !route) continue
+    const priceLabel = e.priceLabel?.trim() ?? ''
+    const hasSellingPrice = typeof e.price === 'number' && e.price > 0
+    const priceLabelLooksPriced = /\d/.test(priceLabel)
+    const useExperienceHref = hasSellingPrice || priceLabelLooksPriced
+    const enquireLabel = priceLabel || (hasSellingPrice ? String(e.price) : 'Enquire')
+    const waFallback = buildGenericExperienceEnquireWhatsappHref(name)
+    const enquireSmart = enrichSmartLinkWithLabelFallback(e.lodgeEnquireSmartLink, enquireLabel)
+    const href = useExperienceHref
+      ? resolveExperiencePublicHrefOrFallback({
+          experienceLandingSlug: e.experienceLandingSlug,
+          slug: documentSlug,
+        })
+      : enquireSmart
+        ? resolveSmartLinkOrLegacy(enquireSmart, undefined, {
+            label: enquireLabel,
+            href: waFallback,
+            openInNewTab: true,
+          }).href
+        : waFallback
+    const priceKind: RoutesExpCardStatic['priceKind'] = priceLabel ? 'custom' : hasSellingPrice ? 'amount' : 'enquire'
+    out.push({
+      href,
+      route,
+      imageSrc,
+      imageAlt: name,
+      typePill: typePillLabel(e.programType),
+      duration: e.duration?.trim() || '',
+      routeLine: routeLineLabel(route),
+      name,
+      description: e.shortDescription?.trim() || e.tagline?.trim() || '',
+      priceKind,
+      priceText: priceLabel || (hasSellingPrice ? String(e.price) : undefined),
+    })
+  }
+  return out.length ? out : null
+}
+
 function mapExpCards(cards: RoutesPageSanityExpCard[] | null | undefined): RoutesExpCardStatic[] | null {
   if (!Array.isArray(cards) || cards.length === 0) return null
   const out: RoutesExpCardStatic[] = []
   for (const c of cards) {
-    const href = c.href?.trim()
     const name = c.name?.trim()
     const imageSrc = c.imageUrl?.trim()
-    if (!href || !name || !imageSrc || !isRouteKey(c.routeKey)) continue
+    if (!name || !imageSrc || !isRouteKey(c.routeKey)) continue
+    const staticCard = fallbackExpCards.find((x) => x.name === name && x.route === c.routeKey)
+    const legacyHref = c.href?.trim() ?? ''
+    const fbHref = staticCard?.href ?? legacyHref
+    const resolved = resolveSmartLinkOrLegacy(
+      c.hrefSmartLink,
+      { label: name, href: c.href, openInNewTab: false },
+      { label: name, href: fbHref, openInNewTab: false },
+    )
+    const href = resolved.href?.trim()
+    if (!href) continue
     const pk = isPriceKind(c.priceKind) ? c.priceKind : 'enquire'
     out.push({
       href,
@@ -397,11 +491,27 @@ export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPa
     eyebrow: trimOr(fallbackExperiencesSection.eyebrow, cms?.experiencesEyebrow),
     h2: trimOr(fallbackExperiencesSection.h2, cms?.experiencesH2),
     intro: trimOr(fallbackExperiencesSection.intro, cms?.experiencesIntro),
-    allExperiencesHref: trimOr(fallbackExperiencesSection.allExperiencesHref, cms?.experiencesAllHref),
-    allExperiencesLabel: trimOr(fallbackExperiencesSection.allExperiencesLabel, cms?.experiencesAllLabel),
+    ...(() => {
+      const resolved = resolveSmartLinkOrLegacy(
+        cms?.experiencesAllSmartLink,
+        { label: cms?.experiencesAllLabel, href: cms?.experiencesAllHref, openInNewTab: false },
+        {
+          label: fallbackExperiencesSection.allExperiencesLabel,
+          href: fallbackExperiencesSection.allExperiencesHref,
+          openInNewTab: false,
+        },
+      )
+      return { allExperiencesHref: resolved.href, allExperiencesLabel: resolved.label }
+    })(),
   }
   const expFilters = mapExpFilters(cms?.experiencesFilters) ?? fallbackExpFilters
-  const expCards = mapExpCards(cms?.experienceCards ?? null) ?? fallbackExpCards
+  const selectedExperienceCards = mapExperienceRefsToCards(cms?.selectedExperiences ?? null)
+  const allExperienceCards = mapExperienceRefsToCards(cms?.allExperiences ?? null)
+  const expCards =
+    selectedExperienceCards ??
+    (cms?.fallbackToAllExperiences !== false ? allExperienceCards : null) ??
+    mapExpCards(cms?.experienceCards ?? null) ??
+    fallbackExpCards
 
   const fqFromCms = (cms?.reviewsFeaturedQuotes ?? [])
     .map((q) => {

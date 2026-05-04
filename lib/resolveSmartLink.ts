@@ -41,7 +41,8 @@ function sanitizeSectionId(raw: string | null | undefined): string {
   return t.replace(/[^a-zA-Z0-9_-]/g, '')
 }
 
-function isExternalHref(href: string): boolean {
+/** True when the app should treat `href` as leaving the site or opening in a new tab by default. */
+export function isExternalHref(href: string): boolean {
   return (
     /^https?:\/\//i.test(href) ||
     href.startsWith('mailto:') ||

@@ -45,6 +45,11 @@ export const lodgeSoqtapataExperienceCardDefaults = {
   priceCurrencyPrefix: 'USD ',
 } as const
 
+/** Cuando el documento `experience.slug` no coincide con la landing `experiencePage` publicada. */
+export const EXPERIENCE_DOCUMENT_SLUG_TO_PUBLIC_SLUG: Record<string, string> = {
+  'soqtapata-pristine-immersion-3d-2n': 'soqtapata-pristine-immersion',
+}
+
 /** Bloque reseñas — alineado a `ReviewsSection` + enlace “ver todas”. */
 export function formatCommonAreaGalleryAltFallback(indexZeroBased: number): string {
   return `Area ${indexZeroBased + 1}`

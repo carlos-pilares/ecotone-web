@@ -5,7 +5,7 @@
 import { aboutPartnersCopy, aboutPartnersFallback, aboutSeoFallback, aboutStatic } from '@/data/aboutStatic'
 import type { AboutPageSanityDoc } from '@/lib/aboutPageQuery'
 import type { PartnerDoc } from '@/lib/queries'
-import { resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
+import { isExternalHref, resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
 
 function trimOr(fallback: string, v?: string | null) {
   const t = v?.trim()
@@ -129,7 +129,7 @@ export type AboutPageResolved = {
     ctas: Array<{
       label: string
       href: string
-      variant: 'primary' | 'secondary' | 'ghost'
+      variant: 'primary' | 'secondary' | 'ghost' | 'whatsapp'
       external: boolean
     }>
     trust: Array<{ key: string; text: string; icon: 'check' | 'shield' | 'heart' }>
@@ -329,17 +329,46 @@ export function resolveAboutPageData(
   }))
   if (Array.isArray(finalButtonsCms) && finalButtonsCms.length > 0) {
     const mapped = finalButtonsCms
-      .map((b) => {
-        const label = b.label?.trim()
-        const href = b.href?.trim()
-        const variantRaw = b.variant?.trim()
+      .map((b, i) => {
+        const fbBtn = fb.finalCta.ctas[i] ?? fb.finalCta.ctas[fb.finalCta.ctas.length - 1]
+        const resolved = resolveSmartLinkOrLegacy(
+          b.smartLink,
+          { label: b.label, href: b.href, openInNewTab: b.openInNewTab },
+          { label: fbBtn.label, href: fbBtn.href, openInNewTab: fbBtn.external },
+        )
+        const label = resolved.label?.trim()
+        const href = resolved.href?.trim()
         if (!label || !href) return null
-        const openInNew = b.openInNewTab === true
-        if (variantRaw === 'whatsapp') {
-          return { label, href, variant: 'ghost' as const, external: true }
+
+        const smartHasLabel = Boolean(b.smartLink?.label?.trim())
+        const smartWa = smartHasLabel && b.smartLink?.linkType === 'whatsapp'
+        const legacyWa = b.variant?.trim() === 'whatsapp'
+        const looksLikeWa = /wa\.me\//i.test(href)
+        const useWhatsappStyle = smartWa || legacyWa || looksLikeWa
+
+        let variant: 'primary' | 'secondary' | 'ghost' | 'whatsapp'
+        if (useWhatsappStyle) {
+          variant = 'whatsapp'
+        } else if (smartHasLabel) {
+          const vr = b.variant?.trim()
+          variant = vr === 'secondary' ? 'secondary' : 'primary'
+        } else {
+          const variantRaw = b.variant?.trim()
+          if (variantRaw === 'whatsapp') {
+            variant = 'whatsapp'
+          } else if (variantRaw === 'secondary') {
+            variant = 'secondary'
+          } else if (variantRaw === 'ghost') {
+            variant = 'ghost'
+          } else {
+            variant = 'primary'
+          }
         }
-        const variant = variantRaw === 'secondary' ? ('secondary' as const) : ('primary' as const)
-        return { label, href, variant, external: openInNew }
+
+        const external =
+          variant === 'whatsapp' || resolved.openInNewTab === true || isExternalHref(href)
+
+        return { label, href, variant, external }
       })
       .filter((x): x is NonNullable<typeof x> => x != null)
     if (mapped.length > 0) ctas = mapped
