@@ -314,6 +314,7 @@ function buildLodgePageDoc(includeExperience: boolean) {
     _type: 'lodgePage',
     _id: LODGE_PAGE_DOCUMENT_ID,
     internalTitle: 'Soqtapata Lodge — landing',
+    /** Must match app route `/lodges/soqtapata-lodge` — unique among `lodgePage` only (library `lodge` may reuse the same segment). */
     slug: { _type: 'slug', current: 'soqtapata-lodge' },
     lodge: { _type: 'reference', _ref: LODGE_DOCUMENT_ID },
     seo: {

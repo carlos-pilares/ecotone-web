@@ -103,7 +103,24 @@ export const routesPageRouteCard = defineType({
       rows: 2,
       description: 'Small HTML allowed (e.g. <strong>, <span class="routes-price-enquire">).',
     }),
-    defineField({name: 'cta', title: 'CTA', type: 'linkWithLabel', validation: (Rule) => Rule.required()}),
+    defineField({
+      name: 'ctaSmartLink',
+      title: 'CTA link selector',
+      type: 'smartLink',
+      description: 'Primary control for the card button. Smart link overrides legacy label + URL below.',
+    }),
+    defineField({
+      name: 'cta',
+      title: 'CTA (legacy fallback)',
+      type: 'object',
+      hidden: ({parent}) => Boolean(parent?.ctaSmartLink?.label?.trim()),
+      fields: [
+        defineField({name: 'label', title: 'Button label', type: 'string'}),
+        defineField({name: 'href', title: 'URL or path (legacy)', type: 'string'}),
+        defineField({name: 'openInNewTab', title: 'Open in new tab', type: 'boolean', initialValue: false}),
+      ],
+      description: 'Used when no link selector is set. Smart link overrides legacy URL.',
+    }),
     defineField({
       name: 'ctaButtonVariant',
       title: 'CTA button style',
@@ -112,6 +129,14 @@ export const routesPageRouteCard = defineType({
       initialValue: 'secondary',
     }),
   ],
+  validation: (Rule) =>
+    Rule.custom((card) => {
+      if (!card || typeof card !== 'object') return true
+      if (card.ctaSmartLink?.label?.trim()) return true
+      const c = card.cta
+      if (c?.label?.trim() && c?.href?.trim()) return true
+      return 'Add CTA smart link (recommended) or legacy button label + URL'
+    }),
   preview: {
     select: {name: 'name', variant: 'variant'},
     prepare: ({name, variant}) => ({title: name || 'Route', subtitle: variant}),
@@ -186,11 +211,22 @@ export const routesPageExpCard = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'hrefSmartLink',
+      title: 'Card link (recommended)',
+      type: 'smartLink',
+      description: 'Smart link overrides legacy href below (card title is used as fallback label).',
+    }),
+    defineField({
       name: 'href',
-      title: 'Link (path or URL)',
+      title: 'Link path or URL (legacy)',
       type: 'string',
       description: 'e.g. /experiences/soqtapata-pristine-immersion',
-      validation: (Rule) => Rule.required(),
+      hidden: ({parent}) => Boolean(parent?.hrefSmartLink?.label?.trim()),
+      validation: (Rule) =>
+        Rule.custom((href, ctx) => {
+          if (ctx.parent?.hrefSmartLink?.label?.trim()) return true
+          return href?.trim() ? true : 'Required when no smart link is set'
+        }),
     }),
     defineField({name: 'image', title: 'Image', type: 'image', options: {hotspot: true}, validation: (Rule) => Rule.required()}),
     defineField({name: 'imageAlt', title: 'Image alt', type: 'string'}),
@@ -214,6 +250,13 @@ export const routesPageExpCard = defineType({
     }),
     defineField({name: 'priceText', title: 'Price / custom text', type: 'string'}),
   ],
+  validation: (Rule) =>
+    Rule.custom((card) => {
+      if (!card || typeof card !== 'object') return true
+      if (card.hrefSmartLink?.label?.trim()) return true
+      if (card.href?.trim()) return true
+      return 'Add smart link or legacy href'
+    }),
   preview: {
     select: {name: 'name', routeKey: 'routeKey'},
     prepare: ({name, routeKey}) => ({title: name, subtitle: routeKey}),

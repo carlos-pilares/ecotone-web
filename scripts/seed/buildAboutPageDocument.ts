@@ -8,6 +8,7 @@ import { CMS_IDS } from '@/data/cmsApproved/ids'
 import { partnerSeeds } from '@/data/cmsApproved/librarySeeds'
 import { aboutPartnersCopy, aboutSeoFallback, aboutStatic } from '@/data/aboutStatic'
 
+import { parseWaMeHref } from './parseWaMeHref'
 import { createUrlImageCache } from './urlImageCache'
 
 type UrlImageCache = ReturnType<typeof createUrlImageCache>
@@ -94,14 +95,36 @@ export async function buildAboutPageDocument(client: SanityClient, imageCache?: 
     _key: `pref-${i}`,
   }))
 
-  const finalButtons = fb.finalCta.ctas.map((c, i) => ({
-    ...k(`fb-${i}`),
-    _type: 'aboutPageCtaButton' as const,
-    label: c.label,
-    href: c.href,
-    variant: c.external && c.variant === 'ghost' ? ('whatsapp' as const) : c.variant === 'secondary' ? ('secondary' as const) : ('primary' as const),
-    openInNewTab: c.external === true,
-  }))
+  const finalButtons = fb.finalCta.ctas.map((c, i) => {
+    const isWa = c.external && c.variant === 'ghost'
+    const variant = isWa ? ('whatsapp' as const) : c.variant === 'secondary' ? ('secondary' as const) : ('primary' as const)
+    const waParsed = isWa ? parseWaMeHref(c.href) : null
+    const smartLink = isWa && waParsed
+      ? ({
+          _type: 'smartLink' as const,
+          label: c.label,
+          linkType: 'whatsapp' as const,
+          whatsappNumber: waParsed.number,
+          ...(waParsed.message ? {whatsappMessage: waParsed.message} : {}),
+          openInNewTab: true,
+        } as const)
+      : ({
+          _type: 'smartLink' as const,
+          label: c.label,
+          linkType: 'internalPage' as const,
+          internalPage: 'experiencesIndex' as const,
+          openInNewTab: false,
+        } as const)
+    return {
+      ...k(`fb-${i}`),
+      _type: 'aboutPageCtaButton' as const,
+      smartLink,
+      label: c.label,
+      href: c.href,
+      variant,
+      openInNewTab: c.external === true,
+    }
+  })
 
   const finalTrustItems = fb.finalCta.trust.map((t, i) => ({
     ...k(`ft-${i}`),

@@ -42,22 +42,22 @@ import {
 } from '@/data/routesStatic'
 import type { RoutesCompareRow } from '@/data/routesStatic'
 
+import { parseWaMeHref } from './parseWaMeHref'
 import { createUrlImageCache } from './urlImageCache'
+
+/** Canonical origin for `externalUrl` smart links seeded from relative paths (matches approved nav URLs). */
+const SMART_SEED_SITE_ORIGIN = 'https://www.ecotone.eco'
+
+function absUrlForSmartSeed(pathOrUrl: string): string {
+  const t = pathOrUrl.trim()
+  if (/^https?:\/\//i.test(t)) return t
+  return new URL(t, SMART_SEED_SITE_ORIGIN).href
+}
 
 type UrlImageCache = ReturnType<typeof createUrlImageCache>
 
 function k(n: string) {
   return { _key: n }
-}
-
-/** Derive `whatsappNumber` / prefilled message from a `https://wa.me/…` href (same as legacy seed). */
-function parseWaMeHref(href: string): { number: string; message?: string } {
-  const u = new URL(href)
-  const number = u.pathname.replace(/\D/g, '')
-  if (!number) throw new Error(`[buildRoutesPageDocument] wa.me href has no number: ${href}`)
-  const text = u.searchParams.get('text')
-  const message = text && text.trim() ? text : undefined
-  return { number, ...(message ? { message } : {}) }
 }
 
 /** Evita `undefined` en JSON: Content Lake puede descartar nodos padre si hay valores inválidos. */
@@ -177,8 +177,14 @@ export async function buildRoutesPageDocument(client: SanityClient, imageCache?:
     description: c.description,
     chips: c.chips,
     footPriceHtml: c.footPriceHtml,
+    ctaSmartLink: {
+      _type: 'smartLink' as const,
+      label: c.cta.label,
+      linkType: 'externalUrl' as const,
+      externalUrl: absUrlForSmartSeed(c.cta.href),
+      openInNewTab: false,
+    },
     cta: {
-      _type: 'linkWithLabel' as const,
       label: c.cta.label,
       href: c.cta.href,
       openInNewTab: false,
@@ -190,6 +196,13 @@ export async function buildRoutesPageDocument(client: SanityClient, imageCache?:
     ...k(`ex-${i}`),
     _type: 'routesPageExpCard' as const,
     routeKey: c.route,
+    hrefSmartLink: {
+      _type: 'smartLink' as const,
+      label: c.name,
+      linkType: 'externalUrl' as const,
+      externalUrl: absUrlForSmartSeed(c.href),
+      openInNewTab: false,
+    },
     href: c.href,
     image: expCardImages[i],
     imageAlt: c.imageAlt,

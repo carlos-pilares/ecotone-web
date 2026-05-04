@@ -101,16 +101,44 @@ export const aboutPageStat = defineType({
   },
 })
 
+const hasSmartLabel = (parent) => Boolean(parent?.smartLink?.label?.trim())
+
 export const aboutPageCtaButton = defineType({
   name: 'aboutPageCtaButton',
   title: 'Button',
   type: 'object',
   fields: [
-    defineField({name: 'label', title: 'Label', type: 'string', validation: (Rule) => Rule.required()}),
-    defineField({name: 'href', title: 'URL or path', type: 'string', validation: (Rule) => Rule.required()}),
+    defineField({
+      name: 'smartLink',
+      title: 'Link selector',
+      type: 'smartLink',
+      description: 'Primary control for this button. Smart link overrides legacy URL and label below.',
+    }),
+    defineField({
+      name: 'label',
+      title: 'Label (legacy fallback)',
+      type: 'string',
+      hidden: hasSmartLabel,
+      validation: (Rule) =>
+        Rule.custom((label, ctx) => {
+          if (hasSmartLabel(ctx.parent)) return true
+          return label?.trim() ? true : 'Required when no smart link is set'
+        }),
+    }),
+    defineField({
+      name: 'href',
+      title: 'URL or path (legacy fallback)',
+      type: 'string',
+      hidden: hasSmartLabel,
+      validation: (Rule) =>
+        Rule.custom((href, ctx) => {
+          if (hasSmartLabel(ctx.parent)) return true
+          return href?.trim() ? true : 'Required when no smart link is set'
+        }),
+    }),
     defineField({
       name: 'variant',
-      title: 'Variant',
+      title: 'Variant (legacy styling hint)',
       type: 'string',
       options: {
         list: [
@@ -122,12 +150,16 @@ export const aboutPageCtaButton = defineType({
       },
       initialValue: 'primary',
       validation: (Rule) => Rule.required(),
+      description: 'Used when smart link does not imply WhatsApp. Smart link type WhatsApp overrides to green.',
     }),
-    defineField({name: 'openInNewTab', title: 'Open in new tab', type: 'boolean', initialValue: false}),
+    defineField({name: 'openInNewTab', title: 'Open in new tab (legacy)', type: 'boolean', initialValue: false}),
   ],
   preview: {
-    select: {label: 'label', variant: 'variant'},
-    prepare: ({label, variant}) => ({title: label || 'Button', subtitle: variant}),
+    select: {label: 'label', sl: 'smartLink.label', variant: 'variant'},
+    prepare: ({label, sl, variant}) => ({
+      title: (sl && String(sl).trim()) || label || 'Button',
+      subtitle: sl ? 'Smart link' : variant,
+    }),
   },
 })
 

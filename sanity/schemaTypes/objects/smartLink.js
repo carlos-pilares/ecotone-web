@@ -18,8 +18,9 @@ const showInternal = ({parent}) =>
 
 export const smartLink = defineType({
   name: 'smartLink',
-  title: 'Smart link',
+  title: 'Link selector',
   type: 'object',
+  description: 'Smart link overrides legacy URL when a label is set.',
   fields: [
     defineField({
       name: 'label',

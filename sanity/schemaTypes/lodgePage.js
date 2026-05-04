@@ -1,5 +1,6 @@
 import {defineField, defineType} from 'sanity'
 import {StudioLodgePageTabField} from '../components/lodgePageStudio/StudioLodgePageTabField'
+import {isLodgePageSlugUnique} from '../lib/isLodgePageSlugUnique'
 
 const imgHot = {hotspot: true}
 
@@ -55,8 +56,22 @@ export const lodgePage = defineType({
       title: 'Slug / URL',
       type: 'slug',
       group: 'general',
-      options: {source: 'internalTitle', maxLength: 96},
-      validation: (Rule) => Rule.required(),
+      options: {
+        source: 'internalTitle',
+        maxLength: 96,
+        isUnique: isLodgePageSlugUnique,
+      },
+      description:
+        'Path segment for `/lodges/{slug}`. Lowercase letters, numbers, hyphens. Unique only among **Lodge page** documents (not Lodges library or other types).',
+      validation: (Rule) =>
+        Rule.required().custom((value) => {
+          const cur = value?.current?.trim()
+          if (!cur) return 'Slug is required'
+          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(cur)) {
+            return 'Use lowercase letters, numbers, and hyphens only (e.g. soqtapata-lodge)'
+          }
+          return true
+        }),
     }),
     defineField({
       name: 'lodge',
