@@ -1,13 +1,12 @@
-import {defineField, defineType} from 'sanity'
+import {defineArrayMember, defineField, defineType} from 'sanity'
+import {RoomStableIdSelectInput} from '../components/lodge/RoomStableIdSelectInput'
 
 const imgHot = {hotspot: true}
 
-const GALLERY_CATEGORY = [
-  {title: 'Room', value: 'room'},
-  {title: 'Common', value: 'common'},
-  {title: 'Wildlife', value: 'wildlife'},
-  {title: 'Research', value: 'research'},
-  {title: 'Journey', value: 'journey'},
+const GALLERY_USAGE_SECTION = [
+  {title: 'Hero', value: 'hero'},
+  {title: 'Accommodation', value: 'accommodation'},
+  {title: 'Common areas & amenities', value: 'commonAreas'},
 ]
 
 /** IDs alineables con iconos del front (p. ej. LodgeFacilities). */
@@ -211,17 +210,30 @@ export const lodge = defineType({
         }),
     }),
 
-    // --- Global gallery ---
+    // --- Global gallery (single source of truth for lodge images) ---
     defineField({
       name: 'gallery',
       title: 'Global gallery',
       type: 'array',
       group: 'gallery',
+      description:
+        'Upload each photo once here. Rooms and common areas pick from this list by **stable key** — do not duplicate uploads on room/common rows.',
       of: [
         {
           type: 'object',
           name: 'lodgeGalleryItem',
           fields: [
+            defineField({
+              name: 'stableKey',
+              title: 'Stable key',
+              type: 'string',
+              description: 'Unique within this lodge (e.g. hero-0, room-private-cottage-1). Used by rooms / common areas to reference this row.',
+              validation: (Rule) =>
+                Rule.required().regex(/^[a-z0-9][a-z0-9-]*$/, {
+                  name: 'slug-like',
+                  invert: false,
+                }),
+            }),
             defineField({
               name: 'image',
               title: 'Image',
@@ -243,20 +255,71 @@ export const lodge = defineType({
               validation: (Rule) => Rule.max(500),
             }),
             defineField({
-              name: 'category',
-              title: 'Category',
+              name: 'alt',
+              title: 'Alt text',
               type: 'string',
-              options: {list: GALLERY_CATEGORY, layout: 'dropdown'},
+              description: 'Accessibility; falls back to title if empty.',
+              validation: (Rule) => Rule.max(200),
+            }),
+            defineField({
+              name: 'usageSection',
+              title: 'Usage section',
+              type: 'string',
+              options: {list: GALLERY_USAGE_SECTION, layout: 'radio'},
               validation: (Rule) => Rule.required(),
+            }),
+            defineField({
+              name: 'roomStableId',
+              title: 'Room stable ID',
+              type: 'string',
+              components: {input: RoomStableIdSelectInput},
+              hidden: ({parent}) => parent?.usageSection !== 'accommodation',
+              description: 'Required only when Usage section is Accommodation.',
+              validation: (Rule) =>
+                Rule.custom((val, ctx) => {
+                  const section = ctx.parent?.usageSection
+                  const roomId = val?.trim()
+                  if (section !== 'accommodation') return true
+                  if (!roomId) return 'Room stable ID is required for Accommodation photos'
+                  const stableIds = new Set((ctx.document?.rooms ?? []).map((r) => r?.stableId).filter(Boolean))
+                  if (stableIds.size > 0 && !stableIds.has(roomId)) {
+                    return `Room stable ID must match one of lodge.rooms[].stableId (${Array.from(stableIds).join(', ')})`
+                  }
+                  return /^[a-z0-9][a-z0-9-]*$/.test(roomId) ? true : 'Use slug-like format'
+                }),
+            }),
+            defineField({
+              name: 'category',
+              title: 'Category (legacy)',
+              type: 'string',
+              hidden: true,
+            }),
+            defineField({
+              name: 'relatedRoomStableId',
+              title: 'Related room (legacy)',
+              type: 'string',
+              hidden: true,
+            }),
+            defineField({
+              name: 'relatedCommonAreaKey',
+              title: 'Related common area key (legacy)',
+              type: 'string',
+              hidden: true,
             }),
           ],
           preview: {
-            select: {t: 'title', media: 'image', cat: 'category'},
-            prepare: ({t, media, cat}) => ({title: t, subtitle: cat, media}),
+            select: {sk: 'stableKey', t: 'title', media: 'image', use: 'usageSection'},
+            prepare: ({sk, t, media, use}) => ({title: sk ? `${sk} · ${t}` : t, subtitle: use, media}),
           },
         },
       ],
-      validation: (Rule) => Rule.max(60),
+      validation: (Rule) =>
+        Rule.max(60).custom((rows) => {
+          if (!rows?.length) return true
+          const keys = rows.map((r) => r?.stableKey).filter(Boolean)
+          if (keys.length !== new Set(keys).size) return 'Each gallery row needs a unique stable key'
+          return true
+        }),
     }),
 
     // --- Accommodation ---
@@ -307,9 +370,52 @@ export const lodge = defineType({
               validation: (Rule) => Rule.max(12),
             }),
             defineField({
-              name: 'gallery',
-              title: 'Gallery',
+              name: 'galleryItemKeys',
+              title: 'Gallery photos (legacy picks)',
               type: 'array',
+              hidden: true,
+              description: 'Legacy fallback. New workflow uses Global gallery usageSection + roomStableId.',
+              of: [
+                defineArrayMember({
+                  type: 'object',
+                  name: 'lodgeRoomGalleryPick',
+                  fields: [
+                    defineField({
+                      name: 'galleryStableKey',
+                      title: 'Gallery stable key',
+                      type: 'string',
+                      validation: (Rule) =>
+                        Rule.required().regex(/^[a-z0-9][a-z0-9-]*$/, {
+                          name: 'slug-like',
+                          invert: false,
+                        }),
+                    }),
+                  ],
+                  preview: {
+                    select: {k: 'galleryStableKey'},
+                    prepare: ({k}) => ({title: k || 'Pick'}),
+                  },
+                }),
+              ],
+              validation: (Rule) =>
+                Rule.max(24).custom((picks, ctx) => {
+                  const doc = ctx.document
+                  const gKeys = new Set((doc?.gallery ?? []).map((g) => g?.stableKey).filter(Boolean))
+                  if (!Array.isArray(picks) || picks.length === 0) return true
+                  if (!gKeys.size) return 'Add **Global gallery** rows with stable keys before picking photos here'
+                  for (const p of picks) {
+                    const k = p?.galleryStableKey?.trim()
+                    if (k && !gKeys.has(k)) return `Unknown gallery stable key: ${k}`
+                  }
+                  return true
+                }),
+            }),
+            defineField({
+              name: 'gallery',
+              title: 'Gallery (legacy — uploads)',
+              type: 'array',
+              hidden: ({parent}) => Array.isArray(parent?.galleryItemKeys) && parent.galleryItemKeys.length > 0,
+              description: 'Deprecated: add photos to **Global gallery** and pick them above. Hidden when picks are set.',
               of: [
                 {
                   type: 'object',
@@ -372,11 +478,44 @@ export const lodge = defineType({
           name: 'lodgeCommonArea',
           fields: [
             defineField({
+              name: 'stableKey',
+              title: 'Stable key',
+              type: 'string',
+              hidden: true,
+              description: 'Id for this row (e.g. terrace). Links from gallery `relatedCommonAreaKey`.',
+              validation: (Rule) =>
+                Rule.custom((val, ctx) => {
+                  const parent = ctx.parent
+                  const usePick = Boolean(parent?.galleryStableKey?.trim())
+                  if (!usePick && (val == null || String(val).trim() === '')) return true
+                  if (usePick && (val == null || String(val).trim() === '')) return 'Required when using a gallery pick'
+                  const t = String(val).trim()
+                  return /^[a-z0-9][a-z0-9-]*$/.test(t) || 'Slug-like key'
+                }),
+            }),
+            defineField({
+              name: 'galleryStableKey',
+              title: 'Photo (Global gallery stable key)',
+              type: 'string',
+              hidden: true,
+              description: 'Pick an image from **Global gallery** by its stable key. Preferred over uploading here.',
+              validation: (Rule) =>
+                Rule.custom((val, ctx) => {
+                  const doc = ctx.document
+                  const gKeys = new Set((doc?.gallery ?? []).map((g) => g?.stableKey).filter(Boolean))
+                  const k = val?.trim()
+                  if (!k) return true
+                  if (gKeys.size && !gKeys.has(k)) return `Unknown gallery stable key: ${k}`
+                  return true
+                }),
+            }),
+            defineField({
               name: 'image',
-              title: 'Image',
+              title: 'Image (legacy upload)',
               type: 'image',
               options: imgHot,
-              validation: (Rule) => Rule.required(),
+              hidden: true,
+              description: 'Deprecated if you use a Global gallery pick above.',
             }),
             defineField({
               name: 'title',
@@ -393,12 +532,20 @@ export const lodge = defineType({
             }),
           ],
           preview: {
-            select: {t: 'title', media: 'image'},
-            prepare: ({t, media}) => ({title: t, media}),
+            select: {t: 'title', media: 'image', gsk: 'galleryStableKey', sk: 'stableKey'},
+            prepare: ({t, media, gsk, sk}) => ({
+              title: t,
+              subtitle: gsk ? `pick: ${gsk}` : sk || '',
+              media,
+            }),
           },
         },
       ],
-      validation: (Rule) => Rule.max(24),
+      validation: (Rule) =>
+        Rule.max(24).custom((rows) => {
+          if (!rows?.length) return true
+          return true
+        }),
     }),
     defineField({
       name: 'facilitiesGalleryTileAriaPrefix',
