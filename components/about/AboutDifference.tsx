@@ -1,6 +1,6 @@
-import { aboutStatic } from '@/data/aboutStatic'
+import type { AboutPageResolved } from '@/lib/resolveAboutPageData'
 
-type DiffData = (typeof aboutStatic)['difference']
+type DiffData = AboutPageResolved['difference']
 
 const sw = 1.8
 
@@ -42,7 +42,7 @@ function DiffIcon({ kind }: { kind: string }) {
 
 export function AboutDifference({ data }: { data: DiffData }) {
   return (
-    <section className="content-section bg-warm fade" id="different">
+    <section className="content-section bg-warm fade" id={data.sectionId}>
       <div className="content-inner">
         <div className="eyebrow">{data.eyebrow}</div>
         <h2 className="h2 about-diff-h2">{data.headline}</h2>

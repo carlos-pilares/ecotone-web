@@ -12,48 +12,51 @@ import { IsotipoDefs } from '@/components/IsotipoDefs'
 import { PartnersBand } from '@/components/shared/PartnersBand'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
-import { aboutPartnersCopy, aboutPartnersFallback, aboutStatic } from '@/data/aboutStatic'
-import { client } from '@/lib/sanity'
-import { partnersQuery, type PartnerDoc } from '@/lib/queries'
+import { getAboutPage } from '@/lib/getAboutPage'
 
 import '../experiences/experience-surface.css'
 import './about-surface.css'
 
-export const metadata: Metadata = {
-  title: 'About — Ecotone · Cusco, Perú',
-  description:
-    'Regenerative travel in the Manu Biosphere Reserve and Camanti — who we are, why we exist, and how we design immersive nature journeys from Cusco.',
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getAboutPage()
+  const { seo } = page
+  return {
+    title: seo.title,
+    description: seo.description,
+    robots: seo.noIndex ? { index: false, follow: false } : undefined,
+    openGraph: seo.ogImageUrl
+      ? {
+          title: seo.title,
+          description: seo.description,
+          images: [{ url: seo.ogImageUrl }],
+        }
+      : { title: seo.title, description: seo.description },
+  }
 }
 
 export default async function AboutPage() {
-  let partnersFromCms: PartnerDoc[] = []
-  try {
-    partnersFromCms = await client.fetch<PartnerDoc[]>(partnersQuery)
-  } catch {
-    partnersFromCms = []
-  }
-  const partnersForBand = partnersFromCms.length > 0 ? partnersFromCms : aboutPartnersFallback
+  const p = await getAboutPage()
 
   return (
     <EcotoneV2Client>
       <div className="about-page">
         <IsotipoDefs />
         <SiteHeader />
-        <AboutHero data={aboutStatic.hero} />
-        <AboutWho data={aboutStatic.who} />
-        <AboutWhy data={aboutStatic.why} />
-        <AboutDifference data={aboutStatic.difference} />
-        <AboutWay data={aboutStatic.way} />
-        <AboutPeople data={aboutStatic.people} />
-        <AboutProof data={aboutStatic.proof} />
+        <AboutHero data={p.hero} />
+        <AboutWho data={p.who} />
+        <AboutWhy data={p.why} />
+        <AboutDifference data={p.difference} />
+        <AboutWay data={p.way} />
+        <AboutPeople data={p.people} />
+        <AboutProof data={p.proof} />
         <PartnersBand
-          label={aboutPartnersCopy.label}
-          body={aboutPartnersCopy.body}
-          partners={partnersForBand}
-          partnerNameFallback={aboutPartnersCopy.partnerNameFallback}
-          emptyMessage={aboutPartnersCopy.emptyMessage}
+          label={p.partnersBand.label}
+          body={p.partnersBand.body}
+          partners={p.partnersBand.partners}
+          partnerNameFallback={p.partnersBand.partnerNameFallback}
+          emptyMessage={p.partnersBand.emptyMessage}
         />
-        <AboutFinalCta data={aboutStatic.finalCta} />
+        <AboutFinalCta data={p.finalCta} />
         <SiteFooter />
       </div>
     </EcotoneV2Client>

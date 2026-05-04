@@ -1,10 +1,10 @@
-import { aboutStatic } from '@/data/aboutStatic'
+import type { AboutPageResolved } from '@/lib/resolveAboutPageData'
 
-type WhyData = (typeof aboutStatic)['why']
+type WhyData = AboutPageResolved['why']
 
 export function AboutWhy({ data }: { data: WhyData }) {
   return (
-    <section className="content-section bg-dark fade" id="why">
+    <section className="content-section bg-dark fade" id={data.sectionId}>
       <div className="content-inner">
         <div className="why-inner">
           <div className="eyebrow eyebrow-lt about-eyebrow-center">{data.eyebrow}</div>

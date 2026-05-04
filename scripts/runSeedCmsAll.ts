@@ -4,7 +4,7 @@ seedCmsAll()
   .then(() => {
     // eslint-disable-next-line no-console
     console.log(
-      'seed:cms — OK (siteSettings, homePage+images, routesPage, partners, blog, tech, route, lodge, experience+gallery+itinerary images, reviews, experiencePage; no payloadV1)',
+      'seed:cms — OK (siteSettings, homePage+images, aboutPage, routesPage, partners, blog, tech, route, lodge, experience+gallery+itinerary images, reviews, experiencePage; no payloadV1)',
     )
   })
   .catch((e) => {

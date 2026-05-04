@@ -1,10 +1,10 @@
-import { aboutStatic } from '@/data/aboutStatic'
+import type { AboutPageResolved } from '@/lib/resolveAboutPageData'
 
-type WhoData = (typeof aboutStatic)['who']
+type WhoData = AboutPageResolved['who']
 
 export function AboutWho({ data }: { data: WhoData }) {
   return (
-    <section className="content-section fade" id="who">
+    <section className="content-section fade" id={data.sectionId}>
       <div className="content-inner">
         <div className="who-grid">
           <div className="who-img">

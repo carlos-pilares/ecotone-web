@@ -1,10 +1,10 @@
-import { aboutStatic } from '@/data/aboutStatic'
+import type { AboutPageResolved } from '@/lib/resolveAboutPageData'
 
-type ProofData = (typeof aboutStatic)['proof']
+type ProofData = AboutPageResolved['proof']
 
 export function AboutProof({ data }: { data: ProofData }) {
   return (
-    <section className="content-section bg-dark fade" id="proof">
+    <section className="content-section bg-dark fade" id={data.sectionId}>
       <div className="content-inner">
         <div className="eyebrow eyebrow-lt">{data.eyebrow}</div>
         <h2 className="about-proof-h2">{data.headline}</h2>

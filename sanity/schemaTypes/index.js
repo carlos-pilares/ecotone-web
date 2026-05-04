@@ -17,6 +17,15 @@ import {pageModule} from './objects/pageModule'
 import {reviewsLayoutBlock} from './objects/reviewsLayoutBlock'
 import {seo} from './objects/seo'
 import {
+  aboutPageParagraph,
+  aboutPagePill,
+  aboutPageDiffCard,
+  aboutPagePerson,
+  aboutPageStat,
+  aboutPageCtaButton,
+  aboutPageTrustItem,
+} from './objects/aboutPageObjects'
+import {
   routesPageStatLine,
   routesPageTerritoryStripChip,
   routesPageRouteBadge,
@@ -40,6 +49,7 @@ import {experience} from './experience'
 import {experiencePage} from './experiencePage'
 import {homePage} from './homePage'
 import {routesPage} from './routesPage'
+import {aboutPage} from './aboutPage'
 import {lodge} from './lodge'
 import {lodgePage} from './lodgePage'
 import {partner} from './partner'
@@ -73,6 +83,13 @@ const objects = [
   routesPageExpCard,
   routesPageFeaturedQuote,
   routesPageTrustItem,
+  aboutPageParagraph,
+  aboutPagePill,
+  aboutPageDiffCard,
+  aboutPagePerson,
+  aboutPageStat,
+  aboutPageCtaButton,
+  aboutPageTrustItem,
   routesCompareLodgeCell,
   routesComparePriceCell,
   routesCompareRowText,
@@ -95,6 +112,7 @@ const documents = [
   partner,
   homePage,
   routesPage,
+  aboutPage,
 ]
 
 export const schema = {

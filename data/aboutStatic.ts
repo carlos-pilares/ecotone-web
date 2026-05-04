@@ -17,6 +17,15 @@ export const aboutPartnersCopy = {
   emptyMessage: null as string | null,
 }
 
+/** Default SEO when `aboutPage.seo` is empty or fetch fails. */
+export const aboutSeoFallback = {
+  title: 'About — Ecotone · Cusco, Perú',
+  description:
+    'Regenerative travel in the Manu Biosphere Reserve and Camanti — who we are, why we exist, and how we design immersive nature journeys from Cusco.',
+  noIndex: false as boolean,
+  ogImageUrl: null as string | null,
+}
+
 export const aboutStatic = {
   hero: {
     eyebrow: 'Manu & Camanti · Cusco, Perú',
@@ -31,6 +40,7 @@ export const aboutStatic = {
     imageAlt: 'Ecotone — Andes to Amazon, Perú',
   },
   who: {
+    sectionId: 'who',
     eyebrow: 'Who we are',
     headline: "A regenerative travel company in Peru's most biodiverse landscapes.",
     paragraphs: [
@@ -42,12 +52,14 @@ export const aboutStatic = {
     pills: ['Camanti Route', 'Manu Road', 'Manu Core', '3 routes · 4 lodges'],
   },
   why: {
+    sectionId: 'why',
     eyebrow: 'Why we exist',
     headlineLines: ['Because nature needs more than visitors.', 'It needs allies.'],
     body:
       'We believe travel can help protect the places it depends on — but only when it is designed with care. Ecotone was created to connect meaningful travel with conservation, science, learning, and long-term value for the landscapes and people behind each journey.',
   },
   difference: {
+    sectionId: 'different',
     eyebrow: 'What makes us different',
     headline: 'Four things that shape every journey we create.',
     cards: [
@@ -78,6 +90,7 @@ export const aboutStatic = {
     ],
   },
   way: {
+    sectionId: 'way',
     eyebrow: 'Our way of travelling',
     headline: 'We believe the best journeys are slower, deeper, and more connected.',
     paragraphs: [
@@ -89,6 +102,7 @@ export const aboutStatic = {
     imageAlt: 'Cloud forest — Soqtapata Reserve',
   },
   people: {
+    sectionId: 'people',
     eyebrow: 'The people behind the journey',
     headline: 'Real people, real field experience.',
     intro:
@@ -129,6 +143,7 @@ export const aboutStatic = {
     ],
   },
   proof: {
+    sectionId: 'proof',
     eyebrow: 'A growing platform for regenerative travel',
     headline: 'The work behind every journey.',
     intro:
@@ -168,6 +183,7 @@ export const aboutStatic = {
     ],
   },
   finalCta: {
+    sectionId: 'contact',
     eyebrow: 'Come experience the forest from the inside',
     headline: 'Whether you travel as a family, university, company, or nature lover.',
     body: 'Ecotone helps you go deeper into the landscapes that make Peru extraordinary. Every journey is all-inclusive from Cusco.',

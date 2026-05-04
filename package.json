@@ -9,6 +9,8 @@
     "lint": "eslint",
     "seed": "tsx scripts/seedHomePage.ts",
     "seed:cms": "tsx scripts/runSeedCmsAll.ts",
+    "seed:routes-page": "tsx scripts/seedRoutesPage.ts",
+    "seed:about-page": "tsx scripts/seedAboutPage.ts",
     "seed:site-settings": "tsx scripts/runSeedSiteSettingsOnly.ts",
     "seed:soqtapata-page": "tsx scripts/runSeedCmsAll.ts",
     "clean:experience-page-legacy-fields": "tsx scripts/cleanExperiencePageLegacyFields.ts",

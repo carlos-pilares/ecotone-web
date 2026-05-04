@@ -3,6 +3,8 @@ export const CMS_IDS = {
   homePage: 'homePage',
   /** Singleton `routesPage` (seed + Studio). */
   routesPage: 'routesPage',
+  /** Singleton `aboutPage` (seed + Studio). */
+  aboutPage: 'aboutPage',
   siteSettings: 'siteSettings',
   routeCamanti: 'routeCamanti',
   lodgeSoqtapata: 'lodgeSoqtapata',

@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import { aboutStatic } from '@/data/aboutStatic'
+import type { AboutPageResolved } from '@/lib/resolveAboutPageData'
 
-type FinalData = (typeof aboutStatic)['finalCta']
+type FinalData = AboutPageResolved['finalCta']
 
 function TrustIcon({ kind }: { kind: 'check' | 'shield' | 'heart' }) {
   if (kind === 'check') {
@@ -35,7 +35,7 @@ function WaGlyph() {
 
 export function AboutFinalCta({ data }: { data: FinalData }) {
   return (
-    <section className="content-section bg-parch fade" id="contact">
+    <section className="content-section bg-parch fade" id={data.sectionId}>
       <div className="content-inner about-final-inner">
         <div className="eyebrow about-eyebrow-center">{data.eyebrow}</div>
         <h2 className="h2 about-final-h2">{data.headline}</h2>

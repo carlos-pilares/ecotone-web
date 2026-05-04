@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import { aboutStatic } from '@/data/aboutStatic'
+import type { AboutPageResolved } from '@/lib/resolveAboutPageData'
 
-type HeroData = (typeof aboutStatic)['hero']
+type HeroData = AboutPageResolved['hero']
 
 export function AboutHero({ data }: { data: HeroData }) {
   return (
@@ -23,12 +23,34 @@ export function AboutHero({ data }: { data: HeroData }) {
         </h1>
         <p className="about-hero-tagline fade fade-d2">{data.tagline}</p>
         <div className="about-hero-actions fade fade-d3">
-          <Link href={data.primaryHref} className="btn btn-primary">
-            {data.primaryLabel}
-          </Link>
-          <a href={data.secondaryHref} className="btn btn-ghost-lt">
-            {data.secondaryLabel}
-          </a>
+          {data.primaryOpenInNewTab ? (
+            <a
+              href={data.primaryHref}
+              className="btn btn-primary"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {data.primaryLabel}
+            </a>
+          ) : (
+            <Link href={data.primaryHref} className="btn btn-primary">
+              {data.primaryLabel}
+            </Link>
+          )}
+          {data.secondaryOpenInNewTab ? (
+            <a
+              href={data.secondaryHref}
+              className="btn btn-ghost-lt"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {data.secondaryLabel}
+            </a>
+          ) : (
+            <a href={data.secondaryHref} className="btn btn-ghost-lt">
+              {data.secondaryLabel}
+            </a>
+          )}
         </div>
       </div>
     </section>

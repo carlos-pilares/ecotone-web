@@ -1,10 +1,10 @@
-import { aboutStatic } from '@/data/aboutStatic'
+import type { AboutPageResolved } from '@/lib/resolveAboutPageData'
 
-type PeopleData = (typeof aboutStatic)['people']
+type PeopleData = AboutPageResolved['people']
 
 export function AboutPeople({ data }: { data: PeopleData }) {
   return (
-    <section className="content-section bg-parch fade" id="people">
+    <section className="content-section bg-parch fade" id={data.sectionId}>
       <div className="content-inner">
         <div className="eyebrow">{data.eyebrow}</div>
         <h2 className="h2">{data.headline}</h2>

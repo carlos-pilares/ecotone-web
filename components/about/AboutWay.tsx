@@ -1,10 +1,10 @@
-import { aboutStatic } from '@/data/aboutStatic'
+import type { AboutPageResolved } from '@/lib/resolveAboutPageData'
 
-type WayData = (typeof aboutStatic)['way']
+type WayData = AboutPageResolved['way']
 
 export function AboutWay({ data }: { data: WayData }) {
   return (
-    <section className="content-section fade" id="way">
+    <section className="content-section fade" id={data.sectionId}>
       <div className="content-inner">
         <div className="way-grid">
           <div>

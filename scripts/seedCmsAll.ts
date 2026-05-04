@@ -1,5 +1,5 @@
 /**
- * One-shot seed: siteSettings, homePage (full text + images), Soqtapata experience + experiencePage,
+ * One-shot seed: siteSettings, homePage (full text + images), aboutPage, routesPage, Soqtapata experience + experiencePage,
  * library docs (tech, reviews, partners, blog), shared routes/lodge. No `payloadV1`.
  * Requires SANITY_API_TOKEN and env project/dataset. Does not touch the Next.js app — Studio only.
  */
@@ -26,7 +26,9 @@ import {
 } from '@/data/soqtapataExperienceLocal'
 import { buildSiteSettingsDocument, removeSiteSettingsDraft } from './seed/buildSiteSettingsDocument'
 import { buildHomePageDocument } from './seed/buildHomePageDocument'
+import { buildAboutPageDocument } from './seed/buildAboutPageDocument'
 import { buildRoutesPageDocument } from './seed/buildRoutesPageDocument'
+import { removeAboutPageDraft } from './seed/removeAboutPageDraft'
 import { removeRoutesPageDraft } from './seed/removeRoutesPageDraft'
 import { createUrlImageCache } from './seed/urlImageCache'
 import { writeClient } from './seed/sanityWriteClient.js'
@@ -209,6 +211,7 @@ export async function seedCmsAll() {
   const itineraryDays = await buildItineraryWithImages(cache)
   const blogDocsWithImages = await buildBlogPostsWithTeaserImages(cache)
   const routesPageDoc = await buildRoutesPageDocument(client, cache)
+  const aboutPageDoc = await buildAboutPageDocument(client, cache)
 
   const { overview } = soqtapataPhase2
   const ovPara = overview.paragraphs
@@ -421,9 +424,11 @@ export async function seedCmsAll() {
   for (const b of blogDocsWithImages) {
     tx.createOrReplace(b as any)
   }
-  /** Evita `drafts.routesPage` vacío tapando el publicado en Studio; luego `routesPage` completo. */
+  /** Evita borradores vacíos tapando el publicado en Studio. */
+  await removeAboutPageDraft(client)
   await removeRoutesPageDraft(client)
-  /** Last: references `review` docs created above; images already in shared URL cache. */
+  /** `aboutPage` referencia `partner`; `routesPage` referencia `review` (creados arriba). */
+  tx.createOrReplace(aboutPageDoc as any)
   tx.createOrReplace(routesPageDoc as any)
   await tx.commit()
 }
