@@ -204,6 +204,13 @@ export const experiencePage = defineType({
       initialValue: 'View full lodge page',
       description: 'Texto del botón. Vacío = etiqueta por defecto del sitio.',
     }),
+    defineField({
+      name: 'lodgeCtaSmartLink',
+      title: 'Lodge CTA (smart link)',
+      type: 'smartLink',
+      group: 'lodge',
+      description: 'Overrides lodgePageLink + lodgeCtaLabel when set',
+    }),
     previewField(
       'stPrevWildlife',
       '1. Fuente',

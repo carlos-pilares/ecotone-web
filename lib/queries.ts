@@ -349,6 +349,7 @@ export const soqtapataStructuredPageBySlugQuery = groq`
     includedTechProductIds,
     lodgeCtaLabel,
     "lodgePageSlug": lodgePageLink->slug.current,
+    lodgeCtaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
     relatedSectionEyebrow,
     relatedSectionTitle,
     "relatedRefIds": relatedExperienceRefs[]._ref,

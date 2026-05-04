@@ -6,6 +6,7 @@
 import type { SanityClient } from '@sanity/client'
 
 import { CMS_IDS } from '@/data/cmsApproved/ids'
+import { experiencePageLodgeCtaSeed } from './seed/buildExperiencePageDocument'
 import {
   blogPostSeeds,
   partnerSeeds,
@@ -398,8 +399,7 @@ export async function seedCmsAll() {
     ],
     includedTechProductIds: ['dtech1', 'dtech2'],
     /** Tras `npm run seed:soqtapata-lodge` el destino existe; si no, Studio permite corregir la ref. */
-    lodgePageLink: {_type: 'reference' as const, _ref: CMS_IDS.lodgePageSoqtapata},
-    lodgeCtaLabel: 'View full lodge page',
+    ...experiencePageLodgeCtaSeed,
     sectionModules: buildPageModules(),
   }
 

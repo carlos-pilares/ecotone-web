@@ -51,6 +51,7 @@ export type SoqtapataStructuredPageRow = {
   lodgePageSlug?: string | null
   /** Etiqueta del botón «View full lodge page» en esta landing. */
   lodgeCtaLabel?: string | null
+  lodgeCtaSmartLink?: SmartLinkGroq | null
   experience?: CmsExperience | null
 } | null
 
@@ -298,14 +299,36 @@ function applyExperiencePageLodgeLandingCta(
   local: SoqtapataExperience,
 ): void {
   if (!row) return
-  const rawSlug = row.lodgePageSlug?.trim()
-  const slugOk = rawSlug && LODGE_PAGE_SLUG_SEGMENT.test(rawSlug) ? rawSlug : ''
-  const labelFromRow = row.lodgeCtaLabel?.trim()
-  if (!slugOk && !labelFromRow) return
 
   const base = out.lodge ?? local.lodge
   const hrefDefault = base.card.ctaHref
   const labelDefault = base.card.ctaLabel
+
+  const rawSlug = row.lodgePageSlug?.trim()
+  const slugOk = rawSlug && LODGE_PAGE_SLUG_SEGMENT.test(rawSlug) ? rawSlug : ''
+  const labelFromRow = row.lodgeCtaLabel?.trim()
+  const legacyHref = slugOk ? `/lodges/${slugOk}` : undefined
+  const legacyLabel = labelFromRow || undefined
+
+  // 1) Optional smart link (overrides legacy link + label when set with a label)
+  if (row.lodgeCtaSmartLink?.label?.trim()) {
+    const r = resolveSmartLinkOrLegacy(
+      row.lodgeCtaSmartLink,
+      { label: legacyLabel, href: legacyHref },
+      { label: labelDefault, href: hrefDefault, openInNewTab: false },
+    )
+    out.lodge = {
+      ...base,
+      ctaHref: r.href,
+      ctaLabel: r.label,
+      card: { ...base.card, ctaHref: r.href, ctaLabel: r.label },
+    }
+    return
+  }
+
+  // 2) Legacy lodgePageLink → /lodges/{slug} (validated), 3) static fallback
+  if (!slugOk && !labelFromRow) return
+
   const href = slugOk ? `/lodges/${slugOk}` : hrefDefault
   const label = labelFromRow || labelDefault
   out.lodge = {
