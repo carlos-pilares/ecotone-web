@@ -3,6 +3,8 @@
  * `targetSection` coincide con valores de `sanity/lib/pageModuleShared` (`MODULE_LIST`).
  */
 import type { SoqtapataPhase1NavLink, SoqtapataPhase1PageNav } from '@/data/soqtapataExperienceLocal'
+import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
+import { resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
 
 export type CmsInternalNavItem = {
   _key?: string
@@ -21,6 +23,7 @@ export type CmsInternalNav = {
   priceSuffix?: string | null
   ctaLabel?: string | null
   ctaUrl?: string | null
+  ctaSmartLink?: SmartLinkGroq | null
   ctaVisible?: boolean | null
 }
 
@@ -101,8 +104,13 @@ export function mergeInternalNavIntoPageNav(
 
   const fromAriaLabel = [fromLabel, fromNum, fromSub].filter(Boolean).join(' ').trim() || base.fromAriaLabel
 
-  const bookHref = (doc.ctaUrl && doc.ctaUrl.trim()) || base.bookHref
-  const bookLabel = doc.ctaLabel?.trim() || base.bookLabel
+  const ctaResolved = resolveSmartLinkOrLegacy(
+    doc.ctaSmartLink,
+    { label: doc.ctaLabel, href: doc.ctaUrl != null ? String(doc.ctaUrl).trim() : undefined, openInNewTab: false },
+    { label: base.bookLabel, href: base.bookHref, openInNewTab: false },
+  )
+  const bookHref = ctaResolved.href
+  const bookLabel = ctaResolved.label
 
   return {
     ...base,

@@ -1,5 +1,6 @@
 import type { SanityImageSource } from '@sanity/image-url'
 
+import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
 import type {
   LodgeBookCtaData,
   LodgeExperiencesData,
@@ -217,10 +218,12 @@ export type LodgeStructuredPageRow = {
   heroImage?: SanityImageSource | null
   heroHighlights?: Array<{ key?: string | null } | null> | null
   heroCTA?: LodgeLinkWithLabel | null
+  heroCtaSmartLink?: SmartLinkGroq | null
   snapshotSelection?: Array<{ key?: string | null } | null> | null
   navTitle?: string | null
   navSubtitle?: string | null
   navCTA?: LodgeLinkWithLabel | null
+  navCtaSmartLink?: SmartLinkGroq | null
   sections?: LodgePageSectionsRow
   featuredRoomStableId?: string | null
   experiencesSelection?: LodgeCmsExperienceCardRow[] | null
@@ -231,6 +234,8 @@ export type LodgeStructuredPageRow = {
     title?: string | null
     body?: string | null
     ctas?: LodgeLinkWithLabel[] | null
+    bookingPrimarySmartLink?: SmartLinkGroq | null
+    bookingSecondarySmartLink?: SmartLinkGroq | null
     trustItemsOverride?: LodgeTrustItemRow[] | null
   } | null
   lodge?: LodgeDocumentRow | null

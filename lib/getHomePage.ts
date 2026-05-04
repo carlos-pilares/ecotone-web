@@ -1,5 +1,6 @@
 import { cache } from 'react'
 
+import { applyHomePageSmartLinks } from '@/lib/applyHomePageSmartLinks'
 import { defaultHomePageDoc, mergeHomePageWithDefaults, type ResolvedHomePage } from '@/lib/homePageDefaults'
 import { getSiteSettingsShell } from '@/lib/getSiteSettingsShell'
 import { homePageQuery, type HomePageDoc } from '@/lib/queries'
@@ -31,7 +32,7 @@ export const getHomePage = cache(async (): Promise<ResolvedHomePage> => {
       clientServer.fetch<HomePageDoc | null>(homePageQuery),
       getSiteSettingsShell(),
     ])
-    const merged = mergeHomePageWithDefaults(cms)
+    const merged = applyHomePageSmartLinks(cms, mergeHomePageWithDefaults(cms))
     return applyBookingWhatsappFromShell(merged, shell.defaultWhatsappUrl)
   } catch {
     return mergeHomePageWithDefaults(null)

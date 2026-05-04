@@ -189,8 +189,22 @@ export const homePage = defineType({
     }),
     defineField({name: 'heroCta1Text', title: 'CTA 1 text', type: 'string', group: 'hero'}),
     defineField({name: 'heroCta1Link', title: 'CTA 1 link', type: 'string', group: 'hero'}),
+    defineField({
+      name: 'heroCta1SmartLink',
+      title: 'CTA 1 (smart link)',
+      type: 'smartLink',
+      group: 'hero',
+      description: 'smartLink overrides legacy fields. Optional until editors migrate.',
+    }),
     defineField({name: 'heroCta2Text', title: 'CTA 2 text', type: 'string', group: 'hero'}),
     defineField({name: 'heroCta2Link', title: 'CTA 2 link', type: 'string', group: 'hero'}),
+    defineField({
+      name: 'heroCta2SmartLink',
+      title: 'CTA 2 (smart link)',
+      type: 'smartLink',
+      group: 'hero',
+      description: 'smartLink overrides legacy fields. Optional until editors migrate.',
+    }),
     defineField({name: 'heroCardPrice', title: 'Hero card — price', type: 'string', group: 'hero'}),
     defineField({
       name: 'heroCardPriceSuffix',
@@ -204,6 +218,13 @@ export const homePage = defineType({
     defineField({name: 'heroCardRows', title: 'Hero card — rows', type: 'array', of: [heroCardRow], group: 'hero'}),
     defineField({name: 'heroCardCtaText', title: 'Hero card — CTA text', type: 'string', group: 'hero'}),
     defineField({name: 'heroCardCtaLink', title: 'Hero card — CTA link', type: 'string', group: 'hero'}),
+    defineField({
+      name: 'heroCardCtaSmartLink',
+      title: 'Hero card — CTA (smart link)',
+      type: 'smartLink',
+      group: 'hero',
+      description: 'smartLink overrides legacy fields. Optional until editors migrate.',
+    }),
     defineField({
       name: 'heroScrollLabel',
       title: 'Scroll indicator label',
@@ -242,8 +263,22 @@ export const homePage = defineType({
     defineField({name: 'manifestoImageCaption', title: 'Image caption', type: 'string', group: 'manifesto'}),
     defineField({name: 'manifestoCta1Text', title: 'CTA 1 text', type: 'string', group: 'manifesto'}),
     defineField({name: 'manifestoCta1Link', title: 'CTA 1 link', type: 'string', group: 'manifesto'}),
+    defineField({
+      name: 'manifestoCta1SmartLink',
+      title: 'CTA 1 (smart link)',
+      type: 'smartLink',
+      group: 'manifesto',
+      description: 'smartLink overrides legacy fields. Optional until editors migrate.',
+    }),
     defineField({name: 'manifestoCta2Text', title: 'CTA 2 text', type: 'string', group: 'manifesto'}),
     defineField({name: 'manifestoCta2Link', title: 'CTA 2 link', type: 'string', group: 'manifesto'}),
+    defineField({
+      name: 'manifestoCta2SmartLink',
+      title: 'CTA 2 (smart link)',
+      type: 'smartLink',
+      group: 'manifesto',
+      description: 'smartLink overrides legacy fields. Optional until editors migrate.',
+    }),
 
     defineField({name: 'explorerEyebrow', title: 'Eyebrow', type: 'string', group: 'explorer'}),
     defineField({name: 'explorerHeadline', title: 'Headline', type: 'string', group: 'explorer'}),
@@ -297,6 +332,14 @@ export const homePage = defineType({
       description: 'If empty, uses Booking CTA 2 link or Site settings default WhatsApp.',
     }),
     defineField({
+      name: 'explorerTailorWhatsappSmartLink',
+      title: 'Tailor card — WhatsApp (smart link)',
+      type: 'smartLink',
+      group: 'explorer',
+      description:
+        'smartLink overrides legacy fields (Tailor CTA text + WhatsApp URL above). Optional.',
+    }),
+    defineField({
       name: 'explorerLearningBadgeLabels',
       title: 'Exp. learning — duration badges (3)',
       type: 'array',
@@ -322,6 +365,13 @@ export const homePage = defineType({
       title: 'Empty grid — link URL',
       type: 'string',
       group: 'explorer',
+    }),
+    defineField({
+      name: 'explorerEmptyGridSmartLink',
+      title: 'Empty grid — link (smart link)',
+      type: 'smartLink',
+      group: 'explorer',
+      description: 'smartLink overrides legacy fields (empty grid link label + URL). Optional.',
     }),
     defineField({
       name: 'explorerCardImageFallbackUrl',
@@ -425,6 +475,13 @@ export const homePage = defineType({
     defineField({name: 'missionItems', title: 'Items', type: 'array', of: [missionItem], group: 'mission'}),
     defineField({name: 'missionCtaText', title: 'CTA text', type: 'string', group: 'mission'}),
     defineField({name: 'missionCtaLink', title: 'CTA link', type: 'string', group: 'mission'}),
+    defineField({
+      name: 'missionCtaSmartLink',
+      title: 'Mission — CTA (smart link)',
+      type: 'smartLink',
+      group: 'mission',
+      description: 'smartLink overrides legacy fields. Optional until editors migrate.',
+    }),
     defineField({name: 'missionPhoto1', title: 'Photo 1', type: 'image', group: 'mission', options: {hotspot: true}}),
     defineField({name: 'missionPhoto2', title: 'Photo 2', type: 'image', group: 'mission', options: {hotspot: true}}),
     defineField({name: 'missionPhoto3', title: 'Photo 3', type: 'image', group: 'mission', options: {hotspot: true}}),
@@ -500,6 +557,13 @@ export const homePage = defineType({
       type: 'url',
       group: 'blog',
       description: 'External blog index or in-site path. Avoid a bare “#”.',
+    }),
+    defineField({
+      name: 'blogAllPostsSmartLink',
+      title: '“All posts” (smart link)',
+      type: 'smartLink',
+      group: 'blog',
+      description: 'smartLink overrides legacy fields (all posts label + URL). Optional.',
     }),
     defineField({
       name: 'blogReadLabel',
@@ -585,8 +649,22 @@ export const homePage = defineType({
     defineField({name: 'bookingCardRows', title: 'Card rows (label / value)', type: 'array', of: [labelValue], group: 'booking'}),
     defineField({name: 'bookingCta1Text', title: 'CTA 1 text', type: 'string', group: 'booking'}),
     defineField({name: 'bookingCta1Link', title: 'CTA 1 link', type: 'string', group: 'booking'}),
+    defineField({
+      name: 'bookingCta1SmartLink',
+      title: 'CTA 1 (smart link)',
+      type: 'smartLink',
+      group: 'booking',
+      description: 'smartLink overrides legacy fields. Optional until editors migrate.',
+    }),
     defineField({name: 'bookingCta2Text', title: 'CTA 2 text', type: 'string', group: 'booking'}),
     defineField({name: 'bookingCta2Link', title: 'CTA 2 link', type: 'string', group: 'booking'}),
+    defineField({
+      name: 'bookingCta2SmartLink',
+      title: 'CTA 2 (smart link)',
+      type: 'smartLink',
+      group: 'booking',
+      description: 'smartLink overrides legacy fields. Optional until editors migrate.',
+    }),
   ],
   preview: {
     prepare() {

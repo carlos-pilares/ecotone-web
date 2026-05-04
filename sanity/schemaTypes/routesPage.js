@@ -54,8 +54,22 @@ export const routesPage = defineType({
     defineField({name: 'heroTitleLine1', title: 'Title line 1', type: 'string', group: 'hero'}),
     defineField({name: 'heroTitleLine2', title: 'Title line 2', type: 'string', group: 'hero'}),
     defineField({name: 'heroTagline', title: 'Tagline', type: 'text', rows: 3, group: 'hero'}),
-    defineField({name: 'heroPrimaryCta', title: 'Primary CTA', type: 'linkWithLabel', group: 'hero'}),
-    defineField({name: 'heroSecondaryCta', title: 'Secondary CTA', type: 'linkWithLabel', group: 'hero'}),
+    defineField({name: 'heroPrimaryCta', title: 'Primary CTA (legacy)', type: 'linkWithLabel', group: 'hero'}),
+    defineField({name: 'heroSecondaryCta', title: 'Secondary CTA (legacy)', type: 'linkWithLabel', group: 'hero'}),
+    defineField({
+      name: 'heroPrimarySmartLink',
+      title: 'Primary CTA (smart link)',
+      type: 'smartLink',
+      group: 'hero',
+      description: 'smartLink overrides legacy fields. Optional until editors migrate.',
+    }),
+    defineField({
+      name: 'heroSecondarySmartLink',
+      title: 'Secondary CTA (smart link)',
+      type: 'smartLink',
+      group: 'hero',
+      description: 'smartLink overrides legacy fields. Optional until editors migrate.',
+    }),
 
     // --- Snapshot ---
     defineField({
@@ -172,10 +186,24 @@ export const routesPage = defineType({
     defineField({name: 'finalCtaEyebrow', title: 'Eyebrow', type: 'string', group: 'finalCta'}),
     defineField({name: 'finalCtaH2', title: 'Heading', type: 'string', group: 'finalCta'}),
     defineField({name: 'finalCtaBody', title: 'Body', type: 'text', rows: 4, group: 'finalCta'}),
-    defineField({name: 'finalCtaWhatsappHref', title: 'WhatsApp URL', type: 'string', group: 'finalCta'}),
-    defineField({name: 'finalCtaWhatsappLabel', title: 'WhatsApp button label', type: 'string', group: 'finalCta'}),
-    defineField({name: 'finalCtaSecondaryHref', title: 'Secondary link URL', type: 'string', group: 'finalCta'}),
-    defineField({name: 'finalCtaSecondaryLabel', title: 'Secondary link label', type: 'string', group: 'finalCta'}),
+    defineField({name: 'finalCtaWhatsappHref', title: 'WhatsApp URL (legacy)', type: 'string', group: 'finalCta'}),
+    defineField({name: 'finalCtaWhatsappLabel', title: 'WhatsApp button label (legacy)', type: 'string', group: 'finalCta'}),
+    defineField({name: 'finalCtaSecondaryHref', title: 'Secondary link URL (legacy)', type: 'string', group: 'finalCta'}),
+    defineField({name: 'finalCtaSecondaryLabel', title: 'Secondary link label (legacy)', type: 'string', group: 'finalCta'}),
+    defineField({
+      name: 'finalCtaWhatsappSmartLink',
+      title: 'WhatsApp (smart link)',
+      type: 'smartLink',
+      group: 'finalCta',
+      description: 'smartLink overrides legacy fields. Optional until editors migrate.',
+    }),
+    defineField({
+      name: 'finalCtaSecondarySmartLink',
+      title: 'Secondary link (smart link)',
+      type: 'smartLink',
+      group: 'finalCta',
+      description: 'smartLink overrides legacy fields. Optional until editors migrate.',
+    }),
     defineField({
       name: 'finalCtaTrustItems',
       title: 'Trust strip',

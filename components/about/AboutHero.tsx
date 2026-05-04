@@ -28,7 +28,7 @@ export function AboutHero({ data }: { data: HeroData }) {
               href={data.primaryHref}
               className="btn btn-primary"
               target="_blank"
-              rel="noopener noreferrer"
+              rel={data.primaryRel || 'noopener noreferrer'}
             >
               {data.primaryLabel}
             </a>
@@ -42,7 +42,7 @@ export function AboutHero({ data }: { data: HeroData }) {
               href={data.secondaryHref}
               className="btn btn-ghost-lt"
               target="_blank"
-              rel="noopener noreferrer"
+              rel={data.secondaryRel || 'noopener noreferrer'}
             >
               {data.secondaryLabel}
             </a>

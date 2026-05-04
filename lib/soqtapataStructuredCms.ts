@@ -20,6 +20,8 @@ import type { CmsInternalNav } from '@/lib/soqtapataInternalNav'
 import type { SoqtapataPageModuleRow } from '@/lib/soqtapataSectionPresentation'
 import { urlFor } from '@/lib/sanity'
 import { DEFAULT_EXPERIENCE_RESOURCE_DOWNLOAD_CTA_LABEL } from '@/lib/experienceResourceCmsDefaults'
+import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
+import { resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
 
 // --- public row shape (subset of GROQ result) ---
 
@@ -82,11 +84,14 @@ type CmsReserveBlock = {
   infoRows?: { label?: string | null; value?: string | null }[] | null
   wetravelUrl?: string | null
   wetravelLabel?: string | null
+  wetravelSmartLink?: SmartLinkGroq | null
   whatsappUrl?: string | null
   whatsappLabel?: string | null
+  whatsappSmartLink?: SmartLinkGroq | null
   legalNote?: string | null
   legalTermsLink?: string | null
   termsLinkLabel?: string | null
+  termsSmartLink?: SmartLinkGroq | null
   trustStripItems?: { text?: string | null }[] | null
 }
 
@@ -98,7 +103,8 @@ type CmsPageHero = {
   priceLine?: string | null
   priceSub?: string | null
   useProductPrice?: boolean | null
-  bookCta?: { label?: string | null; href?: string | null } | null
+  bookCta?: { label?: string | null; href?: string | null; openInNewTab?: boolean | null } | null
+  bookCtaSmartLink?: SmartLinkGroq | null
   heroImage?: { image?: SanityImageSource | null; alt?: string | null; imageUrl?: string | null } | null
 } | null
 
@@ -481,8 +487,17 @@ export function soqtapataPartialFromStructuredRow(
   const tag = (ph?.headlineSub && ph.headlineSub.trim()) || e.tagline?.trim() || l.hero.tagline
   const badges =
     (ph?.pills && ph.pills.length > 0) ? ph.pills : [programBadge, routeBadge, e.duration || l.stats[0]?.n || '3D · 2N']
-  const bookUrl = (ph?.bookCta?.href && ph.bookCta.href.trim()) || l.hero.bookUrl
-  const bookLabel = (ph?.bookCta?.label && ph.bookCta.label.trim()) || l.hero.bookLabel
+  const bookResolved = resolveSmartLinkOrLegacy(
+    ph?.bookCtaSmartLink,
+    ph?.bookCta,
+    {
+      label: l.hero.bookLabel,
+      href: l.hero.bookUrl,
+      openInNewTab: ph?.bookCta?.openInNewTab === true,
+    },
+  )
+  const bookUrl = bookResolved.href
+  const bookLabel = bookResolved.label
 
   const mainFallback = l.hero.gallery[0]?.imageSrc || ''
   const mainUrl = e.mainImageUrl || (e.mainImage ? assetToUrl(e.mainImage, 1200, mainFallback) : null) || mainFallback
@@ -980,6 +995,21 @@ export function alsoBookFromStructuredRow(
   const also: SoqtapataAlsoCamanti = { ...lAlso, eyebrow, h2, cards }
 
   const rb = row.reserveBlock
+  const wetResolved = resolveSmartLinkOrLegacy(
+    rb?.wetravelSmartLink,
+    { label: rb?.wetravelLabel, href: rb?.wetravelUrl, openInNewTab: true },
+    { label: lBook.wetravelLabel, href: lBook.wetravelUrl, openInNewTab: true },
+  )
+  const waResolved = resolveSmartLinkOrLegacy(
+    rb?.whatsappSmartLink,
+    { label: rb?.whatsappLabel, href: rb?.whatsappUrl, openInNewTab: true },
+    { label: lBook.whatsappLabel, href: lBook.whatsappUrl, openInNewTab: true },
+  )
+  const termsResolved = resolveSmartLinkOrLegacy(
+    rb?.termsSmartLink,
+    { label: rb?.termsLinkLabel, href: rb?.legalTermsLink, openInNewTab: false },
+    { label: lBook.termsLinkLabel, href: lBook.termsHash, openInNewTab: false },
+  )
   const book: SoqtapataBook = {
     ...lBook,
     eyebrow: strOrNull(rb?.eyebrow) ?? lBook.eyebrow,
@@ -995,13 +1025,13 @@ export function alsoBookFromStructuredRow(
             value: (r?.value && r.value.trim()) || '',
           }))
         : lBook.rows,
-    wetravelUrl: strOrNull(rb?.wetravelUrl) ?? lBook.wetravelUrl,
-    wetravelLabel: strOrNull(rb?.wetravelLabel) ?? lBook.wetravelLabel,
-    whatsappUrl: strOrNull(rb?.whatsappUrl) ?? lBook.whatsappUrl,
-    whatsappLabel: strOrNull(rb?.whatsappLabel) ?? lBook.whatsappLabel,
+    wetravelUrl: wetResolved.href,
+    wetravelLabel: wetResolved.label,
+    whatsappUrl: waResolved.href,
+    whatsappLabel: waResolved.label,
     termsNote: strOrNull(rb?.legalNote) ?? lBook.termsNote,
-    termsHash: strOrNull(rb?.legalTermsLink) ?? lBook.termsHash,
-    termsLinkLabel: strOrNull(rb?.termsLinkLabel) ?? lBook.termsLinkLabel,
+    termsHash: termsResolved.href,
+    termsLinkLabel: termsResolved.label,
     trustStripItems:
       rb?.trustStripItems && rb.trustStripItems.length > 0
         ? rb.trustStripItems

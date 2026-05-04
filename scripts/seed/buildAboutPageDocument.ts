@@ -138,6 +138,22 @@ export async function buildAboutPageDocument(client: SanityClient, imageCache?: 
       href: fb.hero.secondaryHref,
       openInNewTab: false,
     },
+    /** Pilot: same targets as legacy hero CTAs (`/experiences`, `/about#who`). */
+    heroPrimarySmartLink: {
+      _type: 'smartLink' as const,
+      label: fb.hero.primaryLabel,
+      linkType: 'internalPage' as const,
+      internalPage: 'experiencesIndex',
+      openInNewTab: false,
+    },
+    heroSecondarySmartLink: {
+      _type: 'smartLink' as const,
+      label: fb.hero.secondaryLabel,
+      linkType: 'pageSection' as const,
+      internalPage: 'aboutPage',
+      sectionId: 'who',
+      openInNewTab: false,
+    },
     whoSectionId: fb.who.sectionId,
     whoImage,
     whoImageAlt: fb.who.imageAlt,

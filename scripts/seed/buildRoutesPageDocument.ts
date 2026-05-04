@@ -50,6 +50,16 @@ function k(n: string) {
   return { _key: n }
 }
 
+/** Derive `whatsappNumber` / prefilled message from a `https://wa.me/…` href (same as legacy seed). */
+function parseWaMeHref(href: string): { number: string; message?: string } {
+  const u = new URL(href)
+  const number = u.pathname.replace(/\D/g, '')
+  if (!number) throw new Error(`[buildRoutesPageDocument] wa.me href has no number: ${href}`)
+  const text = u.searchParams.get('text')
+  const message = text && text.trim() ? text : undefined
+  return { number, ...(message ? { message } : {}) }
+}
+
 /** Evita `undefined` en JSON: Content Lake puede descartar nodos padre si hay valores inválidos. */
 function stripUndefinedDeep<T>(input: T): T {
   if (input === undefined || input === null) return input
@@ -237,6 +247,8 @@ export async function buildRoutesPageDocument(client: SanityClient, imageCache?:
     label: s.label,
   }))
 
+  const waFromHref = parseWaMeHref(routesFinalCta.whatsappHref)
+
   const territoryStrip = routesTerritory.strip.map((chip, i) => ({
     ...k(`ts-${i}`),
     _type: 'routesPageTerritoryStripChip' as const,
@@ -273,6 +285,22 @@ export async function buildRoutesPageDocument(client: SanityClient, imageCache?:
       _type: 'linkWithLabel' as const,
       label: routesHero.secondaryCta.label,
       href: routesHero.secondaryCta.href,
+      openInNewTab: false,
+    },
+    /** Pilot: same targets as legacy (`#routes` → `/routes#routes`, `/experiences`). */
+    heroPrimarySmartLink: {
+      _type: 'smartLink' as const,
+      label: routesHero.primaryCta.label,
+      linkType: 'pageSection' as const,
+      internalPage: 'routesPage',
+      sectionId: 'routes',
+      openInNewTab: false,
+    },
+    heroSecondarySmartLink: {
+      _type: 'smartLink' as const,
+      label: routesHero.secondaryCta.label,
+      linkType: 'internalPage' as const,
+      internalPage: 'experiencesIndex',
       openInNewTab: false,
     },
     snapshotStats,
@@ -312,6 +340,21 @@ export async function buildRoutesPageDocument(client: SanityClient, imageCache?:
     finalCtaWhatsappLabel: routesFinalCta.whatsappLabel,
     finalCtaSecondaryHref: routesFinalCta.secondaryHref,
     finalCtaSecondaryLabel: routesFinalCta.secondaryLabel,
+    finalCtaWhatsappSmartLink: {
+      _type: 'smartLink' as const,
+      label: routesFinalCta.whatsappLabel,
+      linkType: 'whatsapp' as const,
+      whatsappNumber: waFromHref.number,
+      ...(waFromHref.message ? { whatsappMessage: waFromHref.message } : {}),
+      openInNewTab: true,
+    },
+    finalCtaSecondarySmartLink: {
+      _type: 'smartLink' as const,
+      label: routesFinalCta.secondaryLabel,
+      linkType: 'internalPage' as const,
+      internalPage: 'experiencesIndex',
+      openInNewTab: false,
+    },
     finalCtaTrustItems,
   }
 

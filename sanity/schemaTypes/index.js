@@ -3,6 +3,7 @@ import {cta} from './objects/cta'
 import {imageWithAlt} from './objects/imageWithAlt'
 import {review} from './review'
 import {linkWithLabel} from './objects/linkWithLabel'
+import {smartLink} from './objects/smartLink'
 import {landingHero} from './objects/landingHero'
 import {experienceResourceCard} from './objects/experienceResourceCard'
 import {experiencePageResources} from './objects/experiencePageResources'
@@ -60,6 +61,7 @@ import {technologyProduct} from './technologyProduct'
 const objects = [
   seo,
   linkWithLabel,
+  smartLink,
   cta,
   imageWithAlt,
   experienceResourceCard,

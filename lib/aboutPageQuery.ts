@@ -1,6 +1,8 @@
 import { groq } from 'next-sanity'
 
 import type { PartnerDoc } from '@/lib/queries'
+import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
+import { GROQ_SMART_LINK_FIELDS } from '@/lib/smartLinkGroq'
 
 /** Raw fetch for `aboutPage` singleton (`_id == "aboutPage"`). Field names match `sanity/schemaTypes/aboutPage.js`. */
 export type AboutPageSanityDoc = {
@@ -20,6 +22,8 @@ export type AboutPageSanityDoc = {
   heroTagline?: string | null
   heroPrimaryCta?: { label?: string | null; href?: string | null; openInNewTab?: boolean | null } | null
   heroSecondaryCta?: { label?: string | null; href?: string | null; openInNewTab?: boolean | null } | null
+  heroPrimarySmartLink?: SmartLinkGroq | null
+  heroSecondarySmartLink?: SmartLinkGroq | null
   whoSectionId?: string | null
   whoImageUrl?: string | null
   whoImageAlt?: string | null
@@ -105,6 +109,8 @@ export const aboutPageQuery = groq`
     heroTagline,
     heroPrimaryCta,
     heroSecondaryCta,
+    heroPrimarySmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    heroSecondarySmartLink { ${GROQ_SMART_LINK_FIELDS} },
     whoSectionId,
     "whoImageUrl": whoImage.asset->url,
     whoImageAlt,
@@ -182,6 +188,8 @@ export const aboutPageDiagnosticsQuery = groq`
     "proofCertsCount": count(proofCerts),
     "partnerRefsCount": count(partnerRefs),
     "finalButtonsCount": count(finalButtons),
-    "finalTrustCount": count(finalTrustItems)
+    "finalTrustCount": count(finalTrustItems),
+    "heroPrimarySmartLink": heroPrimarySmartLink { label, linkType, internalPage, sectionId },
+    "heroSecondarySmartLink": heroSecondarySmartLink { label, linkType, internalPage, sectionId }
   }
 `

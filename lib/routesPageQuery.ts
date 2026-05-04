@@ -1,6 +1,8 @@
 import { groq } from 'next-sanity'
 
 import type { ReviewDoc } from '@/lib/queries'
+import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
+import { GROQ_SMART_LINK_FIELDS } from '@/lib/smartLinkGroq'
 
 /**
  * Raw fetch shape for `routesPage` (singleton `_id == "routesPage"`).
@@ -24,6 +26,8 @@ export type RoutesPageSanityDoc = {
   heroTagline?: string | null
   heroPrimaryCta?: { label?: string | null; href?: string | null; openInNewTab?: boolean | null } | null
   heroSecondaryCta?: { label?: string | null; href?: string | null; openInNewTab?: boolean | null } | null
+  heroPrimarySmartLink?: SmartLinkGroq | null
+  heroSecondarySmartLink?: SmartLinkGroq | null
   snapshotStats?: Array<{ value?: string | null; label?: string | null }> | null
   territorySectionId?: string | null
   territoryEyebrow?: string | null
@@ -66,6 +70,8 @@ export type RoutesPageSanityDoc = {
   finalCtaWhatsappLabel?: string | null
   finalCtaSecondaryHref?: string | null
   finalCtaSecondaryLabel?: string | null
+  finalCtaWhatsappSmartLink?: SmartLinkGroq | null
+  finalCtaSecondarySmartLink?: SmartLinkGroq | null
   finalCtaTrustItems?: Array<{ icon?: string | null; label?: string | null }> | null
 }
 
@@ -161,6 +167,8 @@ export const routesPageQuery = groq`
     heroTagline,
     heroPrimaryCta,
     heroSecondaryCta,
+    heroPrimarySmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    heroSecondarySmartLink { ${GROQ_SMART_LINK_FIELDS} },
     snapshotStats[]{ value, label },
     territorySectionId,
     territoryEyebrow,
@@ -248,6 +256,8 @@ export const routesPageQuery = groq`
     finalCtaWhatsappLabel,
     finalCtaSecondaryHref,
     finalCtaSecondaryLabel,
+    finalCtaWhatsappSmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    finalCtaSecondarySmartLink { ${GROQ_SMART_LINK_FIELDS} },
     finalCtaTrustItems[]{ icon, label }
   }
 `
@@ -271,6 +281,8 @@ export const routesPageDiagnosticsQuery = groq`
     heroTagline,
     heroPrimaryCta,
     heroSecondaryCta,
+    "heroPrimarySmartLink": heroPrimarySmartLink { label, linkType, internalPage, sectionId },
+    "heroSecondarySmartLink": heroSecondarySmartLink { label, linkType, internalPage, sectionId },
     "snapshotStatsCount": count(coalesce(snapshotStats, [])),
     territorySectionId,
     territoryEyebrow,
@@ -308,6 +320,8 @@ export const routesPageDiagnosticsQuery = groq`
     finalCtaWhatsappLabel,
     finalCtaSecondaryHref,
     finalCtaSecondaryLabel,
+    "finalCtaWhatsappSmartLink": finalCtaWhatsappSmartLink { label, linkType, whatsappNumber },
+    "finalCtaSecondarySmartLink": finalCtaSecondarySmartLink { label, linkType, internalPage },
     "finalCtaTrustItemsCount": count(coalesce(finalCtaTrustItems, []))
   }
 `

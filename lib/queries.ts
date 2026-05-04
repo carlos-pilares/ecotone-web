@@ -1,6 +1,9 @@
 import type { SanityImageSource } from '@sanity/image-url'
 import { groq } from 'next-sanity'
 
+import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
+import { GROQ_SMART_LINK_FIELDS } from '@/lib/smartLinkGroq'
+
 /** Experience card row (homepage + listados). */
 export type ExperienceFromSanity = {
   _id: string
@@ -166,6 +169,17 @@ export type HomePageDoc = {
   bookingCta1Link?: string | null
   bookingCta2Text?: string | null
   bookingCta2Link?: string | null
+  heroCta1SmartLink?: SmartLinkGroq | null
+  heroCta2SmartLink?: SmartLinkGroq | null
+  heroCardCtaSmartLink?: SmartLinkGroq | null
+  manifestoCta1SmartLink?: SmartLinkGroq | null
+  manifestoCta2SmartLink?: SmartLinkGroq | null
+  missionCtaSmartLink?: SmartLinkGroq | null
+  explorerEmptyGridSmartLink?: SmartLinkGroq | null
+  explorerTailorWhatsappSmartLink?: SmartLinkGroq | null
+  blogAllPostsSmartLink?: SmartLinkGroq | null
+  bookingCta1SmartLink?: SmartLinkGroq | null
+  bookingCta2SmartLink?: SmartLinkGroq | null
 } | null
 
 /** Singleton by seed id (`data/cmsApproved/ids.ts` → `homePage`), not a generic _type match. */
@@ -241,6 +255,17 @@ export const homePageQuery = groq`
     bookingEyebrow, bookingHeadline, bookingBody, bookingTrustItems,
     bookingPrice, bookingPriceSuffixSmall, bookingPriceSubtext, bookingCardRows,
     bookingCta1Text, bookingCta1Link, bookingCta2Text, bookingCta2Link,
+    heroCta1SmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    heroCta2SmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    heroCardCtaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    manifestoCta1SmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    manifestoCta2SmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    missionCtaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    explorerEmptyGridSmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    explorerTailorWhatsappSmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    blogAllPostsSmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    bookingCta1SmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    bookingCta2SmartLink { ${GROQ_SMART_LINK_FIELDS} },
   }
 `
 
@@ -277,6 +302,7 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       priceSuffix,
       ctaLabel,
       ctaUrl,
+      ctaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
       ctaVisible,
       items[] {
         _key,
@@ -304,6 +330,7 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       priceSub,
       useProductPrice,
       bookCta { label, href, openInNewTab, style },
+      bookCtaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
       heroImage {
         alt,
         title,
@@ -348,11 +375,14 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       infoRows[] { label, value },
       wetravelUrl,
       wetravelLabel,
+      wetravelSmartLink { ${GROQ_SMART_LINK_FIELDS} },
       whatsappUrl,
       whatsappLabel,
+      whatsappSmartLink { ${GROQ_SMART_LINK_FIELDS} },
       legalNote,
       legalTermsLink,
       termsLinkLabel,
+      termsSmartLink { ${GROQ_SMART_LINK_FIELDS} },
       trustStripItems[] { text }
     },
     resources {
@@ -451,10 +481,12 @@ export const lodgeStructuredPageBySlugQuery = groq`
     heroImage,
     heroHighlights[]{ key },
     heroCTA { label, href, openInNewTab },
+    heroCtaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
     snapshotSelection[]{ key },
     navTitle,
     navSubtitle,
     navCTA { label, href, openInNewTab },
+    navCtaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
     sections {
       overview { eyebrow, title, body },
       accommodation { eyebrow, title, body },
@@ -496,6 +528,8 @@ export const lodgeStructuredPageBySlugQuery = groq`
       title,
       body,
       ctas[]{ label, href, openInNewTab },
+      bookingPrimarySmartLink { ${GROQ_SMART_LINK_FIELDS} },
+      bookingSecondarySmartLink { ${GROQ_SMART_LINK_FIELDS} },
       trustItemsOverride[]{ title, subtitle }
     },
     reviewsPresentation {

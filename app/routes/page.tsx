@@ -11,56 +11,56 @@ import { RoutesTerritory } from '@/components/routes/RoutesTerritory'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
 import { SnapshotBar } from '@/components/shared/SnapshotBar'
-import {
-  routesCards,
-  routesCompareColumns,
-  routesCompareRows,
-  routesCompareSection,
-  routesExpCards,
-  routesExperiencesSection,
-  routesExpFilters,
-  routesFeaturedQuoteItems,
-  routesFinalCta,
-  routesHero,
-  routesReviewDocs,
-  routesSnapshotStats,
-  routesTerritory,
-} from '@/data/routesStatic'
+import { getRoutesPage } from '@/lib/getRoutesPage'
 
 import '../experiences/experience-surface.css'
 import './routes-surface.css'
 
-export const metadata: Metadata = {
-  title: 'Routes — Ecotone · Cusco, Perú',
-  description:
-    'Three corridors from Cusco into the Manu Biosphere Reserve and Camanti — cloud forest, gradient, and deep Amazon. Compare routes and find your program.',
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getRoutesPage()
+  const { seo } = page
+  return {
+    title: seo.title,
+    description: seo.description,
+    robots: seo.noIndex ? { index: false, follow: false } : undefined,
+    openGraph: seo.ogImageUrl
+      ? {
+          title: seo.title,
+          description: seo.description,
+          images: [{ url: seo.ogImageUrl }],
+        }
+      : { title: seo.title, description: seo.description },
+  }
 }
 
-export default function RoutesPage() {
-  const snapshotItems = routesSnapshotStats.map((s) => ({ value: s.value, label: s.label }))
+export default async function RoutesPage() {
+  const p = await getRoutesPage()
+  const snapshotItems = p.snapshotStats.map((s) => ({ value: s.value, label: s.label }))
 
   return (
-    <EcotoneV2Client featuredQuoteItems={routesFeaturedQuoteItems}>
+    <EcotoneV2Client featuredQuoteItems={p.featuredQuotes}>
       <div className="routes-page">
         <IsotipoDefs />
         <SiteHeader />
-        <RoutesHero data={routesHero} />
+        <RoutesHero data={p.hero} />
         <SnapshotBar items={snapshotItems} />
-        <RoutesTerritory data={routesTerritory} />
-        <RoutesList routes={routesCards} />
-        <RoutesCompare section={routesCompareSection} columns={routesCompareColumns} rows={routesCompareRows} />
-        <RoutesExperiences section={routesExperiencesSection} filters={routesExpFilters} cards={routesExpCards} />
+        <RoutesTerritory data={p.territory} />
+        <RoutesList routes={p.routesCards} />
+        <RoutesCompare section={p.compareSection} columns={p.compareColumns} rows={p.compareRows} />
+        <RoutesExperiences section={p.experiencesSection} filters={p.expFilters} cards={p.expCards} />
         <ReviewsSection
-          reviews={routesReviewDocs}
-          featuredQuoteItems={routesFeaturedQuoteItems}
+          reviews={p.reviews}
+          featuredQuoteItems={p.featuredQuotes}
           sectionClassName="content-section bg-cream fade"
           contentInnerClassName="content-inner"
-          eyebrow="Guest voices"
-          headline="Along these routes"
-          secondaryRatingLine="12 verified reviews"
-          sectionLead="Stories from Camanti and Manu — same care and standards on every corridor."
+          eyebrow={p.reviewsEyebrow}
+          headline={p.reviewsHeadline}
+          averageRating={p.reviewsAverageRating}
+          sourceLabel={p.reviewsSourceLabel}
+          secondaryRatingLine={p.reviewsSecondaryRatingLine}
+          sectionLead={p.reviewsSectionLead}
         />
-        <RoutesFinalCta data={routesFinalCta} />
+        <RoutesFinalCta data={p.finalCta} />
         <SiteFooter />
       </div>
     </EcotoneV2Client>

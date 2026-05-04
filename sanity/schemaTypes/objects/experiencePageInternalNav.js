@@ -57,6 +57,12 @@ export const experiencePageInternalNav = defineType({
       type: 'url',
     }),
     defineField({
+      name: 'ctaSmartLink',
+      title: 'CTA (smart link)',
+      type: 'smartLink',
+      description: 'smartLink overrides legacy fields (CTA label + URL). Optional.',
+    }),
+    defineField({
       name: 'ctaVisible',
       title: 'CTA visible',
       type: 'boolean',

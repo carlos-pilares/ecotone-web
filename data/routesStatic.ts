@@ -19,8 +19,8 @@ export type RoutesHeroStatic = {
   titleLine1: string
   titleLine2: string
   tagline: string
-  primaryCta: { label: string; href: string }
-  secondaryCta: { label: string; href: string }
+  primaryCta: { label: string; href: string; openInNewTab?: boolean; rel?: string }
+  secondaryCta: { label: string; href: string; openInNewTab?: boolean; rel?: string }
 }
 
 export type RoutesSnapshotStat = { value: string; label: string }
@@ -419,4 +419,8 @@ export const routesFinalCta = {
       icon: 'heart' as const,
     },
   ],
+  /** Populated by `resolveRoutesPageData` (smart link + legacy). */
+  whatsappRel: 'noopener noreferrer',
+  secondaryRel: '',
+  secondaryOpenInNewTab: false,
 }

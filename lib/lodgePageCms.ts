@@ -61,6 +61,7 @@ import {
   createLodgePageCmsSanityClient,
   logLodgePageCmsDiagnosis,
 } from '@/lib/lodgePageCmsSanityPerspective'
+import { resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
 import { cdnImageUrl } from '@/lib/sanity'
 import type { ReviewDoc } from '@/lib/queries'
 
@@ -476,9 +477,19 @@ export function mergeLodgePageWithFallback(
     ...(lodge.name?.trim() ? { title: lodge.name.trim() } : {}),
     ...(lodge.shortDescription?.trim() ? { tagline: lodge.shortDescription.trim() } : {}),
     imageSrc: heroBaseSrc,
-    ...(row.heroCTA?.label?.trim() && row.heroCTA.href?.trim()
-      ? { primaryCta: { label: row.heroCTA.label.trim(), href: row.heroCTA.href.trim() } }
-      : {}),
+    ...(() => {
+      const fb = out.hero.primaryCta
+      const leg = row.heroCTA
+      const hasLeg = Boolean(leg?.label?.trim() && leg?.href?.trim())
+      const hasSmart = Boolean(row.heroCtaSmartLink?.label?.trim())
+      if (!hasSmart && !hasLeg) return {}
+      const r = resolveSmartLinkOrLegacy(
+        row.heroCtaSmartLink,
+        hasLeg ? leg : undefined,
+        { label: fb.label, href: fb.href, openInNewTab: leg?.openInNewTab === true },
+      )
+      return { primaryCta: { label: r.label, href: r.href } }
+    })(),
     ...(lodge.certifications?.length
       ? { badges: lodge.certifications.map((c) => c.label!).filter(Boolean) }
       : {}),
@@ -508,9 +519,19 @@ export function mergeLodgePageWithFallback(
               .join(' · '),
           }
         : {}),
-    ...(row.navCTA?.label?.trim() && row.navCTA.href?.trim()
-      ? { cta: { label: row.navCTA.label.trim(), href: row.navCTA.href.trim() } }
-      : {}),
+    ...(() => {
+      const fb = out.pageNav.cta
+      const leg = row.navCTA
+      const hasLeg = Boolean(leg?.label?.trim() && leg?.href?.trim())
+      const hasSmart = Boolean(row.navCtaSmartLink?.label?.trim())
+      if (!hasSmart && !hasLeg) return {}
+      const r = resolveSmartLinkOrLegacy(
+        row.navCtaSmartLink,
+        hasLeg ? leg : undefined,
+        { label: fb.label, href: fb.href, openInNewTab: leg?.openInNewTab === true },
+      )
+      return { cta: { label: r.label, href: r.href } }
+    })(),
   }
 
   out.snapshot = resolveSnapshotBar(out.snapshot, lodge, row.snapshotSelection)
@@ -637,14 +658,28 @@ export function mergeLodgePageWithFallback(
   }
   if (row.bookingCta?.title?.trim()) out.book.cardTitle = row.bookingCta.title.trim()
   if (row.bookingCta?.body?.trim()) out.book.body = row.bookingCta.body.trim()
-  if (row.bookingCta?.ctas?.length) {
-    const [a, b] = row.bookingCta.ctas
-    if (a?.label?.trim() && a.href?.trim()) {
-      out.book.primaryCta = { label: a.label.trim(), href: a.href.trim() }
-    }
-    if (b?.label?.trim() && b.href?.trim()) {
-      out.book.secondaryCta = { label: b.label.trim(), href: b.href.trim() }
-    }
+  if (
+    row.bookingCta &&
+    (row.bookingCta.ctas?.length ||
+      row.bookingCta.bookingPrimarySmartLink?.label?.trim() ||
+      row.bookingCta.bookingSecondarySmartLink?.label?.trim())
+  ) {
+    const fbP = out.book.primaryCta
+    const fbS = out.book.secondaryCta
+    const a = row.bookingCta.ctas?.[0]
+    const b = row.bookingCta.ctas?.[1]
+    const r1 = resolveSmartLinkOrLegacy(row.bookingCta.bookingPrimarySmartLink, a, {
+      label: fbP.label,
+      href: fbP.href,
+      openInNewTab: a?.openInNewTab === true,
+    })
+    const r2 = resolveSmartLinkOrLegacy(row.bookingCta.bookingSecondarySmartLink, b, {
+      label: fbS.label,
+      href: fbS.href,
+      openInNewTab: b?.openInNewTab === true,
+    })
+    out.book.primaryCta = { label: r1.label, href: r1.href }
+    out.book.secondaryCta = { label: r2.label, href: r2.href }
   }
   if (row.bookingCta?.trustItemsOverride?.length) {
     out.book.trustItems = trustRowsFromCms(row.bookingCta.trustItemsOverride)

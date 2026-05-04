@@ -3,6 +3,7 @@
  * al shape que consumen `app/routes/page.tsx` y `getRoutesPage` (objetos anidados tipo `RoutesTerritoryStatic`).
  */
 import type { ReviewDoc } from '@/lib/queries'
+import { resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
 import type { RoutesPageSanityDoc, RoutesPageSanityExpCard, RoutesPageSanityRouteCard } from '@/lib/routesPageQuery'
 import {
   routesCards as fallbackRoutesCards,
@@ -313,6 +314,25 @@ export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPa
     ogImageUrl: seoFromCms?.ogImageUrl?.trim() || null,
   }
 
+  const primaryResolved = resolveSmartLinkOrLegacy(
+    cms?.heroPrimarySmartLink,
+    cms?.heroPrimaryCta,
+    {
+      label: fallbackHero.primaryCta.label,
+      href: fallbackHero.primaryCta.href,
+      openInNewTab: fallbackHero.primaryCta.openInNewTab,
+    },
+  )
+  const secondaryResolved = resolveSmartLinkOrLegacy(
+    cms?.heroSecondarySmartLink,
+    cms?.heroSecondaryCta,
+    {
+      label: fallbackHero.secondaryCta.label,
+      href: fallbackHero.secondaryCta.href,
+      openInNewTab: fallbackHero.secondaryCta.openInNewTab,
+    },
+  )
+
   const hero: RoutesHeroStatic = {
     imageSrc: trimOr(fallbackHero.imageSrc, cms?.heroImageUrl),
     imageAlt: trimOr(fallbackHero.imageAlt, cms?.heroImageAlt),
@@ -321,12 +341,16 @@ export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPa
     titleLine2: trimOr(fallbackHero.titleLine2, cms?.heroTitleLine2),
     tagline: trimOr(fallbackHero.tagline, cms?.heroTagline),
     primaryCta: {
-      label: trimOr(fallbackHero.primaryCta.label, cms?.heroPrimaryCta?.label),
-      href: trimOr(fallbackHero.primaryCta.href, cms?.heroPrimaryCta?.href),
+      label: primaryResolved.label,
+      href: primaryResolved.href,
+      openInNewTab: primaryResolved.openInNewTab,
+      rel: primaryResolved.rel || undefined,
     },
     secondaryCta: {
-      label: trimOr(fallbackHero.secondaryCta.label, cms?.heroSecondaryCta?.label),
-      href: trimOr(fallbackHero.secondaryCta.href, cms?.heroSecondaryCta?.href),
+      label: secondaryResolved.label,
+      href: secondaryResolved.href,
+      openInNewTab: secondaryResolved.openInNewTab,
+      rel: secondaryResolved.rel || undefined,
     },
   }
 
@@ -409,15 +433,45 @@ export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPa
       return { label, icon }
     })
     .filter(Boolean) as typeof fallbackFinalCta.trustItems
+  const waResolved = resolveSmartLinkOrLegacy(
+    cms?.finalCtaWhatsappSmartLink,
+    {
+      label: cms?.finalCtaWhatsappLabel,
+      href: cms?.finalCtaWhatsappHref,
+      openInNewTab: true,
+    },
+    {
+      label: fallbackFinalCta.whatsappLabel,
+      href: fallbackFinalCta.whatsappHref,
+      openInNewTab: true,
+    },
+  )
+  const secondaryResolvedFinal = resolveSmartLinkOrLegacy(
+    cms?.finalCtaSecondarySmartLink,
+    {
+      label: cms?.finalCtaSecondaryLabel,
+      href: cms?.finalCtaSecondaryHref,
+      openInNewTab: false,
+    },
+    {
+      label: fallbackFinalCta.secondaryLabel,
+      href: fallbackFinalCta.secondaryHref,
+      openInNewTab: false,
+    },
+  )
+
   const finalCta = {
     sectionId: trimOr(fallbackFinalCta.sectionId, cms?.finalCtaSectionId),
     eyebrow: trimOr(fallbackFinalCta.eyebrow, cms?.finalCtaEyebrow),
     h2: trimOr(fallbackFinalCta.h2, cms?.finalCtaH2),
     body: trimOr(fallbackFinalCta.body, cms?.finalCtaBody),
-    whatsappHref: trimOr(fallbackFinalCta.whatsappHref, cms?.finalCtaWhatsappHref),
-    whatsappLabel: trimOr(fallbackFinalCta.whatsappLabel, cms?.finalCtaWhatsappLabel),
-    secondaryHref: trimOr(fallbackFinalCta.secondaryHref, cms?.finalCtaSecondaryHref),
-    secondaryLabel: trimOr(fallbackFinalCta.secondaryLabel, cms?.finalCtaSecondaryLabel),
+    whatsappHref: waResolved.href,
+    whatsappLabel: waResolved.label,
+    whatsappRel: waResolved.rel,
+    secondaryHref: secondaryResolvedFinal.href,
+    secondaryLabel: secondaryResolvedFinal.label,
+    secondaryRel: secondaryResolvedFinal.rel,
+    secondaryOpenInNewTab: secondaryResolvedFinal.openInNewTab,
     trustItems: trustFromCms.length ? trustFromCms : fallbackFinalCta.trustItems,
   }
 

@@ -17,10 +17,22 @@ export function RoutesHero({ data }: { data: RoutesHeroStatic }) {
           </h1>
           <p className="routes-hero-tagline">{data.tagline}</p>
           <div className="routes-hero-actions">
-            <a href={data.primaryCta.href} className="btn btn-primary">
+            <a
+              href={data.primaryCta.href}
+              className="btn btn-primary"
+              {...(data.primaryCta.openInNewTab
+                ? { target: '_blank' as const, rel: data.primaryCta.rel || 'noopener noreferrer' }
+                : {})}
+            >
               {data.primaryCta.label}
             </a>
-            <a href={data.secondaryCta.href} className="btn btn-ghost-lt">
+            <a
+              href={data.secondaryCta.href}
+              className="btn btn-ghost-lt"
+              {...(data.secondaryCta.openInNewTab
+                ? { target: '_blank' as const, rel: data.secondaryCta.rel || 'noopener noreferrer' }
+                : {})}
+            >
               {data.secondaryCta.label}
             </a>
           </div>

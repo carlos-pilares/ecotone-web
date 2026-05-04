@@ -64,8 +64,22 @@ export const aboutPage = defineType({
       group: 'hero',
     }),
     defineField({name: 'heroTagline', title: 'Tagline', type: 'text', rows: 3, group: 'hero'}),
-    defineField({name: 'heroPrimaryCta', title: 'Primary CTA', type: 'linkWithLabel', group: 'hero'}),
-    defineField({name: 'heroSecondaryCta', title: 'Secondary CTA', type: 'linkWithLabel', group: 'hero'}),
+    defineField({name: 'heroPrimaryCta', title: 'Primary CTA (legacy)', type: 'linkWithLabel', group: 'hero'}),
+    defineField({name: 'heroSecondaryCta', title: 'Secondary CTA (legacy)', type: 'linkWithLabel', group: 'hero'}),
+    defineField({
+      name: 'heroPrimarySmartLink',
+      title: 'Primary CTA (smart link)',
+      type: 'smartLink',
+      group: 'hero',
+      description: 'smartLink overrides legacy fields. Optional until editors migrate.',
+    }),
+    defineField({
+      name: 'heroSecondarySmartLink',
+      title: 'Secondary CTA (smart link)',
+      type: 'smartLink',
+      group: 'hero',
+      description: 'smartLink overrides legacy fields. Optional until editors migrate.',
+    }),
 
     // --- Who we are ---
     defineField({

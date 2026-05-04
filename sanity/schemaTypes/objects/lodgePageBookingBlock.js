@@ -27,6 +27,18 @@ export const lodgePageBookingBlock = defineType({
       validation: (Rule) => Rule.max(4),
     }),
     defineField({
+      name: 'bookingPrimarySmartLink',
+      title: 'Primary CTA (smart link)',
+      type: 'smartLink',
+      description: 'smartLink overrides legacy fields (first button in CTA list). Optional.',
+    }),
+    defineField({
+      name: 'bookingSecondarySmartLink',
+      title: 'Secondary CTA (smart link)',
+      type: 'smartLink',
+      description: 'smartLink overrides legacy fields (second button in CTA list). Optional.',
+    }),
+    defineField({
       name: 'trustItemsOverride',
       title: 'Trust items override (optional)',
       type: 'array',

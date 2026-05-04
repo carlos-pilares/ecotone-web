@@ -5,6 +5,7 @@
 import { aboutPartnersCopy, aboutPartnersFallback, aboutSeoFallback, aboutStatic } from '@/data/aboutStatic'
 import type { AboutPageSanityDoc } from '@/lib/aboutPageQuery'
 import type { PartnerDoc } from '@/lib/queries'
+import { resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
 
 function trimOr(fallback: string, v?: string | null) {
   const t = v?.trim()
@@ -59,9 +60,11 @@ export type AboutPageResolved = {
     primaryLabel: string
     primaryHref: string
     primaryOpenInNewTab: boolean
+    primaryRel?: string
     secondaryLabel: string
     secondaryHref: string
     secondaryOpenInNewTab: boolean
+    secondaryRel?: string
     imageUrl: string
     imageAlt: string
   }
@@ -155,16 +158,29 @@ export function resolveAboutPageData(
     ogImageUrl: c?.seo?.ogImageUrl?.trim() || aboutSeoFallback.ogImageUrl || null,
   }
 
+  const primaryResolved = resolveSmartLinkOrLegacy(
+    c?.heroPrimarySmartLink,
+    c?.heroPrimaryCta,
+    { label: fb.hero.primaryLabel, href: fb.hero.primaryHref, openInNewTab: false },
+  )
+  const secondaryResolved = resolveSmartLinkOrLegacy(
+    c?.heroSecondarySmartLink,
+    c?.heroSecondaryCta,
+    { label: fb.hero.secondaryLabel, href: fb.hero.secondaryHref, openInNewTab: false },
+  )
+
   const hero = {
     eyebrow: trimOr(fb.hero.eyebrow, c?.heroEyebrow),
     titleLines: splitTitleLines(c?.heroTitle, fb.hero.titleLines),
     tagline: trimOr(fb.hero.tagline, c?.heroTagline),
-    primaryLabel: trimOr(fb.hero.primaryLabel, c?.heroPrimaryCta?.label),
-    primaryHref: trimOr(fb.hero.primaryHref, c?.heroPrimaryCta?.href),
-    primaryOpenInNewTab: c?.heroPrimaryCta?.openInNewTab === true,
-    secondaryLabel: trimOr(fb.hero.secondaryLabel, c?.heroSecondaryCta?.label),
-    secondaryHref: trimOr(fb.hero.secondaryHref, c?.heroSecondaryCta?.href),
-    secondaryOpenInNewTab: c?.heroSecondaryCta?.openInNewTab === true,
+    primaryLabel: primaryResolved.label,
+    primaryHref: primaryResolved.href,
+    primaryOpenInNewTab: primaryResolved.openInNewTab,
+    primaryRel: primaryResolved.rel || undefined,
+    secondaryLabel: secondaryResolved.label,
+    secondaryHref: secondaryResolved.href,
+    secondaryOpenInNewTab: secondaryResolved.openInNewTab,
+    secondaryRel: secondaryResolved.rel || undefined,
     imageUrl: trimOr(fb.hero.imageUrl, c?.heroImageUrl),
     imageAlt: trimOr(fb.hero.imageAlt, c?.heroImageAlt),
   }

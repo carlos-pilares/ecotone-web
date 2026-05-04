@@ -113,6 +113,13 @@ export const lodgePage = defineType({
       type: 'linkWithLabel',
       group: 'hero',
     }),
+    defineField({
+      name: 'heroCtaSmartLink',
+      title: 'Hero CTA (smart link)',
+      type: 'smartLink',
+      group: 'hero',
+      description: 'smartLink overrides legacy fields. Optional until editors migrate.',
+    }),
 
     // --- Snapshot bar ---
     lodgePreviewField(
@@ -159,6 +166,13 @@ export const lodgePage = defineType({
       title: 'CTA',
       type: 'linkWithLabel',
       group: 'navigation',
+    }),
+    defineField({
+      name: 'navCtaSmartLink',
+      title: 'Navigation CTA (smart link)',
+      type: 'smartLink',
+      group: 'navigation',
+      description: 'smartLink overrides legacy fields. Optional until editors migrate.',
     }),
 
     // --- Overview ---

@@ -78,6 +78,12 @@ export const landingReserveBlock = defineType({
       description: 'Vacío = texto del CTA de «Actual en la web».',
     }),
     defineField({
+      name: 'wetravelSmartLink',
+      title: 'WeTravel / primary CTA (smart link)',
+      type: 'smartLink',
+      description: 'smartLink overrides legacy fields (URL + label above). Optional.',
+    }),
+    defineField({
       name: 'whatsappUrl',
       title: 'URL WhatsApp',
       type: 'url',
@@ -89,6 +95,12 @@ export const landingReserveBlock = defineType({
       type: 'string',
       validation: (r) => r.max(60),
       description: 'Vacío = etiqueta WhatsApp de «Actual en la web».',
+    }),
+    defineField({
+      name: 'whatsappSmartLink',
+      title: 'WhatsApp (smart link)',
+      type: 'smartLink',
+      description: 'smartLink overrides legacy fields (URL + label above). Optional.',
     }),
     defineField({
       name: 'legalNote',
@@ -109,6 +121,12 @@ export const landingReserveBlock = defineType({
       type: 'string',
       validation: (r) => r.max(80),
       description: 'P. ej. «Terms & Conditions». Vacío = etiqueta por defecto técnica del sitio.',
+    }),
+    defineField({
+      name: 'termsSmartLink',
+      title: 'Enlace a términos (smart link)',
+      type: 'smartLink',
+      description: 'smartLink overrides legacy fields (terms link label + anchor/URL). Optional.',
     }),
     defineField({
       name: 'trustStripItems',

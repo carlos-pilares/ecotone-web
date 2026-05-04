@@ -71,5 +71,11 @@ export const landingHero = defineType({
       type: 'cta',
       description: 'Botón del hero (enlace WeTravel, etc.). Es específico de esta URL; el detalle del programa sigue en Experiencia.',
     }),
+    defineField({
+      name: 'bookCtaSmartLink',
+      title: 'CTA principal (smart link)',
+      type: 'smartLink',
+      description: 'smartLink overrides legacy fields (book CTA label + URL). Optional.',
+    }),
   ],
 })
