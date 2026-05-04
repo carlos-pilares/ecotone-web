@@ -1,9 +1,16 @@
 /**
- * Contenido estático de `/routes` (sin CMS).
+ * Contenido estático de `/routes` y fallback cuando Sanity no responde o faltan listas.
  * Alineado con `ecotone-routes_2.html`.
  */
 
 import type { ReviewDoc } from '@/lib/queries'
+
+/** SEO por defecto (`generateMetadata` + seed `routesPage`). */
+export const routesSeoFallback = {
+  title: 'Routes — Ecotone · Cusco, Perú',
+  description:
+    'Three corridors from Cusco into the Manu Biosphere Reserve and Camanti — cloud forest, gradient, and deep Amazon. Compare routes and find your program.',
+} as const
 
 export type RoutesHeroStatic = {
   imageSrc: string
@@ -344,6 +351,16 @@ export const routesFeaturedQuoteItems: { text: string; attr: string }[] = [
     attr: '— Sofia · Barcelona, ES · Andean Cloud Forest',
   },
 ]
+
+/** Copy por defecto del bloque `ReviewsSection` en `/routes`. */
+export const routesReviewsUiDefaults = {
+  eyebrow: 'Guest voices',
+  headline: 'Along these routes',
+  sectionLead: 'Stories from Camanti and Manu — same care and standards on every corridor.',
+  secondaryRatingLine: '12 verified reviews',
+  averageRating: '5.0',
+  sourceLabel: 'Trustpilot',
+} as const
 
 export const routesReviewDocs: ReviewDoc[] = [
   {

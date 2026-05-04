@@ -1,6 +1,8 @@
 /** Stable Sanity document ids used by seeds (single source of truth). */
 export const CMS_IDS = {
   homePage: 'homePage',
+  /** Singleton `routesPage` (seed + Studio). */
+  routesPage: 'routesPage',
   siteSettings: 'siteSettings',
   routeCamanti: 'routeCamanti',
   lodgeSoqtapata: 'lodgeSoqtapata',

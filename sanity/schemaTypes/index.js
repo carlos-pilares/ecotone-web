@@ -16,9 +16,30 @@ import {internalNavItem} from './objects/internalNavItem'
 import {pageModule} from './objects/pageModule'
 import {reviewsLayoutBlock} from './objects/reviewsLayoutBlock'
 import {seo} from './objects/seo'
+import {
+  routesPageStatLine,
+  routesPageTerritoryStripChip,
+  routesPageRouteBadge,
+  routesPageRouteCard,
+  routesPageCompareColumn,
+  routesPageExpFilterPill,
+  routesPageExpCard,
+  routesPageFeaturedQuote,
+  routesPageTrustItem,
+} from './objects/routesPageObjects'
+import {
+  routesCompareLodgeCell,
+  routesComparePriceCell,
+  routesCompareRowText,
+  routesCompareRowDots,
+  routesCompareRowLodge,
+  routesCompareRowBest,
+  routesCompareRowPrice,
+} from './objects/routesCompareRows'
 import {experience} from './experience'
 import {experiencePage} from './experiencePage'
 import {homePage} from './homePage'
+import {routesPage} from './routesPage'
 import {lodge} from './lodge'
 import {lodgePage} from './lodgePage'
 import {partner} from './partner'
@@ -43,6 +64,22 @@ const objects = [
   lodgePageSectionCopy,
   lodgeSnapshotKeyPick,
   lodgePageBookingBlock,
+  routesPageStatLine,
+  routesPageTerritoryStripChip,
+  routesPageRouteBadge,
+  routesPageRouteCard,
+  routesPageCompareColumn,
+  routesPageExpFilterPill,
+  routesPageExpCard,
+  routesPageFeaturedQuote,
+  routesPageTrustItem,
+  routesCompareLodgeCell,
+  routesComparePriceCell,
+  routesCompareRowText,
+  routesCompareRowDots,
+  routesCompareRowLodge,
+  routesCompareRowBest,
+  routesCompareRowPrice,
 ]
 
 const documents = [
@@ -57,6 +94,7 @@ const documents = [
   blogPost,
   partner,
   homePage,
+  routesPage,
 ]
 
 export const schema = {

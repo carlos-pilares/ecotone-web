@@ -55,6 +55,16 @@ export const structure = (S) =>
                     .title('Home page'),
                 ),
               S.listItem()
+                .title('Routes page')
+                .icon(ArrowRightIcon)
+                .id('routesPagePinned')
+                .child(
+                  S.document()
+                    .schemaType('routesPage')
+                    .documentId('routesPage')
+                    .title('Routes · landing'),
+                ),
+              S.listItem()
                 .title('Lodge Pages')
                 .icon(DocumentTextIcon)
                 .id('lodgePages')
