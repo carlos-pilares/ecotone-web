@@ -1,0 +1,507 @@
+/* About page — section-specific layout only.
+   Shared tokens, typography, pills, buttons, fade base, content-section, trust-strip: experience-surface.css + globals. */
+
+.about-page .bg-dark {
+  background: var(--n900);
+}
+
+/* Centered eyebrow (extends .eyebrow; does not replace global .eyebrow rules) */
+.about-page .about-eyebrow-center.eyebrow {
+  justify-content: center;
+}
+.about-page .about-eyebrow-center.eyebrow::before {
+  display: none;
+}
+.about-page .about-eyebrow-center.eyebrow::after {
+  content: '';
+  width: 18px;
+  height: 1px;
+  background: var(--b200);
+  flex-shrink: 0;
+}
+
+.fade-d3 {
+  transition-delay: 0.3s;
+}
+
+/* ═══ 01 Hero ═══ */
+.about-hero {
+  padding-top: var(--nav-h);
+  position: relative;
+}
+.about-hero-img {
+  position: relative;
+  height: clamp(420px, 60vh, 580px);
+  overflow: hidden;
+}
+.about-hero-img img {
+  height: 100%;
+  object-fit: cover;
+}
+.about-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(26, 18, 9, 0.5) 0%, rgba(26, 18, 9, 0.25) 35%, rgba(26, 18, 9, 0.75) 100%);
+}
+.about-hero-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: calc(var(--nav-h) + 20px) var(--g) 32px;
+}
+.about-hero-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(212, 170, 114, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.about-hero-eyebrow::before,
+.about-hero-eyebrow::after {
+  content: '';
+  width: 14px;
+  height: 1px;
+  background: rgba(212, 170, 114, 0.35);
+  flex-shrink: 0;
+}
+.about-hero-h1 {
+  font-size: clamp(26px, 4.5vw, 48px);
+  font-weight: 700;
+  color: var(--cream);
+  letter-spacing: -0.028em;
+  line-height: 1.06;
+  max-width: 640px;
+  margin-bottom: 14px;
+}
+.about-hero-tagline {
+  font-size: 15px;
+  font-weight: 300;
+  color: rgba(236, 229, 213, 0.55);
+  max-width: 520px;
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+.about-hero-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ═══ 02 Who ═══ */
+.who-grid {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: clamp(24px, 4vw, 56px);
+  align-items: stretch;
+}
+@media (max-width: 680px) {
+  .who-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.who-img {
+  border-radius: var(--rl);
+  overflow: hidden;
+  min-height: 400px;
+}
+.who-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.who-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+.about-diff-h2 {
+  max-width: 480px;
+}
+
+/* ═══ 03 Why ═══ */
+.why-inner {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+}
+.why-h2 {
+  font-size: clamp(24px, 3.5vw, 38px);
+  font-weight: 700;
+  color: var(--cream);
+  letter-spacing: -0.022em;
+  line-height: 1.1;
+  margin-bottom: 18px;
+}
+.why-body {
+  font-size: 15px;
+  font-weight: 300;
+  color: rgba(236, 229, 213, 0.55);
+  line-height: 1.8;
+}
+
+/* ═══ 04 Difference ═══ */
+.diff-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 6px;
+}
+@media (max-width: 560px) {
+  .diff-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.diff-card {
+  padding: 22px 22px 20px;
+  background: var(--w);
+  border: 0.5px solid var(--n200);
+  border-radius: var(--rl);
+}
+.diff-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--b50);
+  border: 1px solid var(--b200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+  color: var(--brown);
+}
+.diff-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--n900);
+  margin-bottom: 7px;
+  letter-spacing: -0.01em;
+}
+.diff-desc {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--n700);
+  line-height: 1.7;
+}
+
+/* ═══ 05 Way ═══ */
+.way-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: clamp(24px, 4vw, 52px);
+  align-items: stretch;
+}
+@media (max-width: 680px) {
+  .way-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.way-img {
+  border-radius: var(--rl);
+  overflow: hidden;
+  min-height: 380px;
+}
+.way-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+@media (max-width: 680px) {
+  .way-img {
+    display: none;
+  }
+}
+.way-pullquote {
+  margin-top: 22px;
+  padding-left: 18px;
+  border-left: 2.5px solid var(--b200);
+}
+.way-pullquote p {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--n900);
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+
+/* ═══ 06 People ═══ */
+.people-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 760px) {
+  .people-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 420px) {
+  .people-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.person-card {
+  border: 0.5px solid var(--n200);
+  border-radius: var(--rl);
+  overflow: hidden;
+  background: var(--w);
+  transition:
+    border-color 0.18s,
+    box-shadow 0.2s;
+}
+.person-card:hover {
+  border-color: var(--b200);
+  box-shadow: 0 6px 22px rgba(144, 103, 48, 0.09);
+}
+.person-img {
+  height: 240px;
+  overflow: hidden;
+  position: relative;
+}
+.person-img img {
+  height: 100%;
+  transition: transform 0.5s;
+}
+.person-card:hover .person-img img {
+  transform: scale(1.04);
+}
+.person-body {
+  padding: 14px 15px 16px;
+}
+.person-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--n900);
+  margin-bottom: 3px;
+  letter-spacing: -0.01em;
+}
+.person-role {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--brown);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 9px;
+}
+.person-bio {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--n700);
+  line-height: 1.65;
+}
+
+/* ═══ 07 Proof ═══ */
+.about-proof-h2 {
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 700;
+  color: var(--cream);
+  letter-spacing: -0.022em;
+  line-height: 1.1;
+  margin-bottom: 12px;
+  max-width: 540px;
+}
+.about-proof-intro {
+  font-size: 14px;
+  font-weight: 300;
+  color: rgba(236, 229, 213, 0.42);
+  line-height: 1.8;
+  max-width: 520px;
+  margin-bottom: 40px;
+}
+.proof-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--rl);
+  overflow: hidden;
+  margin-bottom: 36px;
+}
+@media (max-width: 640px) {
+  .proof-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.proof-stat {
+  padding: 28px 22px;
+  background: rgba(255, 255, 255, 0.03);
+  transition: background 0.2s;
+}
+.proof-stat:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.proof-stat-n {
+  font-size: clamp(38px, 5vw, 56px);
+  font-weight: 700;
+  color: var(--cream);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  margin-bottom: 6px;
+}
+.proof-stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--b200);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.proof-stat-desc {
+  font-size: 12px;
+  font-weight: 300;
+  color: rgba(236, 229, 213, 0.38);
+  line-height: 1.6;
+}
+.proof-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+  margin-bottom: 28px;
+}
+.proof-certs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.proof-cert-label {
+  font-size: 11px;
+  font-weight: 300;
+  color: rgba(236, 229, 213, 0.3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-right: 4px;
+}
+.proof-cert {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(236, 229, 213, 0.55);
+  background: rgba(255, 255, 255, 0.04);
+  transition:
+    border-color 0.18s,
+    color 0.18s;
+}
+.proof-cert:hover {
+  border-color: var(--b200);
+  color: var(--b200);
+}
+
+/* Partners band — mirrors app/home-surface.css (Home partners row) */
+.partners-band {
+  background: var(--w);
+  border-top: 1px solid var(--n200);
+  border-bottom: 1px solid var(--n200);
+  padding: 32px var(--g);
+}
+.partners-inner {
+  max-width: var(--max);
+  margin: 0 auto;
+}
+.partners-label {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--n400);
+  margin-bottom: 22px;
+}
+.partners-body {
+  max-width: 700px;
+  margin: 0 auto 18px;
+  text-align: center;
+  color: var(--n700);
+}
+.partners-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0;
+}
+.partner-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 18px;
+  opacity: 0.4;
+  transition: opacity 0.25s;
+}
+.partner-logo:hover {
+  opacity: 1;
+}
+.partner-wordmark {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--n700);
+  white-space: nowrap;
+}
+.partner-sep {
+  width: 1px;
+  height: 28px;
+  background: var(--n200);
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* Final CTA */
+.about-final-inner {
+  text-align: center;
+}
+.about-final-h2 {
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.about-final-body {
+  max-width: 460px;
+  margin: 0 auto 26px;
+}
+.about-final-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.about-final-actions .btn {
+  font-size: 13px;
+  padding: 13px 26px;
+}
+.about-final-actions .about-whatsapp-btn {
+  background: #25d366;
+  color: #fff;
+  border: none;
+  gap: 8px;
+}
+.about-final-actions .about-whatsapp-btn:hover {
+  background: #1da851;
+  color: #fff;
+  transform: translateY(-1px);
+}
+.about-final-trust {
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
