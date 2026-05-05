@@ -325,19 +325,9 @@ function LodgesMega({ nav }: { nav: ResolvedSiteHeaderNav['lodges'] }) {
   )
 }
 
-function MobileDrawer({ nav, primaryCta }: { nav: ResolvedSiteHeaderNav; primaryCta: { label: string; href: string; openInNewTab: boolean } }) {
+function MobileDrawer({ nav }: { nav: ResolvedSiteHeaderNav }) {
   return (
     <div className="mobile-drawer site-header-mobile-drawer site-header-mobile-only" id="drawer" data-header-drawer="managed">
-      <div className="mob-drawer-top">
-        <a
-          href={primaryCta.href}
-          className="mob-drawer-book"
-          {...(primaryCta.openInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-        >
-          {primaryCta.label}
-        </a>
-      </div>
-
       <button type="button" className="mob-acc-btn" data-mob-acc-panel="mob-acc-exp">
         <div>
           Experiences
@@ -537,7 +527,7 @@ export async function SiteHeader({ mainNavSolid = true }: SiteHeaderProps = {}) 
         <LodgesMega nav={nav.lodges} />
       </div>
       <div className="nav-overlay" id="navOverlay" aria-hidden="true" />
-      <MobileDrawer nav={nav} primaryCta={primaryCta} />
+      <MobileDrawer nav={nav} />
       <SiteHeaderShellClient />
     </>
   )

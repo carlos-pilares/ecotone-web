@@ -533,33 +533,6 @@
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
-.mob-drawer-top {
-  flex-shrink: 0;
-  padding: 12px var(--g) 14px;
-  border-bottom: 1px solid var(--n200);
-  background: var(--w, #fdfcf9);
-}
-.mob-drawer-book {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  box-sizing: border-box;
-  background: var(--brown);
-  color: #fff;
-  font-family: var(--font-lexend), var(--f, system-ui), sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  padding: 11px 20px;
-  border-radius: 100px;
-  border: none;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background 0.15s;
-}
-.mob-drawer-book:hover {
-  background: var(--brown-dk);
-}
 .mob-acc-btn {
   display: flex;
   align-items: center;
@@ -757,6 +730,11 @@
   .site-header-desktop-dd,
   .nav-links .site-header-dd-trigger-li {
     display: none !important;
+  }
+
+  /* Space below fixed top nav before first accordion (no duplicate Book row in drawer). */
+  #drawer.site-header-mobile-drawer > .mob-acc-btn:first-of-type {
+    margin-top: 8px;
   }
 
   /* Book CTA in the bar (reference: visible before opening drawer). */
