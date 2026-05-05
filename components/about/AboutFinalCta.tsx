@@ -41,8 +41,8 @@ export function AboutFinalCta({ data }: { data: FinalData }) {
         <h2 className="h2 about-final-h2">{data.headline}</h2>
         <p className="body about-final-body">{data.body}</p>
         <div className="about-final-actions">
-          {data.ctas.map((c) => {
-            const isWa = c.variant === 'ghost' && c.external
+          {data.ctas.map((c, idx) => {
+            const isWa = c.variant === 'whatsapp' || (c.variant === 'ghost' && c.external)
             const btnClass =
               c.variant === 'primary'
                 ? 'btn btn-primary'
@@ -59,13 +59,13 @@ export function AboutFinalCta({ data }: { data: FinalData }) {
             )
             if (c.external) {
               return (
-                <a key={c.label} href={c.href} className={btnClass} target="_blank" rel="noopener noreferrer">
+                <a key={`${idx}-${c.href}`} href={c.href} className={btnClass} target="_blank" rel="noopener noreferrer">
                   {inner}
                 </a>
               )
             }
             return (
-              <Link key={c.label} href={c.href} className={btnClass}>
+              <Link key={`${idx}-${c.href}`} href={c.href} className={btnClass}>
                 {inner}
               </Link>
             )

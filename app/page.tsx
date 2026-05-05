@@ -116,7 +116,7 @@ export default async function Home() {
       />
       <EcotoneV2Client featuredQuoteItems={featuredQuoteItems}>
         <IsotipoDefs />
-        <SiteHeader />
+        <SiteHeader mainNavSolid={false} />
         <Hero heroData={homePage} />
         <HomeStaticSections
           homeData={homePage}

@@ -15,6 +15,7 @@ export const routesPage = defineType({
     {name: 'routeCards', title: 'Route cards'},
     {name: 'compare', title: 'Comparison table'},
     {name: 'experiences', title: 'Experiences grid'},
+    {name: 'experiencesLegacy', title: 'Experiences — legacy fallback'},
     {name: 'reviews', title: 'Reviews'},
     {name: 'finalCta', title: 'Final CTA'},
     {name: 'finalCtaLegacy', title: 'Final CTA — legacy fallback'},
@@ -141,6 +142,29 @@ export const routesPage = defineType({
     defineField({name: 'experiencesAllLabel', title: '“See all” link label', type: 'string', group: 'experiences'}),
     defineField({name: 'experiencesAllHref', title: '“See all” link URL', type: 'string', group: 'experiences'}),
     defineField({
+      name: 'experiencesAllSmartLink',
+      title: '“See all” link (smart link)',
+      type: 'smartLink',
+      group: 'experiences',
+      description: 'Primary control for the “see all” link. Smart link overrides legacy URL/label.',
+    }),
+    defineField({
+      name: 'selectedExperiences',
+      title: 'Selected experiences (ordered)',
+      type: 'array',
+      group: 'experiences',
+      of: [{type: 'reference', to: [{type: 'experience'}]}],
+      validation: (Rule) => Rule.max(48),
+      description: 'Primary source for the cards. If empty and fallback is enabled, the page uses all published experiences.',
+    }),
+    defineField({
+      name: 'fallbackToAllExperiences',
+      title: 'If no selected experiences, use all experiences',
+      type: 'boolean',
+      group: 'experiences',
+      initialValue: true,
+    }),
+    defineField({
       name: 'experiencesFilters',
       title: 'Filter pills (optional)',
       description: 'If empty, the site uses default filters (All, Camanti, Manu Road, Manu Core).',
@@ -151,11 +175,12 @@ export const routesPage = defineType({
     }),
     defineField({
       name: 'experienceCards',
-      title: 'Experience cards',
+      title: 'Experience cards (legacy fallback)',
       type: 'array',
-      group: 'experiences',
+      group: 'experiencesLegacy',
       of: [{type: 'routesPageExpCard'}],
       validation: (Rule) => Rule.max(24),
+      description: 'Legacy manual cards. Used only if references are empty and no experiences can be resolved.',
     }),
 
     // --- Reviews ---

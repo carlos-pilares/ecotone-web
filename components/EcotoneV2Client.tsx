@@ -86,15 +86,18 @@ export function EcotoneV2Client(props: FullHtmlProps | SplitBodyProps | ReactShe
 
     const ham = document.getElementById('ham')
     const drawer = document.getElementById('drawer')
-    const onHam = () => drawer?.classList.toggle('open')
-    ham?.addEventListener('click', onHam)
-    cleanups.push(() => ham?.removeEventListener('click', onHam))
+    const headerManagesDrawer = drawer?.dataset.headerDrawer === 'managed'
+    if (!headerManagesDrawer) {
+      const onHam = () => drawer?.classList.toggle('open')
+      ham?.addEventListener('click', onHam)
+      cleanups.push(() => ham?.removeEventListener('click', onHam))
 
-    if (drawer) {
-      const links = Array.from(drawer.querySelectorAll('a'))
-      const closeDrawer = () => drawer.classList.remove('open')
-      links.forEach((a) => a.addEventListener('click', closeDrawer))
-      cleanups.push(() => links.forEach((a) => a.removeEventListener('click', closeDrawer)))
+      if (drawer) {
+        const links = Array.from(drawer.querySelectorAll('a'))
+        const closeDrawer = () => drawer.classList.remove('open')
+        links.forEach((a) => a.addEventListener('click', closeDrawer))
+        cleanups.push(() => links.forEach((a) => a.removeEventListener('click', closeDrawer)))
+      }
     }
 
     const io = new IntersectionObserver(

@@ -270,6 +270,14 @@ export const lodgePage = defineType({
       group: 'experiences',
       initialValue: true,
     }),
+    defineField({
+      name: 'experiencesTailorCta',
+      title: '5. Banda Tailor Made (CTA)',
+      type: 'lodgePageExperiencesTailorCta',
+      group: 'experiences',
+      description:
+        'Banda ancha bajo las tarjetas de experiencias. No usa documentos `experience`; activar solo si quieres mostrar este bloque.',
+    }),
 
     // --- Reviews ---
     lodgePreviewField(

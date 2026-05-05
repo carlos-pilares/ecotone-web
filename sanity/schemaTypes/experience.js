@@ -150,6 +150,14 @@ export const experience = defineType({
       validation: (Rule) => Rule.max(20),
     }),
     defineField({
+      name: 'lodgeEnquireSmartLink',
+      title: 'Lodge card — Enquire link (sin precio)',
+      type: 'smartLink',
+      group: 'identity',
+      description:
+        'Cuando la tarjeta de experiencia en la página del lodge muestra Enquire (sin precio numérico), el clic usa este enlace. Si está vacío, se abre WhatsApp con un mensaje prefijado.',
+    }),
+    defineField({
       name: 'tagline',
       title: 'Tagline',
       type: 'string',

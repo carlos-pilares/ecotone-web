@@ -68,16 +68,18 @@ export function LodgeExperiences({ data }: LodgeExperiencesProps) {
             </Link>
           ))}
 
-          <a href={data.tailor.href} className="lodge-exp-tailor">
-            <div>
-              <div className="lodge-exp-tailor-kicker">{data.tailor.kicker}</div>
-              <div className="lodge-exp-tailor-title">{data.tailor.title}</div>
-              <div className="lodge-exp-tailor-desc">{data.tailor.description}</div>
-            </div>
-            <div style={{ flexShrink: 0 }}>
-              <span className="lodge-exp-tailor-cta">{data.tailor.ctaLabel}</span>
-            </div>
-          </a>
+          {data.tailor ? (
+            <a href={data.tailor.href} className="lodge-exp-tailor">
+              <div>
+                <div className="lodge-exp-tailor-kicker">{data.tailor.kicker}</div>
+                <div className="lodge-exp-tailor-title">{data.tailor.title}</div>
+                <div className="lodge-exp-tailor-desc">{data.tailor.description}</div>
+              </div>
+              <div style={{ flexShrink: 0 }}>
+                <span className="lodge-exp-tailor-cta">{data.tailor.ctaLabel}</span>
+              </div>
+            </a>
+          ) : null}
         </div>
       </div>
     </section>

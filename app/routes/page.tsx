@@ -38,7 +38,7 @@ export default async function RoutesPage() {
   const snapshotItems = p.snapshotStats.map((s) => ({ value: s.value, label: s.label }))
 
   return (
-    <EcotoneV2Client featuredQuoteItems={p.featuredQuotes}>
+    <EcotoneV2Client solidMainNav featuredQuoteItems={p.featuredQuotes}>
       <div className="routes-page">
         <IsotipoDefs />
         <SiteHeader />

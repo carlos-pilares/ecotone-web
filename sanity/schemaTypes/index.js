@@ -11,6 +11,7 @@ import {landingReserveBlock} from './objects/landingReserveBlock'
 import {lodgePageSectionCopy} from './objects/lodgePageSectionCopy'
 import {lodgeSnapshotKeyPick} from './objects/lodgeSnapshotKeyPick'
 import {lodgePageBookingBlock} from './objects/lodgePageBookingBlock'
+import {lodgePageExperiencesTailorCta} from './objects/lodgePageExperiencesTailorCta'
 import {experiencePageSnapshotStatPick} from './objects/experiencePageSnapshotStatPick'
 import {experiencePageInternalNav} from './objects/experiencePageInternalNav'
 import {internalNavItem} from './objects/internalNavItem'
@@ -76,6 +77,7 @@ const objects = [
   lodgePageSectionCopy,
   lodgeSnapshotKeyPick,
   lodgePageBookingBlock,
+  lodgePageExperiencesTailorCta,
   routesPageStatLine,
   routesPageTerritoryStripChip,
   routesPageRouteBadge,

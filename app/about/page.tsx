@@ -38,7 +38,7 @@ export default async function AboutPage() {
   const p = await getAboutPage()
 
   return (
-    <EcotoneV2Client>
+    <EcotoneV2Client solidMainNav>
       <div className="about-page">
         <IsotipoDefs />
         <SiteHeader />

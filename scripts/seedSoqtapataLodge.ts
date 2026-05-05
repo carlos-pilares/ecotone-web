@@ -29,6 +29,8 @@ import {
 import { lodgeSoqtapataExperienceCardDefaults, lodgeSoqtapataReviewsSectionDefaults } from '@/data/lodgeSoqtapataResolverDefaults'
 import { lodgeSoqtapataSeoDefault } from '@/lib/lodgePageCmsTypes'
 
+import { parseWaMeHref } from './seed/parseWaMeHref'
+
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET
 const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2025-12-20'
@@ -38,8 +40,6 @@ const token = process.env.SANITY_API_TOKEN
 const LODGE_DOCUMENT_ID = 'lodge-soqtapata'
 const LODGE_PAGE_DOCUMENT_ID = 'lodgePage-soqtapata-lodge'
 const EXPERIENCE_SOQTAPATA_ID = 'experience-soqtapata-3d2n'
-
-const GALLERY_CATS = ['common', 'room', 'wildlife', 'research', 'journey'] as const
 
 type UploadedSanityImage = { _type: 'image'; asset: { _type: 'reference'; _ref: string } }
 
@@ -118,7 +118,40 @@ async function buildLodgeDoc(client: SanityClient, imgCache: Map<string, Uploade
   const mainImage =
     (await uploadImageFromUrl(client, lodgeSoqtapataHero.imageSrc, 'hero-main', imgCache)) ?? undefined
 
+  /** Single master bank (`lodge.gallery`); rooms & common areas reference `stableKey`. */
   const gallery: Array<Record<string, unknown>> = []
+
+  function pushGalleryItem(opts: {
+    _key: string
+    stableKey: string
+    image: NonNullable<Awaited<ReturnType<typeof uploadImageFromUrl>>>
+    title: string
+    description: string
+    alt: string
+    usageSection: 'hero' | 'accommodation' | 'commonAreas'
+    roomStableId?: string
+  }) {
+    gallery.push({
+      _key: opts._key,
+      _type: 'lodgeGalleryItem' as const,
+      stableKey: opts.stableKey,
+      image: opts.image,
+      title: opts.title,
+      description: opts.description,
+      alt: opts.alt,
+      usageSection: opts.usageSection,
+      ...(opts.roomStableId ? {roomStableId: opts.roomStableId} : {}),
+      // Legacy compatibility:
+      category:
+        opts.usageSection === 'commonAreas'
+          ? 'commonArea'
+          : opts.usageSection === 'accommodation'
+            ? 'accommodation'
+            : 'hero',
+      ...(opts.roomStableId ? {relatedRoomStableId: opts.roomStableId} : {}),
+    })
+  }
+
   let gi = 0
   for (const item of lodgeSoqtapataHero.gallery) {
     const image = await uploadImageFromUrl(client, item.src, `hero-gallery-${gi}`, imgCache)
@@ -126,29 +159,71 @@ async function buildLodgeDoc(client: SanityClient, imgCache: Map<string, Uploade
       gi++
       continue
     }
-    gallery.push({
+    pushGalleryItem({
       _key: `hg-${gi}`,
-      _type: 'lodgeGalleryItem',
+      stableKey: `hero-${gi}`,
       image,
       title: item.title,
       description: item.description,
-      category: GALLERY_CATS[gi % GALLERY_CATS.length],
+      alt: item.alt,
+      usageSection: 'hero',
     })
     gi++
+  }
+
+  const roomGalleryKeys: Record<string, string[]> = {}
+  for (let ri = 0; ri < lodgeSoqtapataRooms.rooms.length; ri++) {
+    const r = lodgeSoqtapataRooms.rooms[ri]
+    const stableId = ri === 0 ? 'private-cottage' : 'double-room'
+    const keys: string[] = []
+    let gk = 0
+    for (const ph of r.galleryPhotos ?? []) {
+      const image = await uploadImageFromUrl(client, ph.src, `room-${stableId}-${gk}`, imgCache)
+      if (!image) {
+        gk++
+        continue
+      }
+      const stableKey = `room-${stableId}-${gk}`
+      pushGalleryItem({
+        _key: `g-${stableKey}`,
+        stableKey,
+        image,
+        title: ph.title,
+        description: ph.description,
+        alt: ph.alt,
+        usageSection: 'accommodation',
+        roomStableId: stableId,
+      })
+      keys.push(stableKey)
+      gk++
+    }
+    roomGalleryKeys[stableId] = keys
   }
 
   const commonAreas: Array<Record<string, unknown>> = []
   let ci = 0
   for (const a of lodgeSoqtapataFacilities.commonAreasGallery) {
-    const image = await uploadImageFromUrl(client, a.src, `common-${ci}`, imgCache)
+    const image = await uploadImageFromUrl(client, a.src, `common-master-${ci}`, imgCache)
     if (!image) {
       ci++
       continue
     }
+    const areaStableKey = `area-${ci}`
+    const galleryStableKey = `common-${ci}`
+    pushGalleryItem({
+      _key: `g-${galleryStableKey}`,
+      stableKey: galleryStableKey,
+      image,
+      title: a.title,
+      description: a.description,
+      alt: a.alt,
+      usageSection: 'commonAreas',
+    })
     commonAreas.push({
       _key: `ca-${ci}`,
-      _type: 'lodgeCommonArea',
-      image,
+      _type: 'lodgeCommonArea' as const,
+      stableKey: areaStableKey,
+      galleryStableKey,
       title: a.title,
       description: a.description,
     })
@@ -161,32 +236,20 @@ async function buildLodgeDoc(client: SanityClient, imgCache: Map<string, Uploade
     const stableId = ri === 0 ? 'private-cottage' : 'double-room'
     const numberOfRooms = ri === 0 ? 1 : 6
     const capacity = 2
-    const roomGallery: Array<Record<string, unknown>> = []
-    let gk = 0
-    for (const ph of r.galleryPhotos ?? []) {
-      const image = await uploadImageFromUrl(client, ph.src, `room-${stableId}-${gk}`, imgCache)
-      if (!image) {
-        gk++
-        continue
-      }
-      roomGallery.push({
-        _key: `rg-${stableId}-${gk}`,
-        _type: 'lodgeRoomGalleryItem',
-        image,
-        title: ph.title,
-        description: ph.description,
-      })
-      gk++
-    }
+    const galleryItemKeys = (roomGalleryKeys[stableId] ?? []).map((key, i) => ({
+      _key: `pk-${stableId}-${i}`,
+      _type: 'lodgeRoomGalleryPick' as const,
+      galleryStableKey: key,
+    }))
     rooms.push({
       _key: `room-${stableId}`,
-      _type: 'lodgeRoom',
+      _type: 'lodgeRoom' as const,
       stableId,
       name: r.name,
       numberOfRooms,
       capacity,
       highlights: [...r.chips],
-      gallery: roomGallery,
+      galleryItemKeys,
     })
   }
 
@@ -308,8 +371,16 @@ async function buildLodgeDoc(client: SanityClient, imgCache: Map<string, Uploade
   return doc
 }
 
-function buildLodgePageDoc(includeExperience: boolean) {
+async function buildLodgePageDoc(
+  client: SanityClient,
+  imgCache: Map<string, UploadedSanityImage>,
+  includeExperience: boolean,
+) {
   const snapshotKeys = ['rooms', 'max-guests', 'from-cusco', 'altitude', 'ecosystem', 'bcorp'] as const
+  const tailorImgUrl = 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=600&q=80'
+  const tailorImage =
+    (await uploadImageFromUrl(client, tailorImgUrl, 'experiences-tailor-cta', imgCache)) ?? undefined
+  const waTailor = parseWaMeHref(lodgeSoqtapataBook.secondaryCta.href)
   return {
     _type: 'lodgePage',
     _id: LODGE_PAGE_DOCUMENT_ID,
@@ -351,6 +422,23 @@ function buildLodgePageDoc(includeExperience: boolean) {
       ? [{ _key: 'sel-exp-1', _type: 'reference' as const, _ref: EXPERIENCE_SOQTAPATA_ID }]
       : [],
     fallbackToLodgeRelations: true,
+    experiencesTailorCta: {
+      _type: 'lodgePageExperiencesTailorCta' as const,
+      enabled: true,
+      eyebrow: lodgeSoqtapataExperiences.tailor.kicker,
+      title: lodgeSoqtapataExperiences.tailor.title,
+      description: lodgeSoqtapataExperiences.tailor.description,
+      ...(tailorImage ? { image: tailorImage } : {}),
+      imageAlt: 'Tailor made cloud forest program',
+      ctaSmartLink: {
+        _type: 'smartLink' as const,
+        label: lodgeSoqtapataExperiences.tailor.ctaLabel,
+        linkType: 'whatsapp' as const,
+        whatsappNumber: waTailor.number,
+        ...(waTailor.message ? { whatsappMessage: waTailor.message } : {}),
+        openInNewTab: true,
+      },
+    },
     reviewsSelection: [],
     reviewsPresentation: {
       sourceLabel: lodgeSoqtapataReviewsSectionDefaults.sourceLabel,
@@ -402,7 +490,7 @@ async function main() {
   const lodgeDoc = await buildLodgeDoc(client, imgCache, expOk)
 
   console.log('Building lodgePage document…')
-  const lodgePageDoc = buildLodgePageDoc(expOk)
+  const lodgePageDoc = await buildLodgePageDoc(client, imgCache, expOk)
 
   await client.createOrReplace(lodgeDoc as Parameters<SanityClient['createOrReplace']>[0])
   console.log(`createOrReplace OK: lodge _id=${LODGE_DOCUMENT_ID}`)

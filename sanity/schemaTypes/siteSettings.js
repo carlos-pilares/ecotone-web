@@ -38,6 +38,43 @@ const headerBlock = [
     type: 'string',
     initialValue: 'Open menu',
   }),
+  defineField({
+    name: 'navTailorMadeSmartLink',
+    title: 'Header — Tailor Made (mega menu CTA)',
+    type: 'smartLink',
+    description: 'Destino del bloque “Tailor Made” (p. ej. WhatsApp). No es un documento experience.',
+  }),
+  defineField({
+    name: 'navTailorMadeTitle',
+    title: 'Tailor Made — título',
+    type: 'string',
+    validation: (Rule) => Rule.max(120),
+  }),
+  defineField({
+    name: 'navTailorMadeSubtitle',
+    title: 'Tailor Made — subtítulo',
+    type: 'string',
+    validation: (Rule) => Rule.max(160),
+  }),
+  defineField({
+    name: 'navTailorMadeBody',
+    title: 'Tailor Made — texto (opcional)',
+    type: 'text',
+    rows: 3,
+    validation: (Rule) => Rule.max(400),
+  }),
+  defineField({
+    name: 'navExperiencesSeeAllSmartLink',
+    title: 'Header — “All experiences” (mega menu)',
+    type: 'smartLink',
+    description: 'Enlace “See all experiences” del dropdown. Vacío = fallback en la app.',
+  }),
+  defineField({
+    name: 'navLodgesSeeAllSmartLink',
+    title: 'Header — “All lodges” (mega menu)',
+    type: 'smartLink',
+    description: 'Enlace “See all lodges” del dropdown. Vacío = fallback en la app.',
+  }),
 ]
 
 const footerBlock = [
