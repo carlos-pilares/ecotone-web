@@ -124,16 +124,18 @@ export const lodgePage = defineType({
     }),
     defineField({
       name: 'heroCTA',
-      title: '4. Selección: CTA del hero',
+      title: '4. Selección: CTA del hero (legacy)',
       type: 'linkWithLabel',
       group: 'hero',
+      hidden: true,
+      description: 'Legacy fallback — hidden from normal editing.',
     }),
     defineField({
       name: 'heroCtaSmartLink',
-      title: 'Hero CTA (smart link)',
+      title: 'Hero CTA',
       type: 'smartLink',
       group: 'hero',
-      description: 'smartLink overrides legacy fields. Optional until editors migrate.',
+      description: 'Primary editor control for the hero button.',
     }),
 
     // --- Snapshot bar ---
@@ -178,16 +180,18 @@ export const lodgePage = defineType({
     }),
     defineField({
       name: 'navCTA',
-      title: 'CTA',
+      title: 'CTA (legacy)',
       type: 'linkWithLabel',
       group: 'navigation',
+      hidden: true,
+      description: 'Legacy fallback — hidden from normal editing.',
     }),
     defineField({
       name: 'navCtaSmartLink',
-      title: 'Navigation CTA (smart link)',
+      title: 'Navigation CTA',
       type: 'smartLink',
       group: 'navigation',
-      description: 'smartLink overrides legacy fields. Optional until editors migrate.',
+      description: 'Primary editor control for the navigation CTA.',
     }),
 
     // --- Overview ---

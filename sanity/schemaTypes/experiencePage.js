@@ -198,18 +198,19 @@ export const experiencePage = defineType({
     }),
     defineField({
       name: 'lodgeCtaLabel',
-      title: 'CTA label (texto del botón)',
+      title: 'CTA label (legacy)',
       type: 'string',
       group: 'lodge',
       initialValue: 'View full lodge page',
-      description: 'Texto del botón. Vacío = etiqueta por defecto del sitio.',
+      hidden: true,
+      description: 'Legacy fallback — hidden from normal editing.',
     }),
     defineField({
       name: 'lodgeCtaSmartLink',
-      title: 'Lodge CTA (smart link)',
+      title: 'Lodge CTA',
       type: 'smartLink',
       group: 'lodge',
-      description: 'Overrides lodgePageLink + lodgeCtaLabel when set',
+      description: 'Primary editor control for the lodge button (overrides legacy label + link when set).',
     }),
     previewField(
       'stPrevWildlife',

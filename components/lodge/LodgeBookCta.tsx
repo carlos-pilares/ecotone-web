@@ -79,21 +79,22 @@ export function LodgeBookCta({ data }: LodgeBookCtaProps) {
               </div>
             ))}
           </div>
-          <a
-            className="btn btn-primary lodge-book-btn-primary"
-            href={data.primaryCta.href}
-          >
-            {data.primaryCta.label}
-          </a>
-          <a
-            className="btn btn-ghost lodge-book-btn-secondary"
-            href={data.secondaryCta.href}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <WhatsAppGlyph />
-            {data.secondaryCta.label}
-          </a>
+          {data.primaryCta.href.trim() && data.primaryCta.label.trim() ? (
+            <a className="btn btn-primary lodge-book-btn-primary" href={data.primaryCta.href}>
+              {data.primaryCta.label}
+            </a>
+          ) : null}
+          {data.secondaryCta.href.trim() && data.secondaryCta.label.trim() ? (
+            <a
+              className="btn btn-ghost lodge-book-btn-secondary"
+              href={data.secondaryCta.href}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <WhatsAppGlyph />
+              {data.secondaryCta.label}
+            </a>
+          ) : null}
           <div className="trust-strip lodge-book-trust">
             {data.trustItems.map((item) => (
               <div className="trust-item" key={item.text}>

@@ -164,12 +164,14 @@ function ExperiencesMega({ nav }: { nav: ResolvedSiteHeaderNav['experiences'] })
             </div>
             <ChevSb />
           </button>
-          <div className="dd-sb-footer">
-            <a href={nav.seeAll.href} className="dd-see-all" {...(nav.seeAll.openInNewTab ? { target: '_blank', rel: nav.seeAll.rel } : {})}>
-              {nav.seeAll.label}
-              <ArrowSeeAll />
-            </a>
-          </div>
+          {nav.seeAll ? (
+            <div className="dd-sb-footer">
+              <a href={nav.seeAll.href} className="dd-see-all" {...(nav.seeAll.openInNewTab ? { target: '_blank', rel: nav.seeAll.rel } : {})}>
+                {nav.seeAll.label}
+                <ArrowSeeAll />
+              </a>
+            </div>
+          ) : null}
         </div>
         {nav.groups.map((g) => (
           <div
@@ -216,32 +218,47 @@ function ExperiencesMega({ nav }: { nav: ResolvedSiteHeaderNav['experiences'] })
         >
           <div className="dd-panel-eyebrow">{nav.tailor.eyebrow}</div>
           <div className="dd-tailor-stack">
-            <a
-              href={nav.tailor.cta.href}
-              className="dd-tailor-stack-link"
-              {...(nav.tailor.cta.openInNewTab ? { target: '_blank', rel: nav.tailor.cta.rel } : {})}
-            >
-              <div className="dd-tailor">
-                <div className="dd-tailor-icon" aria-hidden>
-                  <svg width="18" height="17" viewBox="0 0 105 101" fill="none">
-                    <path
-                      d="M103.703 59.25C102.343 49.75 97.3635 41.34 89.6735 35.59C89.3235 35.33 88.9635 35.07 88.6035 34.82C88.0135 15.52 72.1235 0 52.6835 0C33.6535 0 18.0434 14.86 16.8234 33.58C11.1834 37.11 6.62343 42.15 3.64343 48.28C-0.556567 56.91 -1.14654 66.66 1.98346 75.74C5.11346 84.81 11.5934 92.13 20.2234 96.33C25.2034 98.75 30.5535 99.98 35.9235 99.98C39.8735 99.98 43.8335 99.32 47.6735 98C49.0635 97.52 50.4034 96.96 51.7134 96.33L51.9534 96.46C56.9534 98.99 62.4335 100.31 68.0535 100.31C69.7735 100.31 71.5035 100.19 73.2335 99.94C82.7335 98.58 91.1434 93.6 96.8934 85.91C102.643 78.22 105.063 68.75 103.703 59.25Z"
-                      fill="#ECE5D5"
-                    />
-                  </svg>
-                </div>
-                <div className="dd-tailor-copy">
-                  <div className="dd-tailor-type">Tailor Made</div>
-                  <div className="dd-tailor-name">{nav.tailor.title}</div>
-                  <div className="dd-tailor-sub">{nav.tailor.subtitle}</div>
-                </div>
-              </div>
-              {nav.tailor.body ? <p className="dd-tailor-body">{nav.tailor.body}</p> : null}
-              <span className="dd-tailor-cta">
-                {nav.tailor.cta.label}
-                <ArrowSeeAll />
-              </span>
-            </a>
+            {(() => {
+              const cta = nav.tailor.cta
+              const inner = (
+                <>
+                  <div className="dd-tailor">
+                    <div className="dd-tailor-icon" aria-hidden>
+                      <svg width="18" height="17" viewBox="0 0 105 101" fill="none">
+                        <path
+                          d="M103.703 59.25C102.343 49.75 97.3635 41.34 89.6735 35.59C89.3235 35.33 88.9635 35.07 88.6035 34.82C88.0135 15.52 72.1235 0 52.6835 0C33.6535 0 18.0434 14.86 16.8234 33.58C11.1834 37.11 6.62343 42.15 3.64343 48.28C-0.556567 56.91 -1.14654 66.66 1.98346 75.74C5.11346 84.81 11.5934 92.13 20.2234 96.33C25.2034 98.75 30.5535 99.98 35.9235 99.98C39.8735 99.98 43.8335 99.32 47.6735 98C49.0635 97.52 50.4034 96.96 51.7134 96.33L51.9534 96.46C56.9534 98.99 62.4335 100.31 68.0535 100.31C69.7735 100.31 71.5035 100.19 73.2335 99.94C82.7335 98.58 91.1434 93.6 96.8934 85.91C102.643 78.22 105.063 68.75 103.703 59.25Z"
+                          fill="#ECE5D5"
+                        />
+                      </svg>
+                    </div>
+                    <div className="dd-tailor-copy">
+                      <div className="dd-tailor-type">Tailor Made</div>
+                      <div className="dd-tailor-name">{nav.tailor.title}</div>
+                      <div className="dd-tailor-sub">{nav.tailor.subtitle}</div>
+                    </div>
+                  </div>
+                  {nav.tailor.body ? <p className="dd-tailor-body">{nav.tailor.body}</p> : null}
+                  {cta ? (
+                    <span className="dd-tailor-cta">
+                      {cta.label}
+                      <ArrowSeeAll />
+                    </span>
+                  ) : null}
+                </>
+              )
+              if (cta) {
+                return (
+                  <a
+                    href={cta.href}
+                    className="dd-tailor-stack-link"
+                    {...(cta.openInNewTab ? { target: '_blank', rel: cta.rel } : {})}
+                  >
+                    {inner}
+                  </a>
+                )
+              }
+              return <div className="dd-tailor-stack-link">{inner}</div>
+            })()}
           </div>
         </div>
       </div>
@@ -270,12 +287,14 @@ function LodgesMega({ nav }: { nav: ResolvedSiteHeaderNav['lodges'] }) {
               <ChevSb />
             </button>
           ))}
-          <div className="dd-sb-footer">
-            <a href={nav.seeAll.href} className="dd-see-all" {...(nav.seeAll.openInNewTab ? { target: '_blank', rel: nav.seeAll.rel } : {})}>
-              {nav.seeAll.label}
-              <ArrowSeeAll />
-            </a>
-          </div>
+          {nav.seeAll ? (
+            <div className="dd-sb-footer">
+              <a href={nav.seeAll.href} className="dd-see-all" {...(nav.seeAll.openInNewTab ? { target: '_blank', rel: nav.seeAll.rel } : {})}>
+                {nav.seeAll.label}
+                <ArrowSeeAll />
+              </a>
+            </div>
+          ) : null}
         </div>
         {nav.routes.map((r) => (
           <div key={r.panelId} id={r.panelId} className={'dd-panel' + (r.panelId === active ? ' active' : '')} role="region" aria-label={r.eyebrow}>
@@ -361,31 +380,52 @@ function MobileDrawer({ nav }: { nav: ResolvedSiteHeaderNav }) {
           </div>
         ))}
         <div className="mob-cat">Tailor Made</div>
-        <a
-          href={nav.experiences.tailor.cta.href}
-          className="mob-item mob-item--tailor mob-tailor-row"
-          {...(nav.experiences.tailor.cta.openInNewTab ? { target: '_blank', rel: nav.experiences.tailor.cta.rel } : {})}
-        >
-          <div className="mob-item-thumb mob-item-thumb--icon mob-tailor-row__icon" aria-hidden>
-            <svg width="16" height="15" viewBox="0 0 105 101" fill="none">
-              <path
-                d="M103.703 59.25C102.343 49.75 97.3635 41.34 89.6735 35.59C89.3235 35.33 88.9635 35.07 88.6035 34.82C88.0135 15.52 72.1235 0 52.6835 0C33.6535 0 18.0434 14.86 16.8234 33.58C11.1834 37.11 6.62343 42.15 3.64343 48.28C-0.556567 56.91 -1.14654 66.66 1.98346 75.74C5.11346 84.81 11.5934 92.13 20.2234 96.33C25.2034 98.75 30.5535 99.98 35.9235 99.98C39.8735 99.98 43.8335 99.32 47.6735 98C49.0635 97.52 50.4034 96.96 51.7134 96.33L51.9534 96.46C56.9534 98.99 62.4335 100.31 68.0535 100.31C69.7735 100.31 71.5035 100.19 73.2335 99.94C82.7335 98.58 91.1434 93.6 96.8934 85.91C102.643 78.22 105.063 68.75 103.703 59.25Z"
-                fill="#ECE5D5"
-              />
-            </svg>
-          </div>
-          <div className="mob-item-text">
-            <div className="mob-item-route">Tailor Made</div>
-            <div className="mob-item-name">{nav.experiences.tailor.title}</div>
-            <div className="mob-item-meta">{nav.experiences.tailor.subtitle}</div>
-          </div>
-          <span className="mob-item-arrow" aria-hidden>
-            →
-          </span>
-        </a>
-        <a href={nav.experiences.seeAll.href} className="mob-see-all" {...(nav.experiences.seeAll.openInNewTab ? { target: '_blank', rel: nav.experiences.seeAll.rel } : {})}>
-          {nav.experiences.seeAll.label} →
-        </a>
+        {(() => {
+          const tcta = nav.experiences.tailor.cta
+          const tailorInner = (
+            <>
+              <div className="mob-item-thumb mob-item-thumb--icon mob-tailor-row__icon" aria-hidden>
+                <svg width="16" height="15" viewBox="0 0 105 101" fill="none">
+                  <path
+                    d="M103.703 59.25C102.343 49.75 97.3635 41.34 89.6735 35.59C89.3235 35.33 88.9635 35.07 88.6035 34.82C88.0135 15.52 72.1235 0 52.6835 0C33.6535 0 18.0434 14.86 16.8234 33.58C11.1834 37.11 6.62343 42.15 3.64343 48.28C-0.556567 56.91 -1.14654 66.66 1.98346 75.74C5.11346 84.81 11.5934 92.13 20.2234 96.33C25.2034 98.75 30.5535 99.98 35.9235 99.98C39.8735 99.98 43.8335 99.32 47.6735 98C49.0635 97.52 50.4034 96.96 51.7134 96.33L51.9534 96.46C56.9534 98.99 62.4335 100.31 68.0535 100.31C69.7735 100.31 71.5035 100.19 73.2335 99.94C82.7335 98.58 91.1434 93.6 96.8934 85.91C102.643 78.22 105.063 68.75 103.703 59.25Z"
+                    fill="#ECE5D5"
+                  />
+                </svg>
+              </div>
+              <div className="mob-item-text">
+                <div className="mob-item-route">Tailor Made</div>
+                <div className="mob-item-name">{nav.experiences.tailor.title}</div>
+                <div className="mob-item-meta">{nav.experiences.tailor.subtitle}</div>
+              </div>
+              {tcta ? (
+                <span className="mob-item-arrow" aria-hidden>
+                  →
+                </span>
+              ) : null}
+            </>
+          )
+          if (tcta) {
+            return (
+              <a
+                href={tcta.href}
+                className="mob-item mob-item--tailor mob-tailor-row"
+                {...(tcta.openInNewTab ? { target: '_blank', rel: tcta.rel } : {})}
+              >
+                {tailorInner}
+              </a>
+            )
+          }
+          return <div className="mob-item mob-item--tailor mob-tailor-row">{tailorInner}</div>
+        })()}
+        {nav.experiences.seeAll ? (
+          <a
+            href={nav.experiences.seeAll.href}
+            className="mob-see-all"
+            {...(nav.experiences.seeAll.openInNewTab ? { target: '_blank', rel: nav.experiences.seeAll.rel } : {})}
+          >
+            {nav.experiences.seeAll.label} →
+          </a>
+        ) : null}
       </div>
 
       <button type="button" className="mob-acc-btn" data-mob-acc-panel="mob-acc-lodges">
@@ -415,9 +455,11 @@ function MobileDrawer({ nav }: { nav: ResolvedSiteHeaderNav }) {
             ))}
           </div>
         ))}
-        <a href={nav.lodges.seeAll.href} className="mob-see-all" {...(nav.lodges.seeAll.openInNewTab ? { target: '_blank', rel: nav.lodges.seeAll.rel } : {})}>
-          {nav.lodges.seeAll.label} →
-        </a>
+        {nav.lodges.seeAll ? (
+          <a href={nav.lodges.seeAll.href} className="mob-see-all" {...(nav.lodges.seeAll.openInNewTab ? { target: '_blank', rel: nav.lodges.seeAll.rel } : {})}>
+            {nav.lodges.seeAll.label} →
+          </a>
+        ) : null}
       </div>
 
       <a href="/routes" className="mob-item mob-item--direct">

@@ -8,7 +8,7 @@ import {
   enrichSmartLinkWithLabelFallback,
   resolveExperiencePublicHrefOrFallback,
 } from '@/lib/resolveExperiencePublicHref'
-import { resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
+import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
 import type {
   RoutesPageSanityDoc,
   RoutesPageSanityExpCard,
@@ -197,6 +197,7 @@ function mapRouteCards(cards: RoutesPageSanityRouteCard[] | null | undefined): R
       { label: c.cta?.label, href: c.cta?.href, openInNewTab: c.cta?.openInNewTab },
       { label: fbCta.label, href: fbCta.href, openInNewTab: false },
     )
+    if (!resolved) continue
     const href = resolved.href?.trim()
     const label = resolved.label?.trim()
     if (!href || !label) continue
@@ -276,18 +277,22 @@ function mapExperienceRefsToCards(experiences: RoutesPageSanityExperienceRef[] |
     const enquireLabel = priceLabel || (hasSellingPrice ? String(e.price) : 'Enquire')
     const waFallback = buildGenericExperienceEnquireWhatsappHref(name)
     const enquireSmart = enrichSmartLinkWithLabelFallback(e.lodgeEnquireSmartLink, enquireLabel)
+    const tourHref = resolveExperiencePublicHrefOrFallback({
+      experienceLandingSlug: e.experienceLandingSlug,
+      slug: documentSlug,
+    })
+    const enquireDisabled = smartLinkIsDisabled(e.lodgeEnquireSmartLink)
     const href = useExperienceHref
-      ? resolveExperiencePublicHrefOrFallback({
-          experienceLandingSlug: e.experienceLandingSlug,
-          slug: documentSlug,
-        })
-      : enquireSmart
-        ? resolveSmartLinkOrLegacy(enquireSmart, undefined, {
-            label: enquireLabel,
-            href: waFallback,
-            openInNewTab: true,
-          }).href
-        : waFallback
+      ? tourHref
+      : enquireDisabled
+        ? tourHref
+        : enquireSmart
+          ? (resolveSmartLinkOrLegacy(enquireSmart, undefined, {
+              label: enquireLabel,
+              href: waFallback,
+              openInNewTab: true,
+            })?.href ?? waFallback)
+          : waFallback
     const priceKind: RoutesExpCardStatic['priceKind'] = priceLabel ? 'custom' : hasSellingPrice ? 'amount' : 'enquire'
     out.push({
       href,
@@ -321,7 +326,7 @@ function mapExpCards(cards: RoutesPageSanityExpCard[] | null | undefined): Route
       { label: name, href: c.href, openInNewTab: false },
       { label: name, href: fbHref, openInNewTab: false },
     )
-    const href = resolved.href?.trim()
+    const href = resolved?.href?.trim()
     if (!href) continue
     const pk = isPriceKind(c.priceKind) ? c.priceKind : 'enquire'
     out.push({
@@ -408,22 +413,33 @@ export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPa
     ogImageUrl: seoFromCms?.ogImageUrl?.trim() || null,
   }
 
+  const heroFbPrimary = fallbackHero.primaryCta ?? {
+    label: 'Explore the routes ↓',
+    href: '#routes',
+    openInNewTab: false,
+  }
+  const heroFbSecondary = fallbackHero.secondaryCta ?? {
+    label: 'See all experiences',
+    href: '/experiences',
+    openInNewTab: false,
+  }
+
   const primaryResolved = resolveSmartLinkOrLegacy(
     cms?.heroPrimarySmartLink,
     cms?.heroPrimaryCta,
     {
-      label: fallbackHero.primaryCta.label,
-      href: fallbackHero.primaryCta.href,
-      openInNewTab: fallbackHero.primaryCta.openInNewTab,
+      label: heroFbPrimary.label,
+      href: heroFbPrimary.href,
+      openInNewTab: heroFbPrimary.openInNewTab,
     },
   )
   const secondaryResolved = resolveSmartLinkOrLegacy(
     cms?.heroSecondarySmartLink,
     cms?.heroSecondaryCta,
     {
-      label: fallbackHero.secondaryCta.label,
-      href: fallbackHero.secondaryCta.href,
-      openInNewTab: fallbackHero.secondaryCta.openInNewTab,
+      label: heroFbSecondary.label,
+      href: heroFbSecondary.href,
+      openInNewTab: heroFbSecondary.openInNewTab,
     },
   )
 
@@ -434,18 +450,22 @@ export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPa
     titleLine1: trimOr(fallbackHero.titleLine1, cms?.heroTitleLine1),
     titleLine2: trimOr(fallbackHero.titleLine2, cms?.heroTitleLine2),
     tagline: trimOr(fallbackHero.tagline, cms?.heroTagline),
-    primaryCta: {
-      label: primaryResolved.label,
-      href: primaryResolved.href,
-      openInNewTab: primaryResolved.openInNewTab,
-      rel: primaryResolved.rel || undefined,
-    },
-    secondaryCta: {
-      label: secondaryResolved.label,
-      href: secondaryResolved.href,
-      openInNewTab: secondaryResolved.openInNewTab,
-      rel: secondaryResolved.rel || undefined,
-    },
+    primaryCta: primaryResolved
+      ? {
+          label: primaryResolved.label,
+          href: primaryResolved.href,
+          openInNewTab: primaryResolved.openInNewTab,
+          rel: primaryResolved.rel || undefined,
+        }
+      : null,
+    secondaryCta: secondaryResolved
+      ? {
+          label: secondaryResolved.label,
+          href: secondaryResolved.href,
+          openInNewTab: secondaryResolved.openInNewTab,
+          rel: secondaryResolved.rel || undefined,
+        }
+      : null,
   }
 
   const snapshotFromCms = (cms?.snapshotStats ?? [])
@@ -501,7 +521,10 @@ export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPa
           openInNewTab: false,
         },
       )
-      return { allExperiencesHref: resolved.href, allExperiencesLabel: resolved.label }
+      return {
+        allExperiencesHref: resolved?.href ?? '',
+        allExperiencesLabel: resolved?.label ?? '',
+      }
     })(),
   }
   const expFilters = mapExpFilters(cms?.experiencesFilters) ?? fallbackExpFilters
@@ -575,13 +598,13 @@ export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPa
     eyebrow: trimOr(fallbackFinalCta.eyebrow, cms?.finalCtaEyebrow),
     h2: trimOr(fallbackFinalCta.h2, cms?.finalCtaH2),
     body: trimOr(fallbackFinalCta.body, cms?.finalCtaBody),
-    whatsappHref: waResolved.href,
-    whatsappLabel: waResolved.label,
-    whatsappRel: waResolved.rel,
-    secondaryHref: secondaryResolvedFinal.href,
-    secondaryLabel: secondaryResolvedFinal.label,
-    secondaryRel: secondaryResolvedFinal.rel,
-    secondaryOpenInNewTab: secondaryResolvedFinal.openInNewTab,
+    whatsappHref: waResolved?.href ?? '',
+    whatsappLabel: waResolved?.label ?? '',
+    whatsappRel: waResolved?.rel ?? fallbackFinalCta.whatsappRel,
+    secondaryHref: secondaryResolvedFinal?.href ?? '',
+    secondaryLabel: secondaryResolvedFinal?.label ?? '',
+    secondaryRel: secondaryResolvedFinal?.rel ?? fallbackFinalCta.secondaryRel,
+    secondaryOpenInNewTab: secondaryResolvedFinal?.openInNewTab ?? fallbackFinalCta.secondaryOpenInNewTab,
     trustItems: trustFromCms.length ? trustFromCms : fallbackFinalCta.trustItems,
   }
 

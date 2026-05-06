@@ -1,6 +1,6 @@
 import { DEFAULT_WHATSAPP_URL } from '@/data/cmsApproved/siteSettingsApprovedContent'
 import { LODGE_SOQTAPATA_PAGE_SLUG } from '@/lib/lodgePageCmsTypes'
-import { resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
+import { resolveSmartLinkOrLegacy, type ResolvedSmartLink } from '@/lib/resolveSmartLink'
 import { resolveRouteLabel } from '@/data/lodgeSoqtapataResolverDefaults'
 import type {
   SiteHeaderNavBundleRow,
@@ -38,7 +38,7 @@ export type SiteHeaderNavTailor = {
   title: string
   subtitle: string
   body: string
-  cta: SiteHeaderNavCta
+  cta: SiteHeaderNavCta | null
 }
 
 export type SiteHeaderNavLodgeItem = {
@@ -63,11 +63,11 @@ export type ResolvedSiteHeaderNav = {
   experiences: {
     groups: SiteHeaderNavExpGroup[]
     tailor: SiteHeaderNavTailor
-    seeAll: SiteHeaderNavCta
+    seeAll: SiteHeaderNavCta | null
   }
   lodges: {
     routes: SiteHeaderNavLodgeRoute[]
-    seeAll: SiteHeaderNavCta
+    seeAll: SiteHeaderNavCta | null
   }
 }
 
@@ -156,7 +156,7 @@ function emptyNav(): ResolvedSiteHeaderNav {
     href: DEFAULT_WHATSAPP_URL,
     openInNewTab: true,
   })
-  const cta = (r: { label: string; href: string; openInNewTab: boolean; rel: string }): SiteHeaderNavCta => ({
+  const cta = (r: ResolvedSmartLink): SiteHeaderNavCta => ({
     label: r.label,
     href: r.href,
     openInNewTab: r.openInNewTab,
@@ -187,9 +187,9 @@ function emptyNav(): ResolvedSiteHeaderNav {
         title: TAILOR_FALLBACK.title,
         subtitle: TAILOR_FALLBACK.subtitle,
         body: TAILOR_FALLBACK.body,
-        cta: cta(fbTailor),
+        cta: cta(fbTailor!),
       },
-      seeAll: cta(fbExp),
+      seeAll: cta(fbExp!),
     },
     lodges: {
       routes: [
@@ -211,7 +211,7 @@ function emptyNav(): ResolvedSiteHeaderNav {
           lodges: [],
         },
       ],
-      seeAll: cta(fbLodges),
+      seeAll: cta(fbLodges!),
     },
   }
 }
@@ -287,24 +287,28 @@ export function resolveSiteHeaderNavData(
       items: learning,
     },
   ]
-  base.experiences.seeAll = {
-    label: expSee.label,
-    href: expSee.href,
-    openInNewTab: expSee.openInNewTab,
-    rel: expSee.rel,
-  }
+  base.experiences.seeAll = expSee
+    ? {
+        label: expSee.label,
+        href: expSee.href,
+        openInNewTab: expSee.openInNewTab,
+        rel: expSee.rel,
+      }
+    : null
   base.experiences.tailor = {
     panelId: 'dd-exp-tailor',
     eyebrow: TAILOR_FALLBACK.eyebrow,
     title: settings?.navTailorMadeTitle?.trim() || TAILOR_FALLBACK.title,
     subtitle: settings?.navTailorMadeSubtitle?.trim() || TAILOR_FALLBACK.subtitle,
     body: settings?.navTailorMadeBody?.trim() || TAILOR_FALLBACK.body,
-    cta: {
-      label: tailorResolved.label,
-      href: tailorResolved.href,
-      openInNewTab: tailorResolved.openInNewTab,
-      rel: tailorResolved.rel,
-    },
+    cta: tailorResolved
+      ? {
+          label: tailorResolved.label,
+          href: tailorResolved.href,
+          openInNewTab: tailorResolved.openInNewTab,
+          rel: tailorResolved.rel,
+        }
+      : null,
   }
 
   const byRoute: Record<'camanti' | 'manu-road' | 'manu-core', SiteHeaderNavLodgeItem[]> = {
@@ -341,12 +345,14 @@ export function resolveSiteHeaderNavData(
       lodges: list,
     }
   })
-  base.lodges.seeAll = {
-    label: lodgeSee.label,
-    href: lodgeSee.href,
-    openInNewTab: lodgeSee.openInNewTab,
-    rel: lodgeSee.rel,
-  }
+  base.lodges.seeAll = lodgeSee
+    ? {
+        label: lodgeSee.label,
+        href: lodgeSee.href,
+        openInNewTab: lodgeSee.openInNewTab,
+        rel: lodgeSee.rel,
+      }
+    : null
 
   return base
 }

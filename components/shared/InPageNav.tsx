@@ -103,7 +103,7 @@ export function InPageNav({
           </div>
           <div className="pnav-cta">
             {ctaSlot ??
-              (cta ? (
+              (cta && cta.href.trim() && cta.label.trim() ? (
                 <a href={cta.href} className="btn btn-primary" style={{ fontSize: 12, padding: '8px 18px' }}>
                   {cta.label}
                 </a>

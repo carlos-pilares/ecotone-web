@@ -19,8 +19,8 @@ export type RoutesHeroStatic = {
   titleLine1: string
   titleLine2: string
   tagline: string
-  primaryCta: { label: string; href: string; openInNewTab?: boolean; rel?: string }
-  secondaryCta: { label: string; href: string; openInNewTab?: boolean; rel?: string }
+  primaryCta: { label: string; href: string; openInNewTab?: boolean; rel?: string } | null
+  secondaryCta: { label: string; href: string; openInNewTab?: boolean; rel?: string } | null
 }
 
 export type RoutesSnapshotStat = { value: string; label: string }

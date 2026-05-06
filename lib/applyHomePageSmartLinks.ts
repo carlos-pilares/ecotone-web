@@ -26,6 +26,11 @@ function applyPair(
     { label: legacyLabel, href: legacyHref, openInNewTab: false },
     { label: fbLabel, href: fbHref, openInNewTab: false },
   )
+  if (!r) {
+    setLabel('')
+    setHref('')
+    return
+  }
   setLabel(r.label)
   setHref(r.href)
 }

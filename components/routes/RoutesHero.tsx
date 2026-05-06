@@ -1,6 +1,9 @@
 import type { RoutesHeroStatic } from '@/data/routesStatic'
 
 export function RoutesHero({ data }: { data: RoutesHeroStatic }) {
+  const primary = data.primaryCta
+  const secondary = data.secondaryCta
+
   return (
     <section className="routes-hero" aria-labelledby="routes-hero-heading">
       <div className="routes-hero-img">
@@ -17,24 +20,28 @@ export function RoutesHero({ data }: { data: RoutesHeroStatic }) {
           </h1>
           <p className="routes-hero-tagline">{data.tagline}</p>
           <div className="routes-hero-actions">
-            <a
-              href={data.primaryCta.href}
-              className="btn btn-primary"
-              {...(data.primaryCta.openInNewTab
-                ? { target: '_blank' as const, rel: data.primaryCta.rel || 'noopener noreferrer' }
-                : {})}
-            >
-              {data.primaryCta.label}
-            </a>
-            <a
-              href={data.secondaryCta.href}
-              className="btn btn-ghost-lt"
-              {...(data.secondaryCta.openInNewTab
-                ? { target: '_blank' as const, rel: data.secondaryCta.rel || 'noopener noreferrer' }
-                : {})}
-            >
-              {data.secondaryCta.label}
-            </a>
+            {primary ? (
+              <a
+                href={primary.href}
+                className="btn btn-primary"
+                {...(primary.openInNewTab
+                  ? { target: '_blank' as const, rel: primary.rel || 'noopener noreferrer' }
+                  : {})}
+              >
+                {primary.label}
+              </a>
+            ) : null}
+            {secondary ? (
+              <a
+                href={secondary.href}
+                className="btn btn-ghost-lt"
+                {...(secondary.openInNewTab
+                  ? { target: '_blank' as const, rel: secondary.rel || 'noopener noreferrer' }
+                  : {})}
+              >
+                {secondary.label}
+              </a>
+            ) : null}
           </div>
         </div>
       </div>

@@ -4,6 +4,9 @@ import type { AboutPageResolved } from '@/lib/resolveAboutPageData'
 type HeroData = AboutPageResolved['hero']
 
 export function AboutHero({ data }: { data: HeroData }) {
+  const primary = data.primaryCta
+  const secondary = data.secondaryCta
+
   return (
     <section className="about-hero" aria-label="About Ecotone">
       <div className="about-hero-img">
@@ -23,34 +26,38 @@ export function AboutHero({ data }: { data: HeroData }) {
         </h1>
         <p className="about-hero-tagline fade fade-d2">{data.tagline}</p>
         <div className="about-hero-actions fade fade-d3">
-          {data.primaryOpenInNewTab ? (
-            <a
-              href={data.primaryHref}
-              className="btn btn-primary"
-              target="_blank"
-              rel={data.primaryRel || 'noopener noreferrer'}
-            >
-              {data.primaryLabel}
-            </a>
-          ) : (
-            <Link href={data.primaryHref} className="btn btn-primary">
-              {data.primaryLabel}
-            </Link>
-          )}
-          {data.secondaryOpenInNewTab ? (
-            <a
-              href={data.secondaryHref}
-              className="btn btn-ghost-lt"
-              target="_blank"
-              rel={data.secondaryRel || 'noopener noreferrer'}
-            >
-              {data.secondaryLabel}
-            </a>
-          ) : (
-            <a href={data.secondaryHref} className="btn btn-ghost-lt">
-              {data.secondaryLabel}
-            </a>
-          )}
+          {primary ? (
+            primary.openInNewTab ? (
+              <a
+                href={primary.href}
+                className="btn btn-primary"
+                target="_blank"
+                rel={primary.rel || 'noopener noreferrer'}
+              >
+                {primary.label}
+              </a>
+            ) : (
+              <Link href={primary.href} className="btn btn-primary">
+                {primary.label}
+              </Link>
+            )
+          ) : null}
+          {secondary ? (
+            secondary.openInNewTab ? (
+              <a
+                href={secondary.href}
+                className="btn btn-ghost-lt"
+                target="_blank"
+                rel={secondary.rel || 'noopener noreferrer'}
+              >
+                {secondary.label}
+              </a>
+            ) : (
+              <a href={secondary.href} className="btn btn-ghost-lt">
+                {secondary.label}
+              </a>
+            )
+          ) : null}
         </div>
       </div>
     </section>

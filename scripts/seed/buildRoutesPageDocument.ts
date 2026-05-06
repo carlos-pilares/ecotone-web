@@ -290,20 +290,20 @@ export async function buildRoutesPageDocument(client: SanityClient, imageCache?:
     heroTagline: routesHero.tagline,
     heroPrimaryCta: {
       _type: 'linkWithLabel' as const,
-      label: routesHero.primaryCta.label,
-      href: routesHero.primaryCta.href,
+      label: routesHero.primaryCta!.label,
+      href: routesHero.primaryCta!.href,
       openInNewTab: false,
     },
     heroSecondaryCta: {
       _type: 'linkWithLabel' as const,
-      label: routesHero.secondaryCta.label,
-      href: routesHero.secondaryCta.href,
+      label: routesHero.secondaryCta!.label,
+      href: routesHero.secondaryCta!.href,
       openInNewTab: false,
     },
     /** Pilot: same targets as legacy (`#routes` → `/routes#routes`, `/experiences`). */
     heroPrimarySmartLink: {
       _type: 'smartLink' as const,
-      label: routesHero.primaryCta.label,
+      label: routesHero.primaryCta!.label,
       linkType: 'pageSection' as const,
       internalPage: 'routesPage',
       sectionId: 'routes',
@@ -311,7 +311,7 @@ export async function buildRoutesPageDocument(client: SanityClient, imageCache?:
     },
     heroSecondarySmartLink: {
       _type: 'smartLink' as const,
-      label: routesHero.secondaryCta.label,
+      label: routesHero.secondaryCta!.label,
       linkType: 'internalPage' as const,
       internalPage: 'experiencesIndex',
       openInNewTab: false,

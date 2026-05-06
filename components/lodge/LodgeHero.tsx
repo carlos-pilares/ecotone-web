@@ -75,9 +75,11 @@ export function LodgeHero({ data }: LodgeHeroProps) {
                 <span className="lodge-rating-divider" aria-hidden />
                 <span className="lodge-rating-meta">{data.secondaryMeta}</span>
               </div>
-              <Link href={data.primaryCta.href} className="btn btn-primary">
-                {data.primaryCta.label}
-              </Link>
+              {data.primaryCta.href.trim() && data.primaryCta.label.trim() ? (
+                <Link href={data.primaryCta.href} className="btn btn-primary">
+                  {data.primaryCta.label}
+                </Link>
+              ) : null}
             </div>
           </div>
         </div>

@@ -119,15 +119,17 @@ export function ExperienceHeroSoqtapata({ data }: { data: SoqtapataPhase1Hero })
                 <div className="exp-price">{data.price}</div>
                 <div className="exp-price-sub">{data.priceSub}</div>
               </div>
-              <button
-                className="btn btn-primary"
-                type="button"
-                onClick={() => {
-                  window.location.href = data.bookUrl
-                }}
-              >
-                {data.bookLabel}
-              </button>
+              {data.bookUrl.trim() && data.bookLabel.trim() ? (
+                <button
+                  className="btn btn-primary"
+                  type="button"
+                  onClick={() => {
+                    window.location.href = data.bookUrl
+                  }}
+                >
+                  {data.bookLabel}
+                </button>
+              ) : null}
             </div>
           </div>
         </div>

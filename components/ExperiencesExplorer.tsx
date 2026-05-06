@@ -49,9 +49,19 @@ type ExplorerGridCopy = ReturnType<typeof resolveExplorerGridCopy>
 
 function resolveExplorerGridCopy(e: HomePageDoc | null | undefined) {
   const d = HOME_EXPLORER_DEFAULTS
-  const booking = e?.bookingCta2Link?.trim() || ''
+  const bookingRaw = e?.bookingCta2Link
+  const booking = bookingRaw === '' ? '' : bookingRaw?.trim() || ''
   const cardImageFallback =
     e?.explorerCardImageFallbackUrl?.trim() || d.cardImageFallbackUrl
+  const tailorCtaRaw = e?.explorerTailorCtaText
+  const tailorUrlRaw = e?.explorerTailorWhatsappUrl
+  /** Empty string means CMS cleared the pair (e.g. smartLink off); do not re-fill from defaults. */
+  const tailorCta = tailorCtaRaw === '' ? '' : tailorCtaRaw?.trim() || d.tailorCta
+  const tailorWhatsapp =
+    tailorUrlRaw === ''
+      ? ''
+      : tailorUrlRaw?.trim() || booking || d.tailorWhatsappFallback
+  const learningWhatsapp = bookingRaw === '' ? '' : bookingRaw?.trim() || d.learningWhatsappFallback
   return {
     priceEnquire: e?.explorerPriceEnquireLabel?.trim() || d.priceEnquire,
     priceCustom: e?.explorerPriceCustomLabel?.trim() || d.priceCustom,
@@ -59,9 +69,9 @@ function resolveExplorerGridCopy(e: HomePageDoc | null | undefined) {
     cardCtaEnquire: e?.explorerCardCtaEnquireLabel?.trim() || d.cardCtaEnquire,
     tailorRouteDuration: e?.explorerTailorRouteDurationLabel?.trim() || d.tailorRouteDurationLabel,
     tailorDescFallback: e?.explorerTailorDescriptionFallback?.trim() || d.tailorDescriptionFallback,
-    tailorCta: e?.explorerTailorCtaText?.trim() || d.tailorCta,
-    tailorWhatsapp: e?.explorerTailorWhatsappUrl?.trim() || booking || d.tailorWhatsappFallback,
-    learningWhatsapp: booking || d.learningWhatsappFallback,
+    tailorCta,
+    tailorWhatsapp,
+    learningWhatsapp,
     nameFallbackTailor: d.nameFallbackTailor,
     nameFallbackBadge: d.nameFallbackBadge,
     learningBadges:
@@ -115,6 +125,10 @@ function CmsGrid({ list, copy }: { list: ExperienceFromSanity[]; copy: ExplorerG
             ? copy.learningWhatsapp
             : tourHref(doc)
         const price = priceLabel(doc, copy)
+        const tailorCtaPair = isTailor && copy.tailorWhatsapp.trim() && copy.tailorCta.trim()
+        const cardCtaLabel =
+          doc.programType === 'experiential-learning' ? copy.cardCtaEnquire.trim() : copy.cardCtaView.trim()
+        const showCardFootCta = Boolean(href.trim()) && Boolean(cardCtaLabel)
 
         if (isTailor) {
           return (
@@ -143,9 +157,11 @@ function CmsGrid({ list, copy }: { list: ExperienceFromSanity[]; copy: ExplorerG
               <div className="exp-card-tailor-body">
                 <div className="exp-card-tailor-title">{doc.name || copy.nameFallbackTailor}</div>
                 <div className="exp-card-tailor-desc">{desc || copy.tailorDescFallback}</div>
-                <a href={href} className="btn-tailor">
-                  {copy.tailorCta}
-                </a>
+                {tailorCtaPair ? (
+                  <a href={href.trim()} className="btn-tailor">
+                    {copy.tailorCta}
+                  </a>
+                ) : null}
               </div>
             </div>
           )
@@ -188,10 +204,12 @@ function CmsGrid({ list, copy }: { list: ExperienceFromSanity[]; copy: ExplorerG
                 ) : (
                   <span className="exp-card-price">{price.text}</span>
                 )}
-                <a href={href} className="exp-card-cta">
-                  {doc.programType === 'experiential-learning' ? copy.cardCtaEnquire : copy.cardCtaView}{' '}
-                  <Arrow />
-                </a>
+                {showCardFootCta ? (
+                  <a href={href.trim()} className="exp-card-cta">
+                    {doc.programType === 'experiential-learning' ? copy.cardCtaEnquire : copy.cardCtaView}{' '}
+                    <Arrow />
+                  </a>
+                ) : null}
               </div>
             </div>
           </div>
@@ -205,14 +223,18 @@ function ExperiencesFallback({ explorer }: { explorer: HomePageDoc | null | unde
   const e = explorer
   const body =
     e?.explorerEmptyGridMessage?.trim() || homePageTextFields.explorerEmptyGridMessage
-  const linkLabel =
-    e?.explorerEmptyGridLinkLabel?.trim() || homePageTextFields.explorerEmptyGridLinkLabel
-  const linkHref =
-    e?.explorerEmptyGridLinkHref?.trim() || homePageTextFields.explorerEmptyGridLinkHref
+  const linkLabel = e?.explorerEmptyGridLinkLabel?.trim() ?? ''
+  const linkHref = e?.explorerEmptyGridLinkHref?.trim() ?? ''
+  const showLink = Boolean(linkHref) && Boolean(linkLabel)
   return (
     <p className="body" style={{ maxWidth: 560, gridColumn: '1 / -1' }}>
-      {body}{' '}
-      <a href={linkHref}>{linkLabel}</a>.
+      {body}
+      {showLink ? (
+        <>
+          {' '}
+          <a href={linkHref}>{linkLabel}</a>.
+        </>
+      ) : null}
     </p>
   )
 }

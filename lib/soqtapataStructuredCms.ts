@@ -21,7 +21,7 @@ import type { SoqtapataPageModuleRow } from '@/lib/soqtapataSectionPresentation'
 import { urlFor } from '@/lib/sanity'
 import { DEFAULT_EXPERIENCE_RESOURCE_DOWNLOAD_CTA_LABEL } from '@/lib/experienceResourceCmsDefaults'
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
-import { resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
+import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
 
 // --- public row shape (subset of GROQ result) ---
 
@@ -310,6 +310,16 @@ function applyExperiencePageLodgeLandingCta(
   const legacyHref = slugOk ? `/lodges/${slugOk}` : undefined
   const legacyLabel = labelFromRow || undefined
 
+  if (smartLinkIsDisabled(row.lodgeCtaSmartLink)) {
+    out.lodge = {
+      ...base,
+      ctaHref: '',
+      ctaLabel: '',
+      card: { ...base.card, ctaHref: '', ctaLabel: '' },
+    }
+    return
+  }
+
   // 1) Optional smart link (overrides legacy link + label when set with a label)
   if (row.lodgeCtaSmartLink?.label?.trim()) {
     const r = resolveSmartLinkOrLegacy(
@@ -317,13 +327,15 @@ function applyExperiencePageLodgeLandingCta(
       { label: legacyLabel, href: legacyHref },
       { label: labelDefault, href: hrefDefault, openInNewTab: false },
     )
-    out.lodge = {
-      ...base,
-      ctaHref: r.href,
-      ctaLabel: r.label,
-      card: { ...base.card, ctaHref: r.href, ctaLabel: r.label },
+    if (r) {
+      out.lodge = {
+        ...base,
+        ctaHref: r.href,
+        ctaLabel: r.label,
+        card: { ...base.card, ctaHref: r.href, ctaLabel: r.label },
+      }
+      return
     }
-    return
   }
 
   // 2) Legacy lodgePageLink → /lodges/{slug} (validated), 3) static fallback
@@ -510,8 +522,9 @@ export function soqtapataPartialFromStructuredRow(
   const tag = (ph?.headlineSub && ph.headlineSub.trim()) || e.tagline?.trim() || l.hero.tagline
   const badges =
     (ph?.pills && ph.pills.length > 0) ? ph.pills : [programBadge, routeBadge, e.duration || l.stats[0]?.n || '3D · 2N']
+  const bookSmart = ph?.bookCtaSmartLink
   const bookResolved = resolveSmartLinkOrLegacy(
-    ph?.bookCtaSmartLink,
+    bookSmart,
     ph?.bookCta,
     {
       label: l.hero.bookLabel,
@@ -519,8 +532,9 @@ export function soqtapataPartialFromStructuredRow(
       openInNewTab: ph?.bookCta?.openInNewTab === true,
     },
   )
-  const bookUrl = bookResolved.href
-  const bookLabel = bookResolved.label
+  const bookHidden = smartLinkIsDisabled(bookSmart)
+  const bookUrl = bookHidden ? '' : (bookResolved?.href ?? l.hero.bookUrl)
+  const bookLabel = bookHidden ? '' : (bookResolved?.label ?? l.hero.bookLabel)
 
   const mainFallback = l.hero.gallery[0]?.imageSrc || ''
   const mainUrl = e.mainImageUrl || (e.mainImage ? assetToUrl(e.mainImage, 1200, mainFallback) : null) || mainFallback
@@ -606,6 +620,7 @@ export function soqtapataPartialFromStructuredRow(
       fromAriaLabel: `From ${priceLine} per person`,
       bookHref: bookUrl,
       bookLabel,
+      ...(bookHidden ? { bookVisible: false } : {}),
     },
   }
 
@@ -1033,6 +1048,9 @@ export function alsoBookFromStructuredRow(
     { label: rb?.termsLinkLabel, href: rb?.legalTermsLink, openInNewTab: false },
     { label: lBook.termsLinkLabel, href: lBook.termsHash, openInNewTab: false },
   )
+  const wetHidden = smartLinkIsDisabled(rb?.wetravelSmartLink)
+  const waHidden = smartLinkIsDisabled(rb?.whatsappSmartLink)
+  const termsHidden = smartLinkIsDisabled(rb?.termsSmartLink)
   const book: SoqtapataBook = {
     ...lBook,
     eyebrow: strOrNull(rb?.eyebrow) ?? lBook.eyebrow,
@@ -1048,13 +1066,13 @@ export function alsoBookFromStructuredRow(
             value: (r?.value && r.value.trim()) || '',
           }))
         : lBook.rows,
-    wetravelUrl: wetResolved.href,
-    wetravelLabel: wetResolved.label,
-    whatsappUrl: waResolved.href,
-    whatsappLabel: waResolved.label,
+    wetravelUrl: wetHidden ? '' : (wetResolved?.href ?? lBook.wetravelUrl),
+    wetravelLabel: wetHidden ? '' : (wetResolved?.label ?? lBook.wetravelLabel),
+    whatsappUrl: waHidden ? '' : (waResolved?.href ?? lBook.whatsappUrl),
+    whatsappLabel: waHidden ? '' : (waResolved?.label ?? lBook.whatsappLabel),
     termsNote: strOrNull(rb?.legalNote) ?? lBook.termsNote,
-    termsHash: termsResolved.href,
-    termsLinkLabel: termsResolved.label,
+    termsHash: termsHidden ? '' : (termsResolved?.href ?? lBook.termsHash),
+    termsLinkLabel: termsHidden ? '' : (termsResolved?.label ?? lBook.termsLinkLabel),
     trustStripItems:
       rb?.trustStripItems && rb.trustStripItems.length > 0
         ? rb.trustStripItems

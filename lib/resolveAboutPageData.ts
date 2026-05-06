@@ -57,14 +57,8 @@ export type AboutPageResolved = {
     eyebrow: string
     titleLines: string[]
     tagline: string
-    primaryLabel: string
-    primaryHref: string
-    primaryOpenInNewTab: boolean
-    primaryRel?: string
-    secondaryLabel: string
-    secondaryHref: string
-    secondaryOpenInNewTab: boolean
-    secondaryRel?: string
+    primaryCta: { label: string; href: string; openInNewTab: boolean; rel?: string } | null
+    secondaryCta: { label: string; href: string; openInNewTab: boolean; rel?: string } | null
     imageUrl: string
     imageAlt: string
   }
@@ -173,14 +167,22 @@ export function resolveAboutPageData(
     eyebrow: trimOr(fb.hero.eyebrow, c?.heroEyebrow),
     titleLines: splitTitleLines(c?.heroTitle, fb.hero.titleLines),
     tagline: trimOr(fb.hero.tagline, c?.heroTagline),
-    primaryLabel: primaryResolved.label,
-    primaryHref: primaryResolved.href,
-    primaryOpenInNewTab: primaryResolved.openInNewTab,
-    primaryRel: primaryResolved.rel || undefined,
-    secondaryLabel: secondaryResolved.label,
-    secondaryHref: secondaryResolved.href,
-    secondaryOpenInNewTab: secondaryResolved.openInNewTab,
-    secondaryRel: secondaryResolved.rel || undefined,
+    primaryCta: primaryResolved
+      ? {
+          label: primaryResolved.label,
+          href: primaryResolved.href,
+          openInNewTab: primaryResolved.openInNewTab,
+          rel: primaryResolved.rel || undefined,
+        }
+      : null,
+    secondaryCta: secondaryResolved
+      ? {
+          label: secondaryResolved.label,
+          href: secondaryResolved.href,
+          openInNewTab: secondaryResolved.openInNewTab,
+          rel: secondaryResolved.rel || undefined,
+        }
+      : null,
     imageUrl: trimOr(fb.hero.imageUrl, c?.heroImageUrl),
     imageAlt: trimOr(fb.hero.imageAlt, c?.heroImageAlt),
   }
@@ -336,11 +338,12 @@ export function resolveAboutPageData(
           { label: b.label, href: b.href, openInNewTab: b.openInNewTab },
           { label: fbBtn.label, href: fbBtn.href, openInNewTab: fbBtn.external },
         )
+        if (!resolved) return null
         const label = resolved.label?.trim()
         const href = resolved.href?.trim()
         if (!label || !href) return null
 
-        const smartHasLabel = Boolean(b.smartLink?.label?.trim())
+        const smartHasLabel = Boolean(b.smartLink?.label?.trim() && b.smartLink?.enabled !== false)
         const smartWa = smartHasLabel && b.smartLink?.linkType === 'whatsapp'
         const legacyWa = b.variant?.trim() === 'whatsapp'
         const looksLikeWa = /wa\.me\//i.test(href)

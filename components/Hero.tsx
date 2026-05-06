@@ -57,16 +57,20 @@ export function Hero({ heroData }: { heroData: ResolvedHomePage }) {
             ))}
           </div>
           <div className="hero-ctas">
-            <a href={h.heroCta1Link ?? '#'} className="btn-primary">
-              {h.heroCta1Text ?? ''}{' '}
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
-            </a>
-            <a href={h.heroCta2Link ?? '#'} className="hero-ghost">
-              {h.heroCta2Text ?? ''}
-            </a>
+            {h.heroCta1Link?.trim() && h.heroCta1Text?.trim() ? (
+              <a href={h.heroCta1Link} className="btn-primary">
+                {h.heroCta1Text}{' '}
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </a>
+            ) : null}
+            {h.heroCta2Link?.trim() && h.heroCta2Text?.trim() ? (
+              <a href={h.heroCta2Link} className="hero-ghost">
+                {h.heroCta2Text}
+              </a>
+            ) : null}
           </div>
         </div>
         <div className="hero-right">
@@ -85,9 +89,11 @@ export function Hero({ heroData }: { heroData: ResolvedHomePage }) {
                 </div>
               ))}
             </div>
-            <a className="btn-hero-book" href={h.heroCardCtaLink ?? '#'}>
-              {h.heroCardCtaText ?? ''}
-            </a>
+            {h.heroCardCtaLink?.trim() && h.heroCardCtaText?.trim() ? (
+              <a className="btn-hero-book" href={h.heroCardCtaLink}>
+                {h.heroCardCtaText}
+              </a>
+            ) : null}
           </div>
         </div>
       </div>

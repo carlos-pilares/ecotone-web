@@ -196,7 +196,7 @@ export const aboutPageDiagnosticsQuery = groq`
     "partnerRefsCount": count(partnerRefs),
     "finalButtonsCount": count(finalButtons),
     "finalTrustCount": count(finalTrustItems),
-    "heroPrimarySmartLink": heroPrimarySmartLink { label, linkType, internalPage, sectionId },
-    "heroSecondarySmartLink": heroSecondarySmartLink { label, linkType, internalPage, sectionId }
+    "heroPrimarySmartLink": heroPrimarySmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    "heroSecondarySmartLink": heroSecondarySmartLink { ${GROQ_SMART_LINK_FIELDS} }
   }
 `

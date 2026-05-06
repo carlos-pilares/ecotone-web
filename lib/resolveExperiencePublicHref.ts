@@ -3,7 +3,7 @@ import {
   EXPERIENCE_DOCUMENT_SLUG_TO_PUBLIC_SLUG,
   lodgeSoqtapataExperienceCardDefaults,
 } from '@/data/lodgeSoqtapataResolverDefaults'
-import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
+import { smartLinkIsDisabled, type SmartLinkGroq } from '@/lib/resolveSmartLink'
 
 export type ExperiencePublicHrefInput = {
   experienceLandingSlug?: string | null
@@ -37,6 +37,7 @@ export function enrichSmartLinkWithLabelFallback(
   labelFallback: string,
 ): SmartLinkGroq | null {
   if (!raw?.linkType?.trim()) return null
+  if (smartLinkIsDisabled(raw)) return null
   return { ...raw, label: raw.label?.trim() || labelFallback }
 }
 

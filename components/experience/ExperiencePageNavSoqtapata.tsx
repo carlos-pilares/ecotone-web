@@ -91,8 +91,11 @@ export function ExperiencePageNavSoqtapata({ data }: { data: SoqtapataPhase1Page
     }
   }, [scrollLinks])
 
+  const hideBookCta =
+    data.bookVisible === false || !data.bookHref?.trim() || !data.bookLabel?.trim()
+
   const ctaSlot =
-    data.bookVisible === false ? (
+    hideBookCta ? (
       <div className="pnav-from-price" aria-label={data.fromAriaLabel}>
         <span className="pnav-from-label">{data.fromLabel}</span>
         <span className="pnav-from-num">{data.fromNum}</span>

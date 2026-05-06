@@ -47,20 +47,24 @@ export const experiencePageInternalNav = defineType({
     }),
     defineField({
       name: 'ctaLabel',
-      title: 'CTA label',
+      title: 'CTA label (legacy)',
       type: 'string',
       validation: (Rule) => Rule.max(80),
+      hidden: true,
+      description: 'Legacy fallback — hidden from normal editing.',
     }),
     defineField({
       name: 'ctaUrl',
-      title: 'CTA URL',
+      title: 'CTA URL (legacy)',
       type: 'url',
+      hidden: true,
+      description: 'Legacy fallback — hidden from normal editing.',
     }),
     defineField({
       name: 'ctaSmartLink',
-      title: 'CTA (smart link)',
+      title: 'CTA',
       type: 'smartLink',
-      description: 'smartLink overrides legacy fields (CTA label + URL). Optional.',
+      description: 'Primary editor control for the sticky bar CTA.',
     }),
     defineField({
       name: 'ctaVisible',

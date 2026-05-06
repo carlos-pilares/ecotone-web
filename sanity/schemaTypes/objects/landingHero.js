@@ -67,15 +67,16 @@ export const landingHero = defineType({
     }),
     defineField({
       name: 'bookCta',
-      title: 'CTA principal (reserva)',
+      title: 'CTA principal (reserva) — legacy',
       type: 'cta',
-      description: 'Botón del hero (enlace WeTravel, etc.). Es específico de esta URL; el detalle del programa sigue en Experiencia.',
+      hidden: true,
+      description: 'Legacy fallback — hidden from normal editing.',
     }),
     defineField({
       name: 'bookCtaSmartLink',
-      title: 'CTA principal (smart link)',
+      title: 'CTA principal (reserva)',
       type: 'smartLink',
-      description: 'smartLink overrides legacy fields (book CTA label + URL). Optional.',
+      description: 'Primary editor control for the hero booking button.',
     }),
   ],
 })

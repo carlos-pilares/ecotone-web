@@ -4,7 +4,7 @@
  */
 import type { SoqtapataPhase1NavLink, SoqtapataPhase1PageNav } from '@/data/soqtapataExperienceLocal'
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
-import { resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
+import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
 
 export type CmsInternalNavItem = {
   _key?: string
@@ -109,8 +109,9 @@ export function mergeInternalNavIntoPageNav(
     { label: doc.ctaLabel, href: doc.ctaUrl != null ? String(doc.ctaUrl).trim() : undefined, openInNewTab: false },
     { label: base.bookLabel, href: base.bookHref, openInNewTab: false },
   )
-  const bookHref = ctaResolved.href
-  const bookLabel = ctaResolved.label
+  const smartOff = smartLinkIsDisabled(doc.ctaSmartLink)
+  const bookHref = smartOff ? '' : (ctaResolved?.href ?? base.bookHref)
+  const bookLabel = smartOff ? '' : (ctaResolved?.label ?? base.bookLabel)
 
   return {
     ...base,
@@ -123,6 +124,6 @@ export function mergeInternalNavIntoPageNav(
     bookHref,
     bookLabel,
     links,
-    bookVisible: doc.ctaVisible !== false,
+    bookVisible: !smartOff && doc.ctaVisible !== false,
   }
 }

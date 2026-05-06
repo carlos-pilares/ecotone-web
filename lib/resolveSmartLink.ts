@@ -8,12 +8,18 @@
  */
 
 export type SmartLinkGroq = {
+  enabled?: boolean | null
   label?: string | null
   linkType?: string | null
+  /** In-document section id (same page); also accepts legacy `sectionId` when `linkType === 'samePageSection'`. */
+  samePageSectionId?: string | null
   internalPage?: string | null
+  /** Anchor for `linkType === 'websitePage'` (preferred). Legacy `sectionId` is still read as fallback. */
+  websitePageSectionId?: string | null
   sectionId?: string | null
   externalUrl?: string | null
   fileUrl?: string | null
+  bookFallbackUrl?: string | null
   emailAddress?: string | null
   whatsappNumber?: string | null
   whatsappMessage?: string | null
@@ -118,7 +124,7 @@ function buildWhatsAppHref(number: string, message?: string | null): string {
 /** Core resolver: returns fallback when smart link is incomplete or invalid. @internal */
 function resolveSmartLink(doc: SmartLinkGroq | null | undefined, fallback: ResolvedSmartLink): ResolvedSmartLink {
   const label = doc?.label?.trim() || fallback.label
-  const linkType = doc?.linkType?.trim() || 'internalPage'
+  const linkType = doc?.linkType?.trim() || 'websitePage'
 
   let href = ''
   let openInNewTab = doc?.openInNewTab === true
@@ -131,7 +137,8 @@ function resolveSmartLink(doc: SmartLinkGroq | null | undefined, fallback: Resol
   } else if (linkType === 'file') {
     const u = doc?.fileUrl?.trim()
     href = u || fallback.href
-    openInNewTab = openInNewTab || isExternalHref(href)
+    if (doc?.openInNewTab != null) openInNewTab = doc.openInNewTab === true
+    else openInNewTab = true
   } else if (linkType === 'email') {
     const addr = doc?.emailAddress?.trim()
     href = addr ? `mailto:${addr}` : fallback.href
@@ -139,10 +146,18 @@ function resolveSmartLink(doc: SmartLinkGroq | null | undefined, fallback: Resol
   } else if (linkType === 'whatsapp') {
     const n = digitsForWa(doc?.whatsappNumber)
     href = n ? buildWhatsAppHref(n, doc?.whatsappMessage) : fallback.href
-    openInNewTab = true
-  } else if (linkType === 'internalPage' || linkType === 'pageSection') {
+    if (doc?.openInNewTab != null) openInNewTab = doc.openInNewTab === true
+    else openInNewTab = true
+  } else if (linkType === 'samePageSection') {
+    const id = sanitizeSectionId(doc?.samePageSectionId || doc?.sectionId)
+    href = id ? `#${id}` : ''
+  } else if (linkType === 'book') {
+    const u = validateHttpUrl(doc?.bookFallbackUrl)
+    href = u || fallback.href
+    if (doc?.openInNewTab != null) openInNewTab = doc.openInNewTab === true
+  } else if (linkType === 'websitePage' || linkType === 'internalPage' || linkType === 'pageSection') {
     const base = pagePathFor(doc?.internalPage, doc?.experiencePageSlug, doc?.lodgePageSlug)
-    const hash = sanitizeSectionId(doc?.sectionId)
+    const hash = sanitizeSectionId(doc?.websitePageSectionId ?? doc?.sectionId)
     if (base) {
       href = hash ? `${base}#${hash}` : base
     }
@@ -172,22 +187,37 @@ function resolveLegacyLinkWithLabel(
   return { label, href, openInNewTab, rel: computeRel(href, openInNewTab) }
 }
 
+/** CMS “Show on site” off — callers must not fall back to legacy or static defaults for that control. */
+export function smartLinkIsDisabled(smart: SmartLinkGroq | null | undefined): boolean {
+  return Boolean(smart && typeof smart === 'object' && smart.enabled === false)
+}
+
+function smartLinkIsPresent(smart: SmartLinkGroq | null | undefined): boolean {
+  if (!smart || typeof smart !== 'object') return false
+  if (smart.enabled === false) return false
+  return Boolean(smart.label?.trim())
+}
+
 /**
- * Prefer `smartLink` when it has a label; otherwise legacy `linkWithLabel`; then static fallback.
+ * Prefer `smartLink` when it is enabled and has a label; otherwise legacy `linkWithLabel`; then static fallback.
+ * Returns `null` when the smart link exists and `enabled === false` (hidden CTA) — never use legacy in that case.
  */
 export function resolveSmartLinkOrLegacy(
   smart: SmartLinkGroq | null | undefined,
   legacy: LegacyLinkWithLabel | null | undefined,
   fallback: { label: string; href: string; openInNewTab?: boolean },
-): ResolvedSmartLink {
+): ResolvedSmartLink | null {
+  if (smartLinkIsDisabled(smart)) return null
+
   const fbResolved: ResolvedSmartLink = {
     label: fallback.label,
     href: fallback.href,
     openInNewTab: fallback.openInNewTab === true,
     rel: computeRel(fallback.href, fallback.openInNewTab === true),
   }
-  if (smart?.label?.trim()) {
-    const r = resolveSmartLink(smart, fbResolved)
+
+  if (smartLinkIsPresent(smart)) {
+    const r = resolveSmartLink(smart!, fbResolved)
     if (r.href && r.href !== '#') return r
   }
   return resolveLegacyLinkWithLabel(legacy, fallback.label, fallback.href, fallback.openInNewTab)

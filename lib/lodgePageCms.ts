@@ -67,7 +67,7 @@ import {
   enrichSmartLinkWithLabelFallback,
   resolveExperiencePublicHref,
 } from '@/lib/resolveExperiencePublicHref'
-import { resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
+import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
 import { cdnImageUrl } from '@/lib/sanity'
 import type { ReviewDoc } from '@/lib/queries'
 
@@ -298,21 +298,17 @@ function resolveExperiencesTailorCta(
   const b = row.experiencesTailorCta
   if (!b || b.enabled !== true) return undefined
   const fb = lodgeSoqtapataExperiences.tailor
-  const fallbackCta = resolveSmartLinkOrLegacy(undefined, undefined, {
+  const fallback = {
     label: fb.ctaLabel,
     href: lodgeSoqtapataBook.secondaryCta.href,
     openInNewTab: true,
-  })
+  }
   const raw = b.ctaSmartLink
   const hasSmart =
     Boolean(raw?.linkType?.trim()) || Boolean(raw?.label?.trim()) || Boolean(raw?.externalUrl?.trim())
   const smart = hasSmart && raw ? { ...raw, label: raw.label?.trim() || fb.ctaLabel } : null
-  const r = resolveSmartLinkOrLegacy(smart, undefined, {
-    label: fallbackCta.label,
-    href: fallbackCta.href,
-    openInNewTab: true,
-  })
-  if (!r.href?.trim()) return undefined
+  const r = resolveSmartLinkOrLegacy(smart, undefined, fallback)
+  if (!r?.href?.trim()) return undefined
   return {
     kicker: sectionFieldTrim(b.eyebrow) ?? fb.kicker,
     title: sectionFieldTrim(b.title) ?? fb.title,
@@ -342,15 +338,18 @@ function mapExperienceToCard(e: LodgeCmsExperienceCardRow, lodge: LodgeDocumentR
     }) ?? lodgeSoqtapataExperienceCardDefaults.defaultExperienceHref
   const waFallback = buildLodgeExperienceEnquireFallbackHref(lodge, e.name || '')
   const enquireSmart = enrichSmartLinkWithLabelFallback(e.lodgeEnquireSmartLink, footPrimary)
+  const enquireDisabled = smartLinkIsDisabled(e.lodgeEnquireSmartLink)
   const href = useExperienceHref
     ? experienceHref
-    : enquireSmart
-      ? resolveSmartLinkOrLegacy(enquireSmart, undefined, {
-          label: footPrimary,
-          href: waFallback,
-          openInNewTab: true,
-        }).href
-      : waFallback
+    : enquireDisabled
+      ? experienceHref
+      : enquireSmart
+        ? (resolveSmartLinkOrLegacy(enquireSmart, undefined, {
+            label: footPrimary,
+            href: waFallback,
+            openInNewTab: true,
+          })?.href ?? waFallback)
+        : waFallback
 
   return {
     image: e.mainImageUrl || cdnImageUrl(e.mainImage, 600, ''),
@@ -675,11 +674,15 @@ export function mergeLodgePageWithFallback(
       const hasLeg = Boolean(leg?.label?.trim() && leg?.href?.trim())
       const hasSmart = Boolean(row.heroCtaSmartLink?.label?.trim())
       if (!hasSmart && !hasLeg) return {}
+      if (smartLinkIsDisabled(row.heroCtaSmartLink)) {
+        return { primaryCta: { label: '', href: '' } }
+      }
       const r = resolveSmartLinkOrLegacy(
         row.heroCtaSmartLink,
         hasLeg ? leg : undefined,
         { label: fb.label, href: fb.href, openInNewTab: leg?.openInNewTab === true },
       )
+      if (!r) return {}
       return { primaryCta: { label: r.label, href: r.href } }
     })(),
     ...(lodge.certifications?.length
@@ -717,11 +720,15 @@ export function mergeLodgePageWithFallback(
       const hasLeg = Boolean(leg?.label?.trim() && leg?.href?.trim())
       const hasSmart = Boolean(row.navCtaSmartLink?.label?.trim())
       if (!hasSmart && !hasLeg) return {}
+      if (smartLinkIsDisabled(row.navCtaSmartLink)) {
+        return { cta: { label: '', href: '' } }
+      }
       const r = resolveSmartLinkOrLegacy(
         row.navCtaSmartLink,
         hasLeg ? leg : undefined,
         { label: fb.label, href: fb.href, openInNewTab: leg?.openInNewTab === true },
       )
+      if (!r) return {}
       return { cta: { label: r.label, href: r.href } }
     })(),
   }
@@ -861,18 +868,22 @@ export function mergeLodgePageWithFallback(
     const fbS = out.book.secondaryCta
     const a = row.bookingCta.ctas?.[0]
     const b = row.bookingCta.ctas?.[1]
-    const r1 = resolveSmartLinkOrLegacy(row.bookingCta.bookingPrimarySmartLink, a, {
+    const pSm = row.bookingCta.bookingPrimarySmartLink
+    const sSm = row.bookingCta.bookingSecondarySmartLink
+    const r1 = resolveSmartLinkOrLegacy(pSm, a, {
       label: fbP.label,
       href: fbP.href,
       openInNewTab: a?.openInNewTab === true,
     })
-    const r2 = resolveSmartLinkOrLegacy(row.bookingCta.bookingSecondarySmartLink, b, {
+    const r2 = resolveSmartLinkOrLegacy(sSm, b, {
       label: fbS.label,
       href: fbS.href,
       openInNewTab: b?.openInNewTab === true,
     })
-    out.book.primaryCta = { label: r1.label, href: r1.href }
-    out.book.secondaryCta = { label: r2.label, href: r2.href }
+    if (smartLinkIsDisabled(pSm)) out.book.primaryCta = { label: '', href: '' }
+    else if (r1) out.book.primaryCta = { label: r1.label, href: r1.href }
+    if (smartLinkIsDisabled(sSm)) out.book.secondaryCta = { label: '', href: '' }
+    else if (r2) out.book.secondaryCta = { label: r2.label, href: r2.href }
   }
   if (row.bookingCta?.trustItemsOverride?.length) {
     out.book.trustItems = trustRowsFromCms(row.bookingCta.trustItemsOverride)

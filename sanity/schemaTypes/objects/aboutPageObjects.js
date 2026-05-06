@@ -101,7 +101,9 @@ export const aboutPageStat = defineType({
   },
 })
 
-const hasSmartLabel = (parent) => Boolean(parent?.smartLink?.label?.trim())
+function smartLinkUsable(sl) {
+  return Boolean(sl && sl.enabled !== false && sl.label?.trim())
+}
 
 export const aboutPageCtaButton = defineType({
   name: 'aboutPageCtaButton',
@@ -112,29 +114,21 @@ export const aboutPageCtaButton = defineType({
       name: 'smartLink',
       title: 'Link selector',
       type: 'smartLink',
-      description: 'Primary control for this button. Smart link overrides legacy URL and label below.',
+      description: 'Primary control for this button.',
     }),
     defineField({
       name: 'label',
       title: 'Label (legacy fallback)',
       type: 'string',
-      hidden: hasSmartLabel,
-      validation: (Rule) =>
-        Rule.custom((label, ctx) => {
-          if (hasSmartLabel(ctx.parent)) return true
-          return label?.trim() ? true : 'Required when no smart link is set'
-        }),
+      hidden: true,
+      description: 'Legacy fallback — hidden from normal editing.',
     }),
     defineField({
       name: 'href',
       title: 'URL or path (legacy fallback)',
       type: 'string',
-      hidden: hasSmartLabel,
-      validation: (Rule) =>
-        Rule.custom((href, ctx) => {
-          if (hasSmartLabel(ctx.parent)) return true
-          return href?.trim() ? true : 'Required when no smart link is set'
-        }),
+      hidden: true,
+      description: 'Legacy fallback — hidden from normal editing.',
     }),
     defineField({
       name: 'variant',
@@ -152,13 +146,28 @@ export const aboutPageCtaButton = defineType({
       validation: (Rule) => Rule.required(),
       description: 'Used when smart link does not imply WhatsApp. Smart link type WhatsApp overrides to green.',
     }),
-    defineField({name: 'openInNewTab', title: 'Open in new tab (legacy)', type: 'boolean', initialValue: false}),
+    defineField({
+      name: 'openInNewTab',
+      title: 'Open in new tab (legacy)',
+      type: 'boolean',
+      initialValue: false,
+      hidden: true,
+      description: 'Legacy fallback — hidden from normal editing.',
+    }),
   ],
+  validation: (Rule) =>
+    Rule.custom((btn) => {
+      if (!btn || typeof btn !== 'object') return true
+      if (btn.smartLink?.enabled === false) return true
+      if (smartLinkUsable(btn.smartLink)) return true
+      if (btn.label?.trim() && btn.href?.trim()) return true
+      return 'Add a smart link or keep legacy label + URL for fallback.'
+    }),
   preview: {
-    select: {label: 'label', sl: 'smartLink.label', variant: 'variant'},
-    prepare: ({label, sl, variant}) => ({
+    select: {label: 'label', sl: 'smartLink.label', variant: 'variant', sen: 'smartLink.enabled'},
+    prepare: ({label, sl, variant, sen}) => ({
       title: (sl && String(sl).trim()) || label || 'Button',
-      subtitle: sl ? 'Smart link' : variant,
+      subtitle: sen === false ? 'Hidden' : sl ? 'Smart link' : variant,
     }),
   },
 })
