@@ -79,6 +79,21 @@ export const experiencePage = defineType({
       description: 'Segmento de ruta (p. ej. `soqtapata-pristine-immersion`).',
     }),
     defineField({
+      name: 'headerNavOrder',
+      title: 'Header mega menu order',
+      type: 'number',
+      group: 'general',
+      description:
+        'Lower numbers appear first within each program group (Classic / Signature / Learning). Leave empty for alphabetical by experience name.',
+      validation: (Rule) =>
+        Rule.custom((value) => {
+          if (value === undefined || value === null) return true
+          if (!Number.isInteger(value)) return 'Use a whole number'
+          if (value < 0 || value > 999) return 'Between 0 and 999'
+          return true
+        }),
+    }),
+    defineField({
       name: 'experience',
       title: 'Experiencia vinculada (fuente principal)',
       type: 'reference',

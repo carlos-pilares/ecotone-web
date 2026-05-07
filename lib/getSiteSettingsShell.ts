@@ -11,6 +11,7 @@ import {
   type SiteSettingsApprovedLink,
 } from '@/data/cmsApproved/siteSettingsApprovedContent'
 import { siteSettingsShellQuery, type SiteSettingsShellRow } from '@/lib/queries'
+import { resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
 import { clientServer, urlFor } from '@/lib/sanity'
 
 export type ShellNavLink = {
@@ -91,6 +92,23 @@ function pickPrimaryCta(
   }
 }
 
+function pickBookNowPrimaryCta(row: NonNullable<SiteSettingsShellRow>): ShellNavLink {
+  const fallback = HEADER.primaryCta
+  const resolved = resolveSmartLinkOrLegacy(row.navBookNowSmartLink, row.primaryCta, {
+    label: fallback.label,
+    href: fallback.href,
+    openInNewTab: fallback.openInNewTab,
+  })
+  if (resolved) {
+    return {
+      label: resolved.label,
+      href: resolved.href,
+      openInNewTab: resolved.openInNewTab,
+    }
+  }
+  return pickPrimaryCta(row.primaryCta)
+}
+
 function pickStringLines(
   raw: string[] | null | undefined,
   fallback: readonly string[] | string[],
@@ -163,7 +181,7 @@ export const getSiteSettingsShell = cache(async (): Promise<GlobalSiteSettingsSh
     brandIsotipoUrl: toUrl(row.brandIsotipo),
     homePath: row.homePath?.trim() || HEADER.homePath,
     mainNav: mapLinkList(row.mainNav, HEADER_MAIN_NAV),
-    primaryCta: pickPrimaryCta(row.primaryCta),
+    primaryCta: pickBookNowPrimaryCta(row),
     mobileMenuAriaLabel: row.mobileMenuAriaLabel?.trim() || HEADER.mobileMenuAriaLabel,
     footer: {
       showBrandDeco: ft?.showBrandDeco !== false,

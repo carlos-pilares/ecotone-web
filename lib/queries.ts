@@ -975,6 +975,7 @@ export type SiteSettingsShellRow = {
   homePath: string | null
   mobileMenuAriaLabel: string | null
   mainNav: Array<{ label?: string; href?: string; openInNewTab?: boolean }> | null
+  navBookNowSmartLink?: SmartLinkGroq | null
   primaryCta: { label?: string; href?: string; openInNewTab?: boolean } | null
   headerLogoLight: SanityImageSource | null
   headerLogoDark: SanityImageSource | null
@@ -999,6 +1000,7 @@ export const siteSettingsShellQuery = groq`
     "homePath": header.homePath,
     "mobileMenuAriaLabel": header.mobileMenuAriaLabel,
     "mainNav": header.mainNav,
+    "navBookNowSmartLink": header.navBookNowSmartLink { ${GROQ_SMART_LINK_FIELDS} },
     "primaryCta": header.primaryCta,
     "headerLogoLight": coalesce(header.headerLogoLight, header.headerLogoFullHorizontal),
     "headerLogoDark": header.headerLogoDark,

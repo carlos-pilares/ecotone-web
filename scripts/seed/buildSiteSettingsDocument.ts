@@ -18,6 +18,15 @@ import {
   FOOTER_LEGAL_LINKS,
   HEADER,
   HEADER_MAIN_NAV,
+  HEADER_NAV_ABOUT_SMART_LINK,
+  HEADER_NAV_BOOK_NOW_SMART_LINK,
+  HEADER_NAV_EXPERIENCES_GROUPS_DEFAULT,
+  HEADER_NAV_EXPERIENCES_SEE_ALL_BLOCK,
+  HEADER_NAV_EXPERIENCES_TAILOR_MENU_DEFAULT,
+  HEADER_NAV_LODGES_SEE_ALL_BLOCK,
+  HEADER_NAV_LODGE_GROUPS_DEFAULT,
+  HEADER_NAV_ROUTES_SMART_LINK,
+  HEADER_NAV_TAILOR_MADE,
   SITE_DEFAULT_SEO,
   SITE_NAME,
   SOCIAL,
@@ -101,8 +110,32 @@ export async function buildSiteSettingsDocument(client: SanityClient) {
       headerLogoDark: logoBrown,
       homePath: HEADER.homePath,
       mainNav: mapLinks(HEADER_MAIN_NAV),
+      routesEnabled: true,
+      routesLabel: 'Routes',
+      routesLinkSmartLink: HEADER_NAV_ROUTES_SMART_LINK,
+      aboutEnabled: true,
+      aboutLabel: 'About',
+      aboutLinkSmartLink: HEADER_NAV_ABOUT_SMART_LINK,
+      experiencesEnabled: true,
+      experiencesLabel: 'Experiences',
+      experiencesGroupOverrides: [],
+      experiencesItemOverrides: [],
+      experiencesTailorMenu: {...HEADER_NAV_EXPERIENCES_TAILOR_MENU_DEFAULT},
+      experiencesGroups: {...HEADER_NAV_EXPERIENCES_GROUPS_DEFAULT},
+      experiencesSeeAll: {...HEADER_NAV_EXPERIENCES_SEE_ALL_BLOCK},
+      lodgesEnabled: true,
+      lodgesLabel: 'Lodges',
+      lodgesRouteOverrides: [],
+      lodgesItemOverrides: [],
+      lodgeGroups: {...HEADER_NAV_LODGE_GROUPS_DEFAULT},
+      lodgesSeeAll: {...HEADER_NAV_LODGES_SEE_ALL_BLOCK},
+      navBookNowSmartLink: HEADER_NAV_BOOK_NOW_SMART_LINK,
       primaryCta: HEADER.primaryCta,
       mobileMenuAriaLabel: HEADER.mobileMenuAriaLabel,
+      navTailorMadeTitle: HEADER_NAV_TAILOR_MADE.title,
+      navTailorMadeSubtitle: HEADER_NAV_TAILOR_MADE.subtitle,
+      navTailorMadeBody: HEADER_NAV_TAILOR_MADE.body,
+      navTailorMadeSmartLink: HEADER_NAV_TAILOR_MADE.smartLink,
     },
     footer: {
       footerLogo: logoCream,
@@ -150,7 +183,12 @@ export async function commitSiteSettingsDocument(client: SanityClient): Promise<
   type Pub = {
     _id: string
     siteName?: string
-    header?: { mainNav?: unknown[]; headerLogoFullHorizontal?: unknown }
+    header?: {
+      mainNav?: unknown[]
+      headerLogoFullHorizontal?: unknown
+      experiencesLabel?: string | null
+      routesLabel?: string | null
+    }
     footer?: {
       tagline?: string
       footerLogo?: unknown
@@ -167,10 +205,14 @@ export async function commitSiteSettingsDocument(client: SanityClient): Promise<
       `siteSettings post-commit: footer.tagline not stored (got ${JSON.stringify(row?.footer?.tagline)}). Check schema object field names (footer.*).`,
     )
   }
-  const nav = row.header?.mainNav
-  if (!Array.isArray(nav) || nav.length !== HEADER_MAIN_NAV.length) {
+  if (row.header?.experiencesLabel?.trim() !== 'Experiences') {
     throw new Error(
-      `siteSettings post-commit: header.mainNav has ${Array.isArray(nav) ? nav.length : 'no'} items (expected ${HEADER_MAIN_NAV.length}). Check linkWithLabel and header.mainNav path.`,
+      `siteSettings post-commit: header.experiencesLabel missing or wrong (got ${JSON.stringify(row.header?.experiencesLabel)}). Check structured header fields.`,
+    )
+  }
+  if (row.header?.routesLabel?.trim() !== 'Routes') {
+    throw new Error(
+      `siteSettings post-commit: header.routesLabel missing or wrong (got ${JSON.stringify(row.header?.routesLabel)}).`,
     )
   }
   if (row.footer?.footerLogo == null) {

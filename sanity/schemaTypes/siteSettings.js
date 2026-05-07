@@ -25,13 +25,153 @@ const headerBlock = [
     description: 'Darker mark for the sticky, light background header. If empty, the primary is used; upload a separate asset for best contrast.',
   }),
   defineField({name: 'homePath', title: 'Logo link target', type: 'string', initialValue: '/'}),
+
+  // --- Header nav (matches live mega menu) ---
   defineField({
-    name: 'mainNav',
-    title: 'Main navigation',
-    type: 'array',
-    of: [{type: 'linkWithLabel'}],
+    name: 'routesEnabled',
+    title: 'Routes — show in header',
+    type: 'boolean',
+    initialValue: true,
   }),
-  defineField({name: 'primaryCta', title: 'Primary CTA (e.g. Book now)', type: 'cta'}),
+  defineField({
+    name: 'routesLabel',
+    title: 'Routes — label',
+    type: 'string',
+    initialValue: 'Routes',
+    validation: (Rule) => Rule.max(40),
+  }),
+  defineField({
+    name: 'routesLinkSmartLink',
+    title: 'Routes — link',
+    type: 'smartLink',
+    description: 'Usually “Page within the website” → Routes. If empty, the site links to /routes.',
+  }),
+  defineField({
+    name: 'aboutEnabled',
+    title: 'About — show in header',
+    type: 'boolean',
+    initialValue: true,
+  }),
+  defineField({
+    name: 'aboutLabel',
+    title: 'About — label',
+    type: 'string',
+    initialValue: 'About',
+    validation: (Rule) => Rule.max(40),
+  }),
+  defineField({
+    name: 'aboutLinkSmartLink',
+    title: 'About — link',
+    type: 'smartLink',
+    description: 'Usually “Page within the website” → About. If empty, the site links to /about.',
+  }),
+
+  defineField({
+    name: 'experiencesEnabled',
+    title: 'Experiences — show dropdown',
+    type: 'boolean',
+    initialValue: true,
+  }),
+  defineField({
+    name: 'experiencesLabel',
+    title: 'Experiences — top nav label',
+    type: 'string',
+    initialValue: 'Experiences',
+    validation: (Rule) => Rule.max(40),
+  }),
+  defineField({
+    name: 'experiencesGroupOverrides',
+    title: 'Experiences — group overrides',
+    type: 'array',
+    of: [{type: 'headerNavExperienceGroupOverride'}],
+    description:
+      'Optional. One row per program group you want to customize. Valid group keys come from published experience pages: **classic** (nature-core), **signature** (family-adventure), **learning** (experiential-learning). Groups with no visible experiences are hidden automatically.',
+  }),
+  defineField({
+    name: 'experiencesItemOverrides',
+    title: 'Experiences — item overrides',
+    type: 'array',
+    of: [{type: 'headerNavExperienceItemOverride'}],
+    description: 'Hide, relabel, or re-order individual experience landings in the mega menu.',
+  }),
+  defineField({
+    name: 'experiencesTailorMenu',
+    title: 'Experiences — Tailor Made (sidebar)',
+    type: 'headerNavExperiencesTailorMenu',
+    description: 'Tailor Made is a fixed CTA column (not derived from experience types). Panel copy uses “Tailor Made” fields below.',
+  }),
+  defineField({
+    name: 'experiencesGroups',
+    title: 'Legacy — Experiences program groups',
+    type: 'headerNavExperiencesGroups',
+    hidden: () => true,
+    description:
+      'Legacy fixed Classic / Signature / Learning / Tailor rows. Hidden from editors. Used only as fallback when “Group overrides” is empty.',
+  }),
+  defineField({
+    name: 'experiencesSeeAll',
+    title: 'Experiences — “See all” link',
+    type: 'headerNavSeeAll',
+    description: 'Footer link in the Experiences dropdown. Disable if you do not want this CTA.',
+  }),
+
+  defineField({
+    name: 'lodgesEnabled',
+    title: 'Lodges — show dropdown',
+    type: 'boolean',
+    initialValue: true,
+  }),
+  defineField({
+    name: 'lodgesLabel',
+    title: 'Lodges — top nav label',
+    type: 'string',
+    initialValue: 'Lodges',
+    validation: (Rule) => Rule.max(40),
+  }),
+  defineField({
+    name: 'lodgesRouteOverrides',
+    title: 'Lodges — route overrides',
+    type: 'array',
+    of: [{type: 'headerNavLodgeRouteOverride'}],
+    description:
+      'Optional. One row per route column. Valid route keys come from published lodge pages: **camanti**, **manu-road**, **manu-core**. Routes with no visible lodges are hidden automatically.',
+  }),
+  defineField({
+    name: 'lodgesItemOverrides',
+    title: 'Lodges — item overrides',
+    type: 'array',
+    of: [{type: 'headerNavLodgeItemOverride'}],
+    description: 'Hide, relabel, or re-order individual lodge landings in the mega menu.',
+  }),
+  defineField({
+    name: 'lodgeGroups',
+    title: 'Legacy — Lodges route groups',
+    type: 'headerNavLodgeGroups',
+    hidden: () => true,
+    description: 'Legacy fixed Camanti / Manu Road / Manu Core. Hidden from editors. Fallback when “Route overrides” is empty.',
+  }),
+  defineField({
+    name: 'lodgesSeeAll',
+    title: 'Lodges — “See all” link',
+    type: 'headerNavSeeAll',
+    description: 'Footer link in the Lodges dropdown. Disable if you do not want this CTA.',
+  }),
+
+  defineField({
+    name: 'navBookNowSmartLink',
+    title: 'Book now (smart link)',
+    type: 'smartLink',
+    description:
+      'Sticky header “Book now” button. When set with a label, this replaces the legacy Primary CTA below for the live site.',
+  }),
+  defineField({
+    name: 'primaryCta',
+    title: 'Primary CTA (legacy fallback)',
+    type: 'cta',
+    description:
+      'Fallback when Book now smart link is empty or incomplete. Hidden when Book now smart link has a label. Legacy: kept for older content.',
+    hidden: ({parent}) => Boolean(parent?.navBookNowSmartLink?.label?.trim()),
+  }),
   defineField({
     name: 'mobileMenuAriaLabel',
     title: 'Mobile menu button (aria label)',
@@ -40,40 +180,52 @@ const headerBlock = [
   }),
   defineField({
     name: 'navTailorMadeSmartLink',
-    title: 'Header — Tailor Made (mega menu CTA)',
+    title: 'Tailor Made — CTA (mega menu)',
     type: 'smartLink',
-    description: 'Destino del bloque “Tailor Made” (p. ej. WhatsApp). No es un documento experience.',
+    description: 'Destination for the Tailor Made panel (e.g. WhatsApp).',
   }),
   defineField({
     name: 'navTailorMadeTitle',
-    title: 'Tailor Made — título',
+    title: 'Tailor Made — title',
     type: 'string',
     validation: (Rule) => Rule.max(120),
   }),
   defineField({
     name: 'navTailorMadeSubtitle',
-    title: 'Tailor Made — subtítulo',
+    title: 'Tailor Made — subtitle',
     type: 'string',
     validation: (Rule) => Rule.max(160),
   }),
   defineField({
     name: 'navTailorMadeBody',
-    title: 'Tailor Made — texto (opcional)',
+    title: 'Tailor Made — body (optional)',
     type: 'text',
     rows: 3,
     validation: (Rule) => Rule.max(400),
   }),
+
+  defineField({
+    name: 'mainNav',
+    title: 'Main navigation (legacy)',
+    type: 'array',
+    of: [{type: 'linkWithLabel'}],
+    hidden: () => true,
+    description:
+      'Legacy: old flat link list (Experiences hash, external Lodges, etc.). Hidden from editors. The live header uses the structured fields above. Kept only as a fallback for older tooling.',
+  }),
   defineField({
     name: 'navExperiencesSeeAllSmartLink',
-    title: 'Header — “All experiences” (mega menu)',
+    title: 'Legacy — “All experiences” smart link',
     type: 'smartLink',
-    description: 'Enlace “See all experiences” del dropdown. Vacío = fallback en la app.',
+    hidden: () => true,
+    description: 'Superseded by “Experiences — See all link”. Merged at read time if the new block is empty.',
   }),
   defineField({
     name: 'navLodgesSeeAllSmartLink',
-    title: 'Header — “All lodges” (mega menu)',
+    title: 'Legacy — “All lodges” smart link',
     type: 'smartLink',
-    description: 'Enlace “See all lodges” del dropdown. Vacío = fallback en la app.',
+    hidden: () => true,
+    description: 'Superseded by “Lodges — See all link”. Merged at read time if the new block is empty.',
   }),
 ]
 

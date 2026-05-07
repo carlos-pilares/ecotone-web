@@ -4,6 +4,16 @@ import {imageWithAlt} from './objects/imageWithAlt'
 import {review} from './review'
 import {linkWithLabel} from './objects/linkWithLabel'
 import {smartLink} from './objects/smartLink'
+import {headerNavProgramGroup} from './objects/headerNavProgramGroup'
+import {headerNavLodgeRouteGroup} from './objects/headerNavLodgeRouteGroup'
+import {headerNavSeeAll} from './objects/headerNavSeeAll'
+import {headerNavExperiencesGroups} from './objects/headerNavExperiencesGroups'
+import {headerNavLodgeGroups} from './objects/headerNavLodgeGroups'
+import {headerNavExperienceGroupOverride} from './objects/headerNavExperienceGroupOverride'
+import {headerNavExperienceItemOverride} from './objects/headerNavExperienceItemOverride'
+import {headerNavLodgeRouteOverride} from './objects/headerNavLodgeRouteOverride'
+import {headerNavLodgeItemOverride} from './objects/headerNavLodgeItemOverride'
+import {headerNavExperiencesTailorMenu} from './objects/headerNavExperiencesTailorMenu'
 import {landingHero} from './objects/landingHero'
 import {experienceResourceCard} from './objects/experienceResourceCard'
 import {experiencePageResources} from './objects/experiencePageResources'
@@ -63,6 +73,16 @@ const objects = [
   seo,
   linkWithLabel,
   smartLink,
+  headerNavProgramGroup,
+  headerNavLodgeRouteGroup,
+  headerNavSeeAll,
+  headerNavExperiencesGroups,
+  headerNavLodgeGroups,
+  headerNavExperienceGroupOverride,
+  headerNavExperienceItemOverride,
+  headerNavLodgeRouteOverride,
+  headerNavLodgeItemOverride,
+  headerNavExperiencesTailorMenu,
   cta,
   imageWithAlt,
   experienceResourceCard,

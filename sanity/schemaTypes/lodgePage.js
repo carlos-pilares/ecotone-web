@@ -74,6 +74,21 @@ export const lodgePage = defineType({
         }),
     }),
     defineField({
+      name: 'headerNavOrder',
+      title: 'Header mega menu order',
+      type: 'number',
+      group: 'general',
+      description:
+        'Lower numbers appear first within each route group (Camanti / Manu Road / Manu Core). Leave empty for alphabetical by lodge name.',
+      validation: (Rule) =>
+        Rule.custom((value) => {
+          if (value === undefined || value === null) return true
+          if (!Number.isInteger(value)) return 'Use a whole number'
+          if (value < 0 || value > 999) return 'Between 0 and 999'
+          return true
+        }),
+    }),
+    defineField({
       name: 'lodge',
       title: 'Lodge (fuente principal)',
       type: 'reference',

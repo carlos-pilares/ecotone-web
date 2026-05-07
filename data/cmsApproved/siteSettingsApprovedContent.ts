@@ -37,6 +37,101 @@ export const HEADER_MAIN_NAV: SiteSettingsApprovedLink[] = [
   { _key: 'hnav4', label: 'About', href: '/#about', openInNewTab: false },
 ]
 
+/** Seed payloads for `siteSettings.header` mega menu + sticky Book (smartLink objects). */
+export const HEADER_NAV_BOOK_NOW_SMART_LINK = {
+  _type: 'smartLink' as const,
+  enabled: true,
+  label: 'Book now',
+  linkType: 'websitePage' as const,
+  internalPage: 'home',
+  websitePageSectionId: 'book',
+  openInNewTab: false,
+}
+
+export const HEADER_NAV_EXPERIENCES_SEE_ALL_SMART_LINK = {
+  _type: 'smartLink' as const,
+  enabled: true,
+  label: 'All experiences',
+  linkType: 'websitePage' as const,
+  internalPage: 'home',
+  websitePageSectionId: 'experiences',
+  openInNewTab: false,
+}
+
+export const HEADER_NAV_LODGES_SEE_ALL_SMART_LINK = {
+  _type: 'smartLink' as const,
+  enabled: true,
+  label: 'All lodges',
+  linkType: 'websitePage' as const,
+  internalPage: 'lodgesIndex',
+  openInNewTab: false,
+}
+
+/** Direct header links (mega menu top bar): Routes / About. */
+export const HEADER_NAV_ROUTES_SMART_LINK = {
+  _type: 'smartLink' as const,
+  enabled: true,
+  label: 'Routes',
+  linkType: 'websitePage' as const,
+  internalPage: 'routes' as const,
+  openInNewTab: false,
+}
+
+export const HEADER_NAV_ABOUT_SMART_LINK = {
+  _type: 'smartLink' as const,
+  enabled: true,
+  label: 'About',
+  linkType: 'websitePage' as const,
+  internalPage: 'about' as const,
+  openInNewTab: false,
+}
+
+export const HEADER_NAV_EXPERIENCES_GROUPS_DEFAULT = {
+  classicNature: { label: 'Classic Nature', enabled: true, order: 0 },
+  signatureExpeditions: { label: 'Signature Expeditions', enabled: true, order: 1 },
+  experientialLearning: { label: 'Experiential Learning', enabled: true, order: 2 },
+  tailorMade: { label: 'Tailor Made', enabled: true, order: 3 },
+} as const
+
+export const HEADER_NAV_LODGE_GROUPS_DEFAULT = {
+  camanti: { label: 'Camanti', enabled: true, order: 0 },
+  manuRoad: { label: 'Manu Road', enabled: true, order: 1 },
+  manuCore: { label: 'Manu Core', enabled: true, order: 2 },
+} as const
+
+export const HEADER_NAV_EXPERIENCES_SEE_ALL_BLOCK = {
+  enabled: true,
+  label: 'All experiences',
+  smartLink: HEADER_NAV_EXPERIENCES_SEE_ALL_SMART_LINK,
+} as const
+
+/** Tailor Made sidebar row (explicit CTA; not derived from experience program types). */
+export const HEADER_NAV_EXPERIENCES_TAILOR_MENU_DEFAULT = {
+  enabled: true,
+  label: 'Tailor Made',
+} as const
+
+export const HEADER_NAV_LODGES_SEE_ALL_BLOCK = {
+  enabled: true,
+  label: 'All lodges',
+  smartLink: HEADER_NAV_LODGES_SEE_ALL_SMART_LINK,
+} as const
+
+export const HEADER_NAV_TAILOR_MADE = {
+  title: 'Design your program',
+  subtitle: 'Any duration · Any group · Fully custom',
+  body:
+    'We build a program around your goals — school groups, researchers, families, or solo explorers. Any route, any duration.',
+  smartLink: {
+    _type: 'smartLink' as const,
+    enabled: true,
+    label: 'Enquire',
+    linkType: 'whatsapp' as const,
+    whatsappNumber: '51974781094',
+    openInNewTab: true,
+  },
+} as const
+
 export const HEADER = {
   homePath: '/',
   mainNav: HEADER_MAIN_NAV,

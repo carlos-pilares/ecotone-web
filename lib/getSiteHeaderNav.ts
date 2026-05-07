@@ -4,7 +4,7 @@ import { resolveSiteHeaderNavData } from '@/lib/resolveSiteHeaderNavData'
 import { siteHeaderNavBundleQuery, type SiteHeaderNavBundleRow } from '@/lib/siteHeaderNavQuery'
 import { clientServer } from '@/lib/sanity'
 
-export type { ResolvedSiteHeaderNav } from '@/lib/resolveSiteHeaderNavData'
+export type { ResolvedSiteHeaderNav, SiteHeaderNavChrome } from '@/lib/resolveSiteHeaderNavData'
 
 /**
  * CMS-backed mega menu: experiencePage + lodgePage lists + optional `siteSettings` header CTAs.
