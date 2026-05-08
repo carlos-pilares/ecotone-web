@@ -20,8 +20,11 @@ import type { CmsInternalNav } from '@/lib/soqtapataInternalNav'
 import type { SoqtapataPageModuleRow } from '@/lib/soqtapataSectionPresentation'
 import { urlFor } from '@/lib/sanity'
 import { DEFAULT_EXPERIENCE_RESOURCE_DOWNLOAD_CTA_LABEL } from '@/lib/experienceResourceCmsDefaults'
+import type { ReserveCtaSettingsGroq } from '@/lib/reserveCtaGroq'
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
 import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
+import { buildReserveRowsForExperience, isActiveExperienceStatus } from '@/lib/reserveCtaPricing'
+import { resolveReserveCtaCard } from '@/lib/resolveReserveCtaCard'
 
 // --- public row shape (subset of GROQ result) ---
 
@@ -43,6 +46,7 @@ export type SoqtapataStructuredPageRow = {
   relatedSectionTitle?: string | null
   relatedRefIds?: string[] | null
   relatedExperiencesFromLanding?: CmsRelatedExperience[] | null
+  reserveCtaSettings?: ReserveCtaSettingsGroq
   reserveBlock?: CmsReserveBlock | null
   /** Landing: prioridad sobre `experience.resources` para tarjetas + preview map/brochure. */
   resources?: CmsExperiencePageResources | null
@@ -209,6 +213,7 @@ type CmsExperience = {
   faqs?: { question?: string; answer?: string }[] | null
   seo?: { title?: string | null; description?: string | null } | null
   routeDocument?: { name?: string | null; shortDescription?: string | null; slug?: { current?: string | null } | null } | null
+  status?: string | null
 } | null
 
 type CmsGalleryItem = {
@@ -998,6 +1003,7 @@ export function buildSoqtapataStudioPreviewRow(p: {
   relatedSectionTitle?: string | null
   relatedRefIds: string[]
   relatedExperiencesFromLanding: CmsRelatedExperience[] | null | undefined
+  reserveCtaSettings?: ReserveCtaSettingsGroq
   reserveBlock?: CmsReserveBlock | null
 }): SoqtapataStructuredPageRow {
   return {
@@ -1006,6 +1012,7 @@ export function buildSoqtapataStudioPreviewRow(p: {
     relatedSectionTitle: p.relatedSectionTitle,
     relatedRefIds: p.relatedRefIds,
     relatedExperiencesFromLanding: p.relatedExperiencesFromLanding || [],
+    reserveCtaSettings: p.reserveCtaSettings ?? null,
     reserveBlock: p.reserveBlock ?? null,
   }
 }
@@ -1051,7 +1058,7 @@ export function alsoBookFromStructuredRow(
   const wetHidden = smartLinkIsDisabled(rb?.wetravelSmartLink)
   const waHidden = smartLinkIsDisabled(rb?.whatsappSmartLink)
   const termsHidden = smartLinkIsDisabled(rb?.termsSmartLink)
-  const book: SoqtapataBook = {
+  let book: SoqtapataBook = {
     ...lBook,
     eyebrow: strOrNull(rb?.eyebrow) ?? lBook.eyebrow,
     h2: strOrNull(rb?.headline) ?? lBook.h2,
@@ -1079,6 +1086,66 @@ export function alsoBookFromStructuredRow(
             .map((t) => ({ text: (t?.text && String(t.text).trim()) || '' }))
             .filter((t) => t.text)
         : lBook.trustStripItems,
+  }
+
+  const exp = row.experience
+  const gh0 = exp?.gettingHereInfo?.[0]
+  const pickupLine = gh0?.description?.trim() || gh0?.title?.trim() || null
+  const expPriceUsd =
+    exp && isActiveExperienceStatus(exp.status) && typeof exp.price === 'number' && exp.price > 0
+      ? exp.price
+      : null
+  const defaultRows = buildReserveRowsForExperience(
+    {
+      route: exp?.route,
+      duration: exp?.duration,
+      groupSizeMin: exp?.groupSizeMin,
+      groupSizeMax: exp?.groupSizeMax,
+      includes: exp?.includes ?? null,
+      pickupLine,
+    },
+    null,
+  )
+
+  const defTermsHref = (termsHidden ? '' : (termsResolved?.href ?? lBook.termsHash)).trim() || '#terms'
+  const rs = row.reserveCtaSettings
+  const reserveCard = resolveReserveCtaCard({
+    settings: rs,
+    lowestUsd: expPriceUsd,
+    priceLineStyle: 'exact',
+    legacyPriceLine: book.price,
+    legacyPriceSuffix: book.priceSmall,
+    legacySubline: book.sub,
+    defaultSubline: lBook.sub,
+    defaultRows,
+    legacyCtas: {
+      primarySmart: rb?.wetravelSmartLink,
+      primaryLabel: book.wetravelLabel || rb?.wetravelLabel,
+      primaryHref: book.wetravelUrl || rb?.wetravelUrl,
+      secondarySmart: rb?.whatsappSmartLink,
+      secondaryLabel: book.whatsappLabel || rb?.whatsappLabel,
+      secondaryHref: book.whatsappUrl || rb?.whatsappUrl,
+    },
+    defaultTermsHref: defTermsHref,
+  })
+
+  const ctaP = reserveCard.ctas.find((c) => c.variant === 'primary')
+  const ctaS = reserveCard.ctas.find((c) => c.variant === 'secondary')
+
+  book = {
+    ...book,
+    eyebrow: rs?.eyebrow?.trim() || book.eyebrow,
+    h2: rs?.title?.trim() || book.h2,
+    lead: rs?.body?.trim() || book.lead,
+    price: reserveCard.priceLine,
+    priceSmall: reserveCard.priceSuffix,
+    sub: reserveCard.subline,
+    rows: reserveCard.rows,
+    wetravelUrl: ctaP?.href ?? book.wetravelUrl,
+    wetravelLabel: ctaP?.label ?? book.wetravelLabel,
+    whatsappUrl: ctaS?.href ?? book.whatsappUrl,
+    whatsappLabel: ctaS?.label ?? book.whatsappLabel,
+    termsHash: reserveCard.termsHref?.trim() || book.termsHash,
   }
 
   return { also, book }

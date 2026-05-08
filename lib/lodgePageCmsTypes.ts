@@ -1,5 +1,6 @@
 import type { SanityImageSource } from '@sanity/image-url'
 
+import type { ReserveCtaSettingsGroq } from '@/lib/reserveCtaGroq'
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
 import type {
   LodgeBookCtaData,
@@ -152,6 +153,7 @@ export type LodgeCmsExperienceCardRow = {
   duration?: string | null
   price?: number | null
   priceLabel?: string | null
+  status?: string | null
   shortDescription?: string | null
   mainImage?: SanityImageSource | null
   mainImageUrl?: string | null
@@ -265,6 +267,7 @@ export type LodgeStructuredPageRow = {
   experiencesTailorCta?: LodgePageExperiencesTailorCtaRow
   reviewsSelection?: ReviewDoc[] | null
   reviewsPresentation?: LodgePageReviewsPresentationRow
+  reserveCtaSettings?: ReserveCtaSettingsGroq
   bookingCta?: {
     title?: string | null
     body?: string | null

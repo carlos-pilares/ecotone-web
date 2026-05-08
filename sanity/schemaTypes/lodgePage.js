@@ -381,11 +381,20 @@ export const lodgePage = defineType({
       'Precio y confianza en el Lodge; bloque de reserva de esta landing abajo.',
     ),
     defineField({
+      name: 'reserveCtaSettings',
+      title: 'Reserve CTA (#book) — preferido',
+      type: 'reserveCtaSettings',
+      group: 'booking',
+      description:
+        'Editorial + tarjeta. El precio por defecto es el más bajo entre experiencias **activas** vinculadas al lodge / selección de esta landing.',
+    }),
+    defineField({
       name: 'bookingCta',
-      title: '4. Selección: bloque reserva / CTAs',
+      title: '4. Selección: bloque reserva / CTAs (legacy)',
       type: 'lodgePageBookingBlock',
       group: 'booking',
-      description: 'Título, texto y botones. La confianza puede sobreescribirse dentro del bloque.',
+      description:
+        'Legacy — título de tarjeta, texto y botones cuando no usas solo Reserve CTA. La confianza puede sobreescribirse dentro del bloque.',
     }),
 
     // --- Persistencia interna: overrides de copy por sección (editado desde paneles de arriba) ---

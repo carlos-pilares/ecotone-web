@@ -989,6 +989,8 @@ export type SoqtapataBook = {
   eyebrow: string
   h2: string
   h2Style: { marginBottom: number; textAlign: 'center' }
+  /** Optional intro under the H2 (`reserveCtaSettings.body` / CMS). */
+  lead?: string
   price: string
   priceSmall: string
   sub: string

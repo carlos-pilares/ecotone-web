@@ -120,6 +120,7 @@ export default async function Home() {
         <Hero heroData={homePage} />
         <HomeStaticSections
           homeData={homePage}
+          experiences={experiences}
           techProducts={techProductsForHome}
           partners={partnersForHome}
           blogPosts={blogPostsForHome}

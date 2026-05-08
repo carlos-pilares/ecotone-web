@@ -390,12 +390,20 @@ export const experiencePage = defineType({
       'Experiencia vinculada + resolución del bloque reserva (vista previa). Después: edición del módulo y overrides del bloque.',
     ),
     defineField({
+      name: 'reserveCtaSettings',
+      title: 'Reserve CTA (#book) — preferido',
+      type: 'reserveCtaSettings',
+      group: 'reserve',
+      description:
+        'Editorial, precio derivado de la experiencia, filas y CTAs. Tiene prioridad sobre el bloque legacy de abajo cuando hay valores.',
+    }),
+    defineField({
       name: 'reserveBlock',
-      title: 'Override: bloque reserva (esta URL)',
+      title: 'Override: bloque reserva (legacy)',
       type: 'landingReserveBlock',
       group: 'reserve',
       description:
-        'Cada subcampo vacío conserva el valor resuelto en la vista previa de esta pestaña. No sustituye al hero (pestaña **Hero**).',
+        'Legacy granular overrides. Usa **Reserve CTA** arriba cuando sea posible. Cada subcampo vacío conserva el valor resuelto en la vista previa.',
     }),
     soqtapataActualField(
       'stActualWebReserve',

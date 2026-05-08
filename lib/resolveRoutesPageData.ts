@@ -2,7 +2,11 @@
  * Mapea `RoutesPageSanityDoc` (campos planos del schema `routesPage`, ver `sanity/schemaTypes/routesPage.js`)
  * al shape que consumen `app/routes/page.tsx` y `getRoutesPage` (objetos anidados tipo `RoutesTerritoryStatic`).
  */
+import type { ReserveCtaCta, ReserveCtaDetailRow } from '@/components/shared/ReserveCtaSection'
+import { homePageTextFields } from '@/data/cmsApproved/homePageFields'
 import type { ReviewDoc } from '@/lib/queries'
+import { getLowestActiveExperiencePrice, buildReserveRowsForHome } from '@/lib/reserveCtaPricing'
+import { resolveReserveCtaCard } from '@/lib/resolveReserveCtaCard'
 import {
   buildGenericExperienceEnquireWhatsappHref,
   enrichSmartLinkWithLabelFallback,
@@ -401,7 +405,16 @@ export type RoutesPageResolved = {
   reviewsAverageRating: string
   reviewsSourceLabel: string
   reviewsSecondaryRatingLine: string
-  finalCta: typeof fallbackFinalCta
+  finalCta: typeof fallbackFinalCta & {
+    reserveCard: {
+      priceLine: string
+      priceSuffix: string
+      subline: string
+      rows: ReserveCtaDetailRow[]
+      ctas: ReserveCtaCta[]
+      termsHref?: string
+    }
+  }
 }
 
 export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPageResolved {
@@ -593,11 +606,33 @@ export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPa
     },
   )
 
+  const hb = homePageTextFields
+  const lowestRoutesUsd = getLowestActiveExperiencePrice(cms?.allExperiences ?? [])
+  const rs = cms?.reserveCtaSettings
+  const reserveCard = resolveReserveCtaCard({
+    settings: rs,
+    lowestUsd: lowestRoutesUsd,
+    legacyPriceLine: hb.bookingPrice,
+    legacyPriceSuffix: hb.bookingPriceSuffixSmall,
+    legacySubline: hb.bookingPriceSubtext,
+    defaultSubline: hb.bookingPriceSubtext ?? '',
+    defaultRows: buildReserveRowsForHome(),
+    legacyCtas: {
+      primarySmart: cms?.finalCtaSecondarySmartLink,
+      primaryLabel: secondaryResolvedFinal?.label ?? cms?.finalCtaSecondaryLabel,
+      primaryHref: secondaryResolvedFinal?.href ?? cms?.finalCtaSecondaryHref,
+      secondarySmart: cms?.finalCtaWhatsappSmartLink,
+      secondaryLabel: waResolved?.label ?? cms?.finalCtaWhatsappLabel,
+      secondaryHref: waResolved?.href ?? cms?.finalCtaWhatsappHref,
+    },
+    defaultTermsHref: '/experiences/soqtapata-pristine-immersion#terms',
+  })
+
   const finalCta = {
     sectionId: trimOr(fallbackFinalCta.sectionId, cms?.finalCtaSectionId),
-    eyebrow: trimOr(fallbackFinalCta.eyebrow, cms?.finalCtaEyebrow),
-    h2: trimOr(fallbackFinalCta.h2, cms?.finalCtaH2),
-    body: trimOr(fallbackFinalCta.body, cms?.finalCtaBody),
+    eyebrow: rs?.eyebrow?.trim() || trimOr(fallbackFinalCta.eyebrow, cms?.finalCtaEyebrow),
+    h2: rs?.title?.trim() || trimOr(fallbackFinalCta.h2, cms?.finalCtaH2),
+    body: rs?.body?.trim() || trimOr(fallbackFinalCta.body, cms?.finalCtaBody),
     whatsappHref: waResolved?.href ?? '',
     whatsappLabel: waResolved?.label ?? '',
     whatsappRel: waResolved?.rel ?? fallbackFinalCta.whatsappRel,
@@ -606,6 +641,7 @@ export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPa
     secondaryRel: secondaryResolvedFinal?.rel ?? fallbackFinalCta.secondaryRel,
     secondaryOpenInNewTab: secondaryResolvedFinal?.openInNewTab ?? fallbackFinalCta.secondaryOpenInNewTab,
     trustItems: trustFromCms.length ? trustFromCms : fallbackFinalCta.trustItems,
+    reserveCard,
   }
 
   return {

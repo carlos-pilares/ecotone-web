@@ -67,6 +67,8 @@ import {
   enrichSmartLinkWithLabelFallback,
   resolveExperiencePublicHref,
 } from '@/lib/resolveExperiencePublicHref'
+import { getLowestActiveExperiencePrice, buildReserveRowsForLodge } from '@/lib/reserveCtaPricing'
+import { resolveReserveCtaCard } from '@/lib/resolveReserveCtaCard'
 import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
 import { cdnImageUrl } from '@/lib/sanity'
 import type { ReviewDoc } from '@/lib/queries'
@@ -909,6 +911,68 @@ export function mergeLodgePageWithFallback(
       ...(faqBody ? { lead: faqBody } : {}),
     } as unknown as LodgeStaticBundle['faq']
     out.book = applySectionCopy(out.book, sec.booking)
+  }
+
+  const expForLodgePrice = (expRows && expRows.length > 0 ? expRows : lodge.experiences) ?? []
+  const lowestLodgeUsd = getLowestActiveExperiencePrice(expForLodgePrice)
+  const rowByBookKey = (k: LodgeBookRowKey) => out.book.rows.find((r) => r.rowKey === k)
+  const lodgeReserveRows = buildReserveRowsForLodge({
+    shortestProgramLabel: rowByBookKey('shortestProgram')?.label,
+    shortestProgramValue: rowByBookKey('shortestProgram')?.value,
+    startingFromLabel: rowByBookKey('startingFrom')?.label,
+    startingFromValue: rowByBookKey('startingFrom')?.value,
+    groupSizeLabel: rowByBookKey('groupSize')?.label,
+    groupSizeValue: rowByBookKey('groupSize')?.value,
+    availabilityLabel: rowByBookKey('availability')?.label,
+    availabilityValue: rowByBookKey('availability')?.value,
+  })
+  const rsLodge = row.reserveCtaSettings
+  const nameLine = out.book.cardTitle
+  const tagLine = out.book.cardSubtitle
+  const lodgeReserveCard = resolveReserveCtaCard({
+    settings: rsLodge,
+    lowestUsd: lowestLodgeUsd,
+    legacyPriceLine: nameLine,
+    legacyPriceSuffix: '',
+    legacySubline: tagLine,
+    defaultSubline: [nameLine, tagLine].filter(Boolean).join(' · '),
+    defaultRows: lodgeReserveRows,
+    legacyCtas: {
+      primaryLabel: out.book.primaryCta.label,
+      primaryHref: out.book.primaryCta.href,
+      secondaryLabel: out.book.secondaryCta.label,
+      secondaryHref: out.book.secondaryCta.href,
+    },
+    defaultTermsHref: '/experiences/soqtapata-pristine-immersion#terms',
+  })
+  const prevRowsByLabel = new Map(out.book.rows.map((r) => [r.label, r]))
+  const lp = lodgeReserveCard.ctas.find((c) => c.variant === 'primary')
+  const ls = lodgeReserveCard.ctas.find((c) => c.variant === 'secondary')
+  out.book = {
+    ...out.book,
+    eyebrow: rsLodge?.eyebrow?.trim() || out.book.eyebrow,
+    title: rsLodge?.title?.trim() || out.book.title,
+    body: rsLodge?.body?.trim() || out.book.body,
+    cardTitle: lodgeReserveCard.priceLine,
+    cardPriceSuffix: lodgeReserveCard.priceSuffix,
+    cardSubtitle: lodgeReserveCard.subline,
+    rows: lodgeReserveCard.rows.map((r) => {
+      const prev = prevRowsByLabel.get(r.label)
+      return {
+        label: r.label,
+        value: r.value,
+        rowKey: prev?.rowKey,
+        valueAccent: prev?.valueAccent,
+      }
+    }),
+    primaryCta: {
+      label: lp?.label ?? out.book.primaryCta.label,
+      href: lp?.href ?? out.book.primaryCta.href,
+    },
+    secondaryCta: {
+      label: ls?.label ?? out.book.secondaryCta.label,
+      href: ls?.href ?? out.book.secondaryCta.href,
+    },
   }
 
   {

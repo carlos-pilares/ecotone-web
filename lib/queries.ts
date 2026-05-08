@@ -3,6 +3,8 @@ import { groq } from 'next-sanity'
 
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
 import { GROQ_SMART_LINK_FIELDS } from '@/lib/smartLinkGroq'
+import type { ReserveCtaSettingsGroq } from '@/lib/reserveCtaGroq'
+import { GROQ_RESERVE_CTA_SETTINGS_FIELDS } from '@/lib/reserveCtaGroq'
 
 /** Experience card row (homepage + listados). */
 export type ExperienceFromSanity = {
@@ -180,6 +182,7 @@ export type HomePageDoc = {
   blogAllPostsSmartLink?: SmartLinkGroq | null
   bookingCta1SmartLink?: SmartLinkGroq | null
   bookingCta2SmartLink?: SmartLinkGroq | null
+  reserveCtaSettings?: ReserveCtaSettingsGroq
 } | null
 
 /** Singleton by seed id (`data/cmsApproved/ids.ts` → `homePage`), not a generic _type match. */
@@ -266,6 +269,9 @@ export const homePageQuery = groq`
     blogAllPostsSmartLink { ${GROQ_SMART_LINK_FIELDS} },
     bookingCta1SmartLink { ${GROQ_SMART_LINK_FIELDS} },
     bookingCta2SmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    reserveCtaSettings {
+      ${GROQ_RESERVE_CTA_SETTINGS_FIELDS}
+    }
   }
 `
 
@@ -366,6 +372,9 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       mainImage,
       "mainImageUrl": mainImage.asset->url,
       "slug": slug.current
+    },
+    reserveCtaSettings {
+      ${GROQ_RESERVE_CTA_SETTINGS_FIELDS}
     },
     reserveBlock {
       eyebrow,
@@ -509,6 +518,7 @@ export const lodgeStructuredPageBySlugQuery = groq`
       duration,
       price,
       priceLabel,
+      status,
       shortDescription,
       mainImage,
       "mainImageUrl": mainImage.asset->url,
@@ -536,6 +546,9 @@ export const lodgeStructuredPageBySlugQuery = groq`
       experienceName,
       rating,
       isFeatured
+    },
+    reserveCtaSettings {
+      ${GROQ_RESERVE_CTA_SETTINGS_FIELDS}
     },
     bookingCta {
       title,
@@ -616,6 +629,7 @@ export const lodgeStructuredPageBySlugQuery = groq`
         duration,
         price,
         priceLabel,
+        status,
         shortDescription,
         mainImage,
         "mainImageUrl": mainImage.asset->url,

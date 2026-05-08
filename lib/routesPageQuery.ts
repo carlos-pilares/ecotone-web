@@ -1,6 +1,8 @@
 import { groq } from 'next-sanity'
 
 import type { ReviewDoc } from '@/lib/queries'
+import type { ReserveCtaSettingsGroq } from '@/lib/reserveCtaGroq'
+import { GROQ_RESERVE_CTA_SETTINGS_FIELDS } from '@/lib/reserveCtaGroq'
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
 import { GROQ_SMART_LINK_FIELDS } from '@/lib/smartLinkGroq'
 
@@ -77,6 +79,7 @@ export type RoutesPageSanityDoc = {
   finalCtaWhatsappSmartLink?: SmartLinkGroq | null
   finalCtaSecondarySmartLink?: SmartLinkGroq | null
   finalCtaTrustItems?: Array<{ icon?: string | null; label?: string | null }> | null
+  reserveCtaSettings?: ReserveCtaSettingsGroq
 }
 
 export type RoutesPageSanityRouteCard = {
@@ -124,6 +127,7 @@ export type RoutesPageSanityExperienceRef = {
   tagline?: string | null
   price?: number | null
   priceLabel?: string | null
+  status?: string | null
   mainImageUrl?: string | null
   lodgeEnquireSmartLink?: SmartLinkGroq | null
 }
@@ -255,6 +259,7 @@ export const routesPageQuery = groq`
       tagline,
       price,
       priceLabel,
+      status,
       "mainImageUrl": mainImage.asset->url,
       lodgeEnquireSmartLink { ${GROQ_SMART_LINK_FIELDS} }
     },
@@ -271,6 +276,7 @@ export const routesPageQuery = groq`
       tagline,
       price,
       priceLabel,
+      status,
       "mainImageUrl": mainImage.asset->url,
       lodgeEnquireSmartLink { ${GROQ_SMART_LINK_FIELDS} }
     },
@@ -315,7 +321,10 @@ export const routesPageQuery = groq`
     finalCtaSecondaryLabel,
     finalCtaWhatsappSmartLink { ${GROQ_SMART_LINK_FIELDS} },
     finalCtaSecondarySmartLink { ${GROQ_SMART_LINK_FIELDS} },
-    finalCtaTrustItems[]{ icon, label }
+    finalCtaTrustItems[]{ icon, label },
+    reserveCtaSettings {
+      ${GROQ_RESERVE_CTA_SETTINGS_FIELDS}
+    }
   }
 `
 

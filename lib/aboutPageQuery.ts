@@ -1,6 +1,8 @@
 import { groq } from 'next-sanity'
 
 import type { PartnerDoc } from '@/lib/queries'
+import type { ReserveCtaSettingsGroq } from '@/lib/reserveCtaGroq'
+import { GROQ_RESERVE_CTA_SETTINGS_FIELDS } from '@/lib/reserveCtaGroq'
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
 import { GROQ_SMART_LINK_FIELDS } from '@/lib/smartLinkGroq'
 
@@ -90,6 +92,7 @@ export type AboutPageSanityDoc = {
     iconKey?: string | null
     text?: string | null
   }> | null
+  reserveCtaSettings?: ReserveCtaSettingsGroq
 }
 
 export const aboutPageQuery = groq`
@@ -172,7 +175,10 @@ export const aboutPageQuery = groq`
       variant,
       openInNewTab
     },
-    finalTrustItems[]{ iconKey, text }
+    finalTrustItems[]{ iconKey, text },
+    reserveCtaSettings {
+      ${GROQ_RESERVE_CTA_SETTINGS_FIELDS}
+    }
   }
 `
 

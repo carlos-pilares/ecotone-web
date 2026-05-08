@@ -2,9 +2,13 @@
  * Maps `AboutPageSanityDoc` (schema `aboutPage`) to the shapes consumed by `components/about/*`,
  * merging with `data/aboutStatic.ts` when fields are missing.
  */
+import type { ReserveCtaCta, ReserveCtaDetailRow } from '@/components/shared/ReserveCtaSection'
 import { aboutPartnersCopy, aboutPartnersFallback, aboutSeoFallback, aboutStatic } from '@/data/aboutStatic'
+import { homePageTextFields } from '@/data/cmsApproved/homePageFields'
 import type { AboutPageSanityDoc } from '@/lib/aboutPageQuery'
 import type { PartnerDoc } from '@/lib/queries'
+import { getLowestActiveExperiencePrice, buildReserveRowsForHome, type ExperiencePriceInput } from '@/lib/reserveCtaPricing'
+import { resolveReserveCtaCard } from '@/lib/resolveReserveCtaCard'
 import { isExternalHref, resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
 
 function trimOr(fallback: string, v?: string | null) {
@@ -127,6 +131,15 @@ export type AboutPageResolved = {
       external: boolean
     }>
     trust: Array<{ key: string; text: string; icon: 'check' | 'shield' | 'heart' }>
+    /** Reserve CTA card: CMS `reserveCtaSettings` + lowest active experience price + legacy fallbacks. */
+    reserveCard: {
+      priceLine: string
+      priceSuffix: string
+      subline: string
+      rows: ReserveCtaDetailRow[]
+      ctas: ReserveCtaCta[]
+      termsHref?: string
+    }
   }
   partnersBand: {
     label: string
@@ -142,6 +155,7 @@ const fb = aboutStatic
 export function resolveAboutPageData(
   cms: AboutPageSanityDoc | null,
   allPartnersFromLibrary: PartnerDoc[],
+  experiencesForPricing: ExperiencePriceInput[] = [],
 ): AboutPageResolved {
   const c = cms && cms._id ? cms : null
 
@@ -398,13 +412,39 @@ export function resolveAboutPageData(
     if (mapped.length > 0) trust = mapped
   }
 
+  const hb = homePageTextFields
+  const rawB0 = c?.finalButtons?.[0]
+  const rawB1 = c?.finalButtons?.[1]
+  const fb0 = fb.finalCta.ctas[0]!
+  const fb1 = fb.finalCta.ctas[1]!
+  const reserveCard = resolveReserveCtaCard({
+    settings: c?.reserveCtaSettings,
+    lowestUsd: getLowestActiveExperiencePrice(experiencesForPricing),
+    legacyPriceLine: hb.bookingPrice,
+    legacyPriceSuffix: hb.bookingPriceSuffixSmall,
+    legacySubline: hb.bookingPriceSubtext,
+    defaultSubline: hb.bookingPriceSubtext ?? '',
+    defaultRows: buildReserveRowsForHome(),
+    legacyCtas: {
+      primarySmart: rawB0?.smartLink,
+      primaryLabel: rawB0?.label ?? fb0.label,
+      primaryHref: rawB0?.href ?? fb0.href,
+      secondarySmart: rawB1?.smartLink,
+      secondaryLabel: rawB1?.label ?? fb1.label,
+      secondaryHref: rawB1?.href ?? fb1.href,
+    },
+    defaultTermsHref: '/experiences/soqtapata-pristine-immersion#terms',
+  })
+
+  const rs = c?.reserveCtaSettings
   const finalCta = {
     sectionId: trimOr(fb.finalCta.sectionId, c?.finalSectionId),
-    eyebrow: trimOr(fb.finalCta.eyebrow, c?.finalEyebrow),
-    headline: trimOr(fb.finalCta.headline, c?.finalTitle),
-    body: trimOr(fb.finalCta.body, c?.finalBody),
+    eyebrow: rs?.eyebrow?.trim() || trimOr(fb.finalCta.eyebrow, c?.finalEyebrow),
+    headline: rs?.title?.trim() || trimOr(fb.finalCta.headline, c?.finalTitle),
+    body: rs?.body?.trim() || trimOr(fb.finalCta.body, c?.finalBody),
     ctas,
     trust,
+    reserveCard,
   }
 
   const curated = Array.isArray(c?.partnersResolved)

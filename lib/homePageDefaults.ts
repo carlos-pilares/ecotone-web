@@ -103,6 +103,7 @@ export const defaultHomePageDoc: ResolvedHomePage = {
   bookingCta1Link: t.bookingCta1Link,
   bookingCta2Text: t.bookingCta2Text,
   bookingCta2Link: t.bookingCta2Link,
+  reserveCtaSettings: null,
 }
 
 const STR_KEYS = [
@@ -299,6 +300,10 @@ export function mergeHomePageWithDefaults(cms: HomePageDoc | null): ResolvedHome
     if (cleaned.length > 0) {
       ;(out as ResolvedHomePage).homeSelectedBlogPosts = cleaned
     }
+  }
+
+  if (cms.reserveCtaSettings != null && typeof cms.reserveCtaSettings === 'object') {
+    out.reserveCtaSettings = cms.reserveCtaSettings
   }
 
   return out

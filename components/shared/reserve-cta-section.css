@@ -1,0 +1,321 @@
+/* Shared Reserve / final CTA — two-column editorial + booking card. */
+
+/* Section bed: slightly deeper warm tone + micro depth (layout unchanged). */
+.reserve-cta.bg-warm {
+  background-color: #f2ede4;
+  background-image: linear-gradient(180deg, rgba(26, 18, 9, 0.032) 0%, transparent 50%);
+}
+
+.reserve-cta.reserve-cta--surface-dark.bg-parch,
+.reserve-cta.reserve-cta--surface-dark.content-section.bg-parch {
+  background-color: #e6dfd0;
+  background-image: linear-gradient(
+    165deg,
+    rgba(212, 170, 114, 0.06) 0%,
+    transparent 42%,
+    rgba(26, 18, 9, 0.025) 100%
+  );
+}
+
+/* Tighter section rhythm vs default `.content-section` / home `.sec`. */
+.reserve-cta.content-section {
+  padding-top: 44px;
+  padding-bottom: 44px;
+}
+
+.reserve-cta.sec {
+  padding-top: 52px;
+  padding-bottom: 52px;
+}
+
+.reserve-cta .reserve-cta-inner {
+  display: grid;
+  gap: 28px;
+  align-items: start;
+  width: 100%;
+  max-width: 1220px;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+
+@media (min-width: 900px) {
+  .reserve-cta .reserve-cta-inner {
+    /* ~52% editorial / ~48% card track; fluid, no horizontal overflow */
+    grid-template-columns: 1.09fr 1fr;
+    gap: 24px;
+  }
+
+  .reserve-cta-card {
+    justify-self: end;
+    width: 100%;
+    max-width: 480px;
+    min-width: min(100%, 420px);
+  }
+}
+
+.reserve-cta-editorial {
+  min-width: 0;
+}
+
+.reserve-cta-editorial .section-shell-head {
+  text-align: left;
+}
+
+.reserve-cta-editorial .eyebrow {
+  justify-content: flex-start;
+  margin-bottom: 8px;
+}
+
+.reserve-cta-editorial .h2 {
+  text-align: left;
+  margin-bottom: 12px;
+}
+
+.reserve-cta-editorial .section-shell-lead.body {
+  margin-bottom: 0;
+}
+
+.reserve-cta-card {
+  width: 100%;
+  position: relative;
+  isolation: isolate;
+}
+
+/* Soft warm halo behind the card column only — separation from editorial. */
+.reserve-cta-card::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  inset: -12% -18% -8% -10%;
+  background: radial-gradient(
+    ellipse 72% 68% at 72% 38%,
+    rgba(212, 170, 114, 0.13) 0%,
+    rgba(237, 231, 218, 0.35) 38%,
+    transparent 68%
+  );
+  opacity: 0.95;
+}
+
+.reserve-cta--surface-dark .reserve-cta-card::before {
+  background: radial-gradient(
+    ellipse 70% 66% at 70% 36%,
+    rgba(212, 170, 114, 0.1) 0%,
+    rgba(230, 223, 208, 0.4) 40%,
+    transparent 70%
+  );
+}
+
+.reserve-cta-booking-card {
+  margin-left: auto;
+  margin-right: 0;
+  max-width: 460px;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 899px) {
+  .reserve-cta .reserve-cta-inner {
+    gap: 24px;
+  }
+
+  .reserve-cta-card {
+    justify-self: stretch;
+    max-width: none;
+  }
+
+  .reserve-cta-booking-card {
+    margin-left: 0;
+    margin-right: 0;
+    max-width: none;
+  }
+}
+
+/* Card — compact premium rhythm */
+.reserve-cta .booking-card {
+  background: linear-gradient(180deg, #fffefb 0%, var(--w) 100%);
+  border: 1px solid rgba(144, 103, 48, 0.2);
+  border-radius: var(--rxl);
+  padding: 22px 20px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.65) inset,
+    0 1px 0 rgba(26, 18, 9, 0.05),
+    0 18px 44px -14px rgba(26, 18, 9, 0.14),
+    0 6px 16px -6px rgba(26, 18, 9, 0.08);
+}
+
+.reserve-cta.reserve-cta--surface-dark .booking-card {
+  background: linear-gradient(180deg, #fefcf8 0%, #fdfcf9 100%);
+  border-color: rgba(144, 103, 48, 0.22);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.55) inset,
+    0 1px 0 rgba(26, 18, 9, 0.06),
+    0 20px 48px -14px rgba(26, 18, 9, 0.16),
+    0 8px 18px -8px rgba(26, 18, 9, 0.09);
+}
+
+.reserve-cta .booking-price-big {
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--n900);
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
+.reserve-cta .booking-price-big small {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--brown);
+  margin-left: 6px;
+  letter-spacing: 0.04em;
+}
+
+.reserve-cta .reserve-cta-subline {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--n400);
+  margin-top: 3px;
+  margin-bottom: 0;
+  line-height: 1.45;
+}
+
+.reserve-cta .booking-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(74, 62, 48, 0.12) 20%, rgba(74, 62, 48, 0.12) 80%, transparent 100%);
+  margin: 14px 0;
+}
+
+.reserve-cta .booking-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.reserve-cta .booking-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.reserve-cta .booking-rl {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--n400);
+}
+
+.reserve-cta .booking-rv {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--n900);
+  text-align: right;
+}
+
+.reserve-cta-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reserve-cta-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 14px 16px;
+  border-radius: 100px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.reserve-cta-btn--primary {
+  background: var(--brown);
+  color: #fff;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.18) inset,
+    0 2px 0 rgba(44, 29, 7, 0.18),
+    0 8px 20px -6px rgba(44, 29, 7, 0.35);
+}
+
+.reserve-cta-btn--primary:hover {
+  background: var(--brown-dk);
+  color: #fff;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.14) inset,
+    0 2px 0 rgba(44, 29, 7, 0.22),
+    0 10px 24px -6px rgba(44, 29, 7, 0.38);
+}
+
+.reserve-cta-btn--secondary {
+  background: rgba(253, 252, 249, 0.65);
+  color: var(--n700);
+  font-size: 12px;
+  font-weight: 400;
+  padding: 12px 14px;
+  border: 1px solid rgba(144, 103, 48, 0.22);
+}
+
+.reserve-cta-btn--secondary:hover {
+  border-color: rgba(144, 103, 48, 0.32);
+  background: var(--b50);
+}
+
+.reserve-cta .trust-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(74, 62, 48, 0.12);
+}
+
+.reserve-cta .trust-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--n400);
+}
+
+.reserve-cta .trust-item svg {
+  flex-shrink: 0;
+  color: var(--n500);
+}
+
+.reserve-cta-terms {
+  font-size: 10px;
+  font-weight: 300;
+  color: var(--n400);
+  line-height: 1.45;
+  margin-top: 10px;
+  text-align: left;
+}
+
+.reserve-cta-terms a {
+  color: var(--brown);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(144, 103, 48, 0.35);
+}
+
+.reserve-cta-terms a:hover {
+  color: var(--brown-dk);
+  border-bottom-color: var(--brown);
+}
+
+.reserve-cta--surface-dark .reserve-cta-terms a {
+  color: var(--brown);
+}

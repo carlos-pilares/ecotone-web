@@ -763,6 +763,8 @@ export type LodgeBookTrustItem = {
 
 export type LodgeBookCtaData = LodgeSectionHeaderFields & {
   cardTitle: string
+  /** Shown next to the main price line (e.g. `/ person`), from derived or CMS reserve settings. */
+  cardPriceSuffix?: string
   cardSubtitle: string
   rows: readonly LodgeBookDetailRow[]
   primaryCta: { label: string; href: string }
@@ -785,11 +787,11 @@ export const lodgeSoqtapataBook = {
     { rowKey: 'availability', label: 'Availability', value: 'Year-round' },
   ],
   primaryCta: {
-    label: 'See all experiences at this lodge',
+    label: 'See lodge experiences',
     href: '#experiences',
   },
   secondaryCta: {
-    label: 'Ask on WhatsApp',
+    label: 'Talk to us on WhatsApp',
     href:
       'https://wa.me/51974781094?text=Hi%21%20I%27m%20interested%20in%20Soqtapata%20Lodge.%20Could%20you%20send%20me%20more%20information%3F',
   },
