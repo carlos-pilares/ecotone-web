@@ -53,6 +53,11 @@ export type ReserveCtaSectionProps = {
    */
   experienceBookPrimaryModal?: boolean
   onExperienceBookPrimaryClick?: () => void
+  /**
+   * Experience reserve: trust/terms come from `resolveReserveCtaCard` / CMS — do not apply generic
+   * defaults that would mask empty suffix, custom copy, or resolver output.
+   */
+  experienceReserveTrustTermsExact?: boolean
 }
 
 const DEFAULT_TRUST_ITEMS: ReserveCtaTrustItem[] = [
@@ -151,6 +156,7 @@ export function ReserveCtaSection({
   card,
   experienceBookPrimaryModal,
   onExperienceBookPrimaryClick,
+  experienceReserveTrustTermsExact = false,
 }: ReserveCtaSectionProps) {
   const sectionClass = [
     'reserve-cta',
@@ -173,14 +179,26 @@ export function ReserveCtaSection({
   const trustItems =
     card.trustItems && card.trustItems.length > 0 ? card.trustItems : DEFAULT_TRUST_ITEMS
 
-  const termsPrefix = (card.termsPrefixText ?? '').trim() || 'By booking, you agree to our'
-  const termsLinkLbl = (card.termsLinkLabel ?? '').trim() || 'Terms & Conditions'
+  const termsPrefix = experienceReserveTrustTermsExact
+    ? card.termsPrefixText ?? ''
+    : (card.termsPrefixText ?? '').trim() || 'By booking, you agree to our'
+  const termsLinkLbl = experienceReserveTrustTermsExact
+    ? card.termsLinkLabel ?? ''
+    : (card.termsLinkLabel ?? '').trim() || 'Terms & Conditions'
   const termsSuffix =
-    card.termsSuffixText === undefined || card.termsSuffixText === null ? '.' : card.termsSuffixText
+    experienceReserveTrustTermsExact
+      ? card.termsSuffixText === undefined || card.termsSuffixText === null
+        ? ''
+        : card.termsSuffixText
+      : card.termsSuffixText === undefined || card.termsSuffixText === null
+        ? '.'
+        : card.termsSuffixText
 
   const termsHrefTrim = card.termsHref?.trim()
   const termsNewTab = card.termsOpenInNewTab === true
   const termsRelTrim = card.termsRel?.trim()
+  const termsRelEffective =
+    termsRelTrim || (termsNewTab && termsHrefTrim ? 'noopener noreferrer' : undefined)
 
   const hasEyebrow = eyebrow != null && eyebrow !== ''
   const hasBody = body != null && body !== ''
@@ -248,7 +266,7 @@ export function ReserveCtaSection({
                 <a
                   href={termsHrefTrim}
                   {...(termsNewTab ? { target: '_blank' } : {})}
-                  {...(termsRelTrim ? { rel: termsRelTrim } : {})}
+                  {...(termsRelEffective ? { rel: termsRelEffective } : {})}
                 >
                   {termsLinkLbl}
                 </a>

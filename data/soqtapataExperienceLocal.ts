@@ -339,8 +339,13 @@ export type SoqtapataLodge = {
 export type SoqtapataWildlifeSpecies = {
   name: string
   sub: string
-  /** 0..6, orden como en el HTML; los SVG viven en el componente. */
+  /** 0..6 — fallback glyph in the photo placeholder only when no image. */
   iconId: 0 | 1 | 2 | 3 | 4 | 5 | 6
+  /** Optional species photo (local default or merged from CMS `wildlife[].image`). */
+  imageSrc?: string
+  imageAlt?: string
+  /** Optional label, e.g. Rare · Research focus */
+  badge?: string
 }
 
 export type SoqtapataWildlife = {
@@ -402,13 +407,57 @@ export const soqtapataPhase3: { lodge: SoqtapataLodge; wildlife: SoqtapataWildli
     intro: 'Not guaranteed — this is wild nature. These species are regularly observed in the Soqtapata territory.',
     introStyle: { fontSize: 14, fontWeight: 300, color: 'var(--n700)', lineHeight: 1.8, marginBottom: 16 },
     species: [
-      { name: 'Cock-of-the-rock', sub: 'National bird of Perú', iconId: 0 },
-      { name: 'Spectacled bear', sub: 'Only bear in S. America', iconId: 1 },
-      { name: 'Puma', sub: 'Mountain lion', iconId: 2 },
-      { name: 'Jaguar', sub: 'Apex predator', iconId: 3 },
-      { name: '300+ birds', sub: 'Including endemics', iconId: 4 },
-      { name: 'Woolly monkey', sub: 'Active research project', iconId: 5 },
-      { name: 'Andean tapir', sub: 'Rare sighting', iconId: 6 },
+      {
+        name: 'Cock-of-the-rock',
+        sub: 'National bird of Perú',
+        iconId: 0,
+        imageSrc: 'https://images.unsplash.com/photo-1591824438708-ce405fca2ffa?w=960&q=82',
+        imageAlt: 'Andean cock-of-the-rock in cloud forest',
+      },
+      {
+        name: 'Spectacled bear',
+        sub: 'Only bear in S. America',
+        iconId: 1,
+        imageSrc: 'https://images.unsplash.com/photo-1549366021-9f761d45002f?w=960&q=82',
+        imageAlt: 'Spectacled bear in montane forest',
+      },
+      {
+        name: 'Puma',
+        sub: 'Mountain lion',
+        iconId: 2,
+        imageSrc: 'https://images.unsplash.com/photo-1611689341207-e6e0f0a08e1a?w=960&q=82',
+        imageAlt: 'Puma in natural habitat',
+      },
+      {
+        name: 'Jaguar',
+        sub: 'Apex predator',
+        iconId: 3,
+        imageSrc: 'https://images.unsplash.com/photo-1561731216-c3a4d994860d?w=960&q=82',
+        imageAlt: 'Jaguar resting',
+      },
+      {
+        name: '300+ birds',
+        sub: 'Including endemics',
+        iconId: 4,
+        imageSrc: 'https://images.unsplash.com/photo-1444464666168-49d637b00a6d?w=960&q=82',
+        imageAlt: 'Tropical birds in forest canopy',
+      },
+      {
+        name: 'Woolly monkey',
+        sub: 'Active research project',
+        iconId: 5,
+        imageSrc: 'https://images.unsplash.com/photo-1540573137085-027dd3678a18?w=960&q=82',
+        imageAlt: 'Woolly monkey in trees',
+        badge: 'Research',
+      },
+      {
+        name: 'Andean tapir',
+        sub: 'Rare sighting',
+        iconId: 6,
+        imageSrc: 'https://images.unsplash.com/photo-1552410260-0a030e7c8483?w=960&q=82',
+        imageAlt: 'Tapir in cloud forest',
+        badge: 'Rare',
+      },
     ],
   },
   includes: {
@@ -1005,6 +1054,15 @@ export type SoqtapataBook = {
   termsLinkLabel: string
   /** Hasta 3 líneas bajo CTAs (confianza). */
   trustStripItems: readonly { text: string }[]
+  /**
+   * Cuando viene de `reserveCtaSettings.trustItems` (CMS), sustituye a `trustStripItems` en #book.
+   */
+  reserveTrustItems?: ReadonlyArray<{ iconKey: string; text: string }>
+  /** Línea legal: desde `reserveCtaSettings` resuelto; si falta, el front usa `termsNote`. */
+  termsPrefixText?: string
+  termsSuffixText?: string | null
+  termsOpenInNewTab?: boolean
+  termsRel?: string
 }
 
 export const soqtapataPhase6Resources: SoqtapataResources = {

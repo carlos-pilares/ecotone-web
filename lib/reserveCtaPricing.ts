@@ -86,52 +86,11 @@ export function buildReserveRowsForHome(): { label: string; value: string }[] {
     .filter((r) => r.label && r.value)
 }
 
-const ROUTE_LABEL: Record<string, string> = {
+/** Route slug → reserve card / row label (shared). */
+export const EXPERIENCE_ROUTE_DISPLAY: Record<string, string> = {
   camanti: 'Camanti · Soqtapata Reserve',
   'manu-road': 'Manu Road',
   'manu-core': 'Manu Core',
-}
-
-export type ExperienceFactSource = {
-  route?: string | null
-  duration?: string | null
-  groupSizeMin?: number | null
-  groupSizeMax?: number | null
-  includes?: string[] | null
-  /** First getting-here line or similar — optional */
-  pickupLine?: string | null
-}
-
-export function buildReserveRowsForExperience(
-  exp: ExperienceFactSource | null | undefined,
-  pickupFallback?: string | null,
-): { label: string; value: string }[] {
-  if (!exp) return []
-  const route =
-    (exp.route && ROUTE_LABEL[exp.route]) || (exp.route ? exp.route.replace(/-/g, ' ') : '') || '—'
-  const duration = exp.duration?.trim() || '—'
-  let group = '—'
-  if (exp.groupSizeMin != null && exp.groupSizeMax != null) {
-    group = `${exp.groupSizeMin} – ${exp.groupSizeMax} people`
-  } else if (exp.groupSizeMax != null) {
-    group = `Up to ${exp.groupSizeMax} people`
-  }
-  const pickup = exp.pickupLine?.trim() || pickupFallback?.trim() || '—'
-  const includes =
-    exp.includes && exp.includes.length > 0
-      ? exp.includes
-          .map((x) => x.trim())
-          .filter(Boolean)
-          .slice(0, 4)
-          .join(' · ') || '—'
-      : '—'
-  return [
-    { label: 'Route', value: route },
-    { label: 'Duration', value: duration },
-    { label: 'Group size', value: group },
-    { label: 'Pickup', value: pickup },
-    { label: 'Includes', value: includes },
-  ]
 }
 
 export type LodgeRowSource = {

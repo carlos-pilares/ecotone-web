@@ -153,7 +153,7 @@ export function StudioLodgePagePreviewInput(props) {
   const sections = useFormValue(['sections']) || {}
   const featuredRoomStableId = useFormValue(['featuredRoomStableId'])
   const fallbackToLodgeRelations = useFormValue(['fallbackToLodgeRelations'])
-  const bookingCta = useFormValue(['bookingCta'])
+  const reserveCtaSettings = useFormValue(['reserveCtaSettings']) || {}
 
   const [loading, setLoading] = useState(false)
   const [data, setData] = useState(null)
@@ -745,15 +745,13 @@ export function StudioLodgePagePreviewInput(props) {
         <BlockSection eyebrow={L_PREVIEW} tone="primary">
           <ResolvedSectionHeaderPreview sections={sections} sectionKey="booking" />
           <Text size={1} weight="semibold" style={{...preLine, marginTop: 16, marginBottom: 8}}>
-            Bloque reserva (campos de esta landing)
+            Reserve CTA (#book) — lo que usa el sitio
           </Text>
-          <FieldLabel title="Título de tarjeta">{bookingCta?.title?.trim() || '—'}</FieldLabel>
-          <FieldLabel title="Cuerpo">{bookingCta?.body?.trim() || '—'}</FieldLabel>
-          <FieldLabel title="CTAs">
-            {(bookingCta?.ctas || [])
-              .map((c) => (c?.label && c?.href ? `${c.label} → ${c.href}` : null))
-              .filter(Boolean)
-              .join(' · ') || '—'}
+          <FieldLabel title="Eyebrow">{reserveCtaSettings?.eyebrow?.trim() || '—'}</FieldLabel>
+          <FieldLabel title="Title (H2)">{reserveCtaSettings?.title?.trim() || '—'}</FieldLabel>
+          <FieldLabel title="Body">{reserveCtaSettings?.body?.trim() || '—'}</FieldLabel>
+          <FieldLabel title="Trust items (count)">
+            {Array.isArray(reserveCtaSettings?.trustItems) ? reserveCtaSettings.trustItems.length : 0}
           </FieldLabel>
         </BlockSection>
         {selectionNote}

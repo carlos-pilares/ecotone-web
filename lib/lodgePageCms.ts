@@ -602,17 +602,6 @@ function mergeFacilitiesFromCms(base: LodgeFacilitiesData, lodge: LodgeDocumentR
   }
 }
 
-function trustRowsFromCms(
-  items: LodgeDocumentRow['trustItems'],
-): LodgeBookCtaData['trustItems'] {
-  const icons = ['shield', 'check', 'heart'] as const
-  if (!items?.length) return [...lodgeSoqtapataBook.trustItems]
-  return items.map((t, i) => ({
-    icon: icons[i % icons.length]!,
-    text: [t?.title, t?.subtitle].filter(Boolean).join(' · '),
-  })) as LodgeBookCtaData['trustItems']
-}
-
 /** Bundle estático Soqtapata (fallback único por ahora). */
 export function buildLodgeStaticFallbackBundle(): LodgeStaticBundle {
   return {
@@ -772,9 +761,6 @@ export function mergeLodgePageWithFallback(
     }
   }
   out.location = mergeLocationMapLabels(out.location, lodge)
-  if (lodge.bookingMessage?.trim()) {
-    out.book = { ...out.book, body: lodge.bookingMessage.trim() }
-  }
 
   // Research
   let stats: LodgeResearchStat[] = [...out.research.stats]
@@ -870,41 +856,7 @@ export function mergeLodgePageWithFallback(
       r.rowKey === 'availability' ? { ...r, value: lodge.availabilityNote!.trim() } : r,
     )
   }
-  if (lodge.trustItems?.length) {
-    out.book.trustItems = trustRowsFromCms(lodge.trustItems)
-  }
-  if (row.bookingCta?.title?.trim()) out.book.cardTitle = row.bookingCta.title.trim()
-  if (row.bookingCta?.body?.trim()) out.book.body = row.bookingCta.body.trim()
-  if (
-    row.bookingCta &&
-    (row.bookingCta.ctas?.length ||
-      row.bookingCta.bookingPrimarySmartLink?.label?.trim() ||
-      row.bookingCta.bookingSecondarySmartLink?.label?.trim())
-  ) {
-    const fbP = out.book.primaryCta
-    const fbS = out.book.secondaryCta
-    const a = row.bookingCta.ctas?.[0]
-    const b = row.bookingCta.ctas?.[1]
-    const pSm = row.bookingCta.bookingPrimarySmartLink
-    const sSm = row.bookingCta.bookingSecondarySmartLink
-    const r1 = resolveSmartLinkOrLegacy(pSm, a, {
-      label: fbP.label,
-      href: fbP.href,
-      openInNewTab: a?.openInNewTab === true,
-    })
-    const r2 = resolveSmartLinkOrLegacy(sSm, b, {
-      label: fbS.label,
-      href: fbS.href,
-      openInNewTab: b?.openInNewTab === true,
-    })
-    if (smartLinkIsDisabled(pSm)) out.book.primaryCta = { label: '', href: '' }
-    else if (r1) out.book.primaryCta = { label: r1.label, href: r1.href }
-    if (smartLinkIsDisabled(sSm)) out.book.secondaryCta = { label: '', href: '' }
-    else if (r2) out.book.secondaryCta = { label: r2.label, href: r2.href }
-  }
-  if (row.bookingCta?.trustItemsOverride?.length) {
-    out.book.trustItems = trustRowsFromCms(row.bookingCta.trustItemsOverride)
-  }
+  /** Reserve #book: do not apply `lodgePage.bookingCta` or lodge marketing trust strip — only `reserveCtaSettings` + approved static (`lodgeSoqtapataBook`). */
   out.book = applyBookingRowLabelsFromLodge(out.book, lodge)
 
   // Section copy overrides (lodgePage)
@@ -925,7 +877,6 @@ export function mergeLodgePageWithFallback(
       ...(faqTitle ? { h2: faqTitle } : {}),
       ...(faqBody ? { lead: faqBody } : {}),
     } as unknown as LodgeStaticBundle['faq']
-    out.book = applySectionCopy(out.book, sec.booking)
   }
 
   const expForLodgePrice = (expRows && expRows.length > 0 ? expRows : lodge.experiences) ?? []
@@ -942,6 +893,7 @@ export function mergeLodgePageWithFallback(
     availabilityValue: rowByBookKey('availability')?.value,
   })
   const rsLodge = row.reserveCtaSettings
+  const reserveFallback = lodgeSoqtapataBook
   const nameLine = out.book.cardTitle
   const tagLine = out.book.cardSubtitle
   const lodgeReserveCard = resolveReserveCtaCard({
@@ -952,22 +904,31 @@ export function mergeLodgePageWithFallback(
     legacySubline: tagLine,
     defaultSubline: [nameLine, tagLine].filter(Boolean).join(' · '),
     defaultRows: lodgeReserveRows,
+    /** CTAs: `reserveCtaSettings` smart links only; fall back to approved static — not `lodgePage.bookingCta`. */
     legacyCtas: {
-      primaryLabel: out.book.primaryCta.label,
-      primaryHref: out.book.primaryCta.href,
-      secondaryLabel: out.book.secondaryCta.label,
-      secondaryHref: out.book.secondaryCta.href,
+      primaryLabel: reserveFallback.primaryCta.label,
+      primaryHref: reserveFallback.primaryCta.href,
+      secondaryLabel: reserveFallback.secondaryCta.label,
+      secondaryHref: reserveFallback.secondaryCta.href,
     },
     defaultTermsHref: '/experiences/soqtapata-pristine-immersion#terms',
   })
   const prevRowsByLabel = new Map(out.book.rows.map((r) => [r.label, r]))
   const lp = lodgeReserveCard.ctas.find((c) => c.variant === 'primary')
   const ls = lodgeReserveCard.ctas.find((c) => c.variant === 'secondary')
+  const staticTrust = reserveFallback.trustItems.map((t) => ({ icon: t.icon, text: t.text }))
+  /**
+   * Body: if `reserveCtaSettings` exists on the page doc, use only CMS `body` (trimmed).
+   * Empty / omitted → no lead on the site (no static or legacy fallback).
+   * If the whole `reserveCtaSettings` object is absent, keep approved static copy.
+   */
+  const reserveBodyFromCms =
+    rsLodge != null && typeof rsLodge === 'object' ? String(rsLodge.body ?? '').trim() : null
   out.book = {
     ...out.book,
-    eyebrow: rsLodge?.eyebrow?.trim() || out.book.eyebrow,
-    title: rsLodge?.title?.trim() || out.book.title,
-    body: rsLodge?.body?.trim() || out.book.body,
+    eyebrow: rsLodge?.eyebrow?.trim() || reserveFallback.eyebrow,
+    title: rsLodge?.title?.trim() || reserveFallback.title,
+    body: reserveBodyFromCms !== null ? reserveBodyFromCms : reserveFallback.body,
     cardTitle: lodgeReserveCard.priceLine,
     cardPriceSuffix: lodgeReserveCard.priceSuffix,
     cardSubtitle: lodgeReserveCard.subline,
@@ -981,12 +942,12 @@ export function mergeLodgePageWithFallback(
       }
     }),
     primaryCta: {
-      label: lp?.label ?? out.book.primaryCta.label,
-      href: lp?.href ?? out.book.primaryCta.href,
+      label: lp?.label ?? reserveFallback.primaryCta.label,
+      href: lp?.href ?? reserveFallback.primaryCta.href,
     },
     secondaryCta: {
-      label: ls?.label ?? out.book.secondaryCta.label,
-      href: ls?.href ?? out.book.secondaryCta.href,
+      label: ls?.label ?? reserveFallback.secondaryCta.label,
+      href: ls?.href ?? reserveFallback.secondaryCta.href,
     },
     trustItems: lodgeReserveCard.trustItems?.length
       ? lodgeReserveCard.trustItems.map((t) => {
@@ -995,7 +956,7 @@ export function mergeLodgePageWithFallback(
             k === 'heart' ? 'heart' : k === 'check' ? 'check' : 'shield'
           return { icon, text: t.text }
         })
-      : out.book.trustItems,
+      : staticTrust,
     termsHref: lodgeReserveCard.termsHref,
     termsPrefixText: lodgeReserveCard.termsPrefixText,
     termsLinkLabel: lodgeReserveCard.termsLinkLabel,

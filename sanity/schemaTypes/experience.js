@@ -482,7 +482,15 @@ export const experience = defineType({
               title: 'Foto (opcional)',
               type: 'image',
               options: imgHot,
-              description: 'Foto de la especie (opcional). Recomendado: 400×400px, ratio 1:1.',
+              description:
+                'Foto editorial de la especie (opcional). Recomendado: horizontal ~16:10 o 4:3, mín. ~900px de ancho.',
+            }),
+            defineField({
+              name: 'badge',
+              title: 'Badge (opcional)',
+              type: 'string',
+              description: 'Ej. Rare, Research — aparece sobre el nombre.',
+              validation: (Rule) => Rule.max(28),
             }),
           ],
         },

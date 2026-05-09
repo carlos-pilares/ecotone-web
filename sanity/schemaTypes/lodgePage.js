@@ -400,8 +400,9 @@ export const lodgePage = defineType({
       title: '4. Selección: bloque reserva / CTAs (legacy)',
       type: 'lodgePageBookingBlock',
       group: 'booking',
+      hidden: true,
       description:
-        'Legacy — título de tarjeta, texto y botones cuando no usas solo Reserve CTA. La confianza puede sobreescribirse dentro del bloque.',
+        'Oculto: el sitio usa solo **Reserve CTA (#book)**. Se conserva en documentos antiguos; el front ya no lee este bloque.',
     }),
 
     // --- Persistencia interna: overrides de copy por sección (editado desde paneles de arriba) ---

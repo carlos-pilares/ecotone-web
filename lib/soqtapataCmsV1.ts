@@ -289,9 +289,11 @@ export const getSoqtapataPageCms = cache(async () => {
       rotatingQuoteItems: buildRotatingQuoteItemsFromReviews(row?.reviewsSection?.rotatingReviews ?? []),
     })
   }
+  const soqtapataPartial = soqtapataPartialFromStructuredRow(row)
+  const alsoBook = alsoBookFromStructuredRow(row, local)
   const partial: Partial<SoqtapataExperience> = {
-    ...soqtapataPartialFromStructuredRow(row),
-    ...alsoBookFromStructuredRow(row, local),
+    ...soqtapataPartial,
+    ...alsoBook,
   }
   const t = techProductsFromRow(row)
   if (t) partial.techProducts = t
@@ -300,6 +302,17 @@ export const getSoqtapataPageCms = cache(async () => {
   let experience = normalizeMergedExperience(
     deepMergeWithLocalFallback(local, partial) as SoqtapataExperience,
   )
+  /**
+   * `deepMergeWithLocalFallback` only walks keys present on `local.book`, so fields that only exist
+   * on the CMS-resolved book (`reserveTrustItems`, `termsPrefixText`, etc.) were dropped. Overlay the
+   * canonical `alsoBook.book` after merge so Reserve CTA trust/terms match `reserveCtaSettings`.
+   */
+  if (partial.book) {
+    experience = {
+      ...experience,
+      book: { ...experience.book, ...partial.book },
+    }
+  }
   const curatedReviews = reviewsFromRow(row)
   if (curatedReviews !== null) {
     experience = normalizeMergedExperience({ ...experience, reviews: curatedReviews })

@@ -23,7 +23,8 @@ import { DEFAULT_EXPERIENCE_RESOURCE_DOWNLOAD_CTA_LABEL } from '@/lib/experience
 import type { ReserveCtaSettingsGroq } from '@/lib/reserveCtaGroq'
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
 import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
-import { buildReserveRowsForExperience, isActiveExperienceStatus } from '@/lib/reserveCtaPricing'
+import { buildDefaultExperienceReserveRows, type ExperienceReserveFacts } from '@/lib/experienceReserveRows'
+import { isActiveExperienceStatus } from '@/lib/reserveCtaPricing'
 import { resolveReserveCtaCard } from '@/lib/resolveReserveCtaCard'
 
 // --- public row shape (subset of GROQ result) ---
@@ -248,7 +249,13 @@ type CmsItineraryDay = {
   lodgeSub?: string | null
 }
 
-type CmsWildlifeItem = { name?: string; description?: string | null; iconType?: string | null }
+type CmsWildlifeItem = {
+  name?: string
+  description?: string | null
+  iconType?: string | null
+  imageUrl?: string | null
+  badge?: string | null
+}
 
 type CmsLodge = {
   _id?: string
@@ -717,18 +724,34 @@ export function soqtapataPartialFromStructuredRow(
   if (e.wildlife && e.wildlife.length > 0) {
     out.wildlife = {
       ...l.wildlife,
-      species: e.wildlife.map((s, i) => ({
-        name: s.name || l.wildlife.species[i]?.name || '',
-        sub: s.description || l.wildlife.species[i]?.sub || '',
-        iconId: (s.iconType && W_ICON[s.iconType] !== undefined ? W_ICON[s.iconType]! : l.wildlife.species[i]!.iconId) as
-          | 0
-          | 1
-          | 2
-          | 3
-          | 4
-          | 5
-          | 6,
-      })),
+      species: e.wildlife.map((s, i) => {
+        const fallback = l.wildlife.species[i]
+        const cmsImg = s.imageUrl ? imgW(s.imageUrl, 960) : null
+        const badgeTrim = (s.badge && s.badge.trim()) || fallback?.badge
+        const base = {
+          name: s.name || fallback?.name || '',
+          sub: s.description || fallback?.sub || '',
+          iconId: (s.iconType && W_ICON[s.iconType] !== undefined ? W_ICON[s.iconType]! : fallback?.iconId ?? 6) as
+            | 0
+            | 1
+            | 2
+            | 3
+            | 4
+            | 5
+            | 6,
+        }
+        const photo =
+          cmsImg != null
+            ? { imageSrc: cmsImg, imageAlt: (s.name || fallback?.name || 'Species').trim() }
+            : fallback?.imageSrc
+              ? { imageSrc: fallback.imageSrc, imageAlt: (fallback.imageAlt ?? fallback.name).trim() }
+              : {}
+        return {
+          ...base,
+          ...photo,
+          ...(badgeTrim ? { badge: badgeTrim } : {}),
+        }
+      }),
     }
   }
 
@@ -1104,23 +1127,24 @@ export function alsoBookFromStructuredRow(
   }
 
   const exp = row.experience
-  const gh0 = exp?.gettingHereInfo?.[0]
-  const pickupLine = gh0?.description?.trim() || gh0?.title?.trim() || null
   const expPriceUsd =
     exp && isActiveExperienceStatus(exp.status) && typeof exp.price === 'number' && exp.price > 0
       ? exp.price
       : null
-  const defaultRows = buildReserveRowsForExperience(
-    {
-      route: exp?.route,
-      duration: exp?.duration,
-      groupSizeMin: exp?.groupSizeMin,
-      groupSizeMax: exp?.groupSizeMax,
-      includes: exp?.includes ?? null,
-      pickupLine,
-    },
-    null,
-  )
+  const expReserveFacts: ExperienceReserveFacts = {
+    route: exp?.route,
+    duration: exp?.duration,
+    groupSizeMin: exp?.groupSizeMin,
+    groupSizeMax: exp?.groupSizeMax,
+    includes: exp?.includes ?? null,
+    programType: exp?.programType,
+    distanceFromCusco: exp?.distanceFromCusco,
+    gettingHereInfo: exp?.gettingHereInfo ?? null,
+    priceUsd: expPriceUsd,
+    priceLabel: exp?.priceLabel,
+    status: exp?.status,
+  }
+  const defaultRows = buildDefaultExperienceReserveRows(expReserveFacts)
 
   const defTermsHref = (termsHidden ? '' : (termsResolved?.href ?? lBook.termsHash)).trim() || '#terms'
   const rs = row.reserveCtaSettings
@@ -1133,6 +1157,7 @@ export function alsoBookFromStructuredRow(
     legacySubline: book.sub,
     defaultSubline: lBook.sub,
     defaultRows,
+    experienceReserveFacts: expReserveFacts,
     legacyCtas: {
       primarySmart: rb?.wetravelSmartLink,
       primaryLabel: book.wetravelLabel || rb?.wetravelLabel,
@@ -1161,6 +1186,12 @@ export function alsoBookFromStructuredRow(
     whatsappUrl: ctaS?.href ?? book.whatsappUrl,
     whatsappLabel: ctaS?.label ?? book.whatsappLabel,
     termsHash: reserveCard.termsHref?.trim() || book.termsHash,
+    termsLinkLabel: reserveCard.termsLinkLabel || book.termsLinkLabel,
+    termsPrefixText: reserveCard.termsPrefixText,
+    termsSuffixText: reserveCard.termsSuffixText,
+    termsOpenInNewTab: reserveCard.termsOpenInNewTab,
+    termsRel: reserveCard.termsRel,
+    reserveTrustItems: reserveCard.trustItems,
   }
 
   return { also, book }

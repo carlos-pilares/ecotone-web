@@ -1,4 +1,6 @@
 import type { ReserveCtaCta, ReserveCtaDetailRow, ReserveCtaTrustItem } from '@/components/shared/ReserveCtaSection'
+import type { ExperienceReserveFacts } from '@/lib/experienceReserveRows'
+import { resolveExperienceReserveCardRows as resolveExpReserveRows } from '@/lib/experienceReserveRows'
 import type { ReserveCtaSettingsGroq, ReserveCtaTrustItemGroq } from '@/lib/reserveCtaGroq'
 import { formatReservePriceDisplay } from '@/lib/reserveCtaPricing'
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
@@ -70,6 +72,8 @@ export function resolveReserveCtaCard(opts: {
   legacySubline?: string | null
   defaultSubline: string
   defaultRows: ReserveCtaDetailRow[]
+  /** When set (Experience landing), `experienceReserveRows` in settings resolve against this. */
+  experienceReserveFacts?: ExperienceReserveFacts | null
   legacyCtas: LegacyCtaPair
   defaultTermsHref: string
 }): {
@@ -118,8 +122,10 @@ export function resolveReserveCtaCard(opts: {
   const subline =
     s?.sublineOverride?.trim() || opts.legacySubline?.trim() || opts.defaultSubline || ''
 
+  const structuredRows = resolveExpReserveRows(s?.experienceReserveRows, opts.experienceReserveFacts ?? null)
   const ovRows = rowFromOverride(s?.rowsOverride ?? null)
-  const rows = ovRows.length > 0 ? ovRows : opts.defaultRows
+  const rows =
+    structuredRows !== null ? structuredRows : ovRows.length > 0 ? ovRows : opts.defaultRows
 
   const pLegacy = {
     label: opts.legacyCtas.primaryLabel,

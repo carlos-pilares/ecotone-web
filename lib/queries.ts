@@ -619,7 +619,7 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       includes, notIncludes,
       lodgeNightLabel, groupSizeMin, groupSizeMax,
       altitude, distanceFromCusco, ecosystem,
-      wildlife[] { name, description, iconType },
+      wildlife[] { name, description, iconType, badge, image, "imageUrl": image.asset->url },
       "includedTechProductDocs": includedTechProducts[]-> {
         _id, stableId, name, number, description, image, badgeText, badgeTextWhenExcluded, slug
       },
@@ -1144,6 +1144,7 @@ export type WildlifeItem = {
   iconType?: string | null
   image?: SanityImageSource | null
   imageUrl?: string | null
+  badge?: string | null
 }
 
 export type ExperienceDoc = {
@@ -1255,7 +1256,7 @@ export const experienceBySlugQuery = groq`
     lodgeNightLabel, groupSizeMin, groupSizeMax,
     altitude, distanceFromCusco, ecosystem,
     wildlife[] {
-      name, description, iconType,
+      name, description, iconType, badge,
       image,
       "imageUrl": image.asset->url
     },
@@ -1264,7 +1265,9 @@ export const experienceBySlugQuery = groq`
       "subtitle": description,
       description,
       iconType,
-      image
+      badge,
+      image,
+      "imageUrl": image.asset->url
     },
     "techProducts": *[_type == "technologyProduct"] | order(order asc) {
       _id, name, number, description, image, badgeText, badgeTextWhenExcluded,

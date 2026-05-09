@@ -42,11 +42,18 @@ export function ExperienceBookSoqtapata({
   }
 
   const termsHref = data.termsHash.trim() || undefined
-  const trustIconCycle = ['shield', 'check', 'heart'] as const
-  const trustItems = data.trustStripItems.map((t, i) => ({
-    iconKey: trustIconCycle[i % trustIconCycle.length]!,
-    text: t.text,
-  }))
+
+  const cmsTrust = data.reserveTrustItems
+  const trustItems =
+    cmsTrust && cmsTrust.length > 0
+      ? cmsTrust
+          .map((t) => {
+            const text = typeof t.text === 'string' ? t.text : ''
+            const iconKey = typeof t.iconKey === 'string' ? t.iconKey.trim() : ''
+            return { iconKey: iconKey || 'shield', text }
+          })
+          .filter((t) => t.text.trim())
+      : undefined
 
   return (
     <ReserveCtaSection
@@ -57,6 +64,7 @@ export function ExperienceBookSoqtapata({
       body={data.lead?.trim() ? data.lead : undefined}
       experienceBookPrimaryModal
       onExperienceBookPrimaryClick={onPrimary}
+      experienceReserveTrustTermsExact
       card={{
         priceLine: data.price,
         priceSuffix: data.priceSmall,
@@ -64,9 +72,14 @@ export function ExperienceBookSoqtapata({
         rows: data.rows,
         ctas,
         termsHref,
-        termsPrefixText: data.termsNote?.trim(),
-        termsLinkLabel: data.termsLinkLabel?.trim(),
-        termsSuffixText: '.',
+        termsPrefixText:
+          data.termsPrefixText !== undefined && data.termsPrefixText !== null
+            ? data.termsPrefixText
+            : data.termsNote,
+        termsLinkLabel: data.termsLinkLabel ?? '',
+        termsSuffixText: data.termsSuffixText === null ? undefined : data.termsSuffixText,
+        termsOpenInNewTab: data.termsOpenInNewTab === true,
+        termsRel: data.termsRel?.trim(),
         trustItems,
       }}
     />

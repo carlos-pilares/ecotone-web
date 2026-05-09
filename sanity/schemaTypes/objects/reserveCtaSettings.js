@@ -56,9 +56,22 @@ export const reserveCtaSettings = defineType({
       validation: (r) => r.max(160),
     }),
     defineField({
-      name: 'rowsOverride',
-      title: 'Card rows override',
+      name: 'experienceReserveRows',
+      title: 'Reserve card rows — select source or override',
       type: 'array',
+      description:
+        'Experience landing only: each row pulls from the linked experience (route, duration, pickup summary, etc.) unless you override label/value. Order: use list order, or set “Order” on each row.',
+      of: [{type: 'experienceReserveCardRow'}],
+      hidden: ({document}) => document?._type !== 'experiencePage',
+      validation: (Rule) => Rule.max(12),
+    }),
+    defineField({
+      name: 'rowsOverride',
+      title: 'Card rows override (legacy)',
+      type: 'array',
+      description:
+        'Manual label/value rows. On Experience pages, prefer “Reserve card rows — select source or override” above; this field is hidden there but still works for old content.',
+      hidden: ({document}) => document?._type === 'experiencePage',
       of: [
         {
           type: 'object',

@@ -10,7 +10,7 @@ export const experienceStudioPreviewById = /* groq */ `*[_id == $id][0]{
     dayNumber, title, subtitle, photoCaption,
     timeline[]{ time, title, description }
   },
-  wildlife[]{ name, description, iconType },
+  wildlife[]{ name, description, iconType, badge, "imageUrl": image.asset->url },
   includes, notIncludes,
   videoUrl, videoTitle,
   bestTimeByMonth[]{ month, highlight, level },

@@ -131,14 +131,23 @@ async function buildBlogPostsWithTeaserImages(cache: ReturnType<typeof createUrl
   )
 }
 
-function buildWildlife() {
-  return soqtapataPhase3.wildlife.species.map((s, i) => ({
-    ...key(`w${i}`),
-    _type: 'wildlifeItem' as const,
-    name: s.name,
-    description: s.sub,
-    iconType: ICON_BY_ICON_ID[s.iconId] ?? 'generic',
-  }))
+async function buildWildlife(cache: ReturnType<typeof createUrlImageCache>) {
+  return Promise.all(
+    soqtapataPhase3.wildlife.species.map(async (s, i) => {
+      const url = s.imageSrc?.trim()
+      const image = url ? await cache.get(url, `soqtapata-wildlife-${i}.jpg`) : undefined
+      const badge = s.badge?.trim()
+      return {
+        ...key(`w${i}`),
+        _type: 'wildlifeItem' as const,
+        name: s.name,
+        description: s.sub,
+        iconType: ICON_BY_ICON_ID[s.iconId] ?? 'generic',
+        ...(badge ? { badge: badge.slice(0, 28) } : {}),
+        ...(image ? { image } : {}),
+      }
+    }),
+  )
 }
 
 function buildFaqs() {
@@ -211,6 +220,7 @@ export async function seedCmsAll() {
   const mainImage = await cache.get(SOQTAPATA_MAIN_HERO_URL, 'soqtapata-hero.jpg')
   const galleryItems = await buildExperienceGalleryFromApprovedUrls(cache)
   const itineraryDays = await buildItineraryWithImages(cache)
+  const wildlifeItems = await buildWildlife(cache)
   const blogDocsWithImages = await buildBlogPostsWithTeaserImages(cache)
   const routesPageDoc = await buildRoutesPageDocument(client, cache)
   const aboutPageDoc = await buildAboutPageDocument(client, cache)
@@ -316,7 +326,7 @@ export async function seedCmsAll() {
     altitude: st[2]?.n || '1,200 m',
     distanceFromCusco: st[1]?.n || '~2.5h',
     ecosystem: st[5]?.n || 'Cloud forest',
-    wildlife: buildWildlife(),
+    wildlife: wildlifeItems,
     includedTechProducts: [
       { _type: 'reference' as const, _ref: CMS_IDS.tech1, _key: 'tp1' },
       { _type: 'reference' as const, _ref: CMS_IDS.tech2, _key: 'tp2' },

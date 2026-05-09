@@ -1,0 +1,129 @@
+/* Editorial wildlife cards — experience pages only (imported by ExperienceWildlifeGrid). */
+
+.exp-wildlife-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: clamp(14px, 2.5vw, 20px);
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 480px) {
+  .exp-wildlife-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  .exp-wildlife-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .exp-wildlife-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.exp-wildlife-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--w, #fdfcf9);
+  border: 1px solid var(--n200, #d8cfbf);
+  border-radius: var(--rl, 20px);
+  overflow: hidden;
+  box-shadow: 0 1px 0 rgba(26, 18, 9, 0.04);
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
+}
+
+.exp-wildlife-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(26, 18, 9, 0.08);
+  border-color: rgba(212, 170, 114, 0.45);
+}
+
+.exp-wildlife-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: linear-gradient(155deg, var(--n100, #ede7da) 0%, var(--b50, #faf3e8) 42%, #e5dcc8 100%);
+}
+
+.exp-wildlife-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.exp-wildlife-ph {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #ebe4d8 0%, var(--b50, #faf3e8) 38%, #e0d4c4 100%);
+}
+
+.exp-wildlife-ph-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56%;
+  max-width: 140px;
+  opacity: 0.2;
+  color: var(--brown-dk, #563b12);
+}
+
+.exp-wildlife-ph-inner svg {
+  width: 100%;
+  height: auto;
+}
+
+.exp-wildlife-body {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.exp-wildlife-badge {
+  align-self: flex-start;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brown-dk, #563b12);
+  background: var(--b50, #faf3e8);
+  border: 1px solid var(--b200, #d4aa72);
+  padding: 4px 10px;
+  border-radius: 100px;
+  margin-bottom: 2px;
+}
+
+.exp-wildlife-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--n900, #1a1209);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.exp-wildlife-sub {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--n700, #4a3e30);
+  line-height: 1.5;
+}

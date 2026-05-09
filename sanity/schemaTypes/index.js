@@ -30,6 +30,7 @@ import {experienceResourceCard} from './objects/experienceResourceCard'
 import {experiencePageResources} from './objects/experiencePageResources'
 import {landingReserveBlock} from './objects/landingReserveBlock'
 import {reserveCtaSettings} from './objects/reserveCtaSettings'
+import {experienceReserveCardRow} from './objects/experienceReserveCardRow'
 import {lodgePageSectionCopy} from './objects/lodgePageSectionCopy'
 import {lodgeSnapshotKeyPick} from './objects/lodgeSnapshotKeyPick'
 import {lodgePageBookingBlock} from './objects/lodgePageBookingBlock'
@@ -110,6 +111,7 @@ const objects = [
   pageReviewsSection,
   landingHero,
   landingReserveBlock,
+  experienceReserveCardRow,
   reserveCtaSettings,
   lodgePageSectionCopy,
   lodgeSnapshotKeyPick,

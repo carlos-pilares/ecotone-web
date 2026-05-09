@@ -9,7 +9,7 @@ const HASH_SCROLL_RETRY_MS = 50
 const PAST_HERO_BODY_CLASS = 'ecotone-exp-past-hero'
 
 /**
- * Soqtapata experience page: wildlife strip overflow + centering; hide main header Book CTA when in-page CTA is "competing" (sticky subnav at top).
+ * Soqtapata experience page: hide main header Book CTA when in-page CTA is "competing" (sticky subnav at top).
  * Also sets --anchor-offset for `html` scroll-padding-top so in-page #anchors land below the fixed top nav and sticky #pageNav.
  *
  * Mobile in-page drawer: `InPageNavDrawerClient` (paired with `InPageNav`).
@@ -35,14 +35,6 @@ export function ExperiencePageChromeClient() {
     }
 
     const topNav = document.getElementById('topNav')
-
-    const setWildlifeScroll = () => {
-      const wrap = document.getElementById('wildlifeHscroll')
-      const h = wrap?.querySelector<HTMLElement>('.hscroll')
-      if (!wrap || !h) return
-      const overflow = h.scrollWidth > h.clientWidth + 1
-      wrap.classList.toggle('wildlife-hscroll--overflow', overflow)
-    }
 
     const setPnavStuck = () => {
       const el = document.getElementById('pageNav')
@@ -112,26 +104,16 @@ export function ExperiencePageChromeClient() {
 
     const onLayoutLoad = () => {
       refreshInPageNavAnchorMetrics()
-      setWildlifeScroll()
       fixHashScroll(0)
       updatePastHero()
     }
     window.addEventListener('load', onLayoutLoad, { once: true })
-
-    let hRo: ResizeObserver | undefined
-    const wildlifeH = document.getElementById('wildlifeHscroll')?.querySelector<HTMLElement>('.hscroll')
-    if (wildlifeH && typeof ResizeObserver !== 'undefined') {
-      hRo = new ResizeObserver(() => setWildlifeScroll())
-      hRo.observe(wildlifeH)
-    }
-    setWildlifeScroll()
 
     const onScroll = () => {
       updatePastHero()
     }
     const onResize = () => {
       updatePastHero()
-      setWildlifeScroll()
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onResize, { passive: true })
@@ -146,7 +128,6 @@ export function ExperiencePageChromeClient() {
       document.getElementById('pnavScrollShim')?.style.removeProperty('height')
       pnavRo?.disconnect()
       heroRo?.disconnect()
-      hRo?.disconnect()
       document.documentElement.style.removeProperty('--anchor-offset')
       document.body.classList.remove('ecotone-pnav-stuck')
       document.body.classList.remove(PAST_HERO_BODY_CLASS)

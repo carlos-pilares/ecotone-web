@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ExperienceWildlifeGrid } from '@/components/experience/ExperienceWildlifeGrid'
 import { ReviewsSection } from '@/components/ReviewsSection'
 import { TechProductsSection } from '@/components/TechProductsSection'
 import type {
@@ -64,85 +65,6 @@ const NAV: { id: string; label: string }[] = [
   { id: 'book', label: 'Book →' },
 ]
 
-function getWildlifeIcon(iconType?: string | null): ReactNode {
-  const props = { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none' as const, stroke: 'var(--brown)', strokeWidth: 1.8 }
-  switch (iconType) {
-    case 'bird':
-      return (
-        <svg {...props} aria-hidden>
-          <circle cx="12" cy="12" r="3" />
-          <path d="M12 2v3m0 14v3M4.22 4.22l2.12 2.12m11.32 11.32 2.12 2.12M2 12h3m14 0h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" />
-        </svg>
-      )
-    case 'bear':
-      return (
-        <svg {...props} aria-hidden>
-          <circle cx="12" cy="8" r="5" />
-          <path d="M8 13c-3 1-5 4-5 7h18c0-3-2-6-5-7" />
-        </svg>
-      )
-    case 'cat':
-      return (
-        <svg {...props} aria-hidden>
-          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-        </svg>
-      )
-    case 'jaguar':
-      return (
-        <svg {...props} aria-hidden>
-          <path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z" />
-        </svg>
-      )
-    case 'monkey':
-      return (
-        <svg {...props} aria-hidden>
-          <circle cx="12" cy="8" r="5" />
-          <path d="M8 13c-3 1-5 4-5 7h18c0-3-2-6-5-7" />
-        </svg>
-      )
-    case 'otter':
-      return (
-        <svg {...props} aria-hidden>
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-          <polyline points="22 4 12 14.01 9 11.01" />
-        </svg>
-      )
-    case 'reptile':
-      return (
-        <svg {...props} aria-hidden>
-          <path d="M3 12s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
-        </svg>
-      )
-    case 'fish':
-      return (
-        <svg {...props} aria-hidden>
-          <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
-          <line x1="4" y1="22" x2="4" y2="15" />
-        </svg>
-      )
-    case 'plant':
-      return (
-        <svg {...props} aria-hidden>
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-        </svg>
-      )
-    case 'insect':
-      return (
-        <svg {...props} aria-hidden>
-          <circle cx="12" cy="12" r="3" />
-          <path d="M12 2v3m0 14v3M4.22 4.22l2.12 2.12m11.32 11.32 2.12 2.12M2 12h3m14 0h3" />
-        </svg>
-      )
-    case 'generic':
-    default:
-      return (
-        <svg {...props} aria-hidden>
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-        </svg>
-      )
-  }
-}
-
 function formatUsd(n: number) {
   return `USD ${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
 }
@@ -182,7 +104,6 @@ export function ExperiencePage({ experience, reviewsFiltered, featuredQuoteItems
   /** Terms accordions: independent open state, default first panel open if present. */
   const [openTerms, setOpenTerms] = useState<Set<string>>(() => new Set(['cancellation']))
   const heroRef = useRef<HTMLDivElement>(null)
-  const wildlifeRef = useRef<HTMLUListElement>(null)
 
   const itinerary: ItineraryDay[] = e.itinerary?.length
     ? e.itinerary
@@ -282,11 +203,6 @@ export function ExperiencePage({ experience, reviewsFiltered, featuredQuoteItems
     return () => obs.disconnect()
   }, [])
 
-  const scrollWild = (dir: number) => {
-    const w = wildlifeRef.current
-    if (w) w.scrollBy({ left: dir * 200, behavior: 'smooth' })
-  }
-
   const bestMonths = e.bestTimeByMonth?.length
     ? e.bestTimeByMonth
     : [
@@ -304,6 +220,19 @@ export function ExperiencePage({ experience, reviewsFiltered, featuredQuoteItems
       ]
 
   const wildlife = e.wildlife?.length ? e.wildlife : []
+
+  const wildlifeGridItems = useMemo(
+    () =>
+      wildlife.map((w) => ({
+        name: (w.name && w.name.trim()) || 'Species',
+        subtitle: (w.description && w.description.trim()) || (w.subtitle && w.subtitle.trim()) || null,
+        imageUrl: w.imageUrl?.trim() || null,
+        imageAlt: (w.name && w.name.trim()) || 'Species',
+        badge: w.badge?.trim() || null,
+        iconType: w.iconType,
+      })),
+    [wildlife],
+  )
 
   const imgAltBase = e.name?.trim() || 'Experience'
 
@@ -696,74 +625,10 @@ export function ExperiencePage({ experience, reviewsFiltered, featuredQuoteItems
           <h2 className="h2" id="wildlife-heading" style={{ marginBottom: 6 }}>
             Wildlife
           </h2>
-          <p className="body" style={{ fontSize: 14, marginBottom: 16, maxWidth: 560 }}>
+          <p className="body" style={{ fontSize: 14, marginBottom: 20, maxWidth: 560 }}>
             Not guaranteed — this is wild nature. Field teams regularly observe these in this corridor.
           </p>
-          <div className="hscroll-wrap" style={{ position: 'relative' }}>
-            <button
-              type="button"
-              className="hs-arrow hs-arrow-l"
-              onClick={() => scrollWild(-1)}
-              style={{
-                position: 'absolute',
-                left: -18,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                zIndex: 5,
-                width: 36,
-                height: 36,
-                borderRadius: '50%',
-                background: 'var(--w)',
-                border: '1px solid var(--n200)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-              }}
-              aria-label="Scroll left"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--n700)" strokeWidth="2.5">
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
-            </button>
-            <ul className="hscroll" ref={wildlifeRef} style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-              {wildlife.map((w, i) => (
-                <li className="wildlife-card" key={w.name ? `${w.name}-${i}` : i}>
-                  <div className="wc-icon" aria-hidden>
-                    {getWildlifeIcon(w.iconType)}
-                  </div>
-                  <div className="wc-name">{w.name}</div>
-                  {w.description ? <div className="wc-sub">{w.description}</div> : w.subtitle ? <div className="wc-sub">{w.subtitle}</div> : null}
-                </li>
-              ))}
-            </ul>
-            <button
-              type="button"
-              onClick={() => scrollWild(1)}
-              className="hs-arrow hs-arrow-r"
-              style={{
-                position: 'absolute',
-                right: -18,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                zIndex: 5,
-                width: 36,
-                height: 36,
-                borderRadius: '50%',
-                background: 'var(--w)',
-                border: '1px solid var(--n200)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-              }}
-              aria-label="Scroll right"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--n700)" strokeWidth="2.5">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </button>
-          </div>
+          {wildlifeGridItems.length > 0 ? <ExperienceWildlifeGrid items={wildlifeGridItems} /> : null}
         </div>
       </section>
 

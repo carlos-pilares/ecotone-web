@@ -28,16 +28,111 @@
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+@supports (overflow: clip) {
+  html {
+    overflow-x: clip;
+  }
 }
 body {
   font-family: var(--f);
   background: var(--w);
   color: var(--n900);
+  max-width: 100%;
   overflow-x: hidden;
+  position: relative;
   font-weight: 300;
   font-size: 15px;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+}
+@supports (overflow: clip) {
+  body {
+    overflow-x: clip;
+  }
+}
+
+/* Contain intentional horizontal scrollers so touch doesn’t drag the whole page (esp. iOS Safari) */
+.filter-tabs,
+.blog-scroll,
+.rev-scroll,
+.hscroll {
+  max-width: 100%;
+  box-sizing: border-box;
+  overscroll-behavior-x: contain;
+}
+
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Section shells: prevent flex/grid children from forcing page width */
+.sec {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+.sec-inner {
+  min-width: 0;
+  width: 100%;
+  max-width: min(var(--max), 100%);
+  box-sizing: border-box;
+}
+
+/* Reviews (#reviews): rating row, quote HTML, carousel — stay within viewport */
+#reviews {
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+@supports (overflow: clip) {
+  #reviews {
+    overflow-x: clip;
+  }
+}
+#reviews .sec-inner,
+#reviews .content-inner {
+  min-width: 0;
+  box-sizing: border-box;
+}
+#reviews .reviews-header {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: min(20px, 4vw);
+}
+#reviews .reviews-header > div:first-child {
+  min-width: 0;
+}
+#reviews .reviews-rating-wrap {
+  min-width: 0;
+  max-width: 100%;
+}
+#reviews .quote-featured {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+#reviews .quote-text {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+#reviews .quote-attr {
+  overflow-wrap: anywhere;
+}
+#reviews .rev-carousel {
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+#reviews .rev-author > div:last-child {
+  min-width: 0;
+}
+#reviews .rev-q,
+#reviews .rev-name,
+#reviews .rev-loc,
+#reviews .rev-exp {
+  overflow-wrap: break-word;
 }
 /*
  * Do NOT use :where() inside :not() here — it drops the class specificity to zero, so

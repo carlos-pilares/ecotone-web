@@ -5,7 +5,7 @@
 }
 
 .ipnav.page-nav.lodge-page-nav .page-nav-inner {
-  max-width: var(--max);
+  max-width: min(var(--max), 100%);
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -13,6 +13,9 @@
   overflow-x: auto;
   scrollbar-width: none;
   padding: 0 var(--g);
+  min-width: 0;
+  box-sizing: border-box;
+  overscroll-behavior-x: contain;
 }
 
 .ipnav.page-nav.lodge-page-nav .page-nav-inner::-webkit-scrollbar {
@@ -49,6 +52,8 @@
   overflow-x: auto;
   scrollbar-width: none;
   gap: 0;
+  min-width: 0;
+  overscroll-behavior-x: contain;
 }
 
 .ipnav.lodge-page-nav .page-nav-links::-webkit-scrollbar {

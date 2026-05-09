@@ -106,7 +106,22 @@ export default async function Home() {
   /** Per-request read so dev / deploy never serve a stale concat; order: ecotone → nav rules → tokens last (beats ecotone :root in this sheet). */
   const shellNavLogoCss = readFileSync(join(process.cwd(), 'app/shell-nav-logo.css'), 'utf-8')
   const shellLogoTokensCss = readFileSync(join(process.cwd(), 'app/shell-logo-tokens.css'), 'utf-8')
-  const homeInjectCss = `${homeInjectBaseCss}\n/* shell-nav-logo.css (after ecotone img{...}) */\n${shellNavLogoCss}\n/* shell-logo-tokens.css (must be last in this <style>) */\n${shellLogoTokensCss}\n`
+  /** After ecotone extract: win cascade for root overflow + scroll containment (mobile Safari lateral drag). */
+  const viewportOverflowCss = `
+html{max-width:100%;overflow-x:hidden;}
+body{max-width:100%;position:relative;overflow-x:hidden;}
+@supports (overflow:clip){
+html{overflow-x:clip;}
+body{overflow-x:clip;}
+}
+#reviews{max-width:100%;box-sizing:border-box;overflow-x:hidden;}
+@supports (overflow:clip){#reviews{overflow-x:clip;}}
+#reviews .reviews-header{grid-template-columns:minmax(0,1fr) auto;gap:min(20px,4vw);}
+#reviews .reviews-header>div:first-child{min-width:0;}
+#reviews .quote-text{max-width:100%;overflow-wrap:break-word;}
+.filter-tabs,.blog-scroll,.rev-scroll,.hscroll{max-width:100%;box-sizing:border-box;overscroll-behavior-x:contain;}
+`
+  const homeInjectCss = `${homeInjectBaseCss}\n/* shell-nav-logo.css (after ecotone img{...}) */\n${shellNavLogoCss}\n/* shell-logo-tokens.css (must be last in this <style>) */\n${shellLogoTokensCss}\n${viewportOverflowCss}\n`
 
   return (
     <>

@@ -410,8 +410,9 @@ export const experiencePage = defineType({
       title: 'Override: bloque reserva (legacy)',
       type: 'landingReserveBlock',
       group: 'reserve',
+      hidden: true,
       description:
-        'Legacy granular overrides. Usa **Reserve CTA** arriba cuando sea posible. Cada subcampo vacío conserva el valor resuelto en la vista previa.',
+        'Oculto: el sitio usa **Reserve CTA** y la experiencia vinculada. Se conserva en documentos antiguos como respaldo del resolver; no editar salvo migración.',
     }),
     soqtapataActualField(
       'stActualWebReserve',
