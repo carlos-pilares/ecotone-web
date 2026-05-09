@@ -1179,8 +1179,8 @@ export const soqtapataExperienceReviewsLayout = {
   eyebrow: 'What guests say',
   headline: 'Real experiences',
   averageRating: '5.0',
-  sectionClassName: 'content-section bg-cream fade',
-  contentInnerClassName: 'content-inner',
+  sectionClassName: 'sec bg-cream fade',
+  contentInnerClassName: 'sec-inner',
   useHomepageSampleReviewsIfEmpty: false,
   sourceLabel: 'Trustpilot',
   /** Vacío en datos: el resolver rellena desde el conteo de reseñas CMS. */

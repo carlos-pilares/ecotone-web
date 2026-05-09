@@ -8,7 +8,6 @@ import { ReviewsSection } from '@/components/ReviewsSection'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
 import { TechProductsSection } from '@/components/TechProductsSection'
-import { buildFeaturedQuoteItemsForExperience } from '@/lib/experienceFeaturedQuotes'
 import { getSoqtapataPageCms, soqtapataPristineSeoDefault } from '@/lib/soqtapataCmsV1'
 import { ExperienceHeroSoqtapata } from '@/components/experience/ExperienceHeroSoqtapata'
 import { ExperienceStatsBarSoqtapata } from '@/components/experience/ExperienceStatsBarSoqtapata'
@@ -45,21 +44,26 @@ export default async function SoqtapataPristineImmersionPage() {
     reviewsLayout,
     sectionVisibility: sec,
     reviewsSectionLead,
+    reviewsRatingSummary,
+    rotatingQuoteItems,
   } = await getSoqtapataPageCms()
 
   const localReviews = ex.reviews
-  const featuredQuoteItems = buildFeaturedQuoteItemsForExperience(localReviews)
 
   const reviewsProps: ReviewsSectionProps = {
-    ...reviewsLayout,
-    reviews: localReviews,
-    featuredQuoteItems,
-    homeData: null,
-    sectionLead: reviewsSectionLead,
+    sectionClassName: 'sec bg-cream fade',
+    contentInnerClassName: 'sec-inner',
+    eyebrow: reviewsLayout.eyebrow,
+    title: reviewsLayout.headline,
+    body: reviewsSectionLead ?? null,
+    ratingSummary: reviewsRatingSummary,
+    rotatingQuoteItems,
+    reviewCards: localReviews,
+    emptyMessage: reviewsLayout.emptyMessage?.trim() || null,
   }
 
   return (
-    <EcotoneV2Client solidMainNav featuredQuoteItems={featuredQuoteItems}>
+    <EcotoneV2Client solidMainNav featuredQuoteItems={rotatingQuoteItems}>
       <IsotipoDefs />
       <SiteHeader mainNavSolid />
       <SoqtapataPhotoLightbox />

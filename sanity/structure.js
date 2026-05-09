@@ -143,13 +143,33 @@ export const structure = (S) =>
                     .title('Nombres, textos, imágenes de producto'),
                 ),
               S.listItem()
-                .title('Reviews (reseñas)')
+                .title('Reviews')
                 .icon(StarIcon)
                 .id('reviews')
                 .child(
-                  S.documentTypeList('review')
-                    .id('reviewList')
-                    .title('Citas, autores, programa (elegir en la landing)'),
+                  S.list()
+                    .title('Reviews')
+                    .items([
+                      S.listItem()
+                        .title('Individual reviews')
+                        .icon(StarIcon)
+                        .id('reviewDocuments')
+                        .child(
+                          S.documentTypeList('review')
+                            .id('reviewList')
+                            .title('Quotes, authors, experience link'),
+                        ),
+                      S.listItem()
+                        .title('Global summary (site-wide)')
+                        .icon(CogIcon)
+                        .id('reviewsGlobalSummary')
+                        .child(
+                          S.document()
+                            .schemaType('reviewsSettings')
+                            .documentId('reviewsSettings')
+                            .title('Rating, count, provider — used on every Reviews block'),
+                        ),
+                    ]),
                 ),
               S.listItem()
                 .title('Lodges')

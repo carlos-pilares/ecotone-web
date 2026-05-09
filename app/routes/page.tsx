@@ -49,16 +49,14 @@ export default async function RoutesPage() {
         <RoutesCompare section={p.compareSection} columns={p.compareColumns} rows={p.compareRows} />
         <RoutesExperiences section={p.experiencesSection} filters={p.expFilters} cards={p.expCards} />
         <ReviewsSection
-          reviews={p.reviews}
-          featuredQuoteItems={p.featuredQuotes}
-          sectionClassName="content-section bg-cream fade"
-          contentInnerClassName="content-inner"
+          sectionClassName="sec bg-cream fade"
+          contentInnerClassName="sec-inner"
           eyebrow={p.reviewsEyebrow}
-          headline={p.reviewsHeadline}
-          averageRating={p.reviewsAverageRating}
-          sourceLabel={p.reviewsSourceLabel}
-          secondaryRatingLine={p.reviewsSecondaryRatingLine}
-          sectionLead={p.reviewsSectionLead}
+          title={p.reviewsHeadline}
+          body={p.reviewsSectionLead || null}
+          ratingSummary={p.reviewsRatingSummary}
+          rotatingQuoteItems={p.featuredQuotes}
+          reviewCards={p.reviews}
         />
         <RoutesFinalCta data={p.finalCta} />
         <SiteFooter />

@@ -17,10 +17,16 @@ import {
   type SoqtapataStructuredPageRow,
 } from '@/lib/soqtapataStructuredCms'
 import { mergeInternalNavIntoPageNav } from '@/lib/soqtapataInternalNav'
+import { buildRotatingQuoteItemsFromReviews } from '@/lib/reviewQuoteItems'
 import {
   applySoqtapataSectionPresentation,
   type SoqtapataPageModuleRow,
 } from '@/lib/soqtapataSectionPresentation'
+import {
+  DEFAULT_REVIEWS_RATING_SUMMARY,
+  normalizeReviewsRatingSummary,
+  type ReviewsRatingSummary,
+} from '@/lib/reviewsRatingSummary'
 import type { SectionModuleKey } from '@/lib/sectionPresentationTypes'
 import { applyExperienceReviewsLayoutResolvers } from '@/lib/experienceReviewsPresentation'
 import type { ExperienceReviewsLayoutMutable } from '@/lib/experienceReviewsPresentation'
@@ -216,11 +222,15 @@ export const getSoqtapataPageCms = cache(async () => {
     cmsError: string | null
     seo: { title: string; description: string }
     sectionModules: SoqtapataPageModuleRow[] | null | undefined
+    pageReviews: { eyebrow?: string | null; title?: string | null; body?: string | null } | null | undefined
+    reviewsRatingSummary: ReviewsRatingSummary
+    rotatingQuoteItems: { text: string; attr: string }[]
   }) {
     const pres = applySoqtapataSectionPresentation({
       experience: params.experience,
       reviewsLayout: params.reviewsLayout,
       sectionModules: params.sectionModules ?? null,
+      pageReviews: params.pageReviews ?? null,
     })
     applyExperienceReviewsLayoutResolvers(
       params.reviewsLayout,
@@ -235,6 +245,8 @@ export const getSoqtapataPageCms = cache(async () => {
       seo: params.seo,
       sectionVisibility: pres.sectionVisibility,
       reviewsSectionLead: pres.reviewsSectionLead,
+      reviewsRatingSummary: params.reviewsRatingSummary,
+      rotatingQuoteItems: params.rotatingQuoteItems,
     }
   }
 
@@ -248,6 +260,9 @@ export const getSoqtapataPageCms = cache(async () => {
       cmsError: null,
       seo: soqtapataPristineSeoDefault,
       sectionModules: null,
+      pageReviews: null,
+      reviewsRatingSummary: { ...DEFAULT_REVIEWS_RATING_SUMMARY },
+      rotatingQuoteItems: [],
     })
   }
   let row: SoqtapataStructuredPageRow = null
@@ -269,6 +284,9 @@ export const getSoqtapataPageCms = cache(async () => {
       cmsError,
       seo: soqtapataPristineSeoDefault,
       sectionModules: row?.sectionModules ?? null,
+      pageReviews: row?.reviewsSection ?? null,
+      reviewsRatingSummary: normalizeReviewsRatingSummary(row?.reviewsSettings ?? null),
+      rotatingQuoteItems: buildRotatingQuoteItemsFromReviews(row?.reviewsSection?.rotatingReviews ?? []),
     })
   }
   const partial: Partial<SoqtapataExperience> = {
@@ -300,6 +318,9 @@ export const getSoqtapataPageCms = cache(async () => {
     cmsError,
     seo,
     sectionModules: row.sectionModules ?? null,
+    pageReviews: row.reviewsSection ?? null,
+    reviewsRatingSummary: normalizeReviewsRatingSummary(row.reviewsSettings ?? null),
+    rotatingQuoteItems: buildRotatingQuoteItemsFromReviews(row.reviewsSection?.rotatingReviews ?? []),
   })
 })
 

@@ -1,4 +1,5 @@
 import type { ReviewDoc } from '@/lib/queries'
+import { getReviewExperienceLabel } from '@/lib/reviewsTypes'
 
 function formatQuoteHtml(quote: string): string {
   const t = quote.trim()
@@ -13,7 +14,7 @@ function formatQuoteHtml(quote: string): string {
 
 function formatAttr(r: ReviewDoc): string {
   const loc = [r.authorCity, r.authorCountry].filter(Boolean).join(', ')
-  const exp = r.experienceName?.trim()
+  const exp = getReviewExperienceLabel(r)
   const name = r.authorName?.trim() || 'Guest'
   return `— ${name}${loc ? ` · ${loc}` : ''}${exp ? ` · ${exp}` : ''}`
 }

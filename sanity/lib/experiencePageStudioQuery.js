@@ -52,7 +52,12 @@ export const experienceStudioPreviewById = /* groq */ `*[_id == $id][0]{
 }`
 
 export const reviewDocsByIds = /* groq */ `*[_id in $ids]{
-  _id, quote, authorName, authorCity, experienceName, rating
+  _id, quote, authorName, authorCity, authorCountry,
+  "experience": experience->{ name, slug },
+  experienceName,
+  "experienceProgramme": experienceProgramme,
+  rating,
+  isFeatured
 } | order(_id)`
 
 export const techDocsByIds = /* groq */ `*[_id in $ids]{

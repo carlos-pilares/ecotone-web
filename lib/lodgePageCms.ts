@@ -72,6 +72,8 @@ import { resolveReserveCtaCard } from '@/lib/resolveReserveCtaCard'
 import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
 import { cdnImageUrl } from '@/lib/sanity'
 import type { ReviewDoc } from '@/lib/queries'
+import { buildRotatingQuoteItemsFromReviews } from '@/lib/reviewQuoteItems'
+import { normalizeReviewsRatingSummary } from '@/lib/reviewsRatingSummary'
 
 import type { LodgeAmenityIconId, LodgeSectionHeaderFields } from '@/data/lodgeSoqtapataStatic'
 
@@ -393,21 +395,21 @@ function applySectionCopy<T extends LodgeSectionHeaderFields & Record<string, un
 
 function resolveReviewsSection(
   sec: LodgePageSectionsRow | null | undefined,
+  pageRs: { eyebrow?: string | null; title?: string | null; body?: string | null } | null | undefined,
   presentation: LodgePageReviewsPresentationRow | null | undefined,
 ): LodgeReviewsSectionResolved {
   const d = lodgeSoqtapataReviewsSectionDefaults
+  const pr = pageRs && typeof pageRs === 'object' ? pageRs : null
   const p = presentation && typeof presentation === 'object' ? presentation : null
+  const eyebrow = sectionFieldTrim(pr?.eyebrow) ?? sectionFieldTrim(sec?.reviews?.eyebrow) ?? d.eyebrow
+  const headline = sectionFieldTrim(pr?.title) ?? sectionFieldTrim(sec?.reviews?.title) ?? d.headline
+  const sectionLead =
+    sectionFieldTrim(pr?.body) ?? sectionFieldTrim(sec?.reviews?.body) ?? d.sectionLead ?? null
   return {
-    ...d,
-    eyebrow: sectionFieldTrim(sec?.reviews?.eyebrow) ?? d.eyebrow,
-    headline: sectionFieldTrim(sec?.reviews?.title) ?? d.headline,
-    sectionLead: sectionFieldTrim(sec?.reviews?.body) ?? d.sectionLead,
-    secondaryRatingLine: sectionFieldTrim(p?.secondaryRatingLine) ?? d.secondaryRatingLine,
-    averageRating: sectionFieldTrim(p?.averageRating) ?? d.averageRating,
-    sourceLabel: sectionFieldTrim(p?.sourceLabel) ?? d.sourceLabel,
-    carouselEndLabel: sectionFieldTrim(p?.carouselEndLabel) ?? d.carouselEndLabel,
-    carouselEndHref: sectionFieldTrim(p?.carouselEndHref) ?? d.carouselEndHref,
-    emptyMessage: sectionFieldTrim(p?.emptyMessage) ?? d.emptyMessage,
+    eyebrow,
+    headline,
+    sectionLead,
+    emptyMessage: sectionFieldTrim(p?.emptyMessage) ?? String(d.emptyMessage ?? ''),
   }
 }
 
@@ -650,7 +652,12 @@ export function mergeLodgePageWithFallback(
       doc: null,
       seo: { ...lodgeSoqtapataSeoDefault },
       ...out,
-      reviewsSection: resolveReviewsSection(row?.sections ?? null, row?.reviewsPresentation ?? null),
+      reviewsSection: resolveReviewsSection(
+        row?.sections ?? null,
+        row?.reviewsSection ?? null,
+        row?.reviewsPresentation ?? null,
+      ),
+      reviewsRatingSummary: normalizeReviewsRatingSummary(row?.reviewsSettings ?? null),
       meta: {
         featuredRoomStableId: null,
         usedCmsExperiences: false,
@@ -810,7 +817,11 @@ export function mergeLodgePageWithFallback(
   // Reviews
   let reviews: ReviewDoc[] = out.reviews
   let usedCmsReviews = false
-  if (row.reviewsSelection?.length) {
+  const pageReviewCards = row.reviewsSection?.reviewCards
+  if (pageReviewCards?.length) {
+    reviews = pageReviewCards.map((r) => ({ ...r, _id: r._id || 'rev' }))
+    usedCmsReviews = true
+  } else if (row.reviewsSelection?.length) {
     reviews = row.reviewsSelection.map((r) => ({ ...r, _id: r._id || 'rev' }))
     usedCmsReviews = true
   } else if (lodge.reviews?.length) {
@@ -818,6 +829,10 @@ export function mergeLodgePageWithFallback(
     usedCmsReviews = true
   }
   out.reviews = reviews
+  const rotatingLodge = buildRotatingQuoteItemsFromReviews(row.reviewsSection?.rotatingReviews ?? [])
+  if (rotatingLodge.length > 0) {
+    out.featuredQuotes = rotatingLodge
+  }
 
   // FAQ
   if (lodge.faqs?.length) {
@@ -999,7 +1014,11 @@ export function mergeLodgePageWithFallback(
     }
   }
 
-  const reviewsSection = resolveReviewsSection(sec, row.reviewsPresentation ?? null)
+  const reviewsSectionResolved = resolveReviewsSection(
+    sec,
+    row.reviewsSection ?? null,
+    row.reviewsPresentation ?? null,
+  )
 
   return {
     source: 'cms',
@@ -1011,7 +1030,8 @@ export function mergeLodgePageWithFallback(
     },
     seo,
     ...out,
-    reviewsSection,
+    reviewsSection: reviewsSectionResolved,
+    reviewsRatingSummary: normalizeReviewsRatingSummary(row.reviewsSettings ?? null),
     meta: {
       featuredRoomStableId: row.featuredRoomStableId,
       usedCmsExperiences,

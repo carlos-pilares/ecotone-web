@@ -28,6 +28,7 @@ import {experiencePageInternalNav} from './objects/experiencePageInternalNav'
 import {internalNavItem} from './objects/internalNavItem'
 import {pageModule} from './objects/pageModule'
 import {reviewsLayoutBlock} from './objects/reviewsLayoutBlock'
+import {pageReviewsSection} from './objects/pageReviewsSection'
 import {seo} from './objects/seo'
 import {
   aboutPageParagraph,
@@ -68,6 +69,7 @@ import {lodgePage} from './lodgePage'
 import {partner} from './partner'
 import {route} from './route'
 import {siteSettings} from './siteSettings'
+import {reviewsSettings} from './reviewsSettings'
 import {technologyProduct} from './technologyProduct'
 
 const objects = [
@@ -93,6 +95,7 @@ const objects = [
   experiencePageSnapshotStatPick,
   pageModule,
   reviewsLayoutBlock,
+  pageReviewsSection,
   landingHero,
   landingReserveBlock,
   reserveCtaSettings,
@@ -127,6 +130,7 @@ const objects = [
 
 const documents = [
   siteSettings,
+  reviewsSettings,
   lodge,
   lodgePage,
   route,

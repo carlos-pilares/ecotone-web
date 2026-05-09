@@ -190,6 +190,8 @@ button{font-family:var(--f);cursor:pointer}
 .stars{display:flex;gap:3px;justify-content:center}
 .star{width:13px;height:13px;background:var(--brown);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
 .trustpilot-badge{display:flex;align-items:center;gap:5px;justify-content:center}
+.trustpilot-badge--link{text-decoration:none;color:inherit}
+.trustpilot-badge--link:hover{opacity:.9}
 .tp-icon{width:16px;height:16px;background:#00B67A;border-radius:2px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .tp-name{font-size:12px;font-weight:600;color:var(--n700)}
 

@@ -69,10 +69,5 @@ export const lodgeSoqtapataReviewsSectionDefaults = {
   eyebrow: 'What guests say',
   headline: 'Real stays',
   sectionLead: null as string | null,
-  secondaryRatingLine: '12 verified reviews',
-  averageRating: '5.0',
-  sourceLabel: 'Trustpilot',
-  carouselEndLabel: 'All 12 reviews →',
-  carouselEndHref: '/experiences/soqtapata-pristine-immersion#reviews',
   emptyMessage: 'No guest reviews for this program yet. Be the first to share your experience.',
 } as const

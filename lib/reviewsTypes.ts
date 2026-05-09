@@ -1,5 +1,12 @@
 import type { ReviewDoc } from '@/lib/queries'
 
+/** Display label: referenced experience name first, then legacy manual fields. */
+export function getReviewExperienceLabel(r: ReviewDoc): string {
+  const fromRef = r.experience?.name?.trim()
+  if (fromRef) return fromRef
+  return r.experienceProgramme?.trim() || r.experienceName?.trim() || ''
+}
+
 /**
  * Normalized testimonial for UI (map from `ReviewDoc` or build manually).
  * `experienceSlug` is optional and may be set when associating a review to an experience route.
@@ -29,7 +36,7 @@ export function reviewDocToTestimonial(
     quote: (r.quote || '').trim(),
     name,
     location,
-    experienceName: r.experienceName?.trim() ?? null,
+    experienceName: getReviewExperienceLabel(r) || null,
     experienceSlug,
     rating: r.rating ?? 5,
     initials: initial,

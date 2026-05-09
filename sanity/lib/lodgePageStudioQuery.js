@@ -72,7 +72,12 @@ const lodgeProjection = /* groq */ `{
     quote,
     authorName,
     authorCity,
-    rating
+    authorCountry,
+    "experience": experience->{ name, slug },
+    experienceName,
+    "experienceProgramme": experienceProgramme,
+    rating,
+    isFeatured
   },
   faqs[]{ _key, question, answer }
 }`

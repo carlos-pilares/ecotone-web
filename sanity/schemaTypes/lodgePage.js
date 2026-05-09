@@ -307,20 +307,28 @@ export const lodgePage = defineType({
       'Reseñas referenciadas en el Lodge; elige orden en esta landing abajo.',
     ),
     defineField({
+      name: 'reviewsSection',
+      title: '4. Reviews section',
+      type: 'pageReviewsSection',
+      group: 'reviews',
+      description:
+        'Eyebrow, title, optional body, rotating quotes (max 3), cards (max 4). Global rating: Settings → Reviews — global summary. Section headers can still use `sections.reviews` below.',
+    }),
+    defineField({
       name: 'reviewsSelection',
-      title: '4. Selección y orden (reseñas)',
+      title: 'Legacy — review selection',
       type: 'array',
       group: 'reviews',
+      hidden: true,
       of: [{type: 'reference', to: [{type: 'review'}]}],
       validation: (Rule) => Rule.max(48),
     }),
     defineField({
       name: 'reviewsPresentation',
-      title: '5. Presentación del bloque reseñas',
+      title: 'Legacy — presentation',
       type: 'object',
       group: 'reviews',
-      description:
-        'Copy visible del carrusel (Trustpilot, rating, líneas, enlace “ver todas”). La cabecera eyebrow/título/cuerpo sigue en `sections.reviews` si la usas desde Studio.',
+      hidden: true,
       fields: [
         defineField({
           name: 'sourceLabel',
@@ -332,7 +340,6 @@ export const lodgePage = defineType({
           name: 'averageRating',
           title: 'Average rating (display)',
           type: 'string',
-          description: 'Texto mostrado junto a las estrellas (p. ej. 5.0).',
           validation: (Rule) => Rule.max(20),
         }),
         defineField({

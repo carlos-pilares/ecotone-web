@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Metadata } from 'next'
+import './experiences/experience-surface.css'
 import { EcotoneV2Client } from '@/components/EcotoneV2Client'
 import { ExperiencesExplorer } from '@/components/ExperiencesExplorer'
 import { Hero } from '@/components/Hero'
@@ -9,7 +10,8 @@ import { IsotipoDefs } from '@/components/IsotipoDefs'
 import { ReviewsSection } from '@/components/ReviewsSection'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
-import { buildFeaturedQuoteItems } from '@/lib/featuredQuotes'
+import { buildRotatingQuoteItemsFromReviews } from '@/lib/reviewQuoteItems'
+import { normalizeReviewsRatingSummary } from '@/lib/reviewsRatingSummary'
 import { parseEcotoneHomeHtml } from '@/lib/parseEcotoneHomeHtml'
 import { getHomePage, type ResolvedHomePage } from '@/lib/getHomePage'
 import { defaultHomePageDoc } from '@/lib/homePageDefaults'
@@ -80,10 +82,17 @@ export default async function Home() {
     homePage = await getHomePage()
   }
 
+  const rsHome = homePage.reviewsSection
+  const cardsFromSection = rsHome?.reviewCards?.filter((r) => r && r._id && r.quote) ?? []
   const reviewsForHome =
-    homePage.homeSelectedReviews && homePage.homeSelectedReviews.length > 0
-      ? homePage.homeSelectedReviews
-      : reviews
+    cardsFromSection.length > 0
+      ? cardsFromSection
+      : homePage.homeSelectedReviews && homePage.homeSelectedReviews.length > 0
+        ? homePage.homeSelectedReviews
+        : reviews
+  const rotatingForHome = buildRotatingQuoteItemsFromReviews(rsHome?.rotatingReviews ?? [])
+  const featuredQuoteItems = rotatingForHome
+  const reviewsRatingSummary = normalizeReviewsRatingSummary(homePage.reviewsSettings ?? null)
   const techProductsForHome =
     homePage.homeSelectedTechnologyProducts && homePage.homeSelectedTechnologyProducts.length > 0
       ? homePage.homeSelectedTechnologyProducts
@@ -93,8 +102,6 @@ export default async function Home() {
     homePage.homeSelectedBlogPosts && homePage.homeSelectedBlogPosts.length > 0
       ? homePage.homeSelectedBlogPosts
       : blogPosts
-
-  const featuredQuoteItems = buildFeaturedQuoteItems(reviewsForHome)
 
   /** Per-request read so dev / deploy never serve a stale concat; order: ecotone → nav rules → tokens last (beats ecotone :root in this sheet). */
   const shellNavLogoCss = readFileSync(join(process.cwd(), 'app/shell-nav-logo.css'), 'utf-8')
@@ -121,9 +128,23 @@ export default async function Home() {
             <>
               <ExperiencesExplorer experiences={experiences} explorer={homePage} />
               <ReviewsSection
-                homeData={homePage}
-                reviews={reviewsForHome}
-                featuredQuoteItems={featuredQuoteItems}
+                sectionClassName="sec bg-cream fade"
+                contentInnerClassName="sec-inner"
+                eyebrow={
+                  rsHome?.eyebrow?.trim() ||
+                  homePage.reviewsEyebrow?.trim() ||
+                  'What guests say'
+                }
+                title={
+                  rsHome?.title?.trim() ||
+                  homePage.reviewsHeadline?.trim() ||
+                  'Real experiences'
+                }
+                body={rsHome?.body?.trim() || homePage.reviewsBody?.trim() || null}
+                ratingSummary={reviewsRatingSummary}
+                rotatingQuoteItems={featuredQuoteItems}
+                reviewCards={reviewsForHome}
+                emptyMessage={homePage.reviewsEmptyMessage?.trim() || null}
               />
             </>
           }

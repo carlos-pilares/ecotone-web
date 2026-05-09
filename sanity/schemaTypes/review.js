@@ -36,24 +36,19 @@ export const review = defineType({
       type: 'string',
     }),
     defineField({
-      name: 'experienceName',
-      title: 'Experience / program name',
-      description: 'The programme they booked (e.g. Soqtapata 3D/2N)',
-      type: 'string',
-    }),
-    defineField({
       name: 'rating',
       title: 'Rating',
       type: 'number',
       initialValue: 5,
-      validation: (Rule) => Rule.min(1).max(5).integer(),
+      validation: (Rule) => Rule.required().min(1).max(5).integer(),
     }),
     defineField({
       name: 'isFeatured',
-      title: 'Featured in rotating quote',
+      title: 'Legacy — featured flag',
       type: 'boolean',
-      description: 'If on, this quote can appear in the large hero-style quote on the home page',
+      hidden: true,
       initialValue: false,
+      description: 'Rotating quotes are chosen per page in the Reviews section; this field is unused.',
     }),
   ],
   preview: {

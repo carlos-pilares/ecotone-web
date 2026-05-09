@@ -1,6 +1,7 @@
 import type { SanityImageSource } from '@sanity/image-url'
 
 import type { ReserveCtaSettingsGroq } from '@/lib/reserveCtaGroq'
+import type { ReviewsRatingSummary } from '@/lib/reviewsRatingSummary'
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
 import type {
   LodgeBookCtaData,
@@ -265,6 +266,21 @@ export type LodgeStructuredPageRow = {
   experiencesSelection?: LodgeCmsExperienceCardRow[] | null
   fallbackToLodgeRelations?: boolean | null
   experiencesTailorCta?: LodgePageExperiencesTailorCtaRow
+  reviewsSection?: {
+    eyebrow?: string | null
+    title?: string | null
+    body?: string | null
+    rotatingReviews?: ReviewDoc[] | null
+    reviewCards?: ReviewDoc[] | null
+  } | null
+  reviewsSettings?: {
+    ratingValue?: number | null
+    reviewCount?: number | null
+    reviewProviderName?: string | null
+    reviewProviderUrl?: string | null
+    reviewProviderLogoUrl?: string | null
+    reviewProviderLogoAlt?: string | null
+  } | null
   reviewsSelection?: ReviewDoc[] | null
   reviewsPresentation?: LodgePageReviewsPresentationRow
   reserveCtaSettings?: ReserveCtaSettingsGroq
@@ -296,18 +312,12 @@ export type LodgeStaticBundle = {
   featuredQuotes: readonly { text: string; attr: string }[]
 }
 
-/** Copy del bloque reseñas — `lodgePage.sections.reviews` + defaults (`data/lodgeSoqtapataResolverDefaults.ts`). */
+/** Copy del bloque reseñas — `reviewsSection` + `sections.reviews` + defaults. */
 export type LodgeReviewsSectionResolved = {
   eyebrow: string
   headline: string
   /** Intro bajo el H2 (equivalente a `body` en Studio / secciones). */
   sectionLead: string | null
-  /** Línea bajo las estrellas (p. ej. “12 verified reviews”). */
-  secondaryRatingLine: string
-  averageRating: string
-  sourceLabel: string
-  carouselEndLabel: string
-  carouselEndHref: string
   emptyMessage: string
 }
 
@@ -331,8 +341,9 @@ export type LodgePageResolvedPayload = {
   research: LodgeResearchData
   experiences: LodgeExperiencesData
   reviews: ReviewDoc[]
-  /** Copy completo del bloque reseñas + enlace “ver todas” (resolver; overrides en `sections.reviews`). */
+  /** Copy del bloque reseñas (resolver). */
   reviewsSection: LodgeReviewsSectionResolved
+  reviewsRatingSummary: ReviewsRatingSummary
   faq: LodgeFaqData
   book: LodgeBookCtaData
   featuredQuotes: readonly { text: string; attr: string }[]

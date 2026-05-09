@@ -64,6 +64,8 @@ export const defaultHomePageDoc: ResolvedHomePage = {
   explorerEmptyGridLinkHref: t.explorerEmptyGridLinkHref,
   reviewsEyebrow: t.reviewsEyebrow,
   reviewsHeadline: t.reviewsHeadline,
+  reviewsSettings: null,
+  reviewsSection: null,
   reviewsScore: t.reviewsScore,
   reviewsSourceLabel: t.reviewsSourceLabel,
   reviewsEmptyMessage: t.reviewsEmptyMessage,
@@ -321,6 +323,13 @@ export function mergeHomePageWithDefaults(cms: HomePageDoc | null): ResolvedHome
 
   if (cms.reserveCtaSettings != null && typeof cms.reserveCtaSettings === 'object') {
     out.reserveCtaSettings = cms.reserveCtaSettings
+  }
+
+  if (cms.reviewsSettings != null && typeof cms.reviewsSettings === 'object') {
+    ;(out as ResolvedHomePage).reviewsSettings = cms.reviewsSettings
+  }
+  if (cms.reviewsSection != null && typeof cms.reviewsSection === 'object') {
+    ;(out as ResolvedHomePage).reviewsSection = cms.reviewsSection
   }
 
   return out

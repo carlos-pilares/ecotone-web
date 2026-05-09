@@ -1,0 +1,54 @@
+/**
+ * Star rows + rating column rhythm for ReviewsSection.
+ * Loaded via CSS Module so rules apply on Home (injected HTML CSS has no .stars-row-fract).
+ */
+
+.starRow {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  margin: 0 0 2px;
+}
+
+.starRowCard {
+  justify-content: flex-start;
+  margin-bottom: 8px;
+}
+
+.starSlot {
+  position: relative;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.starSlotTrack,
+.starSlotFill {
+  display: block;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.starSlotFill {
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: auto;
+}
+
+/* Beat `.reviews-rating-col` from `experience-surface.css` / home inject (same specificity, one class). */
+:global(.reviews-rating-col).ratingColTight {
+  gap: 2px;
+}
+
+.countLine {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--n400);
+  margin: 0 0 1px;
+  text-align: center;
+  line-height: 1.2;
+}

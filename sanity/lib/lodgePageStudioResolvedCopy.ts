@@ -17,7 +17,7 @@ import {
 const REVIEWS_STATIC = {
   eyebrow: 'What guests say',
   title: 'Real stays',
-  body: '12 verified reviews',
+  body: '',
 } as const
 
 const FALLBACK = {

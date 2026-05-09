@@ -5,6 +5,8 @@
 import type { ReserveCtaCardProps } from '@/components/shared/ReserveCtaSection'
 import { homePageTextFields } from '@/data/cmsApproved/homePageFields'
 import type { ReviewDoc } from '@/lib/queries'
+import { buildRotatingQuoteItemsFromReviews } from '@/lib/reviewQuoteItems'
+import { normalizeReviewsRatingSummary, type ReviewsRatingSummary } from '@/lib/reviewsRatingSummary'
 import { getLowestActiveExperiencePrice, buildReserveRowsForHome } from '@/lib/reserveCtaPricing'
 import { resolveReserveCtaCard } from '@/lib/resolveReserveCtaCard'
 import {
@@ -399,12 +401,10 @@ export type RoutesPageResolved = {
   expCards: RoutesExpCardStatic[]
   featuredQuotes: { text: string; attr: string }[]
   reviews: ReviewDoc[]
+  reviewsRatingSummary: ReviewsRatingSummary
   reviewsEyebrow: string
   reviewsHeadline: string
   reviewsSectionLead: string
-  reviewsAverageRating: string
-  reviewsSourceLabel: string
-  reviewsSecondaryRatingLine: string
   finalCta: typeof fallbackFinalCta & {
     reserveCard: ReserveCtaCardProps
   }
@@ -550,19 +550,23 @@ export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPa
       return { text, attr }
     })
     .filter(Boolean) as { text: string; attr: string }[]
-  const featuredQuotes = fqFromCms.length ? fqFromCms : fallbackFeaturedQuotes.map((x) => ({ text: x.text, attr: x.attr }))
+
+  const rsBlock = cms?.reviewsSection
+  const rotatingFromPage = buildRotatingQuoteItemsFromReviews(rsBlock?.rotatingReviews ?? [])
+  const featuredQuotes = rotatingFromPage.length
+    ? rotatingFromPage
+    : fqFromCms.length
+      ? fqFromCms
+      : fallbackFeaturedQuotes.map((x) => ({ text: x.text, attr: x.attr }))
 
   const revFromCms = (cms?.reviewsResolved ?? []).filter((r) => r._id && r.quote)
   const reviews = revFromCms.length ? revFromCms : fallbackReviewDocs
 
-  const reviewsEyebrow = trimOr(routesReviewsUiDefaults.eyebrow, cms?.reviewsEyebrow)
-  const reviewsHeadline = trimOr(routesReviewsUiDefaults.headline, cms?.reviewsHeadline)
-  const reviewsSectionLead =
-    cms?.reviewsSectionLead?.trim() || routesReviewsUiDefaults.sectionLead
-  const reviewsAverageRating = trimOr(routesReviewsUiDefaults.averageRating, cms?.reviewsAverageRating)
-  const reviewsSourceLabel = trimOr(routesReviewsUiDefaults.sourceLabel, cms?.reviewsSourceLabel)
-  const reviewsSecondaryRatingLine =
-    cms?.reviewsSecondaryRatingLine?.trim() || routesReviewsUiDefaults.secondaryRatingLine
+  const reviewsRatingSummary = normalizeReviewsRatingSummary(cms?.reviewsSettings ?? null)
+
+  const reviewsEyebrow = trimOr(routesReviewsUiDefaults.eyebrow, rsBlock?.eyebrow?.trim() || cms?.reviewsEyebrow)
+  const reviewsHeadline = trimOr(routesReviewsUiDefaults.headline, rsBlock?.title?.trim() || cms?.reviewsHeadline)
+  const reviewsSectionLead = rsBlock?.body?.trim() || cms?.reviewsSectionLead?.trim() || ''
 
   const trustFromCms = (cms?.finalCtaTrustItems ?? [])
     .map((t) => {
@@ -651,12 +655,10 @@ export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPa
     expCards,
     featuredQuotes,
     reviews,
+    reviewsRatingSummary,
     reviewsEyebrow,
     reviewsHeadline,
     reviewsSectionLead,
-    reviewsAverageRating,
-    reviewsSourceLabel,
-    reviewsSecondaryRatingLine,
     finalCta,
   }
 }

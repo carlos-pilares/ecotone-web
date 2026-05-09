@@ -13,6 +13,7 @@ import type {
   TechnologyProductDoc,
 } from '@/lib/queries'
 import { cdnImageUrl } from '@/lib/sanity'
+import { DEFAULT_REVIEWS_RATING_SUMMARY } from '@/lib/reviewsRatingSummary'
 
 const U_FALL =
   'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80'
@@ -944,20 +945,14 @@ export function ExperiencePage({ experience, reviewsFiltered, featuredQuoteItems
       ) : null}
 
       <ReviewsSection
-        homeData={null}
-        reviews={reviewsFiltered}
-        featuredQuoteItems={featuredQuoteItems}
+        sectionClassName="sec bg-cream fade"
+        contentInnerClassName="sec-inner"
         eyebrow="What guests say"
-        headline="Real experiences"
-        averageRating="5.0"
-        secondaryRatingLine={
-          reviewsFiltered.length > 0
-            ? `${reviewsFiltered.length} verified ${reviewsFiltered.length === 1 ? 'review' : 'reviews'}`
-            : null
-        }
-        useHomepageSampleReviewsIfEmpty={false}
-        sectionClassName="content-section bg-cream fade"
-        contentInnerClassName="content-inner"
+        title="Real experiences"
+        body={null}
+        ratingSummary={DEFAULT_REVIEWS_RATING_SUMMARY}
+        rotatingQuoteItems={featuredQuoteItems}
+        reviewCards={reviewsFiltered}
         emptyMessage={`No guest reviews for ${e.name} yet. Be the first to share your experience.`}
       />
 

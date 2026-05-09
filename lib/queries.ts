@@ -56,7 +56,14 @@ export type ReviewDoc = {
   authorName?: string | null
   authorCity?: string | null
   authorCountry?: string | null
+  experience?: {
+    name?: string | null
+    slug?: { current?: string | null } | null
+  } | null
+  /** Legacy manual programme label (schema: `experienceName`). */
   experienceName?: string | null
+  /** Rare legacy key in older documents only; not in current schema. */
+  experienceProgramme?: string | null
   rating?: number | null
   isFeatured?: boolean | null
 }
@@ -119,6 +126,23 @@ export type HomePageDoc = {
   reviewsScore?: string | null
   reviewsSourceLabel?: string | null
   reviewsEmptyMessage?: string | null
+  /** Site-wide rating summary (singleton `reviewsSettings`). */
+  reviewsSettings?: {
+    ratingValue?: number | null
+    reviewCount?: number | null
+    reviewProviderName?: string | null
+    reviewProviderUrl?: string | null
+    reviewProviderLogoUrl?: string | null
+    reviewProviderLogoAlt?: string | null
+  } | null
+  /** Curated reviews block (new architecture). */
+  reviewsSection?: {
+    eyebrow?: string | null
+    title?: string | null
+    body?: string | null
+    rotatingReviews?: ReviewDoc[] | null
+    reviewCards?: ReviewDoc[] | null
+  } | null
   /** Curated reviews for Home (order preserved). Empty / omit → use all `review` docs. */
   homeSelectedReviews?: ReviewDoc[] | null
   techEyebrow?: string | null
@@ -224,6 +248,47 @@ export const homePageQuery = groq`
     explorerEmptyGridMessage,
     explorerEmptyGridLinkLabel,
     explorerEmptyGridLinkHref,
+    "reviewsSettings": *[_type == "reviewsSettings"][0] {
+      ratingValue,
+      reviewCount,
+      reviewProviderName,
+      reviewProviderUrl,
+      "reviewProviderLogoUrl": reviewProviderLogo.asset->url,
+      reviewProviderLogoAlt
+    },
+    reviewsSection {
+      eyebrow,
+      title,
+      body,
+      "rotatingReviews": rotatingReviews[]-> {
+        _id,
+        quote,
+        authorName,
+        authorCity,
+        authorCountry,
+        "experience": experience->{
+          name,
+          slug
+        },
+        experienceName,
+        rating,
+        isFeatured
+      },
+      "reviewCards": reviewCards[]-> {
+        _id,
+        quote,
+        authorName,
+        authorCity,
+        authorCountry,
+        "experience": experience->{
+          name,
+          slug
+        },
+        experienceName,
+        rating,
+        isFeatured
+      }
+    },
     reviewsEyebrow, reviewsHeadline, reviewsBody, reviewsScore,
     reviewsSourceLabel,
     reviewsEmptyMessage,
@@ -233,7 +298,12 @@ export const homePageQuery = groq`
       authorName,
       authorCity,
       authorCountry,
+      "experience": experience->{
+        name,
+        slug
+      },
       experienceName,
+      "experienceProgramme": experienceProgramme,
       rating,
       isFeatured
     },
@@ -302,7 +372,12 @@ export const homePageQuery = groq`
 export const reviewsQuery = groq`
   *[_type == "review"] | order(_createdAt asc) {
     _id, quote, authorName, authorCity, authorCountry,
-    experienceName, rating, isFeatured
+    "experience": experience->{
+      name,
+      slug
+    },
+    experienceName,
+    rating, isFeatured
   }
 `
 
@@ -370,9 +445,78 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       }
     },
     reviewsLayout,
-    "reviewDocs": reviewRefs[]-> {
-      _id, quote, authorName, authorCity, authorCountry, experienceName, rating, isFeatured
+    reviewsSection {
+      eyebrow,
+      title,
+      body,
+      "rotatingReviews": rotatingReviews[]-> {
+        _id,
+        quote,
+        authorName,
+        authorCity,
+        authorCountry,
+        "experience": experience->{
+          name,
+          slug
+        },
+        experienceName,
+        rating,
+        isFeatured
+      },
+      "reviewCards": reviewCards[]-> {
+        _id,
+        quote,
+        authorName,
+        authorCity,
+        authorCountry,
+        "experience": experience->{
+          name,
+          slug
+        },
+        experienceName,
+        rating,
+        isFeatured
+      }
     },
+    "reviewsSettings": *[_type == "reviewsSettings"][0] {
+      ratingValue,
+      reviewCount,
+      reviewProviderName,
+      reviewProviderUrl,
+      "reviewProviderLogoUrl": reviewProviderLogo.asset->url,
+      reviewProviderLogoAlt
+    },
+    "reviewDocs": select(
+      count(coalesce(reviewsSection.reviewCards, [])) > 0 => reviewsSection.reviewCards[]-> {
+        _id,
+        quote,
+        authorName,
+        authorCity,
+        authorCountry,
+        "experience": experience->{
+          name,
+          slug
+        },
+        experienceName,
+        rating,
+        isFeatured
+      },
+      count(coalesce(reviewRefs, [])) > 0 => reviewRefs[]-> {
+        _id,
+        quote,
+        authorName,
+        authorCity,
+        authorCountry,
+        "experience": experience->{
+          name,
+          slug
+        },
+        experienceName,
+        rating,
+        isFeatured
+      },
+      []
+    ),
     "techProductDocs": techProductRefs[]-> {
       _id, stableId, name, number, description, image, badgeText, badgeTextWhenExcluded, slug
     },
@@ -561,13 +705,59 @@ export const lodgeStructuredPageBySlugQuery = groq`
       imageAlt,
       ctaSmartLink { ${GROQ_SMART_LINK_FIELDS} }
     },
+    "reviewsSettings": *[_type == "reviewsSettings"][0] {
+      ratingValue,
+      reviewCount,
+      reviewProviderName,
+      reviewProviderUrl,
+      "reviewProviderLogoUrl": reviewProviderLogo.asset->url,
+      reviewProviderLogoAlt
+    },
+    reviewsSection {
+      eyebrow,
+      title,
+      body,
+      "rotatingReviews": rotatingReviews[]-> {
+        _id,
+        quote,
+        authorName,
+        authorCity,
+        authorCountry,
+        "experience": experience->{
+          name,
+          slug
+        },
+        experienceName,
+        rating,
+        isFeatured
+      },
+      "reviewCards": reviewCards[]-> {
+        _id,
+        quote,
+        authorName,
+        authorCity,
+        authorCountry,
+        "experience": experience->{
+          name,
+          slug
+        },
+        experienceName,
+        rating,
+        isFeatured
+      }
+    },
     reviewsSelection[]-> {
       _id,
       quote,
       authorName,
       authorCity,
       authorCountry,
+      "experience": experience->{
+        name,
+        slug
+      },
       experienceName,
+      "experienceProgramme": experienceProgramme,
       rating,
       isFeatured
     },
@@ -667,7 +857,12 @@ export const lodgeStructuredPageBySlugQuery = groq`
         authorName,
         authorCity,
         authorCountry,
+        "experience": experience->{
+          name,
+          slug
+        },
         experienceName,
+        "experienceProgramme": experienceProgramme,
         rating,
         isFeatured
       },
@@ -982,7 +1177,13 @@ export const experienceBySlugQuery = groq`
     seoTitle, seoDescription,
     "reviews": *[_type == "review"] | order(_createdAt asc) {
       _id, quote, authorName, authorCity, authorCountry,
-      experienceName, rating, isFeatured
+      "experience": experience->{
+        name,
+        slug
+      },
+      experienceName,
+      "experienceProgramme": experienceProgramme,
+      rating, isFeatured
     }
   }
 `

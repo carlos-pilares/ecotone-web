@@ -295,20 +295,28 @@ export const experiencePage = defineType({
       'Contenido base de reseñas desde la librería.',
     ),
     defineField({
+      name: 'reviewsSection',
+      title: '4. Reviews section (this landing)',
+      type: 'pageReviewsSection',
+      group: 'reviews',
+      description:
+        'Eyebrow, title, optional body, rotating quotes (max 3), cards (max 4). Global rating: Settings → Reviews — global summary.',
+    }),
+    defineField({
       name: 'reviewRefs',
-      title: '4. Selección y orden',
+      title: 'Legacy — review refs',
       type: 'array',
       of: [{type: 'reference', to: [{type: 'review'}]}],
       group: 'reviews',
+      hidden: true,
       validation: (Rule) => Rule.max(24),
-      description: 'Selecciona y ordena las reseñas de esta landing.',
     }),
     defineField({
       name: 'reviewsLayout',
-      title: 'Bloque de reseñas: eyebrow, título, rating (esta landing)',
+      title: 'Legacy — layout / rating copy',
       type: 'reviewsLayoutBlock',
       group: 'reviews',
-      description: 'Rótulos del **bloque** en esta URL; el texto de la reseña no se edita aquí.',
+      hidden: true,
     }),
     previewField(
       'stPrevTerms',

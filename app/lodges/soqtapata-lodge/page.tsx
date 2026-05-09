@@ -54,26 +54,15 @@ export default async function SoqtapataLodgePage() {
         <LodgeResearch data={resolved.research} />
         <LodgeExperiences data={resolved.experiences} />
         <ReviewsSection
-          reviews={resolved.reviews}
-          featuredQuoteItems={lodgeFeaturedQuotes}
-          useHomepageSampleReviewsIfEmpty={false}
-          sectionClassName="content-section bg-cream"
-          contentInnerClassName="content-inner"
+          sectionClassName="sec bg-cream fade"
+          contentInnerClassName="sec-inner"
           eyebrow={resolved.reviewsSection.eyebrow}
-          headline={resolved.reviewsSection.headline}
-          averageRating={resolved.reviewsSection.averageRating}
-          sourceLabel={resolved.reviewsSection.sourceLabel}
-          secondaryRatingLine={resolved.reviewsSection.secondaryRatingLine}
-          sectionLead={resolved.reviewsSection.sectionLead}
+          title={resolved.reviewsSection.headline}
+          body={resolved.reviewsSection.sectionLead}
+          ratingSummary={resolved.reviewsRatingSummary}
+          rotatingQuoteItems={[...lodgeFeaturedQuotes]}
+          reviewCards={resolved.reviews}
           emptyMessage={resolved.reviewsSection.emptyMessage}
-          reviewCarouselEnd={
-            <a
-              className="rev-card lodge-rev-card-all"
-              href={resolved.reviewsSection.carouselEndHref}
-            >
-              <span>{resolved.reviewsSection.carouselEndLabel}</span>
-            </a>
-          }
         />
         <LodgeFaq data={resolved.faq as SoqtapataFaq} />
         <LodgeBookCta data={resolved.book} />

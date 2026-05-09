@@ -37,6 +37,14 @@ export type SoqtapataStructuredPageRow = {
   sectionModules?: SoqtapataPageModuleRow[] | null
   pageHero?: CmsPageHero | null
   reviewsLayout?: CmsReviewsLayout | null
+  reviewsSection?: {
+    eyebrow?: string | null
+    title?: string | null
+    body?: string | null
+    rotatingReviews?: CmsReviewDoc[] | null
+    reviewCards?: CmsReviewDoc[] | null
+  } | null
+  reviewsSettings?: unknown
   reviewRefs?: unknown[] | null
   reviewDocs?: CmsReviewDoc[] | null
   techProductRefs?: unknown[] | null
@@ -136,7 +144,12 @@ type CmsReviewDoc = {
   authorName?: string | null
   authorCity?: string | null
   authorCountry?: string | null
+  experience?: {
+    name?: string | null
+    slug?: { current?: string | null } | null
+  } | null
   experienceName?: string | null
+  experienceProgramme?: string | null
   rating?: number | null
   isFeatured?: boolean | null
 }
@@ -398,7 +411,9 @@ function reviewToDoc(r: CmsReviewDoc | null | undefined): ReviewDoc | null {
     authorName: r.authorName,
     authorCity: r.authorCity,
     authorCountry: r.authorCountry,
+    experience: r.experience ?? null,
     experienceName: r.experienceName,
+    experienceProgramme: r.experienceProgramme,
     rating: r.rating,
     isFeatured: r.isFeatured,
   }

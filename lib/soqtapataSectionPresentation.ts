@@ -68,8 +68,10 @@ export function landingOverridesFromSectionModules(
 export function buildExperiencePresentationSlice(
   ex: SoqtapataExperienceMerged,
   reviewsLayout: Pick<ExperienceReviewsLayoutMutable, 'eyebrow' | 'headline'>,
+  pageReviews?: { eyebrow?: string | null; title?: string | null; body?: string | null } | null,
 ): ExperiencePresentationSlice {
   const td = SECTION_DEFAULTS.tech
+  const pr = pageReviews && typeof pageReviews === 'object' ? pageReviews : null
   return {
     overview: {
       eyebrow: ex.overview.eyebrow,
@@ -117,9 +119,9 @@ export function buildExperiencePresentationSlice(
       text: ex.beforeYouGo.lead,
     },
     reviews: {
-      eyebrow: reviewsLayout.eyebrow ?? undefined,
-      title: reviewsLayout.headline ?? undefined,
-      text: '',
+      eyebrow: pr?.eyebrow?.trim() || reviewsLayout.eyebrow || undefined,
+      title: pr?.title?.trim() || reviewsLayout.headline || undefined,
+      text: pr?.body?.trim() || '',
     },
     terms: {
       eyebrow: ex.terms.introEyebrow,
@@ -163,13 +165,14 @@ export function applySoqtapataSectionPresentation(params: {
   experience: SoqtapataExperienceMerged
   reviewsLayout: ExperienceReviewsLayoutMutable
   sectionModules: SoqtapataPageModuleRow[] | null | undefined
+  pageReviews?: { eyebrow?: string | null; title?: string | null; body?: string | null } | null
 }): {
   sectionVisibility: Record<SectionModuleKey, boolean>
   reviewsSectionLead: string | undefined
 } {
   const { experience: ex, reviewsLayout: rl } = params
   const landing = landingOverridesFromSectionModules(params.sectionModules)
-  const expSlice = buildExperiencePresentationSlice(ex, rl)
+  const expSlice = buildExperiencePresentationSlice(ex, rl, params.pageReviews ?? null)
 
   const resolvedBySection = {} as Record<SectionModuleKey, ResolvedSectionPresentation>
   for (const key of SOQTAPATA_SECTION_KEYS) {

@@ -61,6 +61,21 @@ export type RoutesPageSanityDoc = {
   experiencesFilters?: Array<{ filterId?: string | null; label?: string | null }> | null
   experienceCards?: RoutesPageSanityExpCard[] | null
   reviewsFeaturedQuotes?: Array<{ quoteHtml?: string | null; attribution?: string | null }> | null
+  reviewsSection?: {
+    eyebrow?: string | null
+    title?: string | null
+    body?: string | null
+    rotatingReviews?: ReviewDoc[] | null
+    reviewCards?: ReviewDoc[] | null
+  } | null
+  reviewsSettings?: {
+    ratingValue?: number | null
+    reviewCount?: number | null
+    reviewProviderName?: string | null
+    reviewProviderUrl?: string | null
+    reviewProviderLogoUrl?: string | null
+    reviewProviderLogoAlt?: string | null
+  } | null
   reviewsResolved?: ReviewDoc[] | null
   reviewsEyebrow?: string | null
   reviewsHeadline?: string | null
@@ -296,15 +311,78 @@ export const routesPageQuery = groq`
       priceText
     },
     reviewsFeaturedQuotes[]{ quoteHtml, attribution },
-    "reviewsResolved": reviewsRefs[]->{
-      _id,
-      quote,
-      authorName,
-      authorCity,
-      authorCountry,
-      experienceName,
-      rating
+    "reviewsSettings": *[_type == "reviewsSettings"][0] {
+      ratingValue,
+      reviewCount,
+      reviewProviderName,
+      reviewProviderUrl,
+      "reviewProviderLogoUrl": reviewProviderLogo.asset->url,
+      reviewProviderLogoAlt
     },
+    reviewsSection {
+      eyebrow,
+      title,
+      body,
+      "rotatingReviews": rotatingReviews[]-> {
+        _id,
+        quote,
+        authorName,
+        authorCity,
+        authorCountry,
+        "experience": experience->{
+          name,
+          slug
+        },
+        experienceName,
+        rating,
+        isFeatured
+      },
+      "reviewCards": reviewCards[]-> {
+        _id,
+        quote,
+        authorName,
+        authorCity,
+        authorCountry,
+        "experience": experience->{
+          name,
+          slug
+        },
+        experienceName,
+        rating,
+        isFeatured
+      }
+    },
+    "reviewsResolved": select(
+      count(coalesce(reviewsSection.reviewCards, [])) > 0 => reviewsSection.reviewCards[]-> {
+        _id,
+        quote,
+        authorName,
+        authorCity,
+        authorCountry,
+        "experience": experience->{
+          name,
+          slug
+        },
+        experienceName,
+        rating,
+        isFeatured
+      },
+      count(coalesce(reviewsRefs, [])) > 0 => reviewsRefs[]-> {
+        _id,
+        quote,
+        authorName,
+        authorCity,
+        authorCountry,
+        "experience": experience->{
+          name,
+          slug
+        },
+        experienceName,
+        rating,
+        isFeatured
+      },
+      []
+    ),
     reviewsEyebrow,
     reviewsHeadline,
     reviewsSectionLead,
