@@ -1,8 +1,24 @@
+'use client'
+
+import { useCallback } from 'react'
+
+import { useBookingModal } from '@/components/booking/BookingModalContext'
+import type { ExperienceBookingSummary } from '@/components/booking/types'
+import { ReserveCtaSection, type ReserveCtaCta } from '@/components/shared/ReserveCtaSection'
 import type { SoqtapataBook } from '@/data/soqtapataExperienceLocal'
 
-import { ReserveCtaSection, type ReserveCtaCta } from '@/components/shared/ReserveCtaSection'
+export function ExperienceBookSoqtapata({
+  data,
+  bookingSummary,
+}: {
+  data: SoqtapataBook
+  bookingSummary: ExperienceBookingSummary
+}) {
+  const { openExperienceBooking } = useBookingModal()
+  const onPrimary = useCallback(() => {
+    openExperienceBooking(bookingSummary)
+  }, [openExperienceBooking, bookingSummary])
 
-export function ExperienceBookSoqtapata({ data }: { data: SoqtapataBook }) {
   const ctas: ReserveCtaCta[] = []
   const wt = data.wetravelUrl.trim()
   if (wt) {
@@ -39,6 +55,8 @@ export function ExperienceBookSoqtapata({ data }: { data: SoqtapataBook }) {
       eyebrow={data.eyebrow}
       title={data.h2}
       body={data.lead?.trim() ? data.lead : undefined}
+      experienceBookPrimaryModal
+      onExperienceBookPrimaryClick={onPrimary}
       card={{
         priceLine: data.price,
         priceSuffix: data.priceSmall,

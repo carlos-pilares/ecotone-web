@@ -1,4 +1,15 @@
 import {blogPost} from './blogPost'
+import {journalPage} from './journalPage'
+import {
+  journalBlockRichText,
+  journalBlockImage,
+  journalBlockGallery,
+  journalBlockVideoEmbed,
+  journalBlockQuote,
+  journalBlockDivider,
+  journalBlockCta,
+  journalBlockRelatedExperience,
+} from './objects/journalContentBlocks'
 import {cta} from './objects/cta'
 import {imageWithAlt} from './objects/imageWithAlt'
 import {review} from './review'
@@ -70,6 +81,7 @@ import {partner} from './partner'
 import {route} from './route'
 import {siteSettings} from './siteSettings'
 import {reviewsSettings} from './reviewsSettings'
+import {bookingModalSettings} from './bookingModalSettings'
 import {technologyProduct} from './technologyProduct'
 
 const objects = [
@@ -126,10 +138,19 @@ const objects = [
   routesCompareRowLodge,
   routesCompareRowBest,
   routesCompareRowPrice,
+  journalBlockRichText,
+  journalBlockImage,
+  journalBlockGallery,
+  journalBlockVideoEmbed,
+  journalBlockQuote,
+  journalBlockDivider,
+  journalBlockCta,
+  journalBlockRelatedExperience,
 ]
 
 const documents = [
   siteSettings,
+  bookingModalSettings,
   reviewsSettings,
   lodge,
   lodgePage,
@@ -139,6 +160,7 @@ const documents = [
   technologyProduct,
   review,
   blogPost,
+  journalPage,
   partner,
   homePage,
   routesPage,

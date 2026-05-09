@@ -1,11 +1,21 @@
 'use client'
 
+import { useBookingModal } from '@/components/booking/BookingModalContext'
+import type { ExperienceBookingSummary } from '@/components/booking/types'
 import type { SoqtapataPhase1Hero } from '@/data/soqtapataExperienceLocal'
 
 /**
  * Hero (gallery + identity) — paridad con `ecotone-experience_2.html` (exp-hero #top).
  */
-export function ExperienceHeroSoqtapata({ data }: { data: SoqtapataPhase1Hero }) {
+export function ExperienceHeroSoqtapata({
+  data,
+  bookingSummary,
+}: {
+  data: SoqtapataPhase1Hero
+  bookingSummary: ExperienceBookingSummary | null
+}) {
+  const { openExperienceBooking } = useBookingModal()
+  const bookOpensModal = Boolean(bookingSummary) && Boolean(data.bookLabel.trim())
   return (
     <section className="exp-hero" id="top">
       <div className="gallery-grid">
@@ -119,16 +129,29 @@ export function ExperienceHeroSoqtapata({ data }: { data: SoqtapataPhase1Hero })
                 <div className="exp-price">{data.price}</div>
                 <div className="exp-price-sub">{data.priceSub}</div>
               </div>
-              {data.bookUrl.trim() && data.bookLabel.trim() ? (
-                <button
-                  className="btn btn-primary"
-                  type="button"
-                  onClick={() => {
-                    window.location.href = data.bookUrl
-                  }}
-                >
-                  {data.bookLabel}
-                </button>
+              {data.bookLabel.trim() ? (
+                bookOpensModal && bookingSummary ? (
+                  <button
+                    className="btn btn-primary"
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      openExperienceBooking(bookingSummary)
+                    }}
+                  >
+                    {data.bookLabel}
+                  </button>
+                ) : data.bookUrl.trim() ? (
+                  <button
+                    className="btn btn-primary"
+                    type="button"
+                    onClick={() => {
+                      window.location.href = data.bookUrl
+                    }}
+                  >
+                    {data.bookLabel}
+                  </button>
+                ) : null
               ) : null}
             </div>
           </div>

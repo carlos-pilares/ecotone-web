@@ -37,8 +37,9 @@ function blogPostHref(p: BlogPostDoc, fallbackHref: string): string {
   if (raw) {
     if (/^https?:\/\//i.test(raw)) return raw
     const path = raw.replace(/^\//, '')
-    if (path.startsWith('blog/')) return `/${path}`
-    return `/blog/${path}`
+    if (path.startsWith('journal/')) return `/${path}`
+    if (path.startsWith('blog/')) return `/journal/${path.slice(5)}`
+    return `/journal/${path}`
   }
   return fallbackHref
 }

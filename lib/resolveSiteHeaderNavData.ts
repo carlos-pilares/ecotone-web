@@ -578,6 +578,40 @@ export function resolveSiteHeaderNavData(
   }
   expGroupsBuilt.sort((a, b) => a.order - b.order)
 
+  /* Empty CMS lists leave no sidebar tabs; SiteHeader assumes ≥1 group when experiences nav is on. */
+  if (expGroupsBuilt.length === 0) {
+    const shells: typeof expGroupsBuilt = []
+    for (const bucket of Object.keys(buckets) as ExpBucket[]) {
+      const cfg = effectiveExpGroupConfig(settings, bucket)
+      if (!cfg.enabled) continue
+      const meta = BUCKET_META[bucket]
+      shells.push({
+        order: cfg.order,
+        panelId: meta.panelId,
+        sidebarLabel: cfg.label,
+        sidebarMeta: '0 programs',
+        eyebrow: cfg.label,
+        items: [],
+      })
+    }
+    shells.sort((a, b) => a.order - b.order)
+    if (shells.length) {
+      expGroupsBuilt.push(...shells)
+    } else {
+      const bucket: ExpBucket = 'classic'
+      const cfg = effectiveExpGroupConfig(settings, bucket)
+      const meta = BUCKET_META[bucket]
+      expGroupsBuilt.push({
+        order: cfg.order,
+        panelId: meta.panelId,
+        sidebarLabel: cfg.label,
+        sidebarMeta: '0 programs',
+        eyebrow: cfg.label,
+        items: [],
+      })
+    }
+  }
+
   const tailorRow = tailorMenuResolved(settings)
   base.experiences.enabled = settings?.experiencesEnabled !== false
   base.experiences.tailorVisible = tailorRow.enabled
@@ -683,6 +717,42 @@ export function resolveSiteHeaderNavData(
     })
   }
   lodgeRoutesBuilt.sort((a, b) => a.order - b.order)
+
+  if (lodgeRoutesBuilt.length === 0) {
+    const shells: typeof lodgeRoutesBuilt = []
+    for (const rk of Object.keys(byRoute) as LodgeRK[]) {
+      const cfg = effectiveLodgeRouteConfig(settings, rk)
+      if (!cfg.enabled) continue
+      const meta = ROUTE_META[rk]
+      shells.push({
+        order: cfg.order,
+        panelId: meta.panelId,
+        routeKey: rk,
+        sidebarLabel: cfg.label,
+        sidebarMeta: '0 lodges',
+        eyebrow: cfg.label,
+        lodges: [],
+      })
+    }
+    shells.sort((a, b) => a.order - b.order)
+    if (shells.length) {
+      lodgeRoutesBuilt.push(...shells)
+    } else {
+      const rk: LodgeRK = 'camanti'
+      const cfg = effectiveLodgeRouteConfig(settings, rk)
+      const meta = ROUTE_META[rk]
+      lodgeRoutesBuilt.push({
+        order: cfg.order,
+        panelId: meta.panelId,
+        routeKey: rk,
+        sidebarLabel: cfg.label,
+        sidebarMeta: '0 lodges',
+        eyebrow: cfg.label,
+        lodges: [],
+      })
+    }
+  }
+
   base.lodges.routes = lodgeRoutesBuilt.map(({ order: _o, ...rest }) => rest)
 
   const lodgeSeeBlock = effectiveSeeAllBlock(settings?.lodgesSeeAll, settings?.navLodgesSeeAllSmartLink, {

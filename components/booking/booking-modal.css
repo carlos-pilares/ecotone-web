@@ -1,0 +1,804 @@
+/* Scoped booking modals — match ecotone-modal reference (no global selectors). */
+
+.ecotone-book-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(26, 18, 9, 0.62);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: calc(var(--nav-h, 64px) + 20px) var(--g, 20px) 28px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ecotone-book-dialog {
+  width: min(520px, 100%);
+  background: #fcfaf2;
+  border-radius: 28px;
+  border: 1px solid rgba(216, 207, 191, 0.9);
+  box-shadow: 0 28px 90px rgba(26, 18, 9, 0.22);
+  position: relative;
+  color: var(--n900, #1a1209);
+  overflow: hidden;
+}
+
+.ecotone-book-dialog:focus {
+  outline: none;
+}
+
+/* Close: fixed to modal shell top-right (above banner + scrolling body) */
+.ecotone-book-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 30;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(253, 252, 249, 0.95);
+  color: var(--n700, #4a3e30);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(26, 18, 9, 0.08);
+}
+.ecotone-book-close:hover {
+  background: var(--n100, #ede7da);
+}
+
+/* ── Experience modal: banner (thumb | copy | price) ── */
+.ecotone-book-exp-banner {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) minmax(min-content, max-content);
+  grid-template-areas: 'thumb main price';
+  align-items: start;
+  column-gap: 16px;
+  row-gap: 0;
+  padding: 16px 54px 18px 18px;
+  background: linear-gradient(168deg, #363028 0%, #2a241c 42%, #1c1814 100%);
+  color: #f5f0e6;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+}
+
+.ecotone-book-exp-banner-thumb {
+  grid-area: thumb;
+  width: 76px;
+  height: 76px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #3d3328;
+  flex-shrink: 0;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+.ecotone-book-exp-banner-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ecotone-book-exp-banner-main {
+  grid-area: main;
+  min-width: 0;
+  padding-top: 1px;
+  padding-right: 6px;
+}
+
+.ecotone-book-exp-banner-title {
+  font-size: clamp(15px, 3.4vw, 17px);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.28;
+  margin: 0 0 6px;
+  color: #fdfbf7;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+.ecotone-book-exp-banner-meta {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  color: rgba(236, 229, 213, 0.78);
+  margin: 0;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
+}
+
+.ecotone-book-exp-banner-price {
+  grid-area: price;
+  display: grid;
+  justify-items: end;
+  align-content: start;
+  row-gap: 5px;
+  text-align: right;
+  padding-top: 1px;
+  min-width: 0;
+}
+
+/* Desktop: offset so the main price line baselines ~with .ecotone-book-exp-banner-meta; subline is row 2 only */
+@media (min-width: 481px) {
+  .ecotone-book-exp-banner-price {
+    padding-top: 36px;
+  }
+}
+
+.ecotone-book-exp-banner-price-line {
+  grid-row: 1;
+  justify-self: end;
+  font-size: clamp(17px, 3.6vw, 21px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: #e0bc7a;
+  white-space: nowrap;
+}
+
+.ecotone-book-exp-banner-price-sub {
+  grid-row: 2;
+  justify-self: end;
+  display: block;
+  width: 100%;
+  max-width: 13rem;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.35;
+  color: rgba(212, 170, 114, 0.72);
+  white-space: normal;
+  text-align: right;
+}
+
+@media (max-width: 480px) {
+  .ecotone-book-exp-banner {
+    grid-template-columns: 68px minmax(0, 1fr);
+    grid-template-areas:
+      'thumb main'
+      'price price';
+    column-gap: 14px;
+    row-gap: 12px;
+    padding: 14px 44px 16px 14px;
+  }
+
+  .ecotone-book-exp-banner-thumb {
+    width: 68px;
+    height: 68px;
+  }
+
+  .ecotone-book-exp-banner-main {
+    padding-right: 0;
+  }
+
+  .ecotone-book-exp-banner-price {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: flex-end;
+    column-gap: 10px;
+    row-gap: 4px;
+    width: 100%;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    margin: 0;
+    padding-top: 12px;
+    row-gap: unset;
+    align-content: unset;
+    justify-items: unset;
+  }
+
+  .ecotone-book-exp-banner-price-line {
+    grid-row: unset;
+    justify-self: unset;
+  }
+
+  .ecotone-book-exp-banner-price-sub {
+    grid-row: unset;
+    justify-self: unset;
+    text-align: right;
+    max-width: none;
+    flex: 1 1 100%;
+    width: auto;
+    font-size: 9.5px;
+  }
+}
+
+/* Experience: title block below banner */
+.ecotone-book-exp-intro {
+  padding: 22px 48px 6px 24px;
+  border-bottom: 1px solid var(--n200, #d8cfbf);
+}
+.ecotone-book-exp-intro .ecotone-book-title {
+  padding-right: 0;
+  margin: 0 0 8px;
+  font-size: clamp(22px, 4vw, 28px);
+}
+.ecotone-book-exp-subtitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.55;
+  color: var(--n700, #5c5245);
+}
+
+/* Generic plan: head */
+.ecotone-book-head {
+  padding: 26px 48px 16px 24px;
+  border-bottom: 1px solid var(--n200, #d8cfbf);
+}
+.ecotone-book-head .ecotone-book-title {
+  padding-right: 0;
+  margin: 0 0 8px;
+}
+.ecotone-book-plan-subtitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.55;
+  color: var(--n700, #5c5245);
+}
+
+.ecotone-book-eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--brown, #906730);
+  margin-bottom: 6px;
+}
+
+.ecotone-book-title {
+  font-size: clamp(22px, 4vw, 28px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--n900, #1a1209);
+}
+
+.ecotone-book-body {
+  padding: 20px 24px 24px;
+}
+
+/* Progress — segment per step */
+.ecotone-book-steps {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 22px;
+}
+.ecotone-book-step-seg {
+  flex: 1;
+  height: 4px;
+  border-radius: 99px;
+  background: #e5dfd2;
+  transition: background 0.2s;
+}
+.ecotone-book-step-seg.done {
+  background: #4a3e30;
+}
+.ecotone-book-step-seg.active {
+  background: #b89c72;
+}
+
+/* Labels */
+.ecotone-book-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8a7d6a;
+  margin-bottom: 8px;
+}
+
+.ecotone-book-field-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+  margin-bottom: 18px;
+}
+@media (max-width: 520px) {
+  .ecotone-book-field-row-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ecotone-book-field {
+  margin-bottom: 18px;
+}
+.ecotone-book-field input,
+.ecotone-book-field select,
+.ecotone-book-field textarea {
+  width: 100%;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 400;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid #e0d8c8;
+  background: #faf7f0;
+  color: var(--n900, #1a1209);
+  resize: vertical;
+  min-height: 44px;
+}
+.ecotone-book-field textarea {
+  min-height: 88px;
+}
+.ecotone-book-field input::placeholder,
+.ecotone-book-field textarea::placeholder {
+  color: #a59888;
+}
+.ecotone-book-field input:focus,
+.ecotone-book-field select:focus,
+.ecotone-book-field textarea:focus {
+  outline: 2px solid #d4aa72;
+  outline-offset: 1px;
+  border-color: #cdb896;
+}
+
+/* Traveller / season card grids */
+.ecotone-book-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+@media (max-width: 480px) {
+  .ecotone-book-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ecotone-book-pick-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 14px 14px 14px 12px;
+  border-radius: 16px;
+  border: 1px solid #e0d8c8;
+  background: #faf7f0;
+  cursor: pointer;
+  font: inherit;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+.ecotone-book-pick-card:hover {
+  border-color: #cdb896;
+}
+.ecotone-book-pick-card.on {
+  border-color: #906730;
+  background: #fffdf8;
+  box-shadow: 0 0 0 1px rgba(144, 103, 48, 0.15);
+}
+
+.ecotone-book-pick-card-icon {
+  width: 28px;
+  height: 28px;
+  margin-bottom: 8px;
+  color: var(--brown, #906730);
+  opacity: 0.85;
+}
+
+.ecotone-book-pick-card-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--n900, #1a1209);
+  margin-bottom: 4px;
+}
+.ecotone-book-pick-card-desc {
+  display: block;
+  font-size: 12px;
+  font-weight: 300;
+  line-height: 1.45;
+  color: var(--n700, #5c5245);
+}
+
+/* Season row (4 cols desktop) */
+.ecotone-book-season-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+@media (max-width: 600px) {
+  .ecotone-book-season-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.ecotone-book-season-card {
+  padding: 12px 10px;
+  border-radius: 14px;
+  border: 1px solid #e0d8c8;
+  background: #faf7f0;
+  cursor: pointer;
+  font: inherit;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s;
+}
+.ecotone-book-season-card:hover {
+  border-color: #cdb896;
+}
+.ecotone-book-season-card.on {
+  border-color: #906730;
+  background: #fffdf8;
+}
+.ecotone-book-season-card .t1 {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--n900, #1a1209);
+}
+.ecotone-book-season-card .t2 {
+  display: block;
+  font-size: 11px;
+  font-weight: 300;
+  color: #7a6e5e;
+  margin-top: 2px;
+}
+
+.ecotone-book-rule {
+  height: 1px;
+  background: #e8e2d6;
+  margin: 18px 0;
+}
+
+/* People counter */
+.ecotone-book-counter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.ecotone-book-counter-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid #e0d8c8;
+  background: #f3efe6;
+  color: var(--n900, #1a1209);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+.ecotone-book-counter-btn:hover:not(:disabled) {
+  background: #ebe4d8;
+  border-color: #cdb896;
+}
+.ecotone-book-counter-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.ecotone-book-counter-val {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  min-width: 28px;
+  text-align: center;
+  color: var(--n900, #1a1209);
+}
+.ecotone-book-counter-suffix {
+  font-size: 15px;
+  font-weight: 400;
+  color: #7a6e5e;
+}
+
+/* Channel cards */
+.ecotone-book-channel-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8a7d6a;
+  margin: 4px 0 10px;
+}
+
+.ecotone-book-channel-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+@media (max-width: 480px) {
+  .ecotone-book-channel-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ecotone-book-channel {
+  border: 1px solid #e0d8c8;
+  border-radius: 16px;
+  padding: 14px 14px 14px 12px;
+  cursor: pointer;
+  text-align: left;
+  background: #faf7f0;
+  font: inherit;
+  transition: border-color 0.2s, background 0.2s;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.ecotone-book-channel:hover {
+  border-color: #cdb896;
+}
+.ecotone-book-channel.on {
+  border-color: #906730;
+  background: #fffdf8;
+  box-shadow: 0 0 0 1px rgba(144, 103, 48, 0.12);
+}
+
+.ecotone-book-channel-ic {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ebe4d8;
+  color: var(--n700, #4a3e30);
+}
+.ecotone-book-channel.on .ecotone-book-channel-ic {
+  background: #906730;
+  color: #fff;
+}
+
+.ecotone-book-channel-body strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--n900, #1a1209);
+}
+.ecotone-book-channel-body span {
+  font-size: 12px;
+  font-weight: 300;
+  line-height: 1.45;
+  color: #6b6154;
+}
+
+/* Email fields block (only when Email selected) */
+.ecotone-book-email-expand {
+  margin-top: 14px;
+  margin-bottom: 4px;
+}
+
+/* Footer actions */
+.ecotone-book-footer {
+  margin-top: 18px;
+  padding-top: 4px;
+}
+.ecotone-book-footer-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ecotone-book-back {
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 1px solid #e0d8c8;
+  background: #f3efe6;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--n900, #1a1209);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.ecotone-book-back:hover {
+  background: #ebe4d8;
+}
+
+.ecotone-book-cta-grow {
+  flex: 1;
+  min-width: 160px;
+  display: flex;
+}
+
+.ecotone-book-cta-wa {
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  display: inline-flex;
+  gap: 10px;
+  padding: 14px 20px;
+  border-radius: 999px;
+  border: none;
+  background: #25d366;
+  color: #fff !important;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.1s;
+}
+.ecotone-book-cta-wa:hover {
+  background: #1ebe5a;
+}
+.ecotone-book-cta-wa svg {
+  flex-shrink: 0;
+}
+
+.ecotone-book-cta-dark {
+  display: inline-flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  padding: 14px 20px;
+  border-radius: 999px;
+  border: none;
+  background: var(--brown-xdk, #2c1d07);
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.1s;
+}
+.ecotone-book-cta-dark:hover:not(:disabled) {
+  background: var(--brown-dk, #563b12);
+}
+.ecotone-book-cta-dark:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ecotone-book-footer-note {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 400;
+  color: #8a7d6a;
+  line-height: 1.5;
+}
+
+.ecotone-book-continue-row {
+  margin-top: 8px;
+}
+.ecotone-book-continue-only {
+  width: 100%;
+  padding: 14px 22px;
+  border-radius: 999px;
+  border: none;
+  background: var(--brown-xdk, #2c1d07);
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.18s ease, transform 0.1s;
+}
+.ecotone-book-continue-only:hover:not(:disabled) {
+  background: var(--brown-dk, #563b12);
+}
+.ecotone-book-continue-only:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ecotone-book-thanks {
+  padding: 20px;
+  border-radius: 16px;
+  background: #faf3e8;
+  border: 1px solid #d4aa72;
+  font-size: 15px;
+  line-height: 1.55;
+  text-align: center;
+}
+.ecotone-book-thanks-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+.ecotone-book-thanks-lead {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--n700, #5c5245);
+  margin: 0 0 16px;
+}
+
+.ecotone-book-summary {
+  text-align: left;
+  border-radius: 14px;
+  border: 1px solid #e0d8c8;
+  background: #fffdf8;
+  overflow: hidden;
+}
+.ecotone-book-summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #eee8dc;
+  font-size: 13px;
+}
+.ecotone-book-summary-row:last-child {
+  border-bottom: none;
+}
+.ecotone-book-summary-k {
+  color: #8a7d6a;
+  font-weight: 400;
+}
+.ecotone-book-summary-v {
+  font-weight: 600;
+  color: var(--n900, #1a1209);
+  text-align: right;
+}
+
+.ecotone-book-close-thanks {
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  border: 1px solid #e0d8c8;
+  background: #f3efe6;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ecotone-book-close-thanks:hover {
+  background: #ebe4d8;
+}
+
+.ecotone-book-err {
+  font-size: 13px;
+  color: #8b2942;
+  margin-top: 8px;
+}
+
+/* Validation highlights — scoped modifiers (layout unchanged) */
+.ecotone-book-field--error input,
+.ecotone-book-field--error textarea {
+  outline: 2px solid #8b2942;
+  outline-offset: 1px;
+  border-color: #c4748a;
+}
+
+.ecotone-book-card-grid--error {
+  outline: 2px solid #8b2942;
+  outline-offset: 2px;
+  border-radius: 16px;
+}
+
+.ecotone-book-season-row--error {
+  outline: 2px solid #8b2942;
+  outline-offset: 2px;
+  border-radius: 14px;
+}
+
+.ecotone-book-counter--error {
+  outline: 2px solid #8b2942;
+  outline-offset: 2px;
+  border-radius: 999px;
+  padding: 2px 4px;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.ecotone-book-channel-grid--error {
+  outline: 2px solid #8b2942;
+  outline-offset: 2px;
+  border-radius: 16px;
+}

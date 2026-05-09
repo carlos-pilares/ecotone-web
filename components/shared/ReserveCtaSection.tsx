@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
@@ -46,6 +48,11 @@ export type ReserveCtaSectionProps = {
   body?: ReactNode
   titleId?: string
   card: ReserveCtaCardProps
+  /**
+   * Experience #book: first primary “Book now” CTA becomes a button (modal). Other CTAs (e.g. WhatsApp) unchanged.
+   */
+  experienceBookPrimaryModal?: boolean
+  onExperienceBookPrimaryClick?: () => void
 }
 
 const DEFAULT_TRUST_ITEMS: ReserveCtaTrustItem[] = [
@@ -142,6 +149,8 @@ export function ReserveCtaSection({
   body,
   titleId = 'reserve-cta-heading',
   card,
+  experienceBookPrimaryModal,
+  onExperienceBookPrimaryClick,
 }: ReserveCtaSectionProps) {
   const sectionClass = [
     'reserve-cta',
@@ -155,6 +164,11 @@ export function ReserveCtaSection({
   const ctas = card.ctas
     .filter((c) => (c.label ?? '').trim() && (c.href ?? '').trim())
     .slice(0, 2)
+
+  const primaryBookModalIdx =
+    experienceBookPrimaryModal && typeof onExperienceBookPrimaryClick === 'function'
+      ? ctas.findIndex((c) => (c.variant ?? 'primary') === 'primary' && (c.label ?? '').trim().toLowerCase() === 'book now')
+      : -1
 
   const trustItems =
     card.trustItems && card.trustItems.length > 0 ? card.trustItems : DEFAULT_TRUST_ITEMS
@@ -206,9 +220,18 @@ export function ReserveCtaSection({
             </div>
             {ctas.length > 0 ? (
               <div className="reserve-cta-actions">
-                {ctas.map((c, i) => (
-                  <ReserveCtaLink key={`${c.href}-${c.label}-${i}`} cta={c} />
-                ))}
+                {ctas.map((c, i) => {
+                  const useModalBtn = primaryBookModalIdx === i && primaryBookModalIdx >= 0
+                  if (useModalBtn) {
+                    const cls = 'reserve-cta-btn reserve-cta-btn--primary'
+                    return (
+                      <button key={`book-modal-${i}`} type="button" className={cls} onClick={onExperienceBookPrimaryClick}>
+                        {c.label}
+                      </button>
+                    )
+                  }
+                  return <ReserveCtaLink key={`${c.href}-${c.label}-${i}`} cta={c} />
+                })}
               </div>
             ) : null}
             <div className="trust-strip">

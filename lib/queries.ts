@@ -347,7 +347,17 @@ export const homePageQuery = groq`
     blogEmptyMessage,
     blogFallbackPostHref,
     "homeSelectedBlogPosts": homeSelectedBlogPosts[]-> {
-      _id, title, category, readingMinutes, image, externalLink, slug
+      _id,
+      title,
+      excerpt,
+      category,
+      tags,
+      readingMinutes,
+      publishedAt,
+      featured,
+      image,
+      externalLink,
+      slug
     },
     bookingEyebrow, bookingHeadline, bookingBody, bookingTrustItems,
     bookingPrice, bookingPriceSuffixSmall, bookingPriceSubtext, bookingCardRows,
@@ -943,16 +953,145 @@ export const partnersQuery = groq`
 export type BlogPostDoc = {
   _id: string
   title?: string | null
+  excerpt?: string | null
   category?: string | null
+  tags?: string[] | null
   readingMinutes?: number | null
+  publishedAt?: string | null
+  featured?: boolean | null
   image?: SanityImageSource | null
   externalLink?: string | null
   slug?: { current?: string } | null
 }
 
 export const blogPostsQuery = groq`
-  *[_type == "blogPost"] | order(publishedAt desc) [0...3] {
-    _id, title, category, readingMinutes, image, externalLink, slug
+  *[_type == "blogPost" && defined(slug.current)] | order(coalesce(publishedAt, _updatedAt) desc) [0...3] {
+    _id,
+    title,
+    excerpt,
+    category,
+    tags,
+    readingMinutes,
+    publishedAt,
+    featured,
+    image,
+    externalLink,
+    slug
+  }
+`
+
+/** Singleton CMS copy for `/journal` index (document `_id == "journalPage"`). */
+export type JournalPageDoc = {
+  heroEyebrow?: string | null
+  heroTitle?: string | null
+  heroIntro?: string | null
+  showTagFilter?: boolean | null
+  seo?: {
+    title?: string | null
+    description?: string | null
+    noIndex?: boolean | null
+    ogImageUrl?: string | null
+  } | null
+}
+
+export const journalPageQuery = groq`
+  *[_id == "journalPage"][0] {
+    _id,
+    heroEyebrow,
+    heroTitle,
+    heroIntro,
+    showTagFilter,
+    seo {
+      title,
+      description,
+      noIndex,
+      "ogImageUrl": ogImage.asset->url
+    }
+  }
+`
+
+export const journalPostsIndexQuery = groq`
+  *[_type == "blogPost" && defined(slug.current)] | order(coalesce(publishedAt, _updatedAt) desc) {
+    _id,
+    title,
+    excerpt,
+    category,
+    tags,
+    readingMinutes,
+    publishedAt,
+    featured,
+    image,
+    slug,
+    externalLink
+  }
+`
+
+/** One projection for all journal body blocks; unused fields are omitted per `_type`. */
+const GROQ_JOURNAL_CONTENT_BLOCKS = `
+  contentBlocks[]{
+    _key,
+    _type,
+    body,
+    image,
+    alt,
+    caption,
+    fullWidth,
+    images,
+    url,
+    "videoAccessibleTitle": title,
+    quote,
+    attribution,
+    style,
+    label,
+    href,
+    openInNewTab,
+    eyebrow,
+    "experience": experience->{
+      _id,
+      name,
+      slug,
+      "slugCurrent": slug.current,
+      mainImage,
+      "mainImageUrl": mainImage.asset->url,
+      tagline,
+      duration
+    }
+  }
+`
+
+export type JournalPostDetailDoc = BlogPostDoc & {
+  author?: string | null
+  contentBlocks?: unknown[] | null
+  seo?: JournalPageDoc['seo']
+}
+
+export const journalPostBySlugQuery = groq`
+  *[_type == "blogPost" && slug.current == $slug][0] {
+    _id,
+    title,
+    excerpt,
+    category,
+    tags,
+    readingMinutes,
+    publishedAt,
+    featured,
+    author,
+    image,
+    externalLink,
+    slug,
+    seo {
+      title,
+      description,
+      noIndex,
+      "ogImageUrl": ogImage.asset->url
+    },
+    ${GROQ_JOURNAL_CONTENT_BLOCKS}
+  }
+`
+
+export const journalAllSlugsQuery = groq`
+  *[_type == "blogPost" && defined(slug.current)] {
+    "slug": slug.current
   }
 `
 

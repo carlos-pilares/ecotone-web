@@ -25,6 +25,7 @@ import {
   soqtapataPhase6Faq,
   soqtapataExperienceReviewsLayout,
 } from '@/data/soqtapataExperienceLocal'
+import { buildBookingModalSettingsDocument } from './seed/buildBookingModalSettingsDocument'
 import { buildSiteSettingsDocument, removeSiteSettingsDraft } from './seed/buildSiteSettingsDocument'
 import { buildHomePageDocument } from './seed/buildHomePageDocument'
 import { buildAboutPageDocument } from './seed/buildAboutPageDocument'
@@ -405,6 +406,16 @@ export async function seedCmsAll() {
 
   await removeSiteSettingsDraft(client)
 
+  const journalPageDoc = {
+    _id: 'journalPage',
+    _type: 'journalPage' as const,
+    heroEyebrow: 'Field notes',
+    heroTitle: 'Journal',
+    heroIntro:
+      'Dispatch from the field — conservation context, expedition craft, and the science behind how we move through cloud forest and lowland Amazon.',
+    showTagFilter: true,
+  }
+
   const tx = client.transaction()
   for (const t of technologyProductSeeds) {
     tx.createOrReplace(t as any)
@@ -417,6 +428,7 @@ export async function seedCmsAll() {
   }
   tx.createOrReplace(experiencePageDoc as any)
   tx.createOrReplace(siteSettingsDoc as any)
+  tx.createOrReplace(buildBookingModalSettingsDocument() as any)
   tx.createOrReplace(homePageDoc as any)
   for (const p of partnerSeeds) {
     tx.createOrReplace(p as any)
@@ -430,6 +442,7 @@ export async function seedCmsAll() {
   /** `aboutPage` referencia `partner`; `routesPage` referencia `review` (creados arriba). */
   tx.createOrReplace(aboutPageDoc as any)
   tx.createOrReplace(routesPageDoc as any)
+  tx.createOrReplace(journalPageDoc as any)
   await tx.commit()
 }
 

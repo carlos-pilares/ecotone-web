@@ -6,6 +6,7 @@ import { resolveHeaderLogoDarkUrl } from '@/lib/headerLogoPublic'
 import type { ResolvedSiteHeaderNav } from '@/lib/resolveSiteHeaderNavData'
 
 import { SiteHeaderLogoCms } from '@/components/SiteHeaderLogoCms'
+import { SiteHeaderNavBookButtons } from '@/components/SiteHeaderNavBookButtons'
 import { SiteHeaderShellClient } from '@/components/SiteHeaderShellClient'
 
 function InlineHeaderLogo() {
@@ -544,20 +545,11 @@ export async function SiteHeader({ mainNavSolid = true }: SiteHeaderProps = {}) 
                 </a>
               </li>
             </ul>
-            <a
+            <SiteHeaderNavBookButtons
+              label={primaryCta.label}
               href={primaryCta.href}
-              className="nav-book desk"
-              {...(primaryCta.openInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-            >
-              {primaryCta.label}
-            </a>
-            <a
-              href={primaryCta.href}
-              className="nav-book nav-book-inline site-header-mobile-only"
-              {...(primaryCta.openInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-            >
-              {primaryCta.label}
-            </a>
+              openInNewTab={primaryCta.openInNewTab}
+            />
             <button type="button" className="hamburger site-header-mobile-only" id="ham" aria-label={mobileMenuAriaLabel} aria-expanded="false" aria-controls="drawer">
               <span />
               <span />

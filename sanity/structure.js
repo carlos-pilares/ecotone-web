@@ -33,6 +33,16 @@ export const structure = (S) =>
                     .documentId('siteSettings')
                     .title('Site: header, footer & brand'),
                 ),
+              S.listItem()
+                .title('Booking modals')
+                .icon(DocumentTextIcon)
+                .id('bookingModalSettingsItem')
+                .child(
+                  S.document()
+                    .schemaType('bookingModalSettings')
+                    .documentId('bookingModalSettings')
+                    .title('Plan journey & book experience copy'),
+                ),
             ]),
         ),
       S.divider(),
@@ -113,6 +123,35 @@ export const structure = (S) =>
                     .id('experiencePageList')
                     .title('Landings: hero, SEO, orden de módulos, curación'),
                 ),
+              S.listItem()
+                .title('Journal')
+                .icon(BookIcon)
+                .id('journalInPages')
+                .child(
+                  S.list()
+                    .title('Journal')
+                    .items([
+                      S.listItem()
+                        .title('Journal index (/journal)')
+                        .icon(DocumentTextIcon)
+                        .id('journalPagePinned')
+                        .child(
+                          S.document()
+                            .schemaType('journalPage')
+                            .documentId('journalPage')
+                            .title('Journal · landing copy & SEO'),
+                        ),
+                      S.listItem()
+                        .title('Articles')
+                        .icon(BookIcon)
+                        .id('journalArticlesInPages')
+                        .child(
+                          S.documentTypeList('blogPost')
+                            .id('journalArticleListPages')
+                            .title('Journal articles'),
+                        ),
+                    ]),
+                ),
             ]),
         ),
       S.divider(),
@@ -182,10 +221,10 @@ export const structure = (S) =>
                 .id('routes')
                 .child(S.documentTypeList('route').title('Routes')),
               S.listItem()
-                .title('Blog posts')
+                .title('Journal articles')
                 .icon(BookIcon)
-                .id('blogPosts')
-                .child(S.documentTypeList('blogPost').title('Blog posts')),
+                .id('journalArticlesLibrary')
+                .child(S.documentTypeList('blogPost').title('Journal articles (same as Pages → Journal)')),
               S.listItem()
                 .title('Partners & certifications')
                 .icon(ImageIcon)

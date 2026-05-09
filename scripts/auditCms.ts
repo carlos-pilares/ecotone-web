@@ -70,6 +70,7 @@ function missingFields(obj: unknown, path = ''): string[] {
 
 const IDS = [
   CMS_IDS.siteSettings,
+  CMS_IDS.bookingModalSettings,
   CMS_IDS.homePage,
   CMS_IDS.experienceSoqtapata,
   CMS_IDS.experiencePageSoqtapata,

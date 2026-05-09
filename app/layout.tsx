@@ -1,6 +1,11 @@
 import { Lexend } from 'next/font/google'
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
+
+import { BookingModalProvider } from '@/components/booking/BookingModalContext'
+import { getBookingModalSettings } from '@/lib/getBookingModalSettings'
+import { getSiteSettingsShell } from '@/lib/getSiteSettingsShell'
+
 import './globals.css'
 import './shell-logo-tokens.css'
 import './shell-nav-logo.css'
@@ -19,10 +24,15 @@ export const metadata: Metadata = {
   description: 'No viajas para escapar del mundo, sino para protegerlo. Immersive all-inclusive nature experiences in the Manu Biosphere Reserve and Camanti, Peru.',
 }
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const [shell, bookingModalCopy] = await Promise.all([getSiteSettingsShell(), getBookingModalSettings()])
   return (
     <html lang="en" className={lexend.variable}>
-      <body>{children}</body>
+      <body>
+        <BookingModalProvider defaultWhatsappUrl={shell.defaultWhatsappUrl} copy={bookingModalCopy}>
+          {children}
+        </BookingModalProvider>
+      </body>
     </html>
   )
 }

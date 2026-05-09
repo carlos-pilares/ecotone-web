@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "next build",
+    "build": "next build --webpack",
+    "sanity:schema": "sanity schema validate",
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx scripts/seedHomePage.ts",
@@ -46,6 +47,6 @@
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
     "tsx": "^4.19.0",
-    "typescript": "^5"
+    "typescript": "5.9.3"
   }
 }

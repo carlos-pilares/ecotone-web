@@ -144,9 +144,60 @@ export const blogPostSeeds = [
     title: '5 birds you can only see in the Manu Reserve',
     slug: { _type: 'slug' as const, current: slugify('5 birds you can only see in the Manu Reserve') },
     category: 'Birds',
+    tags: ['Manu', 'Wildlife', 'Field notes'],
     readingMinutes: 3,
-    externalLink: 'https://www.ecotone.eco/blog' as const,
+    excerpt:
+      'Altitude bands stack habitat fast here — what disappears from a checklist when you listen instead of chase.',
+    featured: true,
     publishedAt: '2024-01-15T12:00:00.000Z',
+    contentBlocks: [
+      {
+        _key: 'seed-j-intro',
+        _type: 'journalBlockRichText' as const,
+        body: [
+          {
+            _type: 'block' as const,
+            _key: 'seed-j-b1',
+            style: 'normal',
+            markDefs: [],
+            children: [
+              {
+                _type: 'span' as const,
+                marks: [],
+                text: 'We move quietly at dawn when the canopy thins and mist lifts — notes from the cloud-forest ecotone where sound carries conservation signal as much as sight.',
+              },
+            ],
+          },
+          {
+            _type: 'block' as const,
+            _key: 'seed-j-b2',
+            style: 'h2',
+            markDefs: [],
+            children: [{ _type: 'span' as const, marks: [], text: 'Why rare birds matter here' }],
+          },
+          {
+            _type: 'block' as const,
+            _key: 'seed-j-b3',
+            style: 'normal',
+            markDefs: [],
+            children: [
+              {
+                _type: 'span' as const,
+                marks: [],
+                text: 'The Manu gradient stacks habitat in thin bands. Recording the soundscape teaches what species require intact corridors — beyond checklist tourism.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        _key: 'seed-j-related',
+        _type: 'journalBlockRelatedExperience' as const,
+        eyebrow: 'In the field',
+        label: 'View experience',
+        experience: expRef(),
+      },
+    ],
   },
   {
     _id: CMS_IDS.blog2,
@@ -154,8 +205,10 @@ export const blogPostSeeds = [
     title: "How ForestWhisper® changes the way you hear the jungle",
     slug: { _type: 'slug' as const, current: slugify('How ForestWhisper changes the way you hear the jungle') },
     category: 'Technology',
+    tags: ['Sound', 'Innovation'],
     readingMinutes: 4,
-    externalLink: 'https://www.ecotone.eco/blog' as const,
+    excerpt: 'Hardware is only half the story — the other half is training your ear for canopy distance and river tone.',
+    featured: false,
     publishedAt: '2024-02-01T12:00:00.000Z',
   },
   {
@@ -164,8 +217,10 @@ export const blogPostSeeds = [
     title: "Why we choose Camanti: the last cloud forest nobody talks about",
     slug: { _type: 'slug' as const, current: slugify('Why we choose Camanti the last cloud forest nobody talks about') },
     category: 'Conservation',
+    tags: ['Camanti', 'Routes'],
     readingMinutes: 5,
-    externalLink: 'https://www.ecotone.eco/blog' as const,
+    excerpt: 'Road ecology is rarely romantic — until you see what survives when pavement stops and forest resumes.',
+    featured: false,
     publishedAt: '2024-03-10T12:00:00.000Z',
   },
 ] as const

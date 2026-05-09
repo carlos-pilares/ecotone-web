@@ -8,6 +8,7 @@ import { ReviewsSection } from '@/components/ReviewsSection'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
 import { TechProductsSection } from '@/components/TechProductsSection'
+import { buildSoqtapataBookingSummary } from '@/lib/buildSoqtapataBookingSummary'
 import { getSoqtapataPageCms, soqtapataPristineSeoDefault } from '@/lib/soqtapataCmsV1'
 import { ExperienceHeroSoqtapata } from '@/components/experience/ExperienceHeroSoqtapata'
 import { ExperienceStatsBarSoqtapata } from '@/components/experience/ExperienceStatsBarSoqtapata'
@@ -49,6 +50,7 @@ export default async function SoqtapataPristineImmersionPage() {
   } = await getSoqtapataPageCms()
 
   const localReviews = ex.reviews
+  const bookingSummary = buildSoqtapataBookingSummary(ex.hero, ex.book)
 
   const reviewsProps: ReviewsSectionProps = {
     sectionClassName: 'sec bg-cream fade',
@@ -68,9 +70,9 @@ export default async function SoqtapataPristineImmersionPage() {
       <SiteHeader mainNavSolid />
       <SoqtapataPhotoLightbox />
       <div id="ecotone-experience-root">
-        <ExperienceHeroSoqtapata data={ex.hero} />
+        <ExperienceHeroSoqtapata data={ex.hero} bookingSummary={bookingSummary} />
         <ExperienceStatsBarSoqtapata items={ex.stats} />
-        <ExperiencePageNavSoqtapata data={ex.pageNav} />
+        <ExperiencePageNavSoqtapata data={ex.pageNav} bookingSummary={bookingSummary} />
         {sec.overview !== false ? <ExperienceOverviewSoqtapata data={ex.overview} /> : null}
         {sec.itinerary !== false ? <ExperienceItinerarySoqtapata data={ex.itinerary} /> : null}
         {sec.lodge !== false ? <ExperienceLodgeSoqtapata data={ex.lodge} /> : null}
@@ -94,7 +96,7 @@ export default async function SoqtapataPristineImmersionPage() {
         {sec.resources !== false ? <ExperienceResourcesSoqtapata data={ex.resources} /> : null}
         {sec.faq !== false ? <ExperienceFaqSoqtapata data={ex.faq} /> : null}
         {sec.related !== false ? <ExperienceAlsoCamantiSoqtapata data={ex.also} /> : null}
-        {sec.reserve !== false ? <ExperienceBookSoqtapata data={ex.book} /> : null}
+        {sec.reserve !== false ? <ExperienceBookSoqtapata data={ex.book} bookingSummary={bookingSummary} /> : null}
       </div>
       <ExperiencePageChromeClient />
       <InPageNavDrawerClient />

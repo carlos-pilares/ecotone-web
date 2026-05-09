@@ -2,6 +2,8 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
+import { useBookingModal } from '@/components/booking/BookingModalContext'
+import type { ExperienceBookingSummary } from '@/components/booking/types'
 import { InPageNav } from '@/components/shared/InPageNav'
 import type { SoqtapataPhase1PageNav } from '@/data/soqtapataExperienceLocal'
 import {
@@ -13,7 +15,14 @@ const ANCHOR_GAP = 8
 const PAST_HERO_BODY_CLASS = 'ecotone-exp-past-hero'
 const SCROLL_SPY_PAUSE_MS = 520
 
-export function ExperiencePageNavSoqtapata({ data }: { data: SoqtapataPhase1PageNav }) {
+export function ExperiencePageNavSoqtapata({
+  data,
+  bookingSummary,
+}: {
+  data: SoqtapataPhase1PageNav
+  bookingSummary: ExperienceBookingSummary | null
+}) {
+  const { openExperienceBooking } = useBookingModal()
   const scrollLinks = useMemo(
     () =>
       data.links.map((l) => ({
@@ -91,8 +100,9 @@ export function ExperiencePageNavSoqtapata({ data }: { data: SoqtapataPhase1Page
     }
   }, [scrollLinks])
 
-  const hideBookCta =
-    data.bookVisible === false || !data.bookHref?.trim() || !data.bookLabel?.trim()
+  const hideBookCta = data.bookVisible === false || !data.bookLabel?.trim()
+  const canBookLink = Boolean(data.bookHref?.trim())
+  const bookOpensModal = Boolean(bookingSummary) && !hideBookCta
 
   const ctaSlot =
     hideBookCta ? (
@@ -108,9 +118,23 @@ export function ExperiencePageNavSoqtapata({ data }: { data: SoqtapataPhase1Page
           <span className="pnav-from-num">{data.fromNum}</span>
           <span className="pnav-from-sub">{data.fromSub}</span>
         </div>
-        <a href={data.bookHref} className="btn btn-primary" style={{ fontSize: 12, padding: '8px 18px' }}>
-          {data.bookLabel}
-        </a>
+        {bookOpensModal && bookingSummary ? (
+          <button
+            type="button"
+            className="btn btn-primary"
+            style={{ fontSize: 12, padding: '8px 18px' }}
+            onClick={(e) => {
+              e.preventDefault()
+              openExperienceBooking(bookingSummary)
+            }}
+          >
+            {data.bookLabel}
+          </button>
+        ) : canBookLink ? (
+          <a href={data.bookHref} className="btn btn-primary" style={{ fontSize: 12, padding: '8px 18px' }}>
+            {data.bookLabel}
+          </a>
+        ) : null}
       </>
     )
 

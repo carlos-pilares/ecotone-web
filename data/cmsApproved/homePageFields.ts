@@ -146,7 +146,7 @@ export const homePageTextFields = {
   blogEyebrow: 'From the field',
   blogHeadline: 'Latest from Ecotone',
   blogAllPostsLabel: 'All posts',
-  blogAllPostsUrl: 'https://www.ecotone.eco/blog',
+  blogAllPostsUrl: '/journal',
   blogReadLabel: 'Read',
   blogFallbackCategory: 'News',
   blogFallbackReadingMinutes: 3,
