@@ -579,52 +579,44 @@ export const homePage = defineType({
     defineField({name: 'missionPhoto3', title: 'Photo 3', type: 'image', group: 'mission', options: {hotspot: true}}),
 
     defineField({
-      name: 'partnersLabel',
-      title: 'Section label',
+      name: 'partnersEyebrow',
+      title: 'Eyebrow (optional)',
       type: 'string',
-      initialValue: 'Certified by & affiliated with',
       group: 'partners',
+      description: 'Small line above the partners section title.',
+      validation: (Rule) => Rule.max(120),
+    }),
+    defineField({
+      name: 'partnersTitle',
+      title: 'Section title',
+      type: 'string',
+      group: 'partners',
+      validation: (Rule) => Rule.max(160),
     }),
     defineField({
       name: 'partnersBody',
-      title: 'Intro / body',
+      title: 'Body',
       type: 'text',
       rows: 4,
       group: 'partners',
-      description: 'Optional text under the partners heading on Home (when the site reads this field).',
+      description: 'Optional text under the title.',
     }),
     defineField({
       name: 'partnersEmptyMessage',
-      title: 'When no partners load — message (optional)',
+      title: 'When no partners selected — message (optional)',
       type: 'text',
       rows: 3,
       group: 'partners',
       description:
-        'If the partner list is empty, show this text instead of the logo row. Leave empty to hide the whole partners band.',
+        'If no partners are selected below, show this text instead of the logo row. Leave empty to hide the band when the list is empty.',
     }),
     defineField({
-      name: 'partnerNameFallback',
-      title: 'Fallback partner name (missing name on document)',
-      type: 'string',
-      group: 'partners',
-    }),
-    defineField({
-      name: 'partnersCatalogReadout',
-      title: 'Partner catalog (read-only)',
-      type: 'text',
-      rows: 1,
-      group: 'partners',
-      readOnly: true,
-      components: {input: HomeSourceListReadout},
-      options: {catalog: 'partners'},
-    }),
-    defineField({
-      name: 'homeSelectedPartners',
+      name: 'partnersOnHome',
       title: 'Partners on Home (order)',
       type: 'array',
       group: 'partners',
       description:
-        'Drag to set order. Names, logos, and links are edited on each Partner document — not here.',
+        'Select which partners appear on the Home page and drag to reorder. Names, logos, links, and type are edited only on each Partner document — not here.',
       of: [
         defineArrayMember({
           type: 'reference',
@@ -632,7 +624,12 @@ export const homePage = defineType({
           options: {disableNew: true},
         }),
       ],
-      validation: (Rule) => Rule.unique(),
+      validation: (Rule) =>
+        Rule.custom((refs) => {
+          if (!Array.isArray(refs)) return true
+          const ids = refs.map((r) => r?._ref).filter(Boolean)
+          return new Set(ids).size === ids.length ? true : 'Each partner can only appear once'
+        }),
     }),
 
     defineField({name: 'blogEyebrow', title: 'Eyebrow', type: 'string', group: 'blog'}),

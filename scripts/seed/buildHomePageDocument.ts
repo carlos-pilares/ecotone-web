@@ -1,6 +1,7 @@
 import type { SanityClient } from '@sanity/client'
 
 import { CMS_IDS } from '@/data/cmsApproved/ids'
+import { partnerSeeds } from '@/data/cmsApproved/librarySeeds'
 import { homePageTextFields } from '@/data/cmsApproved/homePageFields'
 import { HOME_IMAGE_URLS } from '@/data/cmsApproved/homeImageUrls'
 import { createUrlImageCache } from './urlImageCache'
@@ -16,6 +17,12 @@ export async function buildHomePageDocument(client: SanityClient) {
     cache.get(HOME_IMAGE_URLS.missionPhoto3, 'home-mission-3.jpg'),
   ])
 
+  const partnersOnHome = partnerSeeds.map((p, i) => ({
+    _type: 'reference' as const,
+    _ref: p._id,
+    _key: `home-partner-${i}`,
+  }))
+
   return {
     _id: CMS_IDS.homePage,
     _type: 'homePage' as const,
@@ -25,5 +32,6 @@ export async function buildHomePageDocument(client: SanityClient) {
     missionPhoto1,
     missionPhoto2,
     missionPhoto3,
+    partnersOnHome,
   }
 }

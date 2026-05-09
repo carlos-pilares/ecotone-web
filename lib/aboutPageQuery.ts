@@ -2,6 +2,7 @@ import { groq } from 'next-sanity'
 
 import type { PartnerDoc } from '@/lib/queries'
 import type { ReserveCtaSettingsGroq } from '@/lib/reserveCtaGroq'
+import { GROQ_PARTNER_DOC_FIELDS } from '@/lib/partnerGroq'
 import { GROQ_RESERVE_CTA_SETTINGS_FIELDS } from '@/lib/reserveCtaGroq'
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
 import { GROQ_SMART_LINK_FIELDS } from '@/lib/smartLinkGroq'
@@ -74,8 +75,12 @@ export type AboutPageSanityDoc = {
   }> | null
   proofCertLabel?: string | null
   proofCerts?: string[] | null
+  partnersEyebrow?: string | null
+  partnersTitle?: string | null
+  /** Legacy; coalesced in GROQ until migrated. */
   partnersLabel?: string | null
   partnersBody?: string | null
+  partnersEmptyMessage?: string | null
   partnersResolved?: PartnerDoc[] | null
   finalSectionId?: string | null
   finalEyebrow?: string | null
@@ -155,14 +160,12 @@ export const aboutPageQuery = groq`
     proofStats[]{ value, label, description },
     proofCertLabel,
     proofCerts,
-    partnersLabel,
+    partnersEyebrow,
+    "partnersTitle": coalesce(partnersTitle, partnersLabel),
     partnersBody,
+    partnersEmptyMessage,
     "partnersResolved": partnerRefs[]->{
-      _id,
-      name,
-      logoSvg,
-      link,
-      order
+      ${GROQ_PARTNER_DOC_FIELDS}
     },
     finalSectionId,
     finalEyebrow,

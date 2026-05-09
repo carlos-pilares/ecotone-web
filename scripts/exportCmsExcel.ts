@@ -94,8 +94,8 @@ async function main() {
     techEyebrow, techHeadline, techBody,
     "homeSelectedTechnologyProducts": homeSelectedTechnologyProducts[]->{_id, name},
     missionEyebrow, missionHeadline, missionBody, missionItems, missionCtaText, missionCtaLink,
-    partnersLabel, partnersBody,
-    "homeSelectedPartners": homeSelectedPartners[]->{_id, name},
+    partnersEyebrow, partnersTitle, partnersLabel, partnersBody, partnersEmptyMessage,
+    "partnersOnHome": coalesce(partnersOnHome, homeSelectedPartners)[]->{_id, name},
     blogEyebrow, blogHeadline, blogBody,
     "homeSelectedBlogPosts": homeSelectedBlogPosts[]->{_id, title},
     bookingEyebrow, bookingHeadline, bookingBody, bookingTrustItems, bookingPrice, bookingPriceSubtext, bookingCardRows, bookingCta1Text, bookingCta1Link, bookingCta2Text, bookingCta2Link
@@ -135,8 +135,8 @@ async function main() {
   const techProducts = await client.fetch<any[]>(`*[_type == "technologyProduct"] | order(order asc){
     _id, name, number, description, badgeText, badgeTextWhenExcluded, order, "slug": slug.current
   }`)
-  const partners = await client.fetch<any[]>(`*[_type == "partner"] | order(order asc){
-    _id, name, link, order, logoSvg
+  const partners = await client.fetch<any[]>(`*[_type == "partner"] | order(name asc){
+    _id, name, link, category, logoSvg
   }`)
   const blogPosts = await client.fetch<any[]>(`*[_type == "blogPost"] | order(publishedAt desc){
     _id, title, category, readingMinutes, externalLink, "slug": slug.current, publishedAt
@@ -161,8 +161,10 @@ async function main() {
       ['reviews', 'reviewsHeadline', home.reviewsHeadline],
       ['tech', 'techHeadline', home.techHeadline],
       ['mission', 'missionHeadline', home.missionHeadline],
-      ['partners', 'partnersLabel', home.partnersLabel],
+      ['partners', 'partnersEyebrow', home.partnersEyebrow],
+      ['partners', 'partnersTitle', home.partnersTitle ?? home.partnersLabel],
       ['partners', 'partnersBody', home.partnersBody],
+      ['partners', 'partnersEmptyMessage', home.partnersEmptyMessage],
       ['blog', 'blogEyebrow', home.blogEyebrow],
       ['blog', 'blogHeadline', home.blogHeadline],
       ['blog', 'blogBody', home.blogBody],
@@ -183,12 +185,12 @@ async function main() {
         referenceTitle: ref?.name,
       }),
     )
-    ;(home.homeSelectedPartners || []).forEach((ref: any, idx: number) =>
+    ;(home.partnersOnHome || []).forEach((ref: any, idx: number) =>
       push(homeRows, {
         documentId: id,
         titleOrName: title,
         section: 'partners',
-        field: `homeSelectedPartners[${idx}]`,
+        field: `partnersOnHome[${idx}]`,
         value: ref?.name || '',
         referenceId: ref?._id,
         referenceTitle: ref?.name,
@@ -322,7 +324,7 @@ async function main() {
     return [
       { documentId: doc._id, titleOrName: title, section: 'content', field: 'name', value: toCell(doc.name) },
       { documentId: doc._id, titleOrName: title, section: 'content', field: 'link', value: toCell(doc.link) },
-      { documentId: doc._id, titleOrName: title, section: 'meta', field: 'order', value: toCell(doc.order) },
+      { documentId: doc._id, titleOrName: title, section: 'meta', field: 'category', value: toCell(doc.category) },
       { documentId: doc._id, titleOrName: title, section: 'meta', field: 'logoSvg', value: doc.logoSvg ? '[svg present]' : '' },
     ].filter((r) => r.value)
   })

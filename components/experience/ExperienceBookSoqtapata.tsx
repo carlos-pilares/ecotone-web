@@ -26,6 +26,11 @@ export function ExperienceBookSoqtapata({ data }: { data: SoqtapataBook }) {
   }
 
   const termsHref = data.termsHash.trim() || undefined
+  const trustIconCycle = ['shield', 'check', 'heart'] as const
+  const trustItems = data.trustStripItems.map((t, i) => ({
+    iconKey: trustIconCycle[i % trustIconCycle.length]!,
+    text: t.text,
+  }))
 
   return (
     <ReserveCtaSection
@@ -41,6 +46,10 @@ export function ExperienceBookSoqtapata({ data }: { data: SoqtapataBook }) {
         rows: data.rows,
         ctas,
         termsHref,
+        termsPrefixText: data.termsNote?.trim(),
+        termsLinkLabel: data.termsLinkLabel?.trim(),
+        termsSuffixText: '.',
+        trustItems,
       }}
     />
   )

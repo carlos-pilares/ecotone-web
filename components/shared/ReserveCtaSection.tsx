@@ -5,6 +5,9 @@ import './reserve-cta-section.css'
 
 export type ReserveCtaDetailRow = { label: string; value: string }
 
+/** `iconKey`: `shield` | `check` | `heart`, or empty to cycle by index (legacy layout). */
+export type ReserveCtaTrustItem = { iconKey: string; text: string }
+
 export type ReserveCtaCta = {
   label: string
   href: string
@@ -19,8 +22,15 @@ export type ReserveCtaCardProps = {
   subline: string
   rows: ReserveCtaDetailRow[]
   ctas: ReserveCtaCta[]
-  /** If set, "Terms & Conditions" links here. */
+  /** If set, terms link label targets this href. */
   termsHref?: string
+  termsPrefixText?: string
+  termsLinkLabel?: string
+  /** When omitted, defaults to a single period. Pass empty string to show nothing after the link. */
+  termsSuffixText?: string
+  termsOpenInNewTab?: boolean
+  termsRel?: string
+  trustItems?: ReserveCtaTrustItem[]
 }
 
 export type ReserveCtaSectionProps = {
@@ -38,10 +48,22 @@ export type ReserveCtaSectionProps = {
   card: ReserveCtaCardProps
 }
 
-const TRUST_LINES = ['Secure payment', 'Free cancellation', 'B Corp certified'] as const
+const DEFAULT_TRUST_ITEMS: ReserveCtaTrustItem[] = [
+  { iconKey: 'shield', text: 'Secure payment' },
+  { iconKey: 'check', text: 'Free cancellation' },
+  { iconKey: 'heart', text: 'B Corp certified' },
+]
 
-function TrustGlyph({ index }: { index: number }) {
-  const mod = index % 3
+function trustGlyphIndex(iconKey: string, fallbackIndex: number): number {
+  const k = iconKey.trim().toLowerCase()
+  if (k === 'shield' || k === '0') return 0
+  if (k === 'check' || k === '1') return 1
+  if (k === 'heart' || k === '2') return 2
+  return fallbackIndex % 3
+}
+
+function TrustGlyph({ iconKey, index }: { iconKey: string; index: number }) {
+  const mod = trustGlyphIndex(iconKey, index)
   if (mod === 0) {
     return (
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
@@ -134,6 +156,18 @@ export function ReserveCtaSection({
     .filter((c) => (c.label ?? '').trim() && (c.href ?? '').trim())
     .slice(0, 2)
 
+  const trustItems =
+    card.trustItems && card.trustItems.length > 0 ? card.trustItems : DEFAULT_TRUST_ITEMS
+
+  const termsPrefix = (card.termsPrefixText ?? '').trim() || 'By booking, you agree to our'
+  const termsLinkLbl = (card.termsLinkLabel ?? '').trim() || 'Terms & Conditions'
+  const termsSuffix =
+    card.termsSuffixText === undefined || card.termsSuffixText === null ? '.' : card.termsSuffixText
+
+  const termsHrefTrim = card.termsHref?.trim()
+  const termsNewTab = card.termsOpenInNewTab === true
+  const termsRelTrim = card.termsRel?.trim()
+
   const hasEyebrow = eyebrow != null && eyebrow !== ''
   const hasBody = body != null && body !== ''
 
@@ -178,21 +212,27 @@ export function ReserveCtaSection({
               </div>
             ) : null}
             <div className="trust-strip">
-              {TRUST_LINES.map((text, i) => (
-                <div className="trust-item" key={text}>
-                  <TrustGlyph index={i} />
-                  {text}
+              {trustItems.map((item, i) => (
+                <div className="trust-item" key={`${item.text}-${i}`}>
+                  <TrustGlyph iconKey={item.iconKey} index={i} />
+                  {item.text}
                 </div>
               ))}
             </div>
             <p className="reserve-cta-terms">
-              By booking, you agree to our{' '}
-              {card.termsHref?.trim() ? (
-                <a href={card.termsHref.trim()}>Terms & Conditions</a>
+              {termsPrefix}{' '}
+              {termsHrefTrim ? (
+                <a
+                  href={termsHrefTrim}
+                  {...(termsNewTab ? { target: '_blank' } : {})}
+                  {...(termsRelTrim ? { rel: termsRelTrim } : {})}
+                >
+                  {termsLinkLbl}
+                </a>
               ) : (
-                <>Terms & Conditions</>
+                termsLinkLbl
               )}
-              .
+              {termsSuffix}
             </p>
           </div>
         </div>

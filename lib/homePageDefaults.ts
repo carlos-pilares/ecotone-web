@@ -79,9 +79,10 @@ export const defaultHomePageDoc: ResolvedHomePage = {
   missionPhoto1: null,
   missionPhoto2: null,
   missionPhoto3: null,
-  partnersLabel: t.partnersLabel,
+  partnersEyebrow: t.partnersEyebrow,
+  partnersTitle: t.partnersTitle,
   partnersEmptyMessage: t.partnersEmptyMessage,
-  partnerNameFallback: t.partnerNameFallback,
+  partnersOnHome: [],
   blogEyebrow: t.blogEyebrow,
   blogHeadline: t.blogHeadline,
   blogAllPostsLabel: t.blogAllPostsLabel,
@@ -160,10 +161,6 @@ const STR_KEYS = [
   'missionBody',
   'missionCtaText',
   'missionCtaLink',
-  'partnersLabel',
-  'partnersBody',
-  'partnersEmptyMessage',
-  'partnerNameFallback',
   'blogEyebrow',
   'blogHeadline',
   'blogBody',
@@ -236,6 +233,26 @@ export function mergeHomePageWithDefaults(cms: HomePageDoc | null): ResolvedHome
     if (v != null) o[k] = v
   }
 
+  /** Partner band copy: CMS values win including empty strings when the key is present. */
+  if (cms) {
+    const orec = out as unknown as Record<string, unknown>
+    for (const k of ['partnersEyebrow', 'partnersTitle', 'partnersBody', 'partnersEmptyMessage'] as const) {
+      if (!(k in cms)) continue
+      const v = cms[k as keyof HomePageDoc]
+      orec[k] = typeof v === 'string' ? v : v == null ? '' : orec[k]
+    }
+  }
+
+  /** Legacy `partnersLabel` only when `partnersTitle` is absent from the fetched doc. */
+  if (
+    cms &&
+    isNonEmptyString(cms.partnersLabel) &&
+    !('partnersTitle' in cms) &&
+    !isNonEmptyString((out as ResolvedHomePage).partnersTitle)
+  ) {
+    ;(out as ResolvedHomePage).partnersTitle = cms.partnersLabel!.trim()
+  }
+
   const cmsSeo = cms.seo
   if (cmsSeo) {
     const merged = { ...(out.seo as NonNullable<ResolvedHomePage['seo']>) }
@@ -274,17 +291,17 @@ export function mergeHomePageWithDefaults(cms: HomePageDoc | null): ResolvedHome
     }
   }
 
-  const selectedPartners = cms.homeSelectedPartners
+  const selectedPartners = cms.partnersOnHome ?? cms.homeSelectedPartners
   if (Array.isArray(selectedPartners) && selectedPartners.length > 0) {
     const cleaned = selectedPartners.filter(
-      (p): p is NonNullable<ResolvedHomePage['homeSelectedPartners']>[number] =>
+      (p): p is NonNullable<ResolvedHomePage['partnersOnHome']>[number] =>
         p != null &&
         typeof p === 'object' &&
         typeof p._id === 'string' &&
         p._id.length > 0,
     )
     if (cleaned.length > 0) {
-      ;(out as ResolvedHomePage).homeSelectedPartners = cleaned
+      ;(out as ResolvedHomePage).partnersOnHome = cleaned
     }
   }
 

@@ -45,20 +45,16 @@ export const partner = defineType({
       type: 'url',
       validation: (Rule) => Rule.uri({allowRelative: true, scheme: ['http', 'https']}),
     }),
-    defineField({
-      name: 'order',
-      title: 'Order',
-      type: 'number',
-      description: 'Lower numbers appear first',
-    }),
   ],
-  orderings: [
-    {title: 'Order', name: 'orderAsc', by: [{field: 'order', direction: 'asc'}]},
-  ],
+  orderings: [{title: 'Name', name: 'nameAsc', by: [{field: 'name', direction: 'asc'}]}],
   preview: {
-    select: {title: 'name'},
-    prepare({title}) {
-      return {title: title || 'Partner'}
+    select: {title: 'name', media: 'logoImage', category: 'category'},
+    prepare({title, media, category}) {
+      return {
+        title: title || 'Partner',
+        subtitle: category || undefined,
+        media,
+      }
     },
   },
 })

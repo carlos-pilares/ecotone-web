@@ -1,0 +1,81 @@
+/* Partners strip — single source for flex items, logo max dimensions, muted/hover (scoped under .partners-wall). */
+
+.partners-wall {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 26px 42px;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.partners-wall .partner-link,
+.partners-wall .partner-static {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 6px;
+}
+
+.partners-wall .partner-link:focus-visible {
+  outline: 2px solid var(--b200);
+  outline-offset: 3px;
+}
+
+.partners-wall .partner-logo-svg-wrap {
+  display: block;
+}
+
+.partners-wall .partner-logo-img,
+.partners-wall .partner-logo-svg-wrap svg {
+  display: block;
+  max-height: 78px;
+  max-width: 293px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  opacity: 0.38;
+  filter: grayscale(100%);
+  -webkit-filter: grayscale(100%);
+  transition:
+    opacity 180ms ease,
+    filter 180ms ease,
+    -webkit-filter 180ms ease;
+}
+
+.partners-wall .partner-link:hover .partner-logo-img,
+.partners-wall .partner-link:focus-visible .partner-logo-img,
+.partners-wall .partner-link:hover .partner-logo-svg-wrap svg,
+.partners-wall .partner-link:focus-visible .partner-logo-svg-wrap svg,
+.partners-wall .partner-static:hover .partner-logo-img,
+.partners-wall .partner-static:hover .partner-logo-svg-wrap svg {
+  opacity: 1;
+  filter: grayscale(0%);
+  -webkit-filter: grayscale(0%);
+}
+
+.partners-wall .partner-fallback-text {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--n700);
+  text-align: center;
+  max-width: 293px;
+  line-height: 1.25;
+  word-break: break-word;
+  opacity: 0.45;
+  transition:
+    opacity 180ms ease,
+    color 180ms ease;
+}
+
+.partners-wall .partner-link:hover .partner-fallback-text,
+.partners-wall .partner-link:focus-visible .partner-fallback-text,
+.partners-wall .partner-static:hover .partner-fallback-text {
+  opacity: 1;
+  color: var(--n900);
+}

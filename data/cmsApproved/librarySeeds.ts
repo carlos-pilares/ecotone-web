@@ -124,12 +124,17 @@ export const technologyProductSeeds = [
 ]
 
 export const partnerSeeds = [
-  { _id: CMS_IDS.partner1, _type: 'partner' as const, name: 'B Corp', order: 1 },
-  { _id: CMS_IDS.partner2, _type: 'partner' as const, name: 'Adventure Travel Trade Association', order: 2 },
-  { _id: CMS_IDS.partner3, _type: 'partner' as const, name: 'Rainforest Alliance', order: 3 },
-  { _id: CMS_IDS.partner4, _type: 'partner' as const, name: 'GSTC', order: 4 },
-  { _id: CMS_IDS.partner5, _type: 'partner' as const, name: 'IUCN Partner', order: 5 },
-  { _id: CMS_IDS.partner6, _type: 'partner' as const, name: 'UN Tourism', order: 6 },
+  { _id: CMS_IDS.partner1, _type: 'partner' as const, name: 'B Corp', category: 'certification' as const },
+  {
+    _id: CMS_IDS.partner2,
+    _type: 'partner' as const,
+    name: 'Adventure Travel Trade Association',
+    category: 'partner' as const,
+  },
+  { _id: CMS_IDS.partner3, _type: 'partner' as const, name: 'Rainforest Alliance', category: 'certification' as const },
+  { _id: CMS_IDS.partner4, _type: 'partner' as const, name: 'GSTC', category: 'certification' as const },
+  { _id: CMS_IDS.partner5, _type: 'partner' as const, name: 'IUCN Partner', category: 'partner' as const },
+  { _id: CMS_IDS.partner6, _type: 'partner' as const, name: 'UN Tourism', category: 'certification' as const },
 ] as const
 
 export const blogPostSeeds = [

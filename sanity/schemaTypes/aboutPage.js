@@ -1,4 +1,4 @@
-import {defineField, defineType} from 'sanity'
+import {defineArrayMember, defineField, defineType} from 'sanity'
 
 /**
  * Singleton `/about` — all on-page copy & media (no separate knowledge base).
@@ -250,26 +250,55 @@ export const aboutPage = defineType({
 
     // --- Partners ---
     defineField({
-      name: 'partnersLabel',
-      title: 'Band label',
+      name: 'partnersEyebrow',
+      title: 'Eyebrow (optional)',
       type: 'string',
       group: 'partners',
+      validation: (Rule) => Rule.max(120),
+    }),
+    defineField({
+      name: 'partnersTitle',
+      title: 'Section title',
+      type: 'string',
+      group: 'partners',
+      validation: (Rule) => Rule.max(160),
     }),
     defineField({
       name: 'partnersBody',
-      title: 'Optional intro (below label)',
+      title: 'Body',
       type: 'text',
       rows: 3,
       group: 'partners',
+      description: 'Optional text under the title.',
+    }),
+    defineField({
+      name: 'partnersEmptyMessage',
+      title: 'When no partners selected — message (optional)',
+      type: 'text',
+      rows: 3,
+      group: 'partners',
+      description: 'Shown when the reference list is empty. Leave empty to hide the band.',
     }),
     defineField({
       name: 'partnerRefs',
-      title: 'Partners to show (order preserved)',
+      title: 'Partners on About (order)',
       type: 'array',
       group: 'partners',
-      of: [{type: 'reference', to: [{type: 'partner'}]}],
+      of: [
+        defineArrayMember({
+          type: 'reference',
+          to: [{type: 'partner'}],
+          options: {disableNew: true},
+        }),
+      ],
       description:
-        'If empty, the site uses all partners from the library (same as Home when none are curated).',
+        'Select which partners appear in this band and drag to reorder. Content lives on each Partner document only.',
+      validation: (Rule) =>
+        Rule.custom((refs) => {
+          if (!Array.isArray(refs)) return true
+          const ids = refs.map((r) => r?._ref).filter(Boolean)
+          return new Set(ids).size === ids.length ? true : 'Each partner can only appear once'
+        }),
     }),
 
     // --- Final CTA ---

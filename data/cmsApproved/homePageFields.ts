@@ -139,9 +139,9 @@ export const homePageTextFields = {
   missionCtaText: 'Read our impact →',
   missionCtaLink: '#',
 
-  partnersLabel: 'Certified by & affiliated with',
+  partnersEyebrow: '',
+  partnersTitle: '',
   partnersEmptyMessage: '',
-  partnerNameFallback: 'Partner',
 
   blogEyebrow: 'From the field',
   blogHeadline: 'Latest from Ecotone',

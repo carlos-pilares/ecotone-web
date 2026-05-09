@@ -2,7 +2,7 @@
  * Mapea `RoutesPageSanityDoc` (campos planos del schema `routesPage`, ver `sanity/schemaTypes/routesPage.js`)
  * al shape que consumen `app/routes/page.tsx` y `getRoutesPage` (objetos anidados tipo `RoutesTerritoryStatic`).
  */
-import type { ReserveCtaCta, ReserveCtaDetailRow } from '@/components/shared/ReserveCtaSection'
+import type { ReserveCtaCardProps } from '@/components/shared/ReserveCtaSection'
 import { homePageTextFields } from '@/data/cmsApproved/homePageFields'
 import type { ReviewDoc } from '@/lib/queries'
 import { getLowestActiveExperiencePrice, buildReserveRowsForHome } from '@/lib/reserveCtaPricing'
@@ -406,14 +406,7 @@ export type RoutesPageResolved = {
   reviewsSourceLabel: string
   reviewsSecondaryRatingLine: string
   finalCta: typeof fallbackFinalCta & {
-    reserveCard: {
-      priceLine: string
-      priceSuffix: string
-      subline: string
-      rows: ReserveCtaDetailRow[]
-      ctas: ReserveCtaCta[]
-      termsHref?: string
-    }
+    reserveCard: ReserveCtaCardProps
   }
 }
 

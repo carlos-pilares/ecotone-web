@@ -49,13 +49,15 @@ export default async function AboutPage() {
         <AboutWay data={p.way} />
         <AboutPeople data={p.people} />
         <AboutProof data={p.proof} />
-        <PartnersBand
-          label={p.partnersBand.label}
-          body={p.partnersBand.body}
-          partners={p.partnersBand.partners}
-          partnerNameFallback={p.partnersBand.partnerNameFallback}
-          emptyMessage={p.partnersBand.emptyMessage}
-        />
+        {p.partnersBand.partners.length > 0 || p.partnersBand.emptyMessage?.trim() ? (
+          <PartnersBand
+            eyebrow={p.partnersBand.eyebrow || null}
+            title={p.partnersBand.title || null}
+            body={p.partnersBand.body}
+            partners={p.partnersBand.partners}
+            emptyMessage={p.partnersBand.emptyMessage}
+          />
+        ) : null}
         <AboutFinalCta data={p.finalCta} />
         <SiteFooter />
       </div>

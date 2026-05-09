@@ -16,15 +16,14 @@ import { defaultHomePageDoc } from '@/lib/homePageDefaults'
 import {
   blogPostsQuery,
   experiencesQuery,
-  partnersQuery,
   type BlogPostDoc,
   type ExperienceFromSanity,
-  type PartnerDoc,
   type ReviewDoc,
   type TechnologyProductDoc,
   reviewsQuery,
   technologyProductsQuery,
 } from '@/lib/queries'
+import { filterPublishedPartnerDocs } from '@/lib/partnerDocs'
 import { client } from '@/lib/sanity'
 
 const raw = readFileSync(join(process.cwd(), 'ecotone-home-final.html'), 'utf-8')
@@ -52,7 +51,6 @@ export default async function Home() {
   let homePage: ResolvedHomePage
   let reviews: ReviewDoc[] = []
   let techProducts: TechnologyProductDoc[] = []
-  let partners: PartnerDoc[] = []
   let blogPosts: BlogPostDoc[] = []
   let experiences: ExperienceFromSanity[] = []
 
@@ -62,18 +60,16 @@ export default async function Home() {
 
   if (canFetch) {
     try {
-      const [hp, r, t, p, b, e] = await Promise.all([
+      const [hp, r, t, b, e] = await Promise.all([
         getHomePage(),
         client.fetch<ReviewDoc[]>(reviewsQuery),
         client.fetch<TechnologyProductDoc[]>(technologyProductsQuery),
-        client.fetch<PartnerDoc[]>(partnersQuery),
         client.fetch<BlogPostDoc[]>(blogPostsQuery),
         client.fetch<ExperienceFromSanity[]>(experiencesQuery),
       ])
       homePage = hp
       reviews = Array.isArray(r) ? r : []
       techProducts = Array.isArray(t) ? t : []
-      partners = Array.isArray(p) ? p : []
       blogPosts = Array.isArray(b) ? b : []
       experiences = Array.isArray(e) ? e : []
     } catch {
@@ -92,10 +88,7 @@ export default async function Home() {
     homePage.homeSelectedTechnologyProducts && homePage.homeSelectedTechnologyProducts.length > 0
       ? homePage.homeSelectedTechnologyProducts
       : techProducts
-  const partnersForHome =
-    homePage.homeSelectedPartners && homePage.homeSelectedPartners.length > 0
-      ? homePage.homeSelectedPartners
-      : partners
+  const partnersForHome = filterPublishedPartnerDocs(homePage.partnersOnHome)
   const blogPostsForHome =
     homePage.homeSelectedBlogPosts && homePage.homeSelectedBlogPosts.length > 0
       ? homePage.homeSelectedBlogPosts

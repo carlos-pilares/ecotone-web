@@ -95,10 +95,70 @@ export const reserveCtaSettings = defineType({
       type: 'smartLink',
     }),
     defineField({
+      name: 'trustItems',
+      title: 'Trust strip items',
+      type: 'array',
+      description: 'Icons + labels under the card CTAs. Leave empty to use site defaults.',
+      of: [
+        {
+          type: 'object',
+          name: 'reserveCtaTrustItem',
+          fields: [
+            defineField({
+              name: 'iconKey',
+              title: 'Icon',
+              type: 'string',
+              options: {
+                list: [
+                  {title: 'Shield', value: 'shield'},
+                  {title: 'Check', value: 'check'},
+                  {title: 'Heart', value: 'heart'},
+                ],
+                layout: 'radio',
+              },
+              initialValue: 'shield',
+            }),
+            defineField({
+              name: 'text',
+              title: 'Label',
+              type: 'string',
+              validation: (r) => r.max(80),
+            }),
+          ],
+          preview: {
+            select: {t: 'text', i: 'iconKey'},
+            prepare: ({t, i}) => ({title: t || '—', subtitle: i || 'shield'}),
+          },
+        },
+      ],
+      validation: (Rule) => Rule.max(8),
+    }),
+    defineField({
+      name: 'termsPrefixText',
+      title: 'Terms sentence — text before the link',
+      type: 'string',
+      description: 'Default: “By booking, you agree to our”.',
+      validation: (r) => r.max(200),
+    }),
+    defineField({
+      name: 'termsLinkLabel',
+      title: 'Terms sentence — link label',
+      type: 'string',
+      description: 'Default: “Terms & Conditions”.',
+      validation: (r) => r.max(120),
+    }),
+    defineField({
+      name: 'termsSuffixText',
+      title: 'Terms sentence — after the link',
+      type: 'string',
+      description: 'Default: a single period (.). Use empty to omit.',
+      validation: (r) => r.max(40),
+    }),
+    defineField({
       name: 'termsSmartLink',
       title: 'Terms & Conditions link',
       type: 'smartLink',
-      description: 'Optional. Default is the experience terms anchor when unset.',
+      description: 'Target URL. Default is the experience terms anchor when unset.',
     }),
   ],
 })

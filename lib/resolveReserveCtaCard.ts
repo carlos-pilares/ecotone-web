@@ -1,8 +1,25 @@
-import type { ReserveCtaCta, ReserveCtaDetailRow } from '@/components/shared/ReserveCtaSection'
-import type { ReserveCtaSettingsGroq } from '@/lib/reserveCtaGroq'
+import type { ReserveCtaCta, ReserveCtaDetailRow, ReserveCtaTrustItem } from '@/components/shared/ReserveCtaSection'
+import type { ReserveCtaSettingsGroq, ReserveCtaTrustItemGroq } from '@/lib/reserveCtaGroq'
 import { formatReservePriceDisplay } from '@/lib/reserveCtaPricing'
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
 import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
+
+const DEFAULT_TERMS_PREFIX = 'By booking, you agree to our'
+const DEFAULT_TERMS_LINK_LABEL = 'Terms & Conditions'
+const DEFAULT_TERMS_SUFFIX = '.'
+
+function trustItemsFromSettings(rows: ReserveCtaTrustItemGroq[] | null | undefined): ReserveCtaTrustItem[] {
+  if (!rows || !Array.isArray(rows) || rows.length === 0) return []
+  return rows
+    .map((r) => {
+      if (!r || typeof r !== 'object') return null
+      const text = (r.text ?? '').trim()
+      if (!text) return null
+      const iconKey = (r.iconKey ?? '').trim()
+      return { iconKey, text }
+    })
+    .filter((x): x is ReserveCtaTrustItem => x != null)
+}
 
 export type LegacyCtaPair = {
   primarySmart?: SmartLinkGroq | null
@@ -62,6 +79,12 @@ export function resolveReserveCtaCard(opts: {
   rows: ReserveCtaDetailRow[]
   ctas: ReserveCtaCta[]
   termsHref?: string
+  termsPrefixText: string
+  termsLinkLabel: string
+  termsSuffixText: string
+  termsOpenInNewTab: boolean
+  termsRel: string
+  trustItems?: ReserveCtaTrustItem[]
 } {
   const s = opts.settings
   const hasOverride = Boolean(s?.priceOverrideText?.trim())
@@ -129,15 +152,44 @@ export function resolveReserveCtaCard(opts: {
     ctaFromResolved(sRes, 'secondary'),
   ].filter(Boolean) as ReserveCtaCta[]
 
+  const termsPrefixText = (s?.termsPrefixText ?? '').trim() || DEFAULT_TERMS_PREFIX
+  const termsLinkLabel = (s?.termsLinkLabel ?? '').trim() || DEFAULT_TERMS_LINK_LABEL
+  const termsSuffixText =
+    s?.termsSuffixText === undefined || s?.termsSuffixText === null
+      ? DEFAULT_TERMS_SUFFIX
+      : s.termsSuffixText
+
   let termsHref: string | undefined = opts.defaultTermsHref
+  let termsOpenInNewTab = false
+  let termsRel = ''
   if (!smartLinkIsDisabled(s?.termsSmartLink)) {
     const tRes = resolveSmartLinkOrLegacy(
       s?.termsSmartLink,
-      { label: 'Terms & Conditions', href: opts.defaultTermsHref, openInNewTab: false },
-      { label: 'Terms & Conditions', href: opts.defaultTermsHref, openInNewTab: false },
+      { label: termsLinkLabel, href: opts.defaultTermsHref, openInNewTab: false },
+      { label: termsLinkLabel, href: opts.defaultTermsHref, openInNewTab: false },
     )
-    if (tRes?.href?.trim()) termsHref = tRes.href.trim()
+    if (tRes?.href?.trim()) {
+      termsHref = tRes.href.trim()
+      termsOpenInNewTab = tRes.openInNewTab
+      termsRel = tRes.rel
+    }
   }
 
-  return { priceLine, priceSuffix, subline, rows, ctas, termsHref }
+  const trustParsed = trustItemsFromSettings(s?.trustItems ?? null)
+  const trustItems = trustParsed.length > 0 ? trustParsed : undefined
+
+  return {
+    priceLine,
+    priceSuffix,
+    subline,
+    rows,
+    ctas,
+    termsHref,
+    termsPrefixText,
+    termsLinkLabel,
+    termsSuffixText,
+    termsOpenInNewTab,
+    termsRel,
+    trustItems,
+  }
 }

@@ -19,7 +19,10 @@
     "cleanup:soqtapata": "tsx scripts/cleanupSoqtapataDuplicates.ts",
     "seed:soqtapata-lodge": "tsx scripts/seedSoqtapataLodge.ts --confirm",
     "diag:lodge-page-sections": "tsx scripts/diagLodgePageSections.ts",
-    "export:cms-excel": "tsx scripts/exportCmsExcel.ts"
+    "export:cms-excel": "tsx scripts/exportCmsExcel.ts",
+    "migrate:smart-link-legacy": "tsx scripts/migrateSmartLinkLegacy.ts",
+    "migrate:home-partners": "tsx scripts/migrateHomePartnersField.ts",
+    "migrate:partners-cleanup": "tsx scripts/migratePartnersCleanup.ts"
   },
   "dependencies": {
     "@sanity/image-url": "^2.1.1",

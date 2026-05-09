@@ -20,12 +20,6 @@ const QUERIES = {
     order,
     "slug": slug.current
   }`,
-  partners: `*[_type == "partner"] | order(coalesce(order, 999) asc, name asc) {
-    _id,
-    name,
-    order,
-    category
-  }`,
   blogPosts: `*[_type == "blogPost"] | order(coalesce(publishedAt, _updatedAt) desc) {
     _id,
     title,
@@ -40,8 +34,6 @@ const CAPTIONS = {
     'Read-only: all Experience documents. The public site lists these when wired to this catalog (order on the site may differ until the front reads Home selections). Edit each experience in Content → Experience.',
   technologyProducts:
     'Read-only: Tech product catalog. Canonical copy lives in each Tech product document. Use the list below to choose which cards appear on Home (when connected).',
-  partners:
-    'Read-only: Partner / certification documents. Canonical copy lives in each Partner. Use the list below to choose order on Home.',
   blogPosts:
     'Read-only: Blog post documents. Canonical copy lives in each Blog post. Use the list below to choose teasers on Home.',
 }
@@ -205,20 +197,6 @@ export function HomeSourceListReadout(props) {
                   title={row.name}
                   meta={metaParts.length ? metaParts.join(' · ') : null}
                   footer={row.slug ? {label: 'Slug', value: row.slug} : null}
-                />
-              )
-            })}
-          {catalog === 'partners' &&
-            rows.map((row) => {
-              const metaParts = []
-              if (row.category) metaParts.push(`Type: ${row.category}`)
-              if (row.order != null) metaParts.push(`Sort order: ${row.order}`)
-              return (
-                <ReadoutItemCard
-                  key={row._id}
-                  title={row.name}
-                  meta={metaParts.length ? metaParts.join(' · ') : null}
-                  footer={{label: 'Document ID', value: row._id}}
                 />
               )
             })}

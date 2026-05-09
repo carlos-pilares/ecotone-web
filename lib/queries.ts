@@ -5,6 +5,7 @@ import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
 import { GROQ_SMART_LINK_FIELDS } from '@/lib/smartLinkGroq'
 import type { ReserveCtaSettingsGroq } from '@/lib/reserveCtaGroq'
 import { GROQ_RESERVE_CTA_SETTINGS_FIELDS } from '@/lib/reserveCtaGroq'
+import { GROQ_PARTNER_DOC_FIELDS } from '@/lib/partnerGroq'
 
 /** Experience card row (homepage + listados). */
 export type ExperienceFromSanity = {
@@ -139,12 +140,15 @@ export type HomePageDoc = {
   missionPhoto1?: SanityImageSource | null
   missionPhoto2?: SanityImageSource | null
   missionPhoto3?: SanityImageSource | null
+  partnersEyebrow?: string | null
+  partnersTitle?: string | null
+  /** Legacy; merged into `partnersTitle` until removed by migration. */
   partnersLabel?: string | null
-  /** Optional intro under partners label on Home. */
   partnersBody?: string | null
   partnersEmptyMessage?: string | null
-  partnerNameFallback?: string | null
-  /** Curated partners for Home (order preserved). Empty / omit → use `partnersQuery`. */
+  /** Home: ordered partner references only — content lives on each `partner` doc. */
+  partnersOnHome?: PartnerDoc[] | null
+  /** Legacy field name (pre–partners-on-home). Merged in `mergeHomePageWithDefaults` until documents are re-saved. */
   homeSelectedPartners?: PartnerDoc[] | null
   blogEyebrow?: string | null
   blogHeadline?: string | null
@@ -240,10 +244,30 @@ export const homePageQuery = groq`
     missionEyebrow, missionHeadline, missionBody, missionItems,
     missionCtaText, missionCtaLink,
     missionPhoto1, missionPhoto2, missionPhoto3,
-    partnersLabel, partnersBody, partnersEmptyMessage, partnerNameFallback,
-    "homeSelectedPartners": homeSelectedPartners[]-> {
-      _id, name, logoSvg, link, order
-    },
+    partnersEyebrow,
+    partnersTitle,
+    partnersLabel,
+    partnersBody,
+    partnersEmptyMessage,
+    "partnersOnHome": select(
+      length(coalesce(partnersOnHome, [])) > 0 => partnersOnHome[]->{
+        _id,
+        name,
+        category,
+        link,
+        logoSvg,
+        logoImage
+      },
+      length(coalesce(homeSelectedPartners, [])) > 0 => homeSelectedPartners[]->{
+        _id,
+        name,
+        category,
+        link,
+        logoSvg,
+        logoImage
+      },
+      []
+    ),
     blogEyebrow, blogHeadline, blogBody,
     blogAllPostsLabel,
     blogAllPostsUrl,
@@ -708,14 +732,16 @@ export const technologyProductsQuery = groq`
 export type PartnerDoc = {
   _id: string
   name?: string | null
+  /** Certification / partner / other (from partner document). */
+  category?: string | null
   logoSvg?: string | null
+  logoImage?: SanityImageSource | null
   link?: string | null
-  order?: number | null
 }
 
 export const partnersQuery = groq`
-  *[_type == "partner"] | order(order asc) {
-    _id, name, logoSvg, link, order
+  *[_type == "partner"] | order(name asc) {
+    ${GROQ_PARTNER_DOC_FIELDS}
   }
 `
 

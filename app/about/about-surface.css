@@ -404,7 +404,7 @@
   color: var(--b200);
 }
 
-/* Partners band — mirrors app/home-surface.css (Home partners row) */
+/* Partners band — section shell only; logo sizing/hover: components/partners/partners-wall.css */
 .partners-band {
   background: var(--w);
   border-top: 1px solid var(--n200);
@@ -429,40 +429,6 @@
   margin: 0 auto 18px;
   text-align: center;
   color: var(--n700);
-}
-.partners-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 0;
-}
-.partner-logo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  padding: 10px 18px;
-  opacity: 0.4;
-  transition: opacity 0.25s;
-}
-.partner-logo:hover {
-  opacity: 1;
-}
-.partner-wordmark {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--n700);
-  white-space: nowrap;
-}
-.partner-sep {
-  width: 1px;
-  height: 28px;
-  background: var(--n200);
-  flex-shrink: 0;
-  align-self: center;
 }
 
 /* Final CTA */

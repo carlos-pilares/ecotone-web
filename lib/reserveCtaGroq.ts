@@ -1,6 +1,12 @@
 import { GROQ_SMART_LINK_FIELDS } from '@/lib/smartLinkGroq'
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
 
+/** CMS trust row under `reserveCtaSettings.trustItems`. */
+export type ReserveCtaTrustItemGroq = {
+  iconKey?: string | null
+  text?: string | null
+}
+
 /** CMS object `reserveCtaSettings` (Sanity). */
 export type ReserveCtaSettingsGroq = {
   eyebrow?: string | null
@@ -13,6 +19,10 @@ export type ReserveCtaSettingsGroq = {
   rowsOverride?: Array<{ label?: string | null; value?: string | null }> | null
   primaryCtaSmartLink?: SmartLinkGroq | null
   secondaryCtaSmartLink?: SmartLinkGroq | null
+  trustItems?: ReserveCtaTrustItemGroq[] | null
+  termsPrefixText?: string | null
+  termsLinkLabel?: string | null
+  termsSuffixText?: string | null
   termsSmartLink?: SmartLinkGroq | null
 } | null
 
@@ -28,5 +38,9 @@ export const GROQ_RESERVE_CTA_SETTINGS_FIELDS = `
   rowsOverride[]{ label, value },
   primaryCtaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
   secondaryCtaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
+  trustItems[]{ iconKey, text },
+  termsPrefixText,
+  termsLinkLabel,
+  termsSuffixText,
   termsSmartLink { ${GROQ_SMART_LINK_FIELDS} }
 `

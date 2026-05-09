@@ -973,6 +973,20 @@ export function mergeLodgePageWithFallback(
       label: ls?.label ?? out.book.secondaryCta.label,
       href: ls?.href ?? out.book.secondaryCta.href,
     },
+    trustItems: lodgeReserveCard.trustItems?.length
+      ? lodgeReserveCard.trustItems.map((t) => {
+          const k = (t.iconKey || 'shield').toLowerCase()
+          const icon: (typeof out.book.trustItems)[number]['icon'] =
+            k === 'heart' ? 'heart' : k === 'check' ? 'check' : 'shield'
+          return { icon, text: t.text }
+        })
+      : out.book.trustItems,
+    termsHref: lodgeReserveCard.termsHref,
+    termsPrefixText: lodgeReserveCard.termsPrefixText,
+    termsLinkLabel: lodgeReserveCard.termsLinkLabel,
+    termsSuffixText: lodgeReserveCard.termsSuffixText,
+    termsOpenInNewTab: lodgeReserveCard.termsOpenInNewTab,
+    termsRel: lodgeReserveCard.termsRel,
   }
 
   {

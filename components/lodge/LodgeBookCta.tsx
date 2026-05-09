@@ -42,7 +42,14 @@ export function LodgeBookCta({ data }: LodgeBookCtaProps) {
         subline: data.cardSubtitle,
         rows: data.rows.map((r) => ({ label: r.label, value: r.value })),
         ctas,
-        termsHref: '/experiences/soqtapata-pristine-immersion#terms',
+        termsHref:
+          data.termsHref?.trim() || '/experiences/soqtapata-pristine-immersion#terms',
+        termsPrefixText: data.termsPrefixText,
+        termsLinkLabel: data.termsLinkLabel,
+        termsSuffixText: data.termsSuffixText,
+        termsOpenInNewTab: data.termsOpenInNewTab,
+        termsRel: data.termsRel,
+        trustItems: data.trustItems.map((t) => ({ iconKey: t.icon, text: t.text })),
       }}
     />
   )

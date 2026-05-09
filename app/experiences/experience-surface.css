@@ -30,7 +30,7 @@
 
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; /* anchor targets clear fixed top nav + sticky in-page bar (see --anchor-offset, set in ExperiencePageChromeClient) */ scroll-padding-top: var(--anchor-offset, calc(var(--nav-h) + 56px)); }
 body { font-family: var(--f); background: var(--w); color: var(--n900); overflow-x: hidden; font-weight: 300; font-size: 15px; line-height: 1.65; -webkit-font-smoothing: antialiased; }
-img:not(.nav-logo-full, .footer-brand-deco-cms) { display: block; width: 100%; object-fit: cover; }
+img:not(.nav-logo-full, .footer-brand-deco-cms, .partner-logo-img) { display: block; width: 100%; object-fit: cover; }
 a { color: inherit; text-decoration: none; }
 button { font-family: var(--f); cursor: pointer; }
 

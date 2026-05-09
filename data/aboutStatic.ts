@@ -1,19 +1,9 @@
-import { partnerSeeds } from '@/data/cmsApproved/librarySeeds'
 import { DEFAULT_WHATSAPP_URL } from '@/data/cmsApproved/siteSettingsApprovedContent'
-import type { PartnerDoc } from '@/lib/queries'
-
-export const aboutPartnersFallback: PartnerDoc[] = partnerSeeds.map((p, i) => ({
-  _id: p._id,
-  name: p.name,
-  order: p.order ?? i + 1,
-  link: null,
-  logoSvg: null,
-}))
 
 export const aboutPartnersCopy = {
-  label: 'Certified by & affiliated with',
+  eyebrow: '' as string,
+  title: 'Certified by & affiliated with',
   body: null as string | null,
-  partnerNameFallback: 'Partner',
   emptyMessage: null as string | null,
 }
 

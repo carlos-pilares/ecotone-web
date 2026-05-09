@@ -1,6 +1,6 @@
-import { Fragment, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { HeadlineBlock } from '@/components/HeadlineBlock'
-import { PartnerMarkByName } from '@/components/partnerLogos'
+import { PartnersBand } from '@/components/shared/PartnersBand'
 import { ReserveCtaSection } from '@/components/shared/ReserveCtaSection'
 import { MissionItemIcon } from '@/components/sectionIcons'
 import { TechProductsSection } from '@/components/TechProductsSection'
@@ -73,10 +73,10 @@ export function HomeStaticSections({
   const mPh3 = cdnImageUrl(h.missionPhoto3 ?? null, 500, HOME_MISSION_PHOTO_FALLBACK_URLS[2])
 
   const prList: PartnerDoc[] = partners && partners.length > 0 ? partners : []
-  const partnersEmptyMsg =
-    h.partnersEmptyMessage?.trim() || homePageTextFields.partnersEmptyMessage?.trim()
+  const partnersEmptyMsg = (h.partnersEmptyMessage ?? '').trim() || null
+  const partnersTitle = (h.partnersTitle ?? '').trim()
+  const partnersEyebrow = (h.partnersEyebrow ?? '').trim() || null
   const showPartnersBand = prList.length > 0 || Boolean(partnersEmptyMsg)
-  const partnerNameFb = h.partnerNameFallback?.trim() || homePageTextFields.partnerNameFallback
 
   const blogList: BlogPostDoc[] = blogPosts && blogPosts.length > 0 ? blogPosts : []
   const blogEmptyDisplay = h.blogEmptyMessage?.trim() || homePageTextFields.blogEmptyMessage
@@ -210,57 +210,13 @@ export function HomeStaticSections({
       </section>
 
       {showPartnersBand ? (
-        <div className="partners-band fade">
-          <div className="partners-inner">
-            <div className="partners-label">
-              {h.partnersLabel ?? homePageTextFields.partnersLabel}
-            </div>
-            {h.partnersBody?.trim() ? <p className="body partners-body">{h.partnersBody}</p> : null}
-            {prList.length > 0 ? (
-              <div className="partners-row">
-                {prList.map((p, i) => {
-                  const name = p.name?.trim() || partnerNameFb
-                  const markFromCms =
-                    p.logoSvg && p.logoSvg.trim() ? (
-                      <span
-                        // eslint-disable-next-line react/no-danger
-                        dangerouslySetInnerHTML={{ __html: p.logoSvg }}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      />
-                    ) : null
-                  const mark = markFromCms ?? <PartnerMarkByName name={name} />
-                  const logoBlock = (
-                    <div className="partner-logo">
-                      {mark}
-                      <div className="partner-wordmark">{name}</div>
-                    </div>
-                  )
-                  return (
-                    <Fragment key={p._id}>
-                      {i > 0 ? <div className="partner-sep" /> : null}
-                      {p.link ? (
-                        <a
-                          href={p.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ textDecoration: 'none', color: 'inherit' }}
-                        >
-                          {logoBlock}
-                        </a>
-                      ) : (
-                        logoBlock
-                      )}
-                    </Fragment>
-                  )
-                })}
-              </div>
-            ) : partnersEmptyMsg ? (
-              <p className="body partners-body" style={{ marginBottom: 0 }}>
-                {partnersEmptyMsg}
-              </p>
-            ) : null}
-          </div>
-        </div>
+        <PartnersBand
+          eyebrow={partnersEyebrow}
+          title={partnersTitle || null}
+          body={h.partnersBody?.trim() ? h.partnersBody : null}
+          partners={prList}
+          emptyMessage={partnersEmptyMsg}
+        />
       ) : null}
 
       <section className="sec bg-warm" id="blog">

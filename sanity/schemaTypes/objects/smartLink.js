@@ -1,22 +1,37 @@
 import {defineField, defineType} from 'sanity'
 
+import {SmartLinkInternalPageInput} from '../../components/smartLink/SmartLinkInternalPageInput'
+import {SmartLinkLinkTypeInput} from '../../components/smartLink/SmartLinkLinkTypeInput'
 import {SmartLinkSamePageSectionInput} from '../../components/smartLink/SmartLinkSamePageSectionInput'
 import {SmartLinkWebsitePageSectionInput} from '../../components/smartLink/SmartLinkWebsitePageSectionInput'
 
-const WEBSITE_PAGE_LIST = [
-  {title: 'Home', value: 'home'},
-  {title: 'Experiences index', value: 'experiencesIndex'},
-  {title: 'Routes', value: 'routes'},
-  {title: 'Lodges index', value: 'lodgesIndex'},
-  {title: 'About', value: 'about'},
-  {title: 'Experience landing (pick document)', value: 'experiencePage'},
-  {title: 'Lodge landing (pick document)', value: 'lodgePage'},
-]
+import {
+  SMART_LINK_INTERNAL_PAGE_LEGACY_ALIASES,
+  SMART_LINK_LINK_TYPE_EDITOR_OPTIONS,
+  SMART_LINK_LINK_TYPE_LEGACY,
+  SMART_LINK_WEBSITE_PAGE_EDITOR_OPTIONS,
+} from './smartLinkEditorOptions'
 
 const linkTypeIs = (t) => (parent) => parent?.linkType === t
 
+/** @param {Record<string, unknown> | null | undefined} parent */
+function websitePageLike(parent) {
+  const t = parent?.linkType
+  return t === 'websitePage' || t === 'internalPage' || t === 'pageSection'
+}
+
 /** When off, only “Show on site” stays visible; no link fields are required. */
 const hiddenWhenDisabled = (parent) => parent?.enabled === false
+
+const ALLOWED_LINK_TYPES = new Set([
+  ...SMART_LINK_LINK_TYPE_EDITOR_OPTIONS.map((o) => o.value),
+  ...SMART_LINK_LINK_TYPE_LEGACY,
+])
+
+const ALLOWED_INTERNAL_PAGE = new Set([
+  ...SMART_LINK_WEBSITE_PAGE_EDITOR_OPTIONS.map((o) => o.value),
+  ...SMART_LINK_INTERNAL_PAGE_LEGACY_ALIASES,
+])
 
 /**
  * Optional smartLink fields (e.g. reserve CTAs): no label ⇒ not a real CTA — do not validate
@@ -56,16 +71,9 @@ export const smartLink = defineType({
       title: 'Link type',
       type: 'string',
       hidden: ({parent}) => hiddenWhenDisabled(parent),
-      options: {
-        list: [
-          {title: 'A. Section within this page', value: 'samePageSection'},
-          {title: 'B. Page within the website', value: 'websitePage'},
-          {title: 'C. External page', value: 'externalUrl'},
-          {title: 'D. File download', value: 'file'},
-          {title: 'E. Book (flow pending — optional fallback URL)', value: 'book'},
-          {title: 'F. WhatsApp', value: 'whatsapp'},
-        ],
-        layout: 'radio',
+      description: 'Legacy stored types (internalPage, pageSection, email) remain valid until migrated.',
+      components: {
+        input: SmartLinkLinkTypeInput,
       },
       initialValue: 'websitePage',
       validation: (Rule) =>
@@ -73,7 +81,10 @@ export const smartLink = defineType({
           const p = ctx.parent
           if (!p || typeof p !== 'object') return true
           if (skipSmartLinkTargetValidation(p)) return true
-          return v?.trim() ? true : 'Pick a link type'
+          const t = typeof v === 'string' ? v.trim() : ''
+          if (!t) return 'Pick a link type'
+          if (!ALLOWED_LINK_TYPES.has(t)) return 'Invalid or unsupported link type'
+          return true
         }),
     }),
     defineField({
@@ -97,15 +108,20 @@ export const smartLink = defineType({
       name: 'internalPage',
       title: 'Site page',
       type: 'string',
-      description: 'Target page on this website.',
-      options: {list: WEBSITE_PAGE_LIST, layout: 'dropdown'},
-      hidden: ({parent}) => hiddenWhenDisabled(parent) || !linkTypeIs('websitePage')(parent),
+      description: 'Target page on this website. Legacy keys (e.g. aboutPage) stay valid until migrated.',
+      components: {
+        input: SmartLinkInternalPageInput,
+      },
+      hidden: ({parent}) => hiddenWhenDisabled(parent) || !websitePageLike(parent),
       validation: (Rule) =>
         Rule.custom((v, ctx) => {
           const p = ctx.parent
           if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p)) return true
-          if (p.linkType !== 'websitePage') return true
-          return v?.trim() ? true : 'Pick a site page'
+          if (!websitePageLike(p)) return true
+          const t = typeof v === 'string' ? v.trim() : ''
+          if (!t) return 'Pick a site page'
+          if (!ALLOWED_INTERNAL_PAGE.has(t)) return 'Pick a site page'
+          return true
         }),
     }),
     defineField({
@@ -114,12 +130,12 @@ export const smartLink = defineType({
       type: 'reference',
       to: [{type: 'experiencePage'}],
       hidden: ({parent}) =>
-        hiddenWhenDisabled(parent) || !linkTypeIs('websitePage')(parent) || parent?.internalPage !== 'experiencePage',
+        hiddenWhenDisabled(parent) || !websitePageLike(parent) || parent?.internalPage !== 'experiencePage',
       validation: (Rule) =>
         Rule.custom((ref, ctx) => {
           const p = ctx.parent
           if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p)) return true
-          if (p.linkType !== 'websitePage' || p.internalPage !== 'experiencePage') return true
+          if (!websitePageLike(p) || p.internalPage !== 'experiencePage') return true
           return ref?._ref ? true : 'Pick an experience page'
         }),
     }),
@@ -129,12 +145,12 @@ export const smartLink = defineType({
       type: 'reference',
       to: [{type: 'lodgePage'}],
       hidden: ({parent}) =>
-        hiddenWhenDisabled(parent) || !linkTypeIs('websitePage')(parent) || parent?.internalPage !== 'lodgePage',
+        hiddenWhenDisabled(parent) || !websitePageLike(parent) || parent?.internalPage !== 'lodgePage',
       validation: (Rule) =>
         Rule.custom((ref, ctx) => {
           const p = ctx.parent
           if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p)) return true
-          if (p.linkType !== 'websitePage' || p.internalPage !== 'lodgePage') return true
+          if (!websitePageLike(p) || p.internalPage !== 'lodgePage') return true
           return ref?._ref ? true : 'Pick a lodge page'
         }),
     }),
@@ -144,7 +160,7 @@ export const smartLink = defineType({
       type: 'string',
       description: 'Scroll to a section after navigation. Omit to open the top of the page.',
       hidden: ({parent}) =>
-        hiddenWhenDisabled(parent) || !linkTypeIs('websitePage')(parent) || !parent?.internalPage?.trim(),
+        hiddenWhenDisabled(parent) || !websitePageLike(parent) || !parent?.internalPage?.trim(),
       components: {
         input: SmartLinkWebsitePageSectionInput,
       },
@@ -205,9 +221,17 @@ export const smartLink = defineType({
     }),
     defineField({
       name: 'emailAddress',
-      title: 'Email address (legacy)',
+      title: 'Email address',
       type: 'string',
-      hidden: () => true,
+      description: 'Used when link type is Email (legacy).',
+      hidden: ({parent}) => hiddenWhenDisabled(parent) || !linkTypeIs('email')(parent),
+      validation: (Rule) =>
+        Rule.custom((v, ctx) => {
+          const p = ctx.parent
+          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p)) return true
+          if (p.linkType !== 'email') return true
+          return v?.trim() ? true : 'Email address is required'
+        }),
     }),
     defineField({
       name: 'whatsappNumber',

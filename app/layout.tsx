@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import './globals.css'
 import './shell-logo-tokens.css'
 import './shell-nav-logo.css'
+import '@/components/partners/partners-wall.css'
 
 const lexend = Lexend({
   subsets: ['latin'],

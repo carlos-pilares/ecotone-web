@@ -2,11 +2,12 @@
  * Maps `AboutPageSanityDoc` (schema `aboutPage`) to the shapes consumed by `components/about/*`,
  * merging with `data/aboutStatic.ts` when fields are missing.
  */
-import type { ReserveCtaCta, ReserveCtaDetailRow } from '@/components/shared/ReserveCtaSection'
-import { aboutPartnersCopy, aboutPartnersFallback, aboutSeoFallback, aboutStatic } from '@/data/aboutStatic'
+import type { ReserveCtaCardProps } from '@/components/shared/ReserveCtaSection'
+import { aboutSeoFallback, aboutStatic } from '@/data/aboutStatic'
 import { homePageTextFields } from '@/data/cmsApproved/homePageFields'
 import type { AboutPageSanityDoc } from '@/lib/aboutPageQuery'
 import type { PartnerDoc } from '@/lib/queries'
+import { filterPublishedPartnerDocs } from '@/lib/partnerDocs'
 import { getLowestActiveExperiencePrice, buildReserveRowsForHome, type ExperiencePriceInput } from '@/lib/reserveCtaPricing'
 import { resolveReserveCtaCard } from '@/lib/resolveReserveCtaCard'
 import { isExternalHref, resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
@@ -132,20 +133,13 @@ export type AboutPageResolved = {
     }>
     trust: Array<{ key: string; text: string; icon: 'check' | 'shield' | 'heart' }>
     /** Reserve CTA card: CMS `reserveCtaSettings` + lowest active experience price + legacy fallbacks. */
-    reserveCard: {
-      priceLine: string
-      priceSuffix: string
-      subline: string
-      rows: ReserveCtaDetailRow[]
-      ctas: ReserveCtaCta[]
-      termsHref?: string
-    }
+    reserveCard: ReserveCtaCardProps
   }
   partnersBand: {
-    label: string
+    eyebrow: string
+    title: string
     body: string | null
     partners: PartnerDoc[]
-    partnerNameFallback: string
     emptyMessage: string | null
   }
 }
@@ -154,7 +148,6 @@ const fb = aboutStatic
 
 export function resolveAboutPageData(
   cms: AboutPageSanityDoc | null,
-  allPartnersFromLibrary: PartnerDoc[],
   experiencesForPricing: ExperiencePriceInput[] = [],
 ): AboutPageResolved {
   const c = cms && cms._id ? cms : null
@@ -447,22 +440,16 @@ export function resolveAboutPageData(
     reserveCard,
   }
 
-  const curated = Array.isArray(c?.partnersResolved)
-    ? c.partnersResolved.filter((p): p is PartnerDoc => Boolean(p?._id))
-    : []
-  const partnersForBand =
-    curated.length > 0
-      ? curated
-      : allPartnersFromLibrary.length > 0
-        ? allPartnersFromLibrary
-        : aboutPartnersFallback
+  const partnersForBand = filterPublishedPartnerDocs(
+    Array.isArray(c?.partnersResolved) ? c.partnersResolved : [],
+  )
 
   const partnersBand = {
-    label: trimOr(aboutPartnersCopy.label, c?.partnersLabel),
-    body: c?.partnersBody?.trim() ? c.partnersBody.trim() : aboutPartnersCopy.body,
+    eyebrow: (c?.partnersEyebrow ?? '').trim(),
+    title: (c?.partnersTitle ?? '').trim(),
+    body: c?.partnersBody?.trim() ? c.partnersBody.trim() : null,
     partners: partnersForBand,
-    partnerNameFallback: aboutPartnersCopy.partnerNameFallback,
-    emptyMessage: aboutPartnersCopy.emptyMessage,
+    emptyMessage: (c?.partnersEmptyMessage ?? '').trim() || null,
   }
 
   return {

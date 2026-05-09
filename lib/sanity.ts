@@ -49,3 +49,27 @@ export function cdnImageUrl(
     return fallback
   }
 }
+
+/**
+ * Partner logo marks: full uncropped asset, scaled to fit inside a square cap (no hotspot/crop).
+ * Layout uses CSS `object-fit: contain` inside fixed cells.
+ */
+export function partnerLogoCdnUrl(
+  source: SanityImageSource | null | undefined,
+  fallback: string,
+): string {
+  if (!source) return fallback
+  const cap = 512
+  try {
+    const u = urlFor(source)
+      .ignoreImageParams()
+      .width(cap)
+      .height(cap)
+      .fit('max')
+      .quality(85)
+      .url()
+    return u || fallback
+  } catch {
+    return fallback
+  }
+}

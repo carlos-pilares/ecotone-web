@@ -770,6 +770,13 @@ export type LodgeBookCtaData = LodgeSectionHeaderFields & {
   primaryCta: { label: string; href: string }
   secondaryCta: { label: string; href: string }
   trustItems: readonly LodgeBookTrustItem[]
+  /** Optional; merged from `reserveCtaSettings` when using CMS. */
+  termsHref?: string
+  termsPrefixText?: string
+  termsLinkLabel?: string
+  termsSuffixText?: string
+  termsOpenInNewTab?: boolean
+  termsRel?: string
 }
 
 /** Final CTA — `reference/ecotone-lodge_11.html` (`#book`). */
