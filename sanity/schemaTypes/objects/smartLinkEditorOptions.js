@@ -20,6 +20,7 @@ export const SMART_LINK_WEBSITE_PAGE_EDITOR_OPTIONS = [
   {title: 'Routes', value: 'routes'},
   {title: 'Lodges index', value: 'lodgesIndex'},
   {title: 'About', value: 'about'},
+  {title: 'Journal', value: 'journal'},
   {title: 'Experience landing (pick document)', value: 'experiencePage'},
   {title: 'Lodge landing (pick document)', value: 'lodgePage'},
 ]
