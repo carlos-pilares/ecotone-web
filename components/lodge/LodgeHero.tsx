@@ -61,6 +61,14 @@ export function LodgeHero({ data }: LodgeHeroProps) {
             <h1 className="lodge-h1">{data.title}</h1>
             <p className="lodge-tagline">{data.tagline}</p>
 
+            {data.primaryCta.href.trim() && data.primaryCta.label.trim() ? (
+              <div className="lodge-hero-primary-cta">
+                <Link href={data.primaryCta.href} className="btn btn-primary">
+                  {data.primaryCta.label}
+                </Link>
+              </div>
+            ) : null}
+
             <div className="lodge-identity-foot">
               <div className="lodge-rating">
                 <div className="stars" aria-hidden>
@@ -75,11 +83,6 @@ export function LodgeHero({ data }: LodgeHeroProps) {
                 <span className="lodge-rating-divider" aria-hidden />
                 <span className="lodge-rating-meta">{data.secondaryMeta}</span>
               </div>
-              {data.primaryCta.href.trim() && data.primaryCta.label.trim() ? (
-                <Link href={data.primaryCta.href} className="btn btn-primary">
-                  {data.primaryCta.label}
-                </Link>
-              ) : null}
             </div>
           </div>
         </div>

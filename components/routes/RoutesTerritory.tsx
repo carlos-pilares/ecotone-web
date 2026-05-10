@@ -3,7 +3,7 @@ import { RoutesTerritoryMap } from '@/components/routes/RoutesTerritoryMap'
 
 export function RoutesTerritory({ data }: { data: RoutesTerritoryStatic }) {
   return (
-    <section className="content-section fade" id={data.sectionId}>
+    <section className="content-section fade routes-territory-section" id={data.sectionId}>
       <div className="content-inner">
         <div className="eyebrow">{data.eyebrow}</div>
         <h2 className="h2">{data.h2}</h2>

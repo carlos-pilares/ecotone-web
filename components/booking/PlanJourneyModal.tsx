@@ -6,6 +6,7 @@ import type { PlanJourneyDraft } from '@/components/booking/types'
 import type { GeneralModalCopy, TravellerIconKey } from '@/lib/bookingModalCopy'
 import { effectiveWhatsappNumber } from '@/lib/bookingModalCopy'
 import { buildWaMeLink } from '@/lib/bookingWhatsapp'
+import { submitEnquiryInBackground } from '@/lib/submitEnquiry'
 
 const EMAIL_OK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -228,9 +229,32 @@ export function PlanJourneyModal({ waNumber, copy, onClose }: Props) {
       queueMicrotask(() => emailRef.current?.focus())
       return
     }
+    submitEnquiryInBackground({
+      kind: 'plan_journey',
+      fullName: draft.fullName,
+      travellerType,
+      travellerTypeTitle: travellerType ? travellerTitle(travellerType) : null,
+      season,
+      seasonLine: season ? seasonLine(season) : null,
+      partySize,
+      contactChannel: 'email',
+      email: trimmed,
+      emailMessage: emailMessage.trim(),
+    })
     setEmailErr('')
     setEmailThanks(true)
-  }, [email, copy.emailInvalidMessage, v.emailRequired])
+  }, [
+    email,
+    emailMessage,
+    copy.emailInvalidMessage,
+    v.emailRequired,
+    draft.fullName,
+    travellerType,
+    season,
+    partySize,
+    travellerTitle,
+    seasonLine,
+  ])
 
   const segClass = (i: number) => {
     const idx = step - 1

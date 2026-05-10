@@ -6,6 +6,7 @@ import type { ExperienceBookingSummary } from '@/components/booking/types'
 import type { ExperienceModalCopy } from '@/lib/bookingModalCopy'
 import { effectiveWhatsappNumber } from '@/lib/bookingModalCopy'
 import { buildWaMeLink } from '@/lib/bookingWhatsapp'
+import { submitEnquiryInBackground } from '@/lib/submitEnquiry'
 
 const EMAIL_OK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -158,9 +159,30 @@ export function BookExperienceModal({ waNumber, copy, summary, onClose }: Props)
       queueMicrotask(() => emailRef.current?.focus())
       return
     }
+    submitEnquiryInBackground({
+      kind: 'book_experience',
+      name: name.trim(),
+      approxTravelDate: approxDate.trim(),
+      partySize,
+      contactChannel: 'email',
+      email: trimmed,
+      emailMessage: emailMessage.trim(),
+      experienceSummary: summary,
+    })
     setEmailErr('')
     setEmailThanks(true)
-  }, [validateCore, selectedContact, email, copy.emailInvalidMessage, v.emailRequired])
+  }, [
+    validateCore,
+    selectedContact,
+    email,
+    emailMessage,
+    name,
+    approxDate,
+    partySize,
+    summary,
+    copy.emailInvalidMessage,
+    v.emailRequired,
+  ])
 
   const handleWaClick = (e: MouseEvent<HTMLAnchorElement>) => {
     if (!validateCore()) {
