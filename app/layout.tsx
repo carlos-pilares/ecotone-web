@@ -1,3 +1,4 @@
+import { Analytics } from '@vercel/analytics/react'
 import { Lexend } from 'next/font/google'
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
@@ -32,6 +33,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <BookingModalProvider defaultWhatsappUrl={shell.defaultWhatsappUrl} copy={bookingModalCopy}>
           {children}
         </BookingModalProvider>
+        <Analytics />
       </body>
     </html>
   )
