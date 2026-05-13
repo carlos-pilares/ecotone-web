@@ -33,6 +33,15 @@ import {reserveCtaSettings} from './objects/reserveCtaSettings'
 import {experienceReserveCardRow} from './objects/experienceReserveCardRow'
 import {lodgePageSectionCopy} from './objects/lodgePageSectionCopy'
 import {lodgeSnapshotKeyPick} from './objects/lodgeSnapshotKeyPick'
+import {lodgePageHeroHighlightPill} from './objects/lodgePageHeroHighlightPill'
+import {
+  lodgePageHighlightLine,
+  lodgePageNavItem,
+  lodgeGalleryStableKeyPick,
+  lodgeAmenityIconPick,
+  lodgeScienceSpecialText,
+  lodgePageFaqItem,
+} from './objects/lodgePageObjects'
 import {lodgePageBookingBlock} from './objects/lodgePageBookingBlock'
 import {lodgePageExperiencesTailorCta} from './objects/lodgePageExperiencesTailorCta'
 import {experiencePageSnapshotStatPick} from './objects/experiencePageSnapshotStatPick'
@@ -115,6 +124,13 @@ const objects = [
   reserveCtaSettings,
   lodgePageSectionCopy,
   lodgeSnapshotKeyPick,
+  lodgePageHeroHighlightPill,
+  lodgePageHighlightLine,
+  lodgePageNavItem,
+  lodgeGalleryStableKeyPick,
+  lodgeAmenityIconPick,
+  lodgeScienceSpecialText,
+  lodgePageFaqItem,
   lodgePageBookingBlock,
   lodgePageExperiencesTailorCta,
   routesPageStatLine,

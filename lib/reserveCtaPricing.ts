@@ -12,6 +12,13 @@ export function isActiveExperienceStatus(status: string | null | undefined): boo
   return status === 'active'
 }
 
+/** Active or coming-soon (or legacy unset) — matches programmes shown on lodge experience cards. */
+export function isListedExperienceStatus(status: string | null | undefined): boolean {
+  const s = status == null ? '' : String(status).trim()
+  if (s === '') return true
+  return s === 'active' || s === 'coming-soon'
+}
+
 /**
  * Lowest positive `price` among experiences whose status is `active` (or unset).
  */
@@ -22,6 +29,56 @@ export function getLowestActiveExperiencePrice(experiences: ExperiencePriceInput
     .filter((p): p is number => typeof p === 'number' && p > 0)
   if (nums.length === 0) return null
   return Math.min(...nums)
+}
+
+/** First plausible USD integer in a marketing price label (e.g. "$986", "USD 1,200+"). */
+function parseUsdFromPriceLabel(label: string | null | undefined): number | null {
+  if (label == null) return null
+  const s = String(label).trim()
+  if (!s) return null
+  const normalized = s.replace(/,/g, '')
+  const matches = [...normalized.matchAll(/\$?\s*(\d{2,6})(?:\.\d+)?/g)]
+  let best: number | null = null
+  for (const m of matches) {
+    const n = Math.round(parseFloat(m[1]))
+    if (n >= 50 && n <= 500_000 && (best == null || n < best)) best = n
+  }
+  return best
+}
+
+/**
+ * Lowest positive USD among listed experiences (`active` + `coming-soon` + unset status).
+ * Uses each doc's numeric `price` when > 0, otherwise the first plausible amount in `priceLabel`.
+ */
+export function getLowestListedExperienceUsd(experiences: ExperiencePriceInput[]): number | null {
+  const nums: number[] = []
+  for (const e of experiences) {
+    if (!isListedExperienceStatus(e.status)) continue
+    if (typeof e.price === 'number' && e.price > 0) {
+      nums.push(Math.round(e.price))
+      continue
+    }
+    const fromLabel = parseUsdFromPriceLabel(e.priceLabel ?? undefined)
+    if (fromLabel != null) nums.push(fromLabel)
+  }
+  if (nums.length === 0) return null
+  return Math.min(...nums)
+}
+
+/**
+ * Lodge reserve card: lowest from related listed experiences, else lodge `startingPrice`
+ * (same numeric source as the book details "Starting from" row in `lodgePageCms` merge).
+ */
+export function getLodgeReserveLowestUsd(
+  experiences: ExperiencePriceInput[],
+  lodgeStartingPrice: number | null | undefined,
+): number | null {
+  const fromExp = getLowestListedExperienceUsd(experiences)
+  if (fromExp != null) return fromExp
+  if (typeof lodgeStartingPrice === 'number' && lodgeStartingPrice > 0) {
+    return Math.round(lodgeStartingPrice)
+  }
+  return null
 }
 
 export type FormatReservePriceInput = {

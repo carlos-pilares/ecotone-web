@@ -58,10 +58,17 @@ export type LodgeSnapshotItemRow = {
 }
 
 export type LodgeGalleryItemRow = {
+  _key?: string | null
   stableKey?: string | null
   title?: string | null
+  caption?: string | null
+  altText?: string | null
   description?: string | null
   alt?: string | null
+  /** New editorial category (hero | accommodation | commonAreasAmenities | other). */
+  photoCategory?: string | null
+  /** Links to `rooms[]` row `_key` when category is accommodation. */
+  accommodationRoomKey?: string | null
   usageSection?: 'hero' | 'accommodation' | 'commonAreas' | string | null
   roomStableId?: string | null
   /** @deprecated legacy categorization */
@@ -86,6 +93,7 @@ export type LodgeRoomGalleryPickRow = {
 }
 
 export type LodgeRoomRow = {
+  _key?: string | null
   stableId?: string | null
   name?: string | null
   numberOfRooms?: number | null
@@ -108,9 +116,22 @@ export type LodgeCommonAreaRow = {
 }
 
 export type LodgeAmenityRow = {
+  _key?: string | null
   icon?: string | null
   title?: string | null
   description?: string | null
+}
+
+export type LodgeFacilitiesGallerySelectionPickRow = {
+  galleryRowKey?: string | null
+  /** @deprecated Legacy stable key; resolver still resolves when galleryRowKey is empty. */
+  galleryStableKey?: string | null
+}
+
+export type LodgeFacilitiesAmenitySelectionPickRow = {
+  amenityRowKey?: string | null
+  /** @deprecated Legacy manual icon key; resolver matches first unused lodge row with same icon. */
+  amenityIcon?: string | null
 }
 
 export type LodgeJourneyStepRow = {
@@ -147,6 +168,8 @@ export type LodgeFaqRow = {
 /** Experience projection embebida en `lodgePage` / `lodge.experiences`. */
 export type LodgeCmsExperienceCardRow = {
   _id: string
+  /** Resolved from `experience.lodge` — must match the page's linked lodge. */
+  linkedLodgeId?: string | null
   name?: string | null
   tagline?: string | null
   programType?: string | null
@@ -171,7 +194,7 @@ export type LodgeDocumentRow = {
   slug?: { current?: string | null } | null
   route?: string | null
   location?: string | null
-  altitude?: number | null
+  altitude?: number | string | null
   certifications?: LodgeCertificationRow[] | null
   shortDescription?: string | null
   longDescription?: string | null
@@ -187,6 +210,7 @@ export type LodgeDocumentRow = {
   highlights?: LodgeScienceHighlightRow[] | null
   researchAreas?: LodgeResearchAreaRow[] | null
   specialMessage?: string | null
+  accommodationSpecialMessage?: string | null
   experiences?: LodgeCmsExperienceCardRow[] | null
   reviews?: ReviewDoc[] | null
   faqs?: LodgeFaqRow[] | null
@@ -237,14 +261,24 @@ export type LodgePageReviewsPresentationRow = {
 } | null
 
 export type LodgePageExperiencesTailorCtaRow = {
+  /** @deprecated use `showTailorMade` */
   enabled?: boolean | null
+  showTailorMade?: boolean | null
+  /** @deprecated use `tailorMadeEyebrow` */
   eyebrow?: string | null
+  /** @deprecated use `tailorMadeTitle` */
   title?: string | null
+  /** @deprecated use `tailorMadeBody` */
   description?: string | null
+  tailorMadeEyebrow?: string | null
+  tailorMadeTitle?: string | null
+  tailorMadeBody?: string | null
   image?: SanityImageSource | null
   imageUrl?: string | null
   imageAlt?: string | null
+  /** @deprecated use `tailorMadeCta` */
   ctaSmartLink?: SmartLinkGroq | null
+  tailorMadeCta?: SmartLinkGroq | null
 } | null
 
 export type LodgeStructuredPageRow = {
@@ -253,14 +287,37 @@ export type LodgeStructuredPageRow = {
   slug?: { current?: string | null } | null
   seo?: { title?: string | null; description?: string | null; ogImage?: unknown; noIndex?: boolean | null } | null
   heroImage?: SanityImageSource | null
-  heroHighlights?: Array<{ key?: string | null } | null> | null
+  heroHighlights?: Array<{ text?: string | null; key?: string | null } | null> | null
+  heroTitle?: string | null
+  heroShortDescription?: string | null
   heroCTA?: LodgeLinkWithLabel | null
   heroCtaSmartLink?: SmartLinkGroq | null
+  heroSecondaryCtaSmartLink?: SmartLinkGroq | null
+  highlightLines?: Array<{ title?: string | null; subtitle?: string | null } | null> | null
   snapshotSelection?: Array<{ key?: string | null } | null> | null
   navTitle?: string | null
   navSubtitle?: string | null
   navCTA?: LodgeLinkWithLabel | null
   navCtaSmartLink?: SmartLinkGroq | null
+  overviewHighlights?: Array<string | null> | null
+  facilitiesAmenitiesEyebrow?: string | null
+  facilitiesGallerySelection?: LodgeFacilitiesGallerySelectionPickRow[] | null
+  facilitiesAmenitiesSelection?: LodgeFacilitiesAmenitySelectionPickRow[] | null
+  overviewSectionCopy?: LodgePageSectionCopyRow | null
+  accommodationSectionCopy?: LodgePageSectionCopyRow | null
+  facilitiesSectionCopy?: LodgePageSectionCopyRow | null
+  locationSectionCopy?: LodgePageSectionCopyRow | null
+  gettingHereImage?: SanityImageSource | null
+  gettingHereImageUrl?: string | null
+  gettingHereImageAlt?: string | null
+  gettingHereIndications?: Array<{ _key?: string; title?: string | null; text?: string | null } | null> | null
+  researchSectionCopy?: LodgePageSectionCopyRow | null
+  experiencesSectionCopy?: LodgePageSectionCopyRow | null
+  faqSectionCopy?: LodgePageSectionCopyRow | null
+  scienceHighlights?: Array<{ title?: string | null; subtitle?: string | null } | null> | null
+  scienceProjects?: Array<{ title?: string | null; subtitle?: string | null } | null> | null
+  scienceSpecialText?: { iconKey?: string | null; text?: string | null } | null
+  faqItems?: Array<{ title?: string | null; text?: string | null } | null> | null
   sections?: LodgePageSectionsRow
   featuredRoomStableId?: string | null
   experiencesSelection?: LodgeCmsExperienceCardRow[] | null

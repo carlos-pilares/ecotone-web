@@ -659,6 +659,13 @@ export const soqtapataStructuredPageBySlugQuery = groq`
   }
 `
 
+/** Published lodge landings: slug segments for `generateStaticParams` (requires `lodge` ref). */
+export const lodgePageSlugsQuery = groq`
+  *[_type == "lodgePage" && defined(slug.current) && defined(lodge)] | order(slug.current asc) {
+    "slug": slug.current
+  }
+`
+
 /** Lodge landing: `lodgePage` + dereferenced `lodge` + curated experiences/reviews. */
 export const lodgeStructuredPageBySlugQuery = groq`
   *[_type == "lodgePage" && slug.current == $slug][0] {
@@ -667,14 +674,38 @@ export const lodgeStructuredPageBySlugQuery = groq`
     slug,
     seo,
     heroImage,
-    heroHighlights[]{ key },
+    heroHighlights[]{ text, key },
+    heroTitle,
+    heroShortDescription,
     heroCTA { label, href, openInNewTab },
     heroCtaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    heroSecondaryCtaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    highlightLines[]{ title, subtitle },
     snapshotSelection[]{ key },
     navTitle,
     navSubtitle,
+    navItems[]{ label, targetSection, sectionId },
     navCTA { label, href, openInNewTab },
     navCtaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    overviewHighlights,
+    facilitiesAmenitiesEyebrow,
+    facilitiesGallerySelection[]{ galleryRowKey, galleryStableKey },
+    facilitiesAmenitiesSelection[]{ amenityRowKey, amenityIcon },
+    overviewSectionCopy { eyebrow, title, body },
+    accommodationSectionCopy { eyebrow, title, body },
+    facilitiesSectionCopy { eyebrow, title, body },
+    locationSectionCopy { eyebrow, title, body },
+    gettingHereImage,
+    "gettingHereImageUrl": gettingHereImage.asset->url,
+    gettingHereImageAlt,
+    gettingHereIndications[]{ _key, title, text },
+    researchSectionCopy { eyebrow, title, body },
+    experiencesSectionCopy { eyebrow, title, body },
+    faqSectionCopy { eyebrow, title, body },
+    scienceHighlights[]{ title, subtitle },
+    scienceProjects[]{ title, subtitle },
+    scienceSpecialText { iconKey, text },
+    faqItems[]{ title, text },
     sections {
       overview { eyebrow, title, body },
       accommodation { eyebrow, title, body },
@@ -689,6 +720,7 @@ export const lodgeStructuredPageBySlugQuery = groq`
     featuredRoomStableId,
     experiencesSelection[]-> {
       _id,
+      "linkedLodgeId": coalesce(lodge->_id, lodge._ref),
       name,
       tagline,
       programType,
@@ -707,9 +739,14 @@ export const lodgeStructuredPageBySlugQuery = groq`
     fallbackToLodgeRelations,
     experiencesTailorCta {
       enabled,
+      showTailorMade,
       eyebrow,
       title,
       description,
+      tailorMadeEyebrow,
+      tailorMadeTitle,
+      tailorMadeBody,
+      tailorMadeCta { ${GROQ_SMART_LINK_FIELDS} },
       image,
       "imageUrl": image.asset->url,
       imageAlt,
@@ -803,10 +840,15 @@ export const lodgeStructuredPageBySlugQuery = groq`
       keyElements,
       snapshotItems[]{ key, label, value },
       gallery[]{
+        _key,
         stableKey,
         title,
+        caption,
+        altText,
         description,
         alt,
+        photoCategory,
+        accommodationRoomKey,
         usageSection,
         roomStableId,
         category,
@@ -816,6 +858,7 @@ export const lodgeStructuredPageBySlugQuery = groq`
         "imageUrl": image.asset->url
       },
       rooms[]{
+        _key,
         stableId,
         name,
         numberOfRooms,
@@ -837,15 +880,17 @@ export const lodgeStructuredPageBySlugQuery = groq`
         image,
         "imageUrl": image.asset->url
       },
-      amenities[]{ icon, title, description },
+      amenities[]{ _key, icon, title, description },
       mapImage,
       "mapImageUrl": mapImage.asset->url,
       journeySteps[]{ title, description },
       highlights[]{ title, subtitle },
       researchAreas[]{ title, description },
       specialMessage,
+      accommodationSpecialMessage,
       experiences[]-> {
         _id,
+        "linkedLodgeId": coalesce(lodge->_id, lodge._ref),
         name,
         tagline,
         programType,

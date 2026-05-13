@@ -19,15 +19,21 @@ const lodgeProjection = /* groq */ `{
   snapshotItems[]{ _key, key, label, value },
   "mainImageUrl": mainImage.asset->url,
   gallery[]{
+    _key,
     stableKey,
     title,
+    caption,
+    altText,
     description,
     alt,
+    photoCategory,
+    accommodationRoomKey,
     usageSection,
     roomStableId,
     category,
     relatedRoomStableId,
     relatedCommonAreaKey,
+    image,
     "imageUrl": image.asset->url
   },
   rooms[]{

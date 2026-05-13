@@ -23,6 +23,8 @@
     "export:cms-excel": "tsx scripts/exportCmsExcel.ts",
     "migrate:smart-link-legacy": "tsx scripts/migrateSmartLinkLegacy.ts",
     "migrate:home-partners": "tsx scripts/migrateHomePartnersField.ts",
+    "migrate:repair-lodge-rooms": "tsx scripts/repairLodgeRoomStableIds.ts",
+    "diag:lodge-knowledge": "tsx scripts/diagLodgeKnowledgeBlocking.ts",
     "migrate:partners-cleanup": "tsx scripts/migratePartnersCleanup.ts"
   },
   "dependencies": {

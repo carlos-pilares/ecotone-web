@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react'
 
-import type { LodgeAmenityIconId, LodgeFacilitiesData, LodgeGalleryPhoto } from '@/data/lodgeSoqtapataStatic'
+import type { LodgeAmenityIconId, LodgeFacilitiesData, LodgeGalleryPhoto, LodgePrimaryPhoto, LodgeStripPhoto } from '@/data/lodgeSoqtapataStatic'
 
 import { LodgeSectionHeading } from '@/components/lodge/LodgeSectionHeading'
 import { openGallery } from '@/lib/galleryLightboxBus'
@@ -97,14 +97,31 @@ function toGalleryItems(photos: readonly LodgeGalleryPhoto[]) {
   }))
 }
 
+function stripTileIsMore(p: LodgeStripPhoto) {
+  return Boolean(p.moreCount?.trim() || p.moreLabel?.trim())
+}
+
 /** Facilities — rejilla hero + strip + amenidades como `ecotone-lodge_11.html`. */
 export function LodgeFacilities({ data }: LodgeFacilitiesProps) {
-  const [hero, tile1, tile2] = data.primaryPhotos
-  const [stripA, stripB, stripMore] = data.stripPhotos
   const gallery = data.commonAreasGallery
+  const primaries = [...data.primaryPhotos] as LodgePrimaryPhoto[]
+  const strips = [...data.stripPhotos] as LodgeStripPhoto[]
+  const showFacilitiesGallery = gallery.length > 0 && primaries.length > 0
 
-  const openAt = (index: number) => {
+  const openHero = (index: number) => {
     openGallery(toGalleryItems(gallery), Math.max(0, Math.min(index, gallery.length - 1)))
+  }
+
+  const openStrip = (j: number) => {
+    const p = strips[j]
+    if (!p) return
+    if (stripTileIsMore(p)) {
+      const start = Math.min(5, gallery.length - 1)
+      openGallery(toGalleryItems(gallery), Math.max(0, start))
+      return
+    }
+    const idx = primaries.length + j
+    openGallery(toGalleryItems(gallery), Math.max(0, Math.min(idx, gallery.length - 1)))
   }
 
   const facilitiesBodyStyle = {
@@ -126,74 +143,64 @@ export function LodgeFacilities({ data }: LodgeFacilitiesProps) {
           bodyStyle={facilitiesBodyStyle}
         />
 
-        <div className="common-areas-grid common-areas-grid--hero">
-          <button
-            type="button"
-            className="common-photo common-photo--tall common-photo--clickable"
-            onClick={() => openAt(0)}
-            aria-label={`${data.galleryTileAriaLabelPrefix} ${hero.label}`}
-          >
-            <img src={hero.image} alt={hero.imageAlt} width={800} height={680} loading="lazy" />
-            <div className="common-photo-overlay" aria-hidden />
-            <span className="common-photo-label">{hero.label}</span>
-            {hero.sub ? <span className="common-photo-sub">{hero.sub}</span> : null}
-          </button>
-          <button
-            type="button"
-            className="common-photo common-photo--short common-photo--clickable"
-            onClick={() => openAt(1)}
-            aria-label={`${data.galleryTileAriaLabelPrefix} ${tile1.label}`}
-          >
-            <img src={tile1.image} alt={tile1.imageAlt} width={600} height={336} loading="lazy" />
-            <div className="common-photo-overlay" aria-hidden />
-            <span className="common-photo-label">{tile1.label}</span>
-          </button>
-          <button
-            type="button"
-            className="common-photo common-photo--short common-photo--clickable"
-            onClick={() => openAt(2)}
-            aria-label={`${data.galleryTileAriaLabelPrefix} ${tile2.label}`}
-          >
-            <img src={tile2.image} alt={tile2.imageAlt} width={600} height={336} loading="lazy" />
-            <div className="common-photo-overlay" aria-hidden />
-            <span className="common-photo-label">{tile2.label}</span>
-          </button>
-        </div>
-
-        <div className="common-areas-strip">
-          <button
-            type="button"
-            className="common-photo common-photo--strip common-photo--clickable"
-            onClick={() => openAt(3)}
-            aria-label={`${data.galleryTileAriaLabelPrefix} ${stripA.label}`}
-          >
-            <img src={stripA.image} alt={stripA.imageAlt} width={400} height={120} loading="lazy" />
-            <div className="common-photo-overlay" aria-hidden />
-            <span className="common-photo-label common-photo-label--sm">{stripA.label}</span>
-          </button>
-          <button
-            type="button"
-            className="common-photo common-photo--strip common-photo--clickable"
-            onClick={() => openAt(4)}
-            aria-label={`${data.galleryTileAriaLabelPrefix} ${stripB.label}`}
-          >
-            <img src={stripB.image} alt={stripB.imageAlt} width={400} height={120} loading="lazy" />
-            <div className="common-photo-overlay" aria-hidden />
-            <span className="common-photo-label common-photo-label--sm">{stripB.label}</span>
-          </button>
-          <button
-            type="button"
-            className="common-photo common-photo--strip common-photo--more common-photo--clickable"
-            onClick={() => openAt(5)}
-            aria-label={data.galleryStripMoreAriaLabel}
-          >
-            <img src={stripMore.image} alt={stripMore.imageAlt} width={400} height={120} loading="lazy" />
-            <div className="common-photo-more-overlay" aria-hidden>
-              <span className="common-photo-more-n">{stripMore.moreCount}</span>
-              <span className="common-photo-more-txt">{stripMore.moreLabel}</span>
+        {showFacilitiesGallery ? (
+          <>
+            <div className="common-areas-grid common-areas-grid--hero">
+              {primaries.map((p, i) => (
+                <button
+                  key={`${p.image}-${i}`}
+                  type="button"
+                  className={`common-photo common-photo--clickable ${i === 0 ? 'common-photo--tall' : 'common-photo--short'}`}
+                  onClick={() => openHero(i)}
+                  aria-label={`${data.galleryTileAriaLabelPrefix} ${p.label}`}
+                >
+                  <img
+                    src={p.image}
+                    alt={p.imageAlt}
+                    width={i === 0 ? 800 : 600}
+                    height={i === 0 ? 680 : 336}
+                    loading="lazy"
+                  />
+                  <div className="common-photo-overlay" aria-hidden />
+                  <span className="common-photo-label">{p.label}</span>
+                  {p.sub ? <span className="common-photo-sub">{p.sub}</span> : null}
+                </button>
+              ))}
             </div>
-          </button>
-        </div>
+
+            {strips.length > 0 ? (
+              <div className="common-areas-strip">
+                {strips.map((p, j) => {
+                  const isMore = stripTileIsMore(p)
+                  return (
+                    <button
+                      key={`${p.image}-${j}`}
+                      type="button"
+                      className={`common-photo common-photo--strip common-photo--clickable ${isMore ? 'common-photo--more' : ''}`}
+                      onClick={() => openStrip(j)}
+                      aria-label={
+                        isMore ? data.galleryStripMoreAriaLabel : `${data.galleryTileAriaLabelPrefix} ${p.label}`
+                      }
+                    >
+                      <img src={p.image} alt={p.imageAlt} width={400} height={120} loading="lazy" />
+                      {isMore ? (
+                        <div className="common-photo-more-overlay" aria-hidden>
+                          {p.moreCount ? <span className="common-photo-more-n">{p.moreCount}</span> : null}
+                          {p.moreLabel ? <span className="common-photo-more-txt">{p.moreLabel}</span> : null}
+                        </div>
+                      ) : (
+                        <>
+                          <div className="common-photo-overlay" aria-hidden />
+                          <span className="common-photo-label common-photo-label--sm">{p.label}</span>
+                        </>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            ) : null}
+          </>
+        ) : null}
 
         <div className="eyebrow lodge-facilities-amenity-eyebrow">{data.amenitiesEyebrow}</div>
         <div className="amenity-grid">

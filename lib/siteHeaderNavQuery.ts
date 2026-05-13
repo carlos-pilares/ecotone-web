@@ -121,7 +121,7 @@ export type SiteHeaderNavLodgePageRow = {
     route?: string | null
     shortDescription?: string | null
     location?: string | null
-    altitude?: number | null
+    altitude?: number | string | null
     certifications?: Array<{ label?: string | null } | null> | null
     mainImageUrl?: string | null
   } | null

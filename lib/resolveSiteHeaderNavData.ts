@@ -9,6 +9,7 @@ import {
   HEADER_NAV_ROUTES_SMART_LINK,
 } from '@/data/cmsApproved/siteSettingsApprovedContent'
 import { LODGE_SOQTAPATA_PAGE_SLUG } from '@/lib/lodgePageCmsTypes'
+import { formatLodgeAltitudeForSubtitle } from '@/lib/lodgeAltitudeDisplay'
 import { resolveRouteLabel } from '@/data/lodgeSoqtapataResolverDefaults'
 import { resolveExperiencePublicSlug } from '@/lib/resolveExperiencePublicHref'
 import {
@@ -225,7 +226,8 @@ function lodgeDescription(lodge: NonNullable<SiteHeaderNavLodgePageRow['lodge']>
   const sd = lodge.shortDescription?.trim()
   if (sd) return sd
   const bits: string[] = []
-  if (lodge.altitude != null) bits.push(`${lodge.altitude} m`)
+  const alt = formatLodgeAltitudeForSubtitle(lodge.altitude)
+  if (alt) bits.push(alt)
   if (lodge.location?.trim()) bits.push(lodge.location.trim())
   return bits.join(' · ')
 }
@@ -659,8 +661,7 @@ export function resolveSiteHeaderNavData(
     const lodge = row.lodge
     const pageId = row._id?.trim()
     if (!pageSlug || !lodge?.name?.trim() || !pageId) continue
-    const rk = lodgeRouteKeyFromLodge(lodge.route)
-    if (!rk) continue
+    const rk = lodgeRouteKeyFromLodge(lodge.route) ?? 'camanti'
     const io = lodgeItemOv.get(pageId)
     if (io?.show === false) continue
     const sk = (typeof io?.order === 'number' ? io.order : row.headerNavOrder) ?? 999

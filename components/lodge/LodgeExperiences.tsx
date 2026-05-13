@@ -41,8 +41,8 @@ export function LodgeExperiences({ data }: LodgeExperiencesProps) {
         />
 
         <div className="lodge-exp-cards-grid">
-          {data.cards.map((card) => (
-            <Link key={card.name} href={card.href} className="lodge-exp-card-v">
+          {data.cards.map((card, i) => (
+            <Link key={`${card.href}-${i}`} href={card.href} className="lodge-exp-card-v">
               <div className="lodge-exp-card-v-img">
                 <img src={card.image} alt={card.imageAlt} width={600} height={400} loading="lazy" />
                 <div className="lodge-exp-card-v-overlay" aria-hidden />
@@ -68,8 +68,17 @@ export function LodgeExperiences({ data }: LodgeExperiencesProps) {
             </Link>
           ))}
 
+          {data.cards.length === 0 && !data.tailor ? (
+            <p className="lodge-exp-empty">No experiences are listed for this lodge yet.</p>
+          ) : null}
+
           {data.tailor ? (
-            <a href={data.tailor.href} className="lodge-exp-tailor">
+            <a
+              href={data.tailor.href}
+              className="lodge-exp-tailor"
+              target={data.tailor.openInNewTab ? '_blank' : undefined}
+              rel={data.tailor.openInNewTab ? data.tailor.rel || 'noopener noreferrer' : undefined}
+            >
               <div>
                 <div className="lodge-exp-tailor-kicker">{data.tailor.kicker}</div>
                 <div className="lodge-exp-tailor-title">{data.tailor.title}</div>

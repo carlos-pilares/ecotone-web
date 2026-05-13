@@ -29,12 +29,24 @@ export function LodgeLocation({ data }: LodgeLocationProps) {
         />
 
         <div className="map-container">
-          <LodgeLocationMap labels={data.mapLabels} />
+          {data.mapAccessImage?.src ? (
+            <img
+              className="lodge-location-map-photo"
+              src={data.mapAccessImage.src}
+              alt={data.mapAccessImage.alt}
+              width={1200}
+              height={360}
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <LodgeLocationMap labels={data.mapLabels} />
+          )}
         </div>
 
         <div className="lodge-journey-stack">
           {data.journeySteps.map((step, i) => (
-            <div className={step.highlight ? 'journey-step highlight' : 'journey-step'} key={`${step.time}-${i}`}>
+            <div className={step.highlight ? 'journey-step highlight' : 'journey-step'} key={`journey-${i}`}>
               <div className="journey-time">{step.time}</div>
               <div className={step.highlight ? 'journey-step-desc journey-step-desc--emph' : 'journey-step-desc'}>
                 {step.text}

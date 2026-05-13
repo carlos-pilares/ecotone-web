@@ -11,6 +11,8 @@ import {
   StarIcon,
 } from '@sanity/icons'
 
+import {apiVersion} from './env'
+
 export const structure = (S) =>
   S.list()
     .title('Content')
@@ -85,22 +87,25 @@ export const structure = (S) =>
                     .title('About · landing'),
                 ),
               S.listItem()
-                .title('Lodge Pages')
+                .title('Lodge pages')
                 .icon(DocumentTextIcon)
                 .id('lodgePages')
                 .child(
                   S.list()
-                    .title('Pages · Lodge landings')
+                    .title('Lodge pages')
                     .items([
                       S.listItem()
                         .title('Soqtapata Lodge — landing')
                         .icon(DocumentTextIcon)
                         .id('lodgePageSoqtapataPinned')
                         .child(
-                          S.document()
+                          S.documentList()
+                            .id('lodgePage-soqtapata-shortcut')
+                            .title('Soqtapata Lodge — landing')
                             .schemaType('lodgePage')
-                            .documentId('lodgePage-soqtapata-lodge')
-                            .title('Soqtapata Lodge — landing'),
+                            .apiVersion(apiVersion)
+                            .filter('_type == "lodgePage" && _id == $docId')
+                            .params({docId: 'lodgePage-soqtapata-lodge'}),
                         ),
                       S.divider(),
                       S.listItem()
@@ -211,10 +216,10 @@ export const structure = (S) =>
                     ]),
                 ),
               S.listItem()
-                .title('Lodges')
+                .title('Lodge knowledge center')
                 .icon(HomeIcon)
                 .id('lodges')
-                .child(S.documentTypeList('lodge').title('Lodges')),
+                .child(S.documentTypeList('lodge').title('Lodge knowledge center')),
               S.listItem()
                 .title('Routes')
                 .icon(ArrowRightIcon)

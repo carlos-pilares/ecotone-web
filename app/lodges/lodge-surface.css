@@ -226,6 +226,20 @@
   }
 }
 
+.lodge-exp-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 20px 16px;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--n500);
+  line-height: 1.6;
+  text-align: center;
+  background: var(--n50);
+  border: 1px dashed var(--n200);
+  border-radius: var(--rl);
+}
+
 .lodge-exp-card-v {
   background: var(--w);
   border: 1px solid var(--n200);
@@ -888,6 +902,14 @@ button.common-photo--clickable {
   overflow: hidden;
   border: 1px solid var(--n200);
   margin-bottom: 16px;
+}
+
+.lodge-location-map-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 280px;
+  object-fit: cover;
 }
 
 .lodge-location-map-svg {

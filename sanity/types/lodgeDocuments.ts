@@ -95,7 +95,7 @@ export type LodgeDocument = {
   slug: {current?: string}
   route?: string
   location?: string
-  altitude?: number
+  altitude?: number | string
   certifications?: LodgeCertification[]
   shortDescription?: string
   longDescription?: string
@@ -131,6 +131,11 @@ export type LodgeSnapshotKeyPick = {
   key: string
 }
 
+export type LodgePageHeroHighlightPill = {
+  _type: 'lodgePageHeroHighlightPill'
+  text?: string
+}
+
 export type LodgePageSectionCopy = {
   eyebrow?: string
   title?: string
@@ -158,7 +163,7 @@ export type LodgePageDocument = {
   lodge: {_ref: string} | LodgeDocument
   seo?: LodgeDocument['seo']
   heroImage?: unknown
-  heroHighlights?: LodgeSnapshotKeyPick[]
+  heroHighlights?: LodgePageHeroHighlightPill[]
   heroCTA?: {label?: string; href?: string; openInNewTab?: boolean}
   snapshotSelection?: LodgeSnapshotKeyPick[]
   navTitle?: string

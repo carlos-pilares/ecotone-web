@@ -1,17 +1,21 @@
 import { readFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
-import { createClient } from 'next-sanity'
+import { createClient } from '@sanity/client'
 import { config } from 'dotenv'
 import { resolve } from 'node:path'
 
 config({ path: resolve(process.cwd(), '.env.local') })
 
-export const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
-export const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET
-export const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2025-12-20'
-export const token = process.env.SANITY_API_TOKEN
-
+/**
+ * Read env at call time so scripts can `import './loadEnvLocal'` (or call `config()`)
+ * after this module is evaluated — module-level captures would stay undefined and
+ * mutations would run without a token (`Unauthorized - Session not found`).
+ */
 export function writeClient() {
+  const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+  const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET
+  const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2025-12-20'
+  const token = process.env.SANITY_API_TOKEN?.trim()
   if (!projectId || !dataset) {
     throw new Error('Missing NEXT_PUBLIC_SANITY_PROJECT_ID or NEXT_PUBLIC_SANITY_DATASET in .env.local')
   }
@@ -19,6 +23,17 @@ export function writeClient() {
     throw new Error('Missing SANITY_API_TOKEN. Add it to .env.local and run again.')
   }
   return createClient({ projectId, dataset, apiVersion, token, useCdn: false })
+}
+
+/** Public GROQ (no token). Use when the dataset allows CDN reads; falls back if write token is missing or invalid. */
+export function readClient() {
+  const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+  const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET
+  const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2025-12-20'
+  if (!projectId || !dataset) {
+    throw new Error('Missing NEXT_PUBLIC_SANITY_PROJECT_ID or NEXT_PUBLIC_SANITY_DATASET in .env.local')
+  }
+  return createClient({ projectId, dataset, apiVersion, useCdn: true })
 }
 
 /**

@@ -8,6 +8,7 @@ import {apiVersion} from '../../env'
 import {lodgeStudioPreviewById} from '../../lib/lodgePageStudioQuery'
 import {resolveLodgePageSectionPreview} from '../../lib/lodgePageStudioResolvedCopy'
 import {experienceDocsByIds, reviewDocsByIds} from '../../lib/experiencePageStudioQuery'
+import {formatLodgeAltitudeForSubtitle} from '../../../lib/lodgeAltitudeDisplay'
 
 /** Pon `true` temporalmente para ver el JSON crudo del fetch en Studio. */
 const DEBUG_LODGE_STUDIO_PAYLOAD = false
@@ -306,7 +307,7 @@ export function StudioLodgePagePreviewInput(props) {
           <Stack space={2}>
             <FieldLabel title="Nombre del Lodge">{lodge.name || '—'}</FieldLabel>
             <FieldLabel title="Ubicación / ruta">{[lodge.location, lodge.route].filter(Boolean).join(' · ') || '—'}</FieldLabel>
-            <FieldLabel title="Altitud">{lodge.altitude != null ? `${lodge.altitude} m` : '—'}</FieldLabel>
+            <FieldLabel title="Altitud">{formatLodgeAltitudeForSubtitle(lodge.altitude) ?? '—'}</FieldLabel>
             <EditorialExcerpt text={lodge.shortDescription} maxLength={280} />
           </Stack>
         </BlockSection>
@@ -344,14 +345,22 @@ export function StudioLodgePagePreviewInput(props) {
             <FieldLabel title="Highlights bajo el título (hasta 3)">
               {heroHighlights.length
                 ? heroHighlights.map((h, i) => {
+                    const plain = typeof h?.text === 'string' ? h.text.trim() : ''
+                    if (plain) {
+                      return (
+                        <Text key={h._key || i} size={1} style={{...preLine, display: 'block'}}>
+                          · {plain}
+                        </Text>
+                      )
+                    }
                     const row = pickSnap(lodge, h?.key)
                     return (
                       <Text key={h._key || i} size={1} style={{...preLine, display: 'block'}}>
-                        · {row ? `${row.label}: ${row.value}` : h?.key || '—'}
+                        · {row ? [row.value, row.label].filter(Boolean).join(' · ') || h?.key : h?.key || '—'}
                       </Text>
                     )
                   })
-                : '— (elige claves debajo)'}
+                : '— (texto libre en cada fila)'}
             </FieldLabel>
             <FieldLabel title="CTA">
               {heroCTA?.label && heroCTA?.href

@@ -1,52 +1,57 @@
 import {defineField, defineType} from 'sanity'
-import {StudioLodgePageTabField} from '../components/lodgePageStudio/StudioLodgePageTabField'
 import {isLodgePageSlugUnique} from '../lib/isLodgePageSlugUnique'
 
-const imgHot = {hotspot: true}
-
-const lodgePreviewField = (name, title, group, section, description) =>
+/** Section copy (eyebrow, title, body) on a lodge landing tab. */
+const lodgeSectionCopyField = (name, group) =>
   defineField({
     name,
-    title,
+    title: 'Section copy',
+    type: 'lodgePageSectionCopy',
+    group,
+    description: 'Eyebrow, title, and body for this section. Empty fields fall back to lodge or site copy.',
+  })
+
+/** Legacy source/preview panels — data preserved; hidden from Studio. */
+const lodgeLegacyPreviewField = (name, group, section) =>
+  defineField({
+    name,
+    title: 'Legacy preview panel',
     type: 'string',
     readOnly: true,
     group,
-    description,
-    components: {input: StudioLodgePageTabField},
+    hidden: true,
     options: {section},
   })
 
 /**
- * Lodge page — presentación / curación (una URL).
- * Contenido canónico vive en `lodge`; aquí solo referencia, orden, selección y copy opcional.
- * UX alineada a Experience page: por pestaña → Fuente, Vista previa, Edición de esta landing, Selección.
+ * Lodge page — editorial / layout for one public URL.
+ * Structural lodge data lives in the linked **Lodge (knowledge center)** document.
  */
 export const lodgePage = defineType({
   name: 'lodgePage',
-  title: 'Lodge page (landing)',
+  title: 'Lodge page',
   type: 'document',
   description:
-    'Cada pestaña muestra primero la **fuente** (Lodge vinculado), luego la **vista previa** y, si aplica, la **edición solo de esta landing**. Abajo: **selección y orden**.',
+    'Editorial and layout for this lodge landing. Photos, rooms, and amenities are edited in the linked Lodge knowledge center.',
   groups: [
-    {name: 'general', title: 'General', default: true},
+    {name: 'general', title: 'General & SEO', default: true},
     {name: 'hero', title: 'Hero'},
-    {name: 'highlights', title: 'Highlights / Snapshot bar'},
-    {name: 'navigation', title: 'Navigation bar'},
+    {name: 'highlights', title: 'Highlights'},
+    {name: 'navigation', title: 'Navigation menu'},
     {name: 'overview', title: 'Overview'},
-    {name: 'accommodations', title: 'Accommodations'},
-    {name: 'commonAreas', title: 'Common areas'},
+    {name: 'accommodations', title: "Where you'll sleep"},
+    {name: 'commonAreas', title: 'Facilities'},
     {name: 'gettingHere', title: 'Getting here'},
     {name: 'science', title: 'Science'},
     {name: 'experiences', title: 'Experiences'},
     {name: 'reviews', title: 'Reviews'},
     {name: 'faq', title: 'FAQs'},
-    {name: 'booking', title: 'Ready to stay here'},
+    {name: 'booking', title: 'Ready to stay'},
   ],
   fields: [
-    // --- General ---
     defineField({
       name: 'internalTitle',
-      title: 'Nombre interno (solo Studio)',
+      title: 'Internal title (Studio only)',
       type: 'string',
       group: 'general',
       validation: (Rule) => Rule.required().max(120),
@@ -62,7 +67,7 @@ export const lodgePage = defineType({
         isUnique: isLodgePageSlugUnique,
       },
       description:
-        'Path segment for `/lodges/{slug}`. Lowercase letters, numbers, hyphens. Unique only among **Lodge page** documents (not Lodges library or other types).',
+        'Path segment for `/lodges/{slug}`. Lowercase letters, numbers, hyphens. Unique only among **Lodge page** documents.',
       validation: (Rule) =>
         Rule.required().custom((value) => {
           const cur = value?.current?.trim()
@@ -78,241 +83,283 @@ export const lodgePage = defineType({
       title: 'Header mega menu order',
       type: 'number',
       group: 'general',
-      description:
-        'Lower numbers appear first within each route group (Camanti / Manu Road / Manu Core). Leave empty for alphabetical by lodge name.',
-      validation: (Rule) =>
-        Rule.custom((value) => {
-          if (value === undefined || value === null) return true
-          if (!Number.isInteger(value)) return 'Use a whole number'
-          if (value < 0 || value > 999) return 'Between 0 and 999'
-          return true
-        }),
+      hidden: true,
+      description: 'Legacy — preserved on existing documents.',
     }),
     defineField({
       name: 'lodge',
-      title: 'Lodge (fuente principal)',
+      title: 'Lodge (knowledge center)',
       type: 'reference',
       to: [{type: 'lodge'}],
       group: 'general',
       validation: (Rule) => Rule.required(),
-      description: 'Contenido largo e imágenes se editan en *Content library → Lodges*.',
+      description: 'Structural lodge data (photos, rooms, amenities) is edited in Content library → Lodge knowledge center.',
     }),
     defineField({
       name: 'seo',
-      title: 'SEO (esta URL)',
+      title: 'SEO',
       type: 'seo',
       group: 'general',
-      description: 'Título y descripción meta de esta landing.',
     }),
-    lodgePreviewField(
-      'lpStudioGeneral',
-      'Panel editorial (fuente y vista previa)',
-      'general',
-      'general',
-      'Resumen del Lodge vinculado y cómo se combina con esta página.',
-    ),
+    lodgeLegacyPreviewField('lpStudioGeneral', 'general', 'general'),
 
-    // --- Hero ---
-    lodgePreviewField(
-      'lpStudioHero',
-      'Panel editorial (fuente y vista previa)',
-      'hero',
-      'hero',
-      'Imagen, highlights y CTA del hero: edítalos en los campos de abajo.',
-    ),
     defineField({
-      name: 'heroImage',
-      title: '4. Selección: imagen del hero (esta landing)',
-      type: 'image',
+      name: 'heroTitle',
+      title: 'Hero title',
+      type: 'string',
       group: 'hero',
-      options: imgHot,
-      description: 'Vacío = imagen principal del Lodge.',
+      validation: (Rule) => Rule.max(200),
+      description: 'Optional override. When empty, the site uses the linked lodge name.',
+    }),
+    defineField({
+      name: 'heroShortDescription',
+      title: 'Hero short description',
+      type: 'text',
+      group: 'hero',
+      rows: 3,
+      validation: (Rule) => Rule.max(600),
+      description: 'Optional override. When empty, the site uses the linked lodge short description.',
     }),
     defineField({
       name: 'heroHighlights',
-      title: '4. Selección: hasta 3 highlights (claves del snapshot)',
+      title: 'Hero highlight pills (up to 3)',
       type: 'array',
       group: 'hero',
-      of: [{type: 'lodgeSnapshotKeyPick'}],
+      of: [{type: 'lodgePageHeroHighlightPill'}],
+      options: {layout: 'list'},
       validation: (Rule) => Rule.max(3),
-      description: 'Deben existir en el Lodge → snapshot.',
-    }),
-    defineField({
-      name: 'heroCTA',
-      title: '4. Selección: CTA del hero (legacy)',
-      type: 'linkWithLabel',
-      group: 'hero',
-      hidden: true,
-      description: 'Legacy fallback — hidden from normal editing.',
+      description:
+        'Optional short lines shown as pills under the hero title. Write the text here — no lodge snapshot keys. Leave empty to fall back to lodge certification labels when available.',
     }),
     defineField({
       name: 'heroCtaSmartLink',
-      title: 'Hero CTA',
+      title: 'Primary CTA',
       type: 'smartLink',
       group: 'hero',
-      description: 'Primary editor control for the hero button.',
     }),
-
-    // --- Snapshot bar ---
-    lodgePreviewField(
-      'lpStudioHighlights',
-      'Panel editorial (fuente y vista previa)',
-      'highlights',
-      'highlights',
-      'Valores vienen del Lodge; aquí solo eliges qué filas y en qué orden.',
-    ),
     defineField({
-      name: 'snapshotSelection',
-      title: '4. Selección y orden (hasta 6)',
+      name: 'heroSecondaryCtaSmartLink',
+      title: 'Secondary CTA',
+      type: 'smartLink',
+      group: 'hero',
+    }),
+    defineField({
+      name: 'heroImage',
+      title: 'Hero image override (legacy)',
+      type: 'image',
+      group: 'hero',
+      hidden: true,
+    }),
+    defineField({
+      name: 'heroCTA',
+      title: 'Hero CTA (legacy)',
+      type: 'linkWithLabel',
+      group: 'hero',
+      hidden: true,
+    }),
+    lodgeLegacyPreviewField('lpStudioHero', 'hero', 'hero'),
+
+    defineField({
+      name: 'highlightLines',
+      title: 'Highlight items (up to 6)',
       type: 'array',
       group: 'highlights',
+      of: [{type: 'lodgePageHighlightLine'}],
+      validation: (Rule) => Rule.max(6),
+      description: 'Sortable highlights bar. Order matches the site.',
+    }),
+    defineField({
+      name: 'snapshotSelection',
+      title: 'Highlight items (legacy snapshot keys)',
+      type: 'array',
+      group: 'highlights',
+      hidden: true,
       of: [{type: 'lodgeSnapshotKeyPick'}],
       validation: (Rule) => Rule.max(6),
-      description: 'Orden de la lista = orden en la barra.',
     }),
+    lodgeLegacyPreviewField('lpStudioHighlights', 'highlights', 'highlights'),
 
-    // --- Navigation ---
-    lodgePreviewField(
-      'lpStudioNavigation',
-      'Panel editorial (fuente y vista previa)',
-      'navigation',
-      'navigation',
-      'Esta barra es solo de esta landing; edita los campos siguientes.',
-    ),
     defineField({
       name: 'navTitle',
-      title: 'Título del menú',
+      title: 'Menu title',
       type: 'string',
       group: 'navigation',
       validation: (Rule) => Rule.max(120),
     }),
     defineField({
       name: 'navSubtitle',
-      title: 'Subtítulo',
+      title: 'Menu subtitle',
       type: 'string',
       group: 'navigation',
       validation: (Rule) => Rule.max(120),
     }),
     defineField({
-      name: 'navCTA',
-      title: 'CTA (legacy)',
-      type: 'linkWithLabel',
+      name: 'navItems',
+      title: 'Navigation items',
+      type: 'array',
       group: 'navigation',
-      hidden: true,
-      description: 'Legacy fallback — hidden from normal editing.',
+      of: [{type: 'lodgePageNavItem'}],
+      validation: (Rule) => Rule.max(15),
     }),
     defineField({
       name: 'navCtaSmartLink',
       title: 'Navigation CTA',
       type: 'smartLink',
       group: 'navigation',
-      description: 'Primary editor control for the navigation CTA.',
     }),
+    defineField({
+      name: 'navCTA',
+      title: 'Navigation CTA (legacy)',
+      type: 'linkWithLabel',
+      group: 'navigation',
+      hidden: true,
+    }),
+    lodgeLegacyPreviewField('lpStudioNavigation', 'navigation', 'navigation'),
 
-    // --- Overview ---
-    lodgePreviewField(
-      'lpStudioOverview',
-      'Panel editorial (fuente, vista previa y edición)',
-      'overview',
-      'overview',
-      'Texto largo y bullets en el Lodge; rótulos opcionales de esta landing en el panel inferior.',
-    ),
+    lodgeSectionCopyField('overviewSectionCopy', 'overview'),
+    defineField({
+      name: 'overviewHighlights',
+      title: 'Overview highlight bullets',
+      type: 'array',
+      group: 'overview',
+      of: [{type: 'string', validation: (Rule) => Rule.max(200)}],
+      validation: (Rule) => Rule.max(12),
+      description: 'Optional bullets for this landing. If empty, the site may use lodge key elements.',
+    }),
+    lodgeLegacyPreviewField('lpStudioOverview', 'overview', 'overview'),
 
-    // --- Accommodations ---
-    lodgePreviewField(
-      'lpStudioAccommodations',
-      'Panel editorial (fuente, vista previa y edición)',
-      'accommodations',
-      'accommodations',
-      'Habitaciones en el Lodge; destaca una con el campo de abajo.',
-    ),
+    lodgeSectionCopyField('accommodationSectionCopy', 'accommodations'),
     defineField({
       name: 'featuredRoomStableId',
-      title: '4. Selección: habitación destacada',
+      title: 'Featured room (legacy)',
       type: 'string',
       group: 'accommodations',
-      description: 'Debe coincidir con `stableId` en Lodge → rooms.',
-      validation: (Rule) =>
-        Rule.custom((val) => {
-          if (val == null || String(val).trim() === '') return true
-          return /^[a-z0-9][a-z0-9-]*$/.test(String(val)) || 'Usa un id estable (ver Lodge → rooms).'
-        }),
+      hidden: true,
     }),
+    lodgeLegacyPreviewField('lpStudioAccommodations', 'accommodations', 'accommodations'),
 
-    // --- Common areas ---
-    lodgePreviewField(
-      'lpStudioCommonAreas',
-      'Panel editorial (fuente, vista previa y edición)',
-      'commonAreas',
-      'commonAreas',
-      'Zonas comunes y comodidades en el Lodge; rótulos de sección editables abajo.',
-    ),
+    lodgeSectionCopyField('facilitiesSectionCopy', 'commonAreas'),
+    defineField({
+      name: 'facilitiesGallerySelection',
+      title: 'Facilities gallery photos',
+      type: 'array',
+      group: 'commonAreas',
+      of: [{type: 'lodgeGalleryStableKeyPick'}],
+      options: {layout: 'list'},
+      validation: (Rule) => Rule.max(40),
+      description:
+        'Pick photos from the linked lodge photo library and drag to set order. No stable keys — copy is edited on the lodge.',
+    }),
+    defineField({
+      name: 'facilitiesAmenitiesSelection',
+      title: 'Included amenities',
+      type: 'array',
+      group: 'commonAreas',
+      of: [{type: 'lodgeAmenityIconPick'}],
+      options: {layout: 'list'},
+      validation: (Rule) => Rule.max(40),
+      description:
+        'Pick amenities from the linked lodge knowledge center and drag to set order. Titles and copy are edited on the lodge, not here.',
+    }),
+    defineField({
+      name: 'facilitiesAmenitiesEyebrow',
+      title: '“What’s included” eyebrow',
+      type: 'string',
+      group: 'commonAreas',
+      validation: (Rule) => Rule.max(120),
+      description: 'Second eyebrow above the amenities grid on this landing.',
+    }),
+    lodgeLegacyPreviewField('lpStudioCommonAreas', 'commonAreas', 'commonAreas'),
 
-    // --- Getting here ---
-    lodgePreviewField(
-      'lpStudioGettingHere',
-      'Panel editorial (fuente, vista previa y edición)',
-      'gettingHere',
-      'gettingHere',
-      'Pasos y mensaje de acceso en el Lodge.',
-    ),
+    lodgeSectionCopyField('locationSectionCopy', 'gettingHere'),
+    defineField({
+      name: 'gettingHereImage',
+      title: 'Map / access image',
+      type: 'image',
+      group: 'gettingHere',
+      options: {hotspot: true},
+      description: 'Single static image for this section. If empty, the site uses the lodge map image when available.',
+    }),
+    defineField({
+      name: 'gettingHereIndications',
+      title: 'Getting here indications',
+      type: 'array',
+      group: 'gettingHere',
+      of: [
+        {
+          type: 'object',
+          name: 'lodgePageGettingHereIndication',
+          fields: [
+            defineField({name: 'title', title: 'Title', type: 'string', validation: (Rule) => Rule.required().max(120)}),
+            defineField({name: 'text', title: 'Text', type: 'text', rows: 3, validation: (Rule) => Rule.required().max(800)}),
+          ],
+          preview: {
+            select: {title: 'title'},
+            prepare: ({title}) => ({title: title || 'Indication'}),
+          },
+        },
+      ],
+      validation: (Rule) => Rule.max(10),
+    }),
+    lodgeLegacyPreviewField('lpStudioGettingHere', 'gettingHere', 'gettingHere'),
 
-    // --- Science ---
-    lodgePreviewField(
-      'lpStudioScience',
-      'Panel editorial (fuente, vista previa y edición)',
-      'science',
-      'science',
-      'Bloque de investigación en el Lodge.',
-    ),
+    lodgeSectionCopyField('researchSectionCopy', 'science'),
+    defineField({
+      name: 'scienceHighlights',
+      title: 'Science highlights (up to 3)',
+      type: 'array',
+      group: 'science',
+      of: [{type: 'lodgePageHighlightLine'}],
+      validation: (Rule) => Rule.max(3),
+    }),
+    defineField({
+      name: 'scienceProjects',
+      title: 'Science projects (up to 7)',
+      type: 'array',
+      group: 'science',
+      of: [{type: 'lodgePageHighlightLine'}],
+      validation: (Rule) => Rule.max(7),
+    }),
+    defineField({
+      name: 'scienceSpecialText',
+      title: 'Science special text',
+      type: 'lodgeScienceSpecialText',
+      group: 'science',
+    }),
+    lodgeLegacyPreviewField('lpStudioScience', 'science', 'science'),
 
-    // --- Experiences ---
-    lodgePreviewField(
-      'lpStudioExperiences',
-      'Panel editorial (fuente, vista previa y edición)',
-      'experiences',
-      'experiences',
-      'Programas del Lodge y curación de esta landing abajo.',
-    ),
+    lodgeSectionCopyField('experiencesSectionCopy', 'experiences'),
     defineField({
       name: 'experiencesSelection',
-      title: '4. Selección y orden (experiencias)',
+      title: 'Experience selection (legacy)',
       type: 'array',
       group: 'experiences',
+      hidden: true,
       of: [{type: 'reference', to: [{type: 'experience'}]}],
-      validation: (Rule) => Rule.max(24),
     }),
     defineField({
       name: 'fallbackToLodgeRelations',
-      title: 'Si la lista está vacía, usar las del Lodge',
+      title: 'Fallback to lodge experiences (legacy)',
       type: 'boolean',
       group: 'experiences',
-      initialValue: true,
+      hidden: true,
     }),
     defineField({
       name: 'experiencesTailorCta',
-      title: '5. Banda Tailor Made (CTA)',
+      title: 'Tailor Made (optional band)',
       type: 'lodgePageExperiencesTailorCta',
       group: 'experiences',
-      description:
-        'Banda ancha bajo las tarjetas de experiencias. No usa documentos `experience`; activar solo si quieres mostrar este bloque.',
+      description: 'Shown only when “Show Tailor Made band” is on. Uses CMS copy and smart-link CTA.',
     }),
+    lodgeLegacyPreviewField('lpStudioExperiences', 'experiences', 'experiences'),
 
-    // --- Reviews ---
-    lodgePreviewField(
-      'lpStudioReviews',
-      'Panel editorial (fuente, vista previa y edición)',
-      'reviews',
-      'reviews',
-      'Reseñas referenciadas en el Lodge; elige orden en esta landing abajo.',
-    ),
     defineField({
       name: 'reviewsSection',
-      title: '4. Reviews section',
+      title: 'Reviews',
       type: 'pageReviewsSection',
       group: 'reviews',
       description:
-        'Eyebrow, title, optional body, rotating quotes (max 3), cards (max 4). Global rating: Settings → Reviews — global summary. Section headers can still use `sections.reviews` below.',
+        'Eyebrow, title, optional body, up to 3 highlight quotes, up to 4 review cards. Global rating: Settings → Reviews.',
     }),
     defineField({
       name: 'reviewsSelection',
@@ -321,7 +368,6 @@ export const lodgePage = defineType({
       group: 'reviews',
       hidden: true,
       of: [{type: 'reference', to: [{type: 'review'}]}],
-      validation: (Rule) => Rule.max(48),
     }),
     defineField({
       name: 'reviewsPresentation',
@@ -330,85 +376,45 @@ export const lodgePage = defineType({
       group: 'reviews',
       hidden: true,
       fields: [
-        defineField({
-          name: 'sourceLabel',
-          title: 'Source label (e.g. Trustpilot)',
-          type: 'string',
-          validation: (Rule) => Rule.max(80),
-        }),
-        defineField({
-          name: 'averageRating',
-          title: 'Average rating (display)',
-          type: 'string',
-          validation: (Rule) => Rule.max(20),
-        }),
-        defineField({
-          name: 'secondaryRatingLine',
-          title: 'Secondary line under stars',
-          type: 'string',
-          validation: (Rule) => Rule.max(160),
-        }),
-        defineField({
-          name: 'carouselEndLabel',
-          title: '“View all reviews” link label',
-          type: 'string',
-          validation: (Rule) => Rule.max(120),
-        }),
-        defineField({
-          name: 'carouselEndHref',
-          title: '“View all reviews” link URL',
-          type: 'string',
-          validation: (Rule) => Rule.max(500),
-        }),
-        defineField({
-          name: 'emptyMessage',
-          title: 'Empty state message',
-          type: 'text',
-          rows: 3,
-          validation: (Rule) => Rule.max(400),
-        }),
+        defineField({name: 'sourceLabel', title: 'Source label', type: 'string'}),
+        defineField({name: 'averageRating', title: 'Average rating', type: 'string'}),
+        defineField({name: 'secondaryRatingLine', title: 'Secondary line', type: 'string'}),
+        defineField({name: 'carouselEndLabel', title: 'View all label', type: 'string'}),
+        defineField({name: 'carouselEndHref', title: 'View all URL', type: 'string'}),
+        defineField({name: 'emptyMessage', title: 'Empty message', type: 'text', rows: 3}),
       ],
     }),
+    lodgeLegacyPreviewField('lpStudioReviews', 'reviews', 'reviews'),
 
-    // --- FAQs ---
-    lodgePreviewField(
-      'lpStudioFaq',
-      'Panel editorial (fuente, vista previa y edición)',
-      'faq',
-      'faq',
-      'Preguntas en el Lodge; rótulos del bloque editables abajo.',
-    ),
+    lodgeSectionCopyField('faqSectionCopy', 'faq'),
+    defineField({
+      name: 'faqItems',
+      title: 'FAQs (up to 10)',
+      type: 'array',
+      group: 'faq',
+      of: [{type: 'lodgePageFaqItem'}],
+      validation: (Rule) => Rule.max(10),
+    }),
+    lodgeLegacyPreviewField('lpStudioFaq', 'faq', 'faq'),
 
-    // --- Booking / Ready to stay ---
-    lodgePreviewField(
-      'lpStudioBooking',
-      'Panel editorial (fuente, vista previa y edición)',
-      'booking',
-      'booking',
-      'Precio y confianza en el Lodge; bloque de reserva de esta landing abajo.',
-    ),
     defineField({
       name: 'reserveCtaSettings',
-      title: 'Reserve CTA (#book) — preferido',
+      title: 'Reserve CTA (#book)',
       type: 'reserveCtaSettings',
       group: 'booking',
-      description:
-        'Editorial + tarjeta. El precio por defecto es el más bajo entre experiencias **activas** vinculadas al lodge / selección de esta landing.',
     }),
     defineField({
       name: 'bookingCta',
-      title: '4. Selección: bloque reserva / CTAs (legacy)',
+      title: 'Booking block (legacy)',
       type: 'lodgePageBookingBlock',
       group: 'booking',
       hidden: true,
-      description:
-        'Oculto: el sitio usa solo **Reserve CTA (#book)**. Se conserva en documentos antiguos; el front ya no lee este bloque.',
     }),
+    lodgeLegacyPreviewField('lpStudioBooking', 'booking', 'booking'),
 
-    // --- Persistencia interna: overrides de copy por sección (editado desde paneles de arriba) ---
     defineField({
       name: 'sections',
-      title: 'Copy por sección (interno)',
+      title: 'Section copy (internal)',
       type: 'object',
       hidden: true,
       fields: [
@@ -422,7 +428,6 @@ export const lodgePage = defineType({
         defineField({name: 'faq', title: 'FAQ', type: 'lodgePageSectionCopy'}),
         defineField({name: 'booking', title: 'Booking', type: 'lodgePageSectionCopy'}),
       ],
-      description: 'Relleno automático desde cada pestaña; no hace falta abrir este objeto.',
     }),
   ],
   preview: {

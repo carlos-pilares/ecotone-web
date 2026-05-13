@@ -2,7 +2,6 @@ import { cache } from 'react'
 
 import { DEFAULT_WHATSAPP_URL } from '@/data/cmsApproved/siteSettingsApprovedContent'
 import {
-  formatCommonAreaGalleryAltFallback,
   formatLodgeBookGroupSizeValue,
   formatLodgeBookStartingFromValue,
   formatLodgeRoomMetaLine,
@@ -39,13 +38,14 @@ import {
   type LodgeSnapshotItem,
   type LodgeStripPhoto,
 } from '@/data/lodgeSoqtapataStatic'
-import { lodgeStructuredPageBySlugQuery } from '@/lib/queries'
+import { lodgeStructuredPageBySlugQuery, lodgePageSlugsQuery } from '@/lib/queries'
 import {
   LODGE_SOQTAPATA_PAGE_SLUG,
   lodgeSoqtapataSeoDefault,
   type LodgeCmsExperienceCardRow,
-  type LodgeCommonAreaRow,
   type LodgeDocumentRow,
+  type LodgeFacilitiesAmenitySelectionPickRow,
+  type LodgeFacilitiesGallerySelectionPickRow,
   type LodgeGalleryItemRow,
   type LodgeJourneyStepRow,
   type LodgePageReviewsPresentationRow,
@@ -67,7 +67,8 @@ import {
   enrichSmartLinkWithLabelFallback,
   resolveExperiencePublicHref,
 } from '@/lib/resolveExperiencePublicHref'
-import { getLowestActiveExperiencePrice, buildReserveRowsForLodge } from '@/lib/reserveCtaPricing'
+import { getLodgeReserveLowestUsd, buildReserveRowsForLodge } from '@/lib/reserveCtaPricing'
+import { formatLodgeAltitudeForSubtitle } from '@/lib/lodgeAltitudeDisplay'
 import { resolveReserveCtaCard } from '@/lib/resolveReserveCtaCard'
 import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
 import { cdnImageUrl } from '@/lib/sanity'
@@ -103,6 +104,35 @@ function normalizeAmenityIcon(raw: string | null | undefined): LodgeAmenityIconI
   return 'meals'
 }
 
+function resolveHeroHighlightBadges(
+  highlights: Array<{ text?: string | null; key?: string | null } | null> | null | undefined,
+  lodge: LodgeDocumentRow,
+): string[] | null {
+  if (!highlights?.length) return null
+  const out: string[] = []
+  for (const h of highlights) {
+    if (!h) continue
+    const text = typeof h.text === 'string' ? h.text.trim() : ''
+    if (text) {
+      out.push(text)
+      if (out.length >= 3) break
+      continue
+    }
+    const legacyKey = typeof h.key === 'string' ? h.key.trim() : ''
+    if (!legacyKey) continue
+    const snap = lodge.snapshotItems?.find((s) => (s.key ?? '').trim() === legacyKey)
+    if (snap) {
+      const line = [snap.value?.trim(), snap.label?.trim()].filter(Boolean).join(' · ')
+      out.push(line || legacyKey)
+    } else {
+      out.push(legacyKey)
+    }
+    if (out.length >= 3) break
+  }
+  const sliced = out.filter(Boolean).slice(0, 3)
+  return sliced.length ? sliced : null
+}
+
 function cmsSnapshotToBarItem(item: LodgeSnapshotItemRow, index: number): LodgeSnapshotItem {
   const bcorp =
     item.key?.toLowerCase().includes('bcorp') ||
@@ -120,7 +150,23 @@ function resolveSnapshotBar(
   staticSnap: readonly LodgeSnapshotItem[],
   lodge: LodgeDocumentRow | undefined,
   selectionKeys: NonNullable<LodgeStructuredPageRow>['snapshotSelection'],
+  highlightLines: NonNullable<LodgeStructuredPageRow>['highlightLines'],
 ): LodgeSnapshotItem[] {
+  if (highlightLines?.length) {
+    const out: LodgeSnapshotItem[] = []
+    for (const line of highlightLines) {
+      const title = sectionFieldTrim(line?.title)
+      if (!title) continue
+      const subtitle = sectionFieldTrim(line?.subtitle) ?? ''
+      out.push({
+        snapN: title,
+        snapL: subtitle,
+        iconId: SNAPSHOT_ICONS[out.length % SNAPSHOT_ICONS.length]!,
+      })
+      if (out.length >= 6) break
+    }
+    if (out.length) return out
+  }
   const items = lodge?.snapshotItems
   if (!items?.length) return [...staticSnap]
   const byKey = new Map(items.filter((i) => i.key).map((i) => [i.key as string, i]))
@@ -139,8 +185,16 @@ function resolveSnapshotBar(
 }
 
 function gallerySection(g: LodgeGalleryItemRow): 'hero' | 'accommodation' | 'commonAreas' | '' {
+  const pc = g.photoCategory?.trim()
+  if (pc === 'hero' || pc === 'accommodation' || pc === 'commonAreasAmenities' || pc === 'other') {
+    if (pc === 'other') return ''
+    return pc === 'commonAreasAmenities' ? 'commonAreas' : pc
+  }
   const usage = g.usageSection?.trim()
-  if (usage === 'hero' || usage === 'accommodation' || usage === 'commonAreas') return usage
+  if (usage === 'hero' || usage === 'accommodation' || usage === 'commonAreas' || usage === 'commonAreasAmenities') {
+    return usage === 'commonAreasAmenities' ? 'commonAreas' : usage
+  }
+  if (usage === 'other') return ''
   const legacy = g.category?.trim()
   if (legacy === 'room' || legacy === 'accommodation') return 'accommodation'
   if (legacy === 'common' || legacy === 'commonArea') return 'commonAreas'
@@ -148,15 +202,25 @@ function gallerySection(g: LodgeGalleryItemRow): 'hero' | 'accommodation' | 'com
   return ''
 }
 
+/** @internal Dedupe merged accommodation pools (stable-key row vs keyed row). */
+function galleryRowDedupeKey(g: LodgeGalleryItemRow): string {
+  const sk = g.stableKey?.trim()
+  if (sk) return `sk:${sk}`
+  const rowKey = g._key?.trim()
+  if (rowKey) return `row:${rowKey}`
+  const assetRef =
+    g.image && typeof g.image === 'object' && 'asset' in g.image && g.image.asset && typeof g.image.asset === 'object'
+      ? (g.image.asset as { _ref?: string })._ref
+      : undefined
+  if (assetRef) return `asset:${assetRef}`
+  return `u:${g.imageUrl ?? ''}:${g.title ?? ''}`
+}
+
 /** Prefer `usageSection === hero`; if none, use entire gallery (fallback compatible). */
 function pickHeroGalleryItems(gallery: LodgeGalleryItemRow[] | null | undefined): LodgeGalleryItemRow[] {
   const rows = gallery ?? []
   const heroTagged = rows.filter((g) => gallerySection(g) === 'hero')
   return heroTagged.length > 0 ? heroTagged : rows
-}
-
-function roomIdForGalleryItem(g: LodgeGalleryItemRow): string {
-  return g.roomStableId?.trim() || g.relatedRoomStableId?.trim() || ''
 }
 
 function buildGalleryByStableKey(gallery: LodgeGalleryItemRow[] | null | undefined): Map<string, LodgeGalleryItemRow> {
@@ -168,13 +232,18 @@ function buildGalleryByStableKey(gallery: LodgeGalleryItemRow[] | null | undefin
   return m
 }
 
+function roomIdForGalleryItem(g: LodgeGalleryItemRow): string {
+  return g.roomStableId?.trim() || g.relatedRoomStableId?.trim() || ''
+}
+
 function galleryItemToPhoto(g: LodgeGalleryItemRow, width: number, fallback: string): LodgeGalleryPhoto {
-  const alt = (g.alt ?? g.title ?? '').trim()
+  const alt = (g.altText ?? g.alt ?? g.title ?? '').trim()
+  const caption = (g.caption ?? g.description ?? '').trim()
   return {
     src: g.imageUrl || cdnImageUrl(g.image, width, fallback),
     alt: alt || g.title || '',
     title: g.title || '',
-    description: g.description || '',
+    description: caption,
   }
 }
 
@@ -191,23 +260,6 @@ function roomGalleryItem(
   }
 }
 
-function commonAreaToPrimary(p: LodgeCommonAreaRow, w: number): LodgePrimaryPhoto {
-  return {
-    image: p.imageUrl || cdnImageUrl(p.image, w, ''),
-    imageAlt: p.title || '',
-    label: p.title || '',
-    sub: p.description || undefined,
-  }
-}
-
-function commonAreaToStrip(p: LodgeCommonAreaRow): LodgeStripPhoto {
-  return {
-    image: p.imageUrl || cdnImageUrl(p.image, 400, ''),
-    imageAlt: p.title || '',
-    label: p.title || '',
-  }
-}
-
 function mapRoomsFromLodge(
   rooms: LodgeRoomRow[] | undefined,
   featuredStableId: string | null | undefined,
@@ -220,13 +272,27 @@ function mapRoomsFromLodge(
     let galleryPhotos: LodgeGalleryPhoto[] = []
     const roomStableId = r.stableId?.trim() || ''
 
-    // New model: room gallery comes from Global gallery filtered by roomStableId.
-    if (roomStableId) {
-      const fromPool = accommodationPool.filter((g) => roomIdForGalleryItem(g) === roomStableId)
+    const roomKey = r._key?.trim() || ''
+
+    // Global gallery: accommodation photos linked by `accommodationRoomKey` (row `_key`) and/or legacy stable IDs on the photo.
+    if (roomStableId || roomKey) {
+      const dedupe = new Set<string>()
+      const matched: LodgeGalleryItemRow[] = []
+      for (const g of accommodationPool) {
+        const matchByRoomKey = Boolean(roomKey) && g.accommodationRoomKey?.trim() === roomKey
+        const matchByStable = Boolean(roomStableId) && roomIdForGalleryItem(g) === roomStableId
+        if (!matchByRoomKey && !matchByStable) continue
+        const dk = galleryRowDedupeKey(g)
+        if (dedupe.has(dk)) continue
+        dedupe.add(dk)
+        matched.push(g)
+      }
       let firstSrc = ''
-      for (const g of fromPool) {
+      for (const g of matched) {
         if (!firstSrc) firstSrc = g.imageUrl || cdnImageUrl(g.image, 500, '') || ''
-        galleryPhotos.push(galleryItemToPhoto(g, 1200, firstSrc || `https://placehold.co/1200?text=${galleryPhotos.length}`))
+        galleryPhotos.push(
+          galleryItemToPhoto(g, 1200, firstSrc || `https://placehold.co/1200?text=${galleryPhotos.length}`),
+        )
       }
     }
 
@@ -294,32 +360,51 @@ function buildLodgeExperienceEnquireFallbackHref(lodge: LodgeDocumentRow, experi
   return `https://wa.me/${num}?text=${encodeURIComponent(text)}`
 }
 
-/** Banda Tailor Made en lodgePage (no forma parte del bundle estático cuando hay documento CMS). */
+/** Banda Tailor Made en lodgePage — solo si `showTailorMade` / `enabled`; copy y CTA desde CMS. */
 function resolveExperiencesTailorCta(
   row: LodgeStructuredPageRow | null | undefined,
 ): LodgeExperiencesTailor | undefined {
   if (!row) return undefined
   const b = row.experiencesTailorCta
-  if (!b || b.enabled !== true) return undefined
+  if (!b) return undefined
+  const show = b.showTailorMade === true || b.enabled === true
+  if (!show) return undefined
   const fb = lodgeSoqtapataExperiences.tailor
   const fallback = {
     label: fb.ctaLabel,
     href: lodgeSoqtapataBook.secondaryCta.href,
     openInNewTab: true,
   }
-  const raw = b.ctaSmartLink
+  const raw = b.tailorMadeCta ?? b.ctaSmartLink
   const hasSmart =
     Boolean(raw?.linkType?.trim()) || Boolean(raw?.label?.trim()) || Boolean(raw?.externalUrl?.trim())
   const smart = hasSmart && raw ? { ...raw, label: raw.label?.trim() || fb.ctaLabel } : null
   const r = resolveSmartLinkOrLegacy(smart, undefined, fallback)
   if (!r?.href?.trim()) return undefined
+  const kicker = sectionFieldTrim(b.tailorMadeEyebrow) ?? sectionFieldTrim(b.eyebrow) ?? fb.kicker
+  const title = sectionFieldTrim(b.tailorMadeTitle) ?? sectionFieldTrim(b.title) ?? fb.title
+  const description = sectionFieldTrim(b.tailorMadeBody) ?? sectionFieldTrim(b.description) ?? fb.description
   return {
-    kicker: sectionFieldTrim(b.eyebrow) ?? fb.kicker,
-    title: sectionFieldTrim(b.title) ?? fb.title,
-    description: sectionFieldTrim(b.description) ?? fb.description,
+    kicker,
+    title,
+    description,
     ctaLabel: r.label || fb.ctaLabel,
     href: r.href,
+    openInNewTab: r.openInNewTab === true,
+    rel: r.rel,
   }
+}
+
+function experienceLinkedToLodge(e: LodgeCmsExperienceCardRow | null | undefined, lodgeId: string): boolean {
+  if (!e || !lodgeId) return false
+  const r = typeof e.linkedLodgeId === 'string' ? e.linkedLodgeId.trim() : ''
+  return Boolean(r && r === lodgeId)
+}
+
+/** Lodge page lists `active` and `coming-soon` experiences linked to this lodge. */
+function experienceDisplayableOnLodgePage(status: string | null | undefined): boolean {
+  const s = typeof status === 'string' ? status.trim() : ''
+  return s === 'active' || s === 'coming-soon' || s === ''
 }
 
 function mapExperienceToCard(e: LodgeCmsExperienceCardRow, lodge: LodgeDocumentRow): LodgeExperienceCard {
@@ -482,96 +567,153 @@ function applyBookingRowLabelsFromLodge(book: LodgeBookCtaData, lodge: LodgeDocu
   }
 }
 
-function resolveCommonAreaRow(
-  c: LodgeCommonAreaRow,
-  galleryByKey: Map<string, LodgeGalleryItemRow>,
-): LodgeCommonAreaRow {
-  const pick = c.galleryStableKey?.trim()
-  if (!pick) return c
-  const g = galleryByKey.get(pick)
-  if (!g) return c
+/** Curated facilities gallery order from lodge page picks only (missing rows skipped). */
+function resolveFacilitiesGalleryFromSelection(
+  lodge: LodgeDocumentRow,
+  selection: LodgeFacilitiesGallerySelectionPickRow[] | null | undefined,
+): LodgeGalleryItemRow[] {
+  const picks = (selection ?? []).filter(
+    (p): p is LodgeFacilitiesGallerySelectionPickRow =>
+      Boolean(p && (p.galleryRowKey?.trim() || p.galleryStableKey?.trim())),
+  )
+  if (!picks.length) return []
+  const gallery = lodge.gallery ?? []
+  const byRowKey = new Map(
+    gallery
+      .map((g) => {
+        const k = g._key?.trim()
+        return k ? ([k, g] as const) : null
+      })
+      .filter((e): e is [string, LodgeGalleryItemRow] => Boolean(e)),
+  )
+  const byStable = buildGalleryByStableKey(gallery)
+  const out: LodgeGalleryItemRow[] = []
+  for (const p of picks) {
+    const rk = p.galleryRowKey?.trim()
+    if (rk) {
+      const g = byRowKey.get(rk)
+      if (g) out.push(g)
+      continue
+    }
+    const sk = p.galleryStableKey?.trim()
+    if (sk) {
+      const g = byStable.get(sk)
+      if (g) out.push(g)
+    }
+  }
+  return out
+}
+
+function galleryRowToPrimaryPhoto(g: LodgeGalleryItemRow): LodgePrimaryPhoto {
+  const image = g.imageUrl || cdnImageUrl(g.image, 800, '')
   return {
-    ...c,
-    image: g.image ?? c.image,
-    imageUrl: g.imageUrl ?? c.imageUrl,
+    image,
+    imageAlt: (g.altText ?? g.alt ?? g.title ?? '').trim(),
+    label: g.title || '',
+    sub: (g.caption ?? g.description ?? '').trim() || undefined,
   }
 }
 
-function mergeFacilitiesFromCms(base: LodgeFacilitiesData, lodge: LodgeDocumentRow): LodgeFacilitiesData {
-  const galleryByKey = buildGalleryByStableKey(lodge.gallery)
-  const ca = lodge.commonAreas?.map((row) => resolveCommonAreaRow(row, galleryByKey)) ?? lodge.commonAreas
-  const commonPool = (lodge.gallery ?? []).filter((g) => gallerySection(g) === 'commonAreas')
+function galleryRowToStripPhoto(g: LodgeGalleryItemRow): LodgeStripPhoto {
+  return {
+    image: g.imageUrl || cdnImageUrl(g.image, 400, ''),
+    imageAlt: (g.altText ?? g.alt ?? g.title ?? '').trim(),
+    label: g.title || '',
+  }
+}
+
+function mergeFacilitiesFromCms(
+  base: LodgeFacilitiesData,
+  lodge: LodgeDocumentRow,
+  amenitiesSelection?: LodgeFacilitiesAmenitySelectionPickRow[] | null,
+  gallerySelection?: LodgeFacilitiesGallerySelectionPickRow[] | null,
+): LodgeFacilitiesData {
+  const curated = resolveFacilitiesGalleryFromSelection(lodge, gallerySelection)
   let primaryPhotos = [...base.primaryPhotos] as LodgePrimaryPhoto[]
   let stripPhotos = [...base.stripPhotos] as LodgeStripPhoto[]
   let commonAreasGallery = [...base.commonAreasGallery] as LodgeGalleryPhoto[]
 
-  // Preferred model: all common-area visuals come from Global gallery usageSection=commonAreas.
-  if (commonPool.length) {
-    commonAreasGallery = commonPool.map((g, i) =>
+  // Lodge Page CMS: facilities visuals come only from explicit gallery row picks on the linked lodge.
+  if (curated.length > 0) {
+    commonAreasGallery = curated.map((g, i) =>
       galleryItemToPhoto(g, 1200, `https://placehold.co/1200?text=common-${i}`),
     )
-    if (commonPool.length >= 3) {
-      primaryPhotos = commonPool.slice(0, 3).map((g) => {
-        const image = g.imageUrl || cdnImageUrl(g.image, 800, '')
-        return {
-          image,
-          imageAlt: (g.alt || g.title || '').trim(),
-          label: g.title || '',
-          sub: g.description || undefined,
-        }
-      })
+    primaryPhotos = curated.slice(0, 3).map(galleryRowToPrimaryPhoto)
+    const n = curated.length
+    stripPhotos = []
+    if (n > 3 && n <= 6) {
+      stripPhotos = curated.slice(3, n).map(galleryRowToStripPhoto)
+    } else if (n > 6) {
+      const g3 = curated[3]!
+      const g4 = curated[4]!
+      const g5 = curated[5]!
+      const extraPastSix = Math.max(0, n - 6)
+      const defaultMore = extraPastSix > 0 ? `+${extraPastSix}` : undefined
+      stripPhotos = [
+        galleryRowToStripPhoto(g3),
+        galleryRowToStripPhoto(g4),
+        {
+          ...galleryRowToStripPhoto(g5),
+          moreCount: sectionFieldTrim(lodge.facilitiesStripMoreCount) ?? defaultMore,
+          moreLabel:
+            sectionFieldTrim(lodge.facilitiesStripMoreLabel) ??
+            (defaultMore ? 'View all photos' : undefined),
+        },
+      ]
     }
-    if (commonPool.length >= 6) {
-      stripPhotos = commonPool.slice(3, 6).map((g) => ({
-        image: g.imageUrl || cdnImageUrl(g.image, 400, ''),
-        imageAlt: (g.alt || g.title || '').trim(),
-        label: g.title || '',
-      }))
-    } else if (commonPool.length > 3) {
-      const rest = commonPool.slice(3).map((g) => ({
-        image: g.imageUrl || cdnImageUrl(g.image, 400, ''),
-        imageAlt: (g.alt || g.title || '').trim(),
-        label: g.title || '',
-      }))
-      stripPhotos = [...rest, ...stripPhotos].slice(0, 3)
-    }
-  } else if (ca?.length) {
-    // Legacy fallback.
-    commonAreasGallery = ca.map((c, i) => ({
-      src: c.imageUrl || cdnImageUrl(c.image, 1200, ''),
-      alt: c.title || formatCommonAreaGalleryAltFallback(i),
-      title: c.title || '',
-      description: c.description || '',
-    }))
-    if (ca.length >= 3) {
-      primaryPhotos = ca.slice(0, 3).map((c) => commonAreaToPrimary(c, 800))
-    }
-    if (ca.length >= 6) {
-      stripPhotos = ca.slice(3, 6).map(commonAreaToStrip)
-    } else if (ca.length > 3) {
-      const rest = ca.slice(3).map(commonAreaToStrip)
-      stripPhotos = [...rest, ...stripPhotos].slice(0, 3)
-    }
+  } else {
+    primaryPhotos = []
+    stripPhotos = []
+    commonAreasGallery = []
   }
 
   let amenities = [...base.amenities]
-  if (lodge.amenities?.length) {
-    amenities = lodge.amenities.map((a) => ({
+  const lodgeAmenities = lodge.amenities ?? []
+  if (lodgeAmenities.length) {
+    const toItem = (a: (typeof lodgeAmenities)[number]) => ({
       iconId: normalizeAmenityIcon(a.icon),
       title: a.title || '',
       sub: a.description || '',
-    }))
-  }
+    })
+    const allMapped = lodgeAmenities.map(toItem)
+    const picks = (amenitiesSelection ?? []).filter(
+      (p): p is LodgeFacilitiesAmenitySelectionPickRow =>
+        Boolean(p && (p.amenityRowKey?.trim() || p.amenityIcon?.trim())),
+    )
 
-  if (stripPhotos.length >= 3) {
-    const last = stripPhotos[2]!
-    const fb = base.stripPhotos[2]
-    if (fb && (last.moreCount == null || last.moreLabel == null)) {
-      stripPhotos[2] = {
-        ...last,
-        moreCount: last.moreCount ?? fb.moreCount,
-        moreLabel: last.moreLabel ?? fb.moreLabel,
+    if (picks.length > 0) {
+      const byKey = new Map(
+        lodgeAmenities
+          .map((a) => {
+            const k = a._key?.trim()
+            return k ? ([k, a] as const) : null
+          })
+          .filter((e): e is [string, NonNullable<(typeof lodgeAmenities)[number]>] => Boolean(e)),
+      )
+      const ordered: typeof allMapped = []
+      const usedLegacyIndices = new Set<number>()
+
+      for (const pick of picks) {
+        const rowKey = pick?.amenityRowKey?.trim()
+        if (rowKey) {
+          const row = byKey.get(rowKey)
+          if (row) ordered.push(toItem(row))
+          continue
+        }
+        const iconNeedle = pick?.amenityIcon?.trim()
+        if (!iconNeedle) continue
+        const needleNorm = normalizeAmenityIcon(iconNeedle)
+        const idx = lodgeAmenities.findIndex(
+          (a, i) => !usedLegacyIndices.has(i) && normalizeAmenityIcon(a.icon) === needleNorm,
+        )
+        if (idx >= 0) {
+          usedLegacyIndices.add(idx)
+          ordered.push(toItem(lodgeAmenities[idx]!))
+        }
       }
+      amenities = ordered.length > 0 ? ordered : allMapped
+    } else {
+      amenities = allMapped
     }
   }
 
@@ -658,6 +800,8 @@ export function mergeLodgePageWithFallback(
   const lodge = row.lodge
   const seo = resolveSeo(row, lodge)
 
+  const heroBadgePills = resolveHeroHighlightBadges(row.heroHighlights, lodge)
+
   // Hero
   const heroImg = row.heroImage || lodge.mainImage
   const heroBaseSrc = cdnImageUrl(heroImg, 1600, lodge.mainImageUrl || out.hero.imageSrc)
@@ -683,9 +827,11 @@ export function mergeLodgePageWithFallback(
       if (!r) return {}
       return { primaryCta: { label: r.label, href: r.href } }
     })(),
-    ...(lodge.certifications?.length
-      ? { badges: lodge.certifications.map((c) => c.label!).filter(Boolean) }
-      : {}),
+    ...(heroBadgePills?.length
+      ? { badges: heroBadgePills }
+      : lodge.certifications?.length
+        ? { badges: lodge.certifications.map((c) => c.label!).filter(Boolean) }
+        : {}),
     ...(lodge.gallery?.length
       ? {
           gallery: pickHeroGalleryItems(lodge.gallery).map((g, i) =>
@@ -705,11 +851,9 @@ export function mergeLodgePageWithFallback(
     ...(row.navTitle?.trim() ? { title: row.navTitle.trim() } : {}),
     ...(row.navSubtitle?.trim()
       ? { subtitle: row.navSubtitle.trim() }
-      : lodge.location || lodge.altitude != null
+      : lodge.location || formatLodgeAltitudeForSubtitle(lodge.altitude)
         ? {
-            subtitle: [lodge.location, lodge.altitude != null ? `${lodge.altitude} m` : '']
-              .filter(Boolean)
-              .join(' · '),
+            subtitle: [lodge.location, formatLodgeAltitudeForSubtitle(lodge.altitude)].filter(Boolean).join(' · '),
           }
         : {}),
     ...(() => {
@@ -731,7 +875,7 @@ export function mergeLodgePageWithFallback(
     })(),
   }
 
-  out.snapshot = resolveSnapshotBar(out.snapshot, lodge, row.snapshotSelection)
+  out.snapshot = resolveSnapshotBar(out.snapshot, lodge, row.snapshotSelection, row.highlightLines)
 
   // Overview
   out.overview = {
@@ -739,18 +883,56 @@ export function mergeLodgePageWithFallback(
     ...(lodge.longDescription?.trim() ? { body: lodge.longDescription.trim() } : {}),
     ...(lodge.keyElements?.length ? { highlights: lodge.keyElements } : {}),
   }
+  if (row.overviewHighlights?.length) {
+    out.overview = {
+      ...out.overview,
+      highlights: row.overviewHighlights
+        .map((h) => h?.trim())
+        .filter((h): h is string => Boolean(h)),
+    }
+  }
 
   // Rooms
   const mappedRooms = mapRoomsFromLodge(lodge.rooms ?? undefined, row.featuredRoomStableId, lodge.gallery)
   if (mappedRooms) {
     out.rooms = { ...out.rooms, rooms: mappedRooms }
   }
+  const accommodationNote = sectionFieldTrim(lodge.accommodationSpecialMessage)
+  if (accommodationNote) {
+    out.rooms = { ...out.rooms, note: accommodationNote }
+  }
 
   // Facilities
-  out.facilities = mergeFacilitiesFromCms(out.facilities, lodge)
+  out.facilities = mergeFacilitiesFromCms(
+    out.facilities,
+    lodge,
+    row.facilitiesAmenitiesSelection,
+    row.facilitiesGallerySelection,
+  )
+  const pageFacilitiesEyebrow = sectionFieldTrim(row.facilitiesAmenitiesEyebrow)
+  if (pageFacilitiesEyebrow) {
+    out.facilities = { ...out.facilities, amenitiesEyebrow: pageFacilitiesEyebrow }
+  }
 
-  // Location
-  if (lodge.journeySteps?.length) {
+  // Location / Getting here — lodge page CMS wins when set; otherwise lodge KC steps + static map
+  const cmsGettingHere = (row.gettingHereIndications ?? [])
+    .filter((x): x is { title?: string | null; text?: string | null } => Boolean(x))
+    .map((x) => ({
+      title: sectionFieldTrim(x.title) ?? '',
+      text: sectionFieldTrim(x.text) ?? '',
+    }))
+    .filter((x) => Boolean(x.title || x.text))
+
+  if (cmsGettingHere.length > 0) {
+    out.location = {
+      ...out.location,
+      journeySteps: cmsGettingHere.map((s, i) => ({
+        time: s.title || `Step ${i + 1}`,
+        text: s.text,
+        highlight: i === cmsGettingHere.length - 1,
+      })),
+    }
+  } else if (lodge.journeySteps?.length) {
     out.location = {
       ...out.location,
       journeySteps: lodge.journeySteps.map((s: LodgeJourneyStepRow, i: number) => ({
@@ -760,7 +942,22 @@ export function mergeLodgePageWithFallback(
       })),
     }
   }
+
   out.location = mergeLocationMapLabels(out.location, lodge)
+
+  const cmsMapUrl = sectionFieldTrim(row.gettingHereImageUrl)
+  const cmsMapAlt = sectionFieldTrim(row.gettingHereImageAlt)
+  out.location = {
+    ...out.location,
+    ...(cmsMapUrl
+      ? {
+          mapAccessImage: {
+            src: cmsMapUrl,
+            alt: cmsMapAlt ?? `${lodge.name?.trim() || 'Lodge'} — map and access`,
+          },
+        }
+      : {}),
+  }
 
   // Research
   let stats: LodgeResearchStat[] = [...out.research.stats]
@@ -779,21 +976,47 @@ export function mergeLodgePageWithFallback(
   }
   let footnote = out.research.footnote
   if (lodge.specialMessage?.trim()) footnote = lodge.specialMessage.trim()
+  if (row.scienceHighlights?.length) {
+    stats = row.scienceHighlights.map((h) => ({
+      value: h?.title?.trim() || '',
+      label: h?.subtitle?.trim() || '',
+    }))
+  }
+  if (row.scienceProjects?.length) {
+    pillars = row.scienceProjects.map((p) => ({
+      title: p?.title?.trim() || '',
+      body: p?.subtitle?.trim() || '',
+    }))
+  }
+  const scienceNote = sectionFieldTrim(row.scienceSpecialText?.text)
+  if (scienceNote) footnote = scienceNote
   out.research = { ...out.research, stats, pillars, footnote }
 
-  // Experiences
-  let expRows = row.experiencesSelection
-  const useLodgeExp =
-    (!expRows || expRows.length === 0) && row.fallbackToLodgeRelations !== false && lodge.experiences?.length
-  if (useLodgeExp) expRows = lodge.experiences
-  let usedCmsExperiences = false
-  if (expRows?.length) {
-    const { tailor: _omitTailor, ...experiencesWithoutTailor } = out.experiences
-    out.experiences = {
-      ...experiencesWithoutTailor,
-      cards: expRows.map((e) => mapExperienceToCard(e, lodge)),
-    }
-    usedCmsExperiences = true
+  // Experiences — only experiences linked to this lodge in CMS; no static Soqtapata dummy cards.
+  const lodgeId = typeof lodge._id === 'string' ? lodge._id.trim() : ''
+  const pickLinkedPublished = (rows: (LodgeCmsExperienceCardRow | null | undefined)[] | null | undefined) =>
+    (rows ?? [])
+      .filter((e): e is LodgeCmsExperienceCardRow => Boolean(e && e._id))
+      .filter((e) => experienceLinkedToLodge(e, lodgeId) && experienceDisplayableOnLodgePage(e.status))
+
+  const fromSelection = pickLinkedPublished(row.experiencesSelection)
+  const fromLodgeRelations = pickLinkedPublished(lodge.experiences ?? undefined)
+
+  let resolvedExperienceRows: LodgeCmsExperienceCardRow[] = []
+  if (fromSelection.length > 0) {
+    resolvedExperienceRows = fromSelection
+  } else if (row.fallbackToLodgeRelations !== false && fromLodgeRelations.length > 0) {
+    resolvedExperienceRows = fromLodgeRelations
+  }
+
+  const usedCmsExperiences = resolvedExperienceRows.length > 0
+  const { tailor: _omitTailor, ...experiencesWithoutTailor } = out.experiences
+  out.experiences = {
+    ...experiencesWithoutTailor,
+    cards:
+      resolvedExperienceRows.length > 0
+        ? resolvedExperienceRows.map((e) => mapExperienceToCard(e, lodge))
+        : [],
   }
   const exCta = sectionFieldTrim(lodge.experienceCardCtaLabel)
   if (exCta) {
@@ -831,6 +1054,16 @@ export function mergeLodgePageWithFallback(
       })),
     } as unknown as LodgeStaticBundle['faq']
   }
+  if (row.faqItems?.length) {
+    out.faq = {
+      ...out.faq,
+      items: row.faqItems.map((f, i) => ({
+        id: `lodge-page-faq-${i}`,
+        question: f?.title?.trim() || '',
+        answer: f?.text?.trim() || '',
+      })),
+    } as unknown as LodgeStaticBundle['faq']
+  }
 
   // Booking block
   out.book = { ...out.book }
@@ -861,16 +1094,31 @@ export function mergeLodgePageWithFallback(
 
   // Section copy overrides (lodgePage)
   const sec = row.sections
-  if (sec) {
-    out.overview = applySectionCopy(out.overview, sec.overview)
-    out.rooms = applySectionCopy(out.rooms, sec.accommodation)
-    out.facilities = applySectionCopy(out.facilities, sec.facilities)
-    out.location = applySectionCopy(out.location, sec.location)
-    out.research = applySectionCopy(out.research, sec.research)
-    out.experiences = applySectionCopy(out.experiences, sec.experiences)
-    const faqEyebrow = sectionFieldTrim(sec.faq?.eyebrow)
-    const faqTitle = sectionFieldTrim(sec.faq?.title)
-    const faqBody = sectionFieldTrim(sec.faq?.body)
+  const overviewCopy = row.overviewSectionCopy ?? sec?.overview
+  const accommodationCopy = row.accommodationSectionCopy ?? sec?.accommodation
+  const facilitiesCopy = row.facilitiesSectionCopy ?? sec?.facilities
+  const locationCopy = row.locationSectionCopy ?? sec?.location
+  const researchCopy = row.researchSectionCopy ?? sec?.research
+  const experiencesCopy = row.experiencesSectionCopy ?? sec?.experiences
+  const faqCopy = row.faqSectionCopy ?? sec?.faq
+  if (
+    overviewCopy ||
+    accommodationCopy ||
+    facilitiesCopy ||
+    locationCopy ||
+    researchCopy ||
+    experiencesCopy ||
+    faqCopy
+  ) {
+    out.overview = applySectionCopy(out.overview, overviewCopy)
+    out.rooms = applySectionCopy(out.rooms, accommodationCopy)
+    out.facilities = applySectionCopy(out.facilities, facilitiesCopy)
+    out.location = applySectionCopy(out.location, locationCopy)
+    out.research = applySectionCopy(out.research, researchCopy)
+    out.experiences = applySectionCopy(out.experiences, experiencesCopy)
+    const faqEyebrow = sectionFieldTrim(faqCopy?.eyebrow)
+    const faqTitle = sectionFieldTrim(faqCopy?.title)
+    const faqBody = sectionFieldTrim(faqCopy?.body)
     out.faq = {
       ...out.faq,
       ...(faqEyebrow ? { eyebrow: faqEyebrow } : {}),
@@ -879,8 +1127,8 @@ export function mergeLodgePageWithFallback(
     } as unknown as LodgeStaticBundle['faq']
   }
 
-  const expForLodgePrice = (expRows && expRows.length > 0 ? expRows : lodge.experiences) ?? []
-  const lowestLodgeUsd = getLowestActiveExperiencePrice(expForLodgePrice)
+  const expForLodgePrice = resolvedExperienceRows
+  const lowestLodgeUsd = getLodgeReserveLowestUsd(expForLodgePrice, lodge.startingPrice)
   const rowByBookKey = (k: LodgeBookRowKey) => out.book.rows.find((r) => r.rowKey === k)
   const lodgeReserveRows = buildReserveRowsForLodge({
     shortestProgramLabel: rowByBookKey('shortestProgram')?.label,
@@ -899,8 +1147,8 @@ export function mergeLodgePageWithFallback(
   const lodgeReserveCard = resolveReserveCtaCard({
     settings: rsLodge,
     lowestUsd: lowestLodgeUsd,
-    legacyPriceLine: nameLine,
-    legacyPriceSuffix: '',
+    legacyPriceLine: null,
+    legacyPriceSuffix: null,
     legacySubline: tagLine,
     defaultSubline: [nameLine, tagLine].filter(Boolean).join(' · '),
     defaultRows: lodgeReserveRows,
@@ -1026,6 +1274,24 @@ export const getLodgePageCms = cache(async (slug: string) => {
   logLodgePageCmsDiagnosis({ slug, meta: sanityFetchMeta, row, cmsError, merged })
 
   return merged
+})
+
+/** Slugs for `/lodges/[slug]` static paths (published `lodgePage` + `lodge` ref). */
+export const getLodgePageSlugsForStaticParams = cache(async (): Promise<{ slug: string }[]> => {
+  if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || !process.env.NEXT_PUBLIC_SANITY_DATASET) {
+    return [{ slug: LODGE_SOQTAPATA_PAGE_SLUG }]
+  }
+  const { client } = createLodgePageCmsSanityClient()
+  try {
+    const rows = await client.fetch<Array<{ slug: string | null }>>(lodgePageSlugsQuery)
+    const out = (rows ?? [])
+      .map((r) => (typeof r.slug === 'string' ? r.slug.trim() : ''))
+      .filter(Boolean)
+      .map((slug) => ({ slug }))
+    return out.length ? out : [{ slug: LODGE_SOQTAPATA_PAGE_SLUG }]
+  } catch {
+    return [{ slug: LODGE_SOQTAPATA_PAGE_SLUG }]
+  }
 })
 
 /** Atajo para la única landing lodge implementada hoy. */

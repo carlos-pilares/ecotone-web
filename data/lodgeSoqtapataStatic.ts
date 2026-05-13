@@ -522,9 +522,16 @@ export type LodgeLocationMapDiagramLabels = {
   lodgeSubtitle: string
 }
 
+export type LodgeLocationMapAccessImage = {
+  src: string
+  alt: string
+}
+
 export type LodgeLocationData = LodgeSectionHeaderFields & {
   journeySteps: readonly LodgeJourneyStep[]
   mapLabels: LodgeLocationMapDiagramLabels
+  /** Lodge Page CMS `gettingHereImage` — when set, replaces the default SVG map. */
+  mapAccessImage?: LodgeLocationMapAccessImage
 }
 
 /** `reference/ecotone-lodge_11.html` — Location. */
@@ -647,6 +654,8 @@ export type LodgeExperiencesTailor = {
   description: string
   ctaLabel: string
   href: string
+  openInNewTab?: boolean
+  rel?: string
 }
 
 export type LodgeExperiencesData = LodgeSectionHeaderFields & {

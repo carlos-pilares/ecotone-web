@@ -1,12 +1,16 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
-import {RoomStableIdSelectInput} from '../components/lodge/RoomStableIdSelectInput'
+import {GalleryAccommodationRoomInput} from '../components/lodge/GalleryAccommodationRoomInput'
 
 const imgHot = {hotspot: true}
 
-const GALLERY_USAGE_SECTION = [
+/** Slug-like stable id for accommodation rows (internal / featured room). */
+const SLUG_LIKE = /^[a-z0-9][a-z0-9-]*$/
+
+const PHOTO_CATEGORIES = [
   {title: 'Hero', value: 'hero'},
   {title: 'Accommodation', value: 'accommodation'},
-  {title: 'Common areas & amenities', value: 'commonAreas'},
+  {title: 'Common areas & amenities', value: 'commonAreasAmenities'},
+  {title: 'Other', value: 'other'},
 ]
 
 /** IDs alineables con iconos del front (p. ej. LodgeFacilities). */
@@ -28,23 +32,14 @@ const AMENITY_ICON_OPTIONS = [
  */
 export const lodge = defineType({
   name: 'lodge',
-  title: 'Lodge',
+  title: 'Lodge (knowledge center)',
   type: 'document',
+  description: 'Structural lodge data: identity, photos, accommodation types, and amenities. Editorial copy lives on each Lodge page.',
   groups: [
     {name: 'identity', title: 'Identity', default: true},
-    {name: 'hero', title: 'Hero & descriptions'},
-    {name: 'snapshot', title: 'Snapshot'},
-    {name: 'gallery', title: 'Global gallery'},
-    {name: 'rooms', title: 'Accommodation'},
-    {name: 'common', title: 'Common areas'},
+    {name: 'gallery', title: 'Photos library'},
+    {name: 'rooms', title: 'Accommodation types'},
     {name: 'amenities', title: 'Amenities'},
-    {name: 'location', title: 'Location & access'},
-    {name: 'science', title: 'Science / research'},
-    {name: 'relations', title: 'Relationships'},
-    {name: 'faq', title: 'FAQs'},
-    {name: 'booking', title: 'Booking context'},
-    {name: 'trust', title: 'Trust'},
-    {name: 'seo', title: 'SEO'},
   ],
   fields: [
     // --- Identity ---
@@ -76,22 +71,25 @@ export const lodge = defineType({
       title: 'Location',
       type: 'string',
       group: 'identity',
+      hidden: true,
       description: 'Ej. Camanti Route, Cusco',
       validation: (Rule) => Rule.max(200),
     }),
     defineField({
       name: 'altitude',
-      title: 'Altitude (m)',
-      type: 'number',
+      title: 'Altitude (legacy)',
+      type: 'string',
       group: 'identity',
-      description: 'Metros sobre el nivel del mar (número).',
-      validation: (Rule) => Rule.min(0).max(9000),
+      hidden: true,
+      description:
+        'Legacy field — optional. Plain metres as digits (e.g. 1200) or leave empty. Kept for backward compatibility only; does not block publishing.',
     }),
     defineField({
       name: 'certifications',
       title: 'Certifications',
       type: 'array',
       group: 'identity',
+      hidden: true,
       of: [
         {
           type: 'object',
@@ -129,7 +127,8 @@ export const lodge = defineType({
       name: 'shortDescription',
       title: 'Short description',
       type: 'text',
-      group: 'hero',
+      group: 'identity',
+      hidden: true,
       rows: 3,
       validation: (Rule) => Rule.max(400),
     }),
@@ -137,7 +136,8 @@ export const lodge = defineType({
       name: 'longDescription',
       title: 'Long description',
       type: 'text',
-      group: 'hero',
+      group: 'identity',
+      hidden: true,
       rows: 8,
       validation: (Rule) => Rule.max(8000),
     }),
@@ -145,7 +145,8 @@ export const lodge = defineType({
       name: 'keyElements',
       title: 'Key elements',
       type: 'array',
-      group: 'hero',
+      group: 'identity',
+      hidden: true,
       of: [{type: 'string', validation: (Rule) => Rule.max(200)}],
       validation: (Rule) => Rule.max(24),
     }),
@@ -153,7 +154,8 @@ export const lodge = defineType({
       name: 'heroGalleryOpenAriaLabel',
       title: 'Hero gallery button (aria label)',
       type: 'string',
-      group: 'hero',
+      group: 'identity',
+      hidden: true,
       description: 'Accesibilidad del botón que abre la galería de fotos en el hero.',
       validation: (Rule) => Rule.max(160),
     }),
@@ -163,7 +165,8 @@ export const lodge = defineType({
       name: 'snapshotItems',
       title: 'Snapshot items',
       type: 'array',
-      group: 'snapshot',
+      group: 'identity',
+      hidden: true,
       description:
         'Hechos clave. Cada ítem necesita `key` estable para que `lodgePage` pueda referenciarlo (hero highlights / snapshot bar).',
       of: [
@@ -213,11 +216,11 @@ export const lodge = defineType({
     // --- Global gallery (single source of truth for lodge images) ---
     defineField({
       name: 'gallery',
-      title: 'Global gallery',
+      title: 'Photos library',
       type: 'array',
       group: 'gallery',
       description:
-        'Upload each photo once here. Rooms and common areas pick from this list by **stable key** — do not duplicate uploads on room/common rows.',
+        'Upload each photo once. Label it, pick a category, and (for accommodation) link it to an accommodation type — no stable keys required.',
       of: [
         {
           type: 'object',
@@ -225,68 +228,100 @@ export const lodge = defineType({
           fields: [
             defineField({
               name: 'stableKey',
-              title: 'Stable key',
+              title: 'Stable key (legacy)',
               type: 'string',
-              description: 'Unique within this lodge (e.g. hero-0, room-private-cottage-1). Used by rooms / common areas to reference this row.',
-              validation: (Rule) =>
-                Rule.required().regex(/^[a-z0-9][a-z0-9-]*$/, {
-                  name: 'slug-like',
-                  invert: false,
-                }),
+              hidden: true,
+              description: 'Legacy reference key; kept for older content. Not shown to editors.',
             }),
             defineField({
               name: 'image',
               title: 'Image',
               type: 'image',
               options: imgHot,
-              validation: (Rule) => Rule.required(),
+              validation: (Rule) =>
+                Rule.custom((img) => {
+                  const ref = img?.asset?._ref
+                  if (ref) return true
+                  return {
+                    level: 'warning',
+                    message: 'Upload an image when you can. Rows without an asset are skipped on the site.',
+                  }
+                }),
             }),
             defineField({
               name: 'title',
               title: 'Title',
               type: 'string',
-              validation: (Rule) => Rule.required().max(120),
+              validation: (Rule) => Rule.max(120),
             }),
             defineField({
-              name: 'description',
-              title: 'Description',
+              name: 'caption',
+              title: 'Caption',
               type: 'text',
               rows: 3,
               validation: (Rule) => Rule.max(500),
             }),
             defineField({
-              name: 'alt',
+              name: 'altText',
               title: 'Alt text',
               type: 'string',
               description: 'Accessibility; falls back to title if empty.',
               validation: (Rule) => Rule.max(200),
             }),
             defineField({
-              name: 'usageSection',
-              title: 'Usage section',
+              name: 'photoCategory',
+              title: 'Category',
               type: 'string',
-              options: {list: GALLERY_USAGE_SECTION, layout: 'radio'},
-              validation: (Rule) => Rule.required(),
+              initialValue: 'other',
+              options: {list: PHOTO_CATEGORIES, layout: 'radio'},
+              validation: (Rule) =>
+                Rule.custom((v) => {
+                  const t = (v ?? '').trim()
+                  if (!t) {
+                    return {
+                      level: 'warning',
+                      message: 'Pick a category (Hero, Accommodation, Common areas & amenities, or Other).',
+                    }
+                  }
+                  return true
+                }),
+            }),
+            defineField({
+              name: 'accommodationRoomKey',
+              title: 'Accommodation type',
+              type: 'string',
+              components: {input: GalleryAccommodationRoomInput},
+              hidden: ({parent}) => parent?.photoCategory !== 'accommodation',
+              description: 'Which accommodation type this photo belongs to (uses the row key, not a typed ID).',
+            }),
+            defineField({
+              name: 'usageSection',
+              title: 'Category (legacy)',
+              type: 'string',
+              hidden: true,
+              description: 'Older category field; site resolver still reads it when photoCategory is empty.',
             }),
             defineField({
               name: 'roomStableId',
-              title: 'Room stable ID',
+              title: 'Room stable ID (legacy)',
               type: 'string',
-              components: {input: RoomStableIdSelectInput},
-              hidden: ({parent}) => parent?.usageSection !== 'accommodation',
-              description: 'Required only when Usage section is Accommodation.',
-              validation: (Rule) =>
-                Rule.custom((val, ctx) => {
-                  const section = ctx.parent?.usageSection
-                  const roomId = val?.trim()
-                  if (section !== 'accommodation') return true
-                  if (!roomId) return 'Room stable ID is required for Accommodation photos'
-                  const stableIds = new Set((ctx.document?.rooms ?? []).map((r) => r?.stableId).filter(Boolean))
-                  if (stableIds.size > 0 && !stableIds.has(roomId)) {
-                    return `Room stable ID must match one of lodge.rooms[].stableId (${Array.from(stableIds).join(', ')})`
-                  }
-                  return /^[a-z0-9][a-z0-9-]*$/.test(roomId) ? true : 'Use slug-like format'
-                }),
+              hidden: true,
+              description: 'Legacy accommodation link; resolver still uses it when accommodation type is not set above.',
+            }),
+            defineField({
+              name: 'description',
+              title: 'Caption (legacy)',
+              type: 'text',
+              rows: 3,
+              hidden: true,
+              validation: (Rule) => Rule.max(500),
+            }),
+            defineField({
+              name: 'alt',
+              title: 'Alt text (legacy)',
+              type: 'string',
+              hidden: true,
+              validation: (Rule) => Rule.max(200),
             }),
             defineField({
               name: 'category',
@@ -308,18 +343,16 @@ export const lodge = defineType({
             }),
           ],
           preview: {
-            select: {sk: 'stableKey', t: 'title', media: 'image', use: 'usageSection'},
-            prepare: ({sk, t, media, use}) => ({title: sk ? `${sk} · ${t}` : t, subtitle: use, media}),
+            select: {t: 'title', media: 'image', cat: 'photoCategory'},
+            prepare: ({t, media, cat}) => ({
+              title: t || 'Photo',
+              subtitle: cat || '',
+              media,
+            }),
           },
         },
       ],
-      validation: (Rule) =>
-        Rule.max(60).custom((rows) => {
-          if (!rows?.length) return true
-          const keys = rows.map((r) => r?.stableKey).filter(Boolean)
-          if (keys.length !== new Set(keys).size) return 'Each gallery row needs a unique stable key'
-          return true
-        }),
+      validation: (Rule) => Rule.max(60),
     }),
 
     // --- Accommodation ---
@@ -337,11 +370,31 @@ export const lodge = defineType({
               name: 'stableId',
               title: 'Stable ID',
               type: 'string',
-              description: 'Identificador estable para `lodgePage.featuredRoomStableId`.',
+              description:
+                'Short slug for this accommodation type (e.g. private-cottage). Used by gallery photos and lodge pages. Run `npm run migrate:repair-lodge-rooms` to auto-fill from names if needed.',
               validation: (Rule) =>
-                Rule.required().regex(/^[a-z0-9][a-z0-9-]*$/, {
-                  name: 'slug-like',
-                  invert: false,
+                Rule.custom((val, ctx) => {
+                  const trimmed = (val ?? '').trim()
+                  if (!trimmed) {
+                    return {
+                      level: 'warning',
+                      message:
+                        'Stable ID is recommended so photos and featured-room settings can target this row. Add a slug (e.g. double-room) or run `npm run migrate:repair-lodge-rooms -- --commit`.',
+                    }
+                  }
+                  if (!SLUG_LIKE.test(trimmed)) {
+                    return {
+                      level: 'warning',
+                      message:
+                        'Use lowercase letters, numbers, and hyphens only (e.g. private-cottage). Publish is allowed; fix for reliable linking.',
+                    }
+                  }
+                  const rooms = ctx.document?.rooms ?? []
+                  const same = rooms.filter((r) => (r?.stableId ?? '').trim() === trimmed).length
+                  if (same > 1) {
+                    return 'Duplicate Stable ID: each accommodation type must use a different ID.'
+                  }
+                  return true
                 }),
             }),
             defineField({
@@ -354,27 +407,76 @@ export const lodge = defineType({
               name: 'numberOfRooms',
               title: 'Number of rooms (units)',
               type: 'number',
-              validation: (Rule) => Rule.required().integer().min(1).max(99),
+              description: 'Optional in Studio; the site may show a placeholder if unset.',
+              validation: (Rule) =>
+                Rule.custom((v) => {
+                  if (v === undefined || v === null) return true
+                  if (typeof v !== 'number' || !Number.isInteger(v) || v < 1 || v > 99) {
+                    return {
+                      level: 'warning',
+                      message: 'If set, use a whole number from 1 to 99 (number of units).',
+                    }
+                  }
+                  return true
+                }),
             }),
             defineField({
               name: 'capacity',
-              title: 'Capacity (guests per unit or total — define in description)',
+              title: 'Capacity per unit',
               type: 'number',
-              validation: (Rule) => Rule.min(1).max(50),
+              description: 'Optional; guests per unit when set.',
+              validation: (Rule) =>
+                Rule.custom((v) => {
+                  if (v === undefined || v === null) return true
+                  if (typeof v !== 'number' || Number.isNaN(v) || v < 1 || v > 50) {
+                    return {
+                      level: 'warning',
+                      message: 'If set, use a number from 1 to 50 (capacity per unit).',
+                    }
+                  }
+                  return true
+                }),
             }),
             defineField({
               name: 'highlights',
               title: 'Highlights',
               type: 'array',
-              of: [{type: 'string', validation: (Rule) => Rule.max(120)}],
-              validation: (Rule) => Rule.max(12),
+              of: [
+                {
+                  type: 'string',
+                  validation: (Rule) =>
+                    Rule.custom((line) => {
+                      const s = line == null ? '' : String(line)
+                      if (s.length <= 120) return true
+                      return {
+                        level: 'warning',
+                        message: 'Shorten this line to 120 characters or less (or split into two highlights).',
+                      }
+                    }),
+                },
+              ],
+              validation: (Rule) => Rule.max(5),
+            }),
+            defineField({
+              name: 'mostPopular',
+              title: 'Most popular',
+              type: 'boolean',
+              initialValue: false,
+            }),
+            defineField({
+              name: 'specialMessage',
+              title: 'Special message (legacy)',
+              type: 'text',
+              rows: 2,
+              hidden: true,
+              validation: (Rule) => Rule.max(400),
             }),
             defineField({
               name: 'galleryItemKeys',
               title: 'Gallery photos (legacy picks)',
               type: 'array',
               hidden: true,
-              description: 'Legacy fallback. New workflow uses Global gallery usageSection + roomStableId.',
+              description: 'Legacy fallback; hidden. Prefer Photos library + accommodation link on each photo.',
               of: [
                 defineArrayMember({
                   type: 'object',
@@ -384,11 +486,7 @@ export const lodge = defineType({
                       name: 'galleryStableKey',
                       title: 'Gallery stable key',
                       type: 'string',
-                      validation: (Rule) =>
-                        Rule.required().regex(/^[a-z0-9][a-z0-9-]*$/, {
-                          name: 'slug-like',
-                          invert: false,
-                        }),
+                      description: 'Legacy pick; not validated against the library (stale keys allowed).',
                     }),
                   ],
                   preview: {
@@ -397,18 +495,7 @@ export const lodge = defineType({
                   },
                 }),
               ],
-              validation: (Rule) =>
-                Rule.max(24).custom((picks, ctx) => {
-                  const doc = ctx.document
-                  const gKeys = new Set((doc?.gallery ?? []).map((g) => g?.stableKey).filter(Boolean))
-                  if (!Array.isArray(picks) || picks.length === 0) return true
-                  if (!gKeys.size) return 'Add **Global gallery** rows with stable keys before picking photos here'
-                  for (const p of picks) {
-                    const k = p?.galleryStableKey?.trim()
-                    if (k && !gKeys.has(k)) return `Unknown gallery stable key: ${k}`
-                  }
-                  return true
-                }),
+              validation: (Rule) => Rule.max(24),
             }),
             defineField({
               name: 'gallery',
@@ -426,7 +513,15 @@ export const lodge = defineType({
                       title: 'Image',
                       type: 'image',
                       options: imgHot,
-                      validation: (Rule) => Rule.required(),
+                      validation: (Rule) =>
+                        Rule.custom((img) => {
+                          const ref = img?.asset?._ref
+                          if (ref) return true
+                          return {
+                            level: 'warning',
+                            message: 'Upload an image for this legacy row when possible.',
+                          }
+                        }),
                     }),
                     defineField({
                       name: 'title',
@@ -460,10 +555,21 @@ export const lodge = defineType({
       validation: (Rule) =>
         Rule.custom((rows) => {
           if (!rows?.length) return true
-          const ids = rows.map((r) => r?.stableId).filter(Boolean)
-          if (ids.length !== new Set(ids).size) return 'Cada `stableId` de habitación debe ser único.'
+          const ids = rows.map((r) => (r?.stableId ?? '').trim()).filter(Boolean)
+          if (ids.length !== new Set(ids).size) {
+            return 'Each accommodation type needs a unique Stable ID when IDs are set (duplicate non-empty IDs).'
+          }
           return true
         }),
+    }),
+    defineField({
+      name: 'accommodationSpecialMessage',
+      title: 'Accommodation section message',
+      type: 'text',
+      group: 'rooms',
+      rows: 3,
+      validation: (Rule) => Rule.max(400),
+      description: 'Optional note for the whole accommodation section (not per room type).',
     }),
 
     // --- Common areas ---
@@ -471,7 +577,8 @@ export const lodge = defineType({
       name: 'commonAreas',
       title: 'Common areas',
       type: 'array',
-      group: 'common',
+      group: 'identity',
+      hidden: true,
       of: [
         {
           type: 'object',
@@ -488,9 +595,20 @@ export const lodge = defineType({
                   const parent = ctx.parent
                   const usePick = Boolean(parent?.galleryStableKey?.trim())
                   if (!usePick && (val == null || String(val).trim() === '')) return true
-                  if (usePick && (val == null || String(val).trim() === '')) return 'Required when using a gallery pick'
+                  if (usePick && (val == null || String(val).trim() === '')) {
+                    return {
+                      level: 'warning',
+                      message: 'Stable key is recommended when using a gallery pick (legacy common area row).',
+                    }
+                  }
                   const t = String(val).trim()
-                  return /^[a-z0-9][a-z0-9-]*$/.test(t) || 'Slug-like key'
+                  if (!SLUG_LIKE.test(t)) {
+                    return {
+                      level: 'warning',
+                      message: 'Use a slug-like stable key (lowercase, hyphens).',
+                    }
+                  }
+                  return true
                 }),
             }),
             defineField({
@@ -498,16 +616,7 @@ export const lodge = defineType({
               title: 'Photo (Global gallery stable key)',
               type: 'string',
               hidden: true,
-              description: 'Pick an image from **Global gallery** by its stable key. Preferred over uploading here.',
-              validation: (Rule) =>
-                Rule.custom((val, ctx) => {
-                  const doc = ctx.document
-                  const gKeys = new Set((doc?.gallery ?? []).map((g) => g?.stableKey).filter(Boolean))
-                  const k = val?.trim()
-                  if (!k) return true
-                  if (gKeys.size && !gKeys.has(k)) return `Unknown gallery stable key: ${k}`
-                  return true
-                }),
+              description: 'Legacy pick by stable key; not validated (stale keys allowed).',
             }),
             defineField({
               name: 'image',
@@ -551,7 +660,8 @@ export const lodge = defineType({
       name: 'facilitiesGalleryTileAriaPrefix',
       title: 'Facilities: gallery tile aria prefix',
       type: 'string',
-      group: 'common',
+      group: 'identity',
+      hidden: true,
       description: 'Prefijo aria de los tiles grandes (p. ej. “Open gallery:”).',
       validation: (Rule) => Rule.max(120),
     }),
@@ -559,14 +669,16 @@ export const lodge = defineType({
       name: 'facilitiesGalleryStripMoreAriaLabel',
       title: 'Facilities: “more photos” tile aria label',
       type: 'string',
-      group: 'common',
+      group: 'identity',
+      hidden: true,
       validation: (Rule) => Rule.max(200),
     }),
     defineField({
       name: 'facilitiesStripMoreCount',
       title: 'Facilities: strip “more” count text',
       type: 'string',
-      group: 'common',
+      group: 'identity',
+      hidden: true,
       description: 'Texto del contador en el tercer tile del strip (p. ej. +12).',
       validation: (Rule) => Rule.max(40),
     }),
@@ -574,7 +686,8 @@ export const lodge = defineType({
       name: 'facilitiesStripMoreLabel',
       title: 'Facilities: strip “more” link label',
       type: 'string',
-      group: 'common',
+      group: 'identity',
+      hidden: true,
       validation: (Rule) => Rule.max(120),
     }),
 
@@ -621,9 +734,10 @@ export const lodge = defineType({
     }),
     defineField({
       name: 'facilitiesAmenitiesEyebrow',
-      title: 'Amenities section eyebrow',
+      title: 'Amenities section eyebrow (legacy)',
       type: 'string',
       group: 'amenities',
+      hidden: true,
       description: 'Rótulo sobre la rejilla de amenidades (p. ej. “What’s included”).',
       validation: (Rule) => Rule.max(120),
     }),
@@ -633,14 +747,16 @@ export const lodge = defineType({
       name: 'mapImage',
       title: 'Map image',
       type: 'image',
-      group: 'location',
+      group: 'identity',
+      hidden: true,
       options: imgHot,
     }),
     defineField({
       name: 'locationMapLabels',
       title: 'Location map (diagram labels)',
       type: 'object',
-      group: 'location',
+      group: 'identity',
+      hidden: true,
       fields: [
         defineField({
           name: 'cuscoTitle',
@@ -684,7 +800,8 @@ export const lodge = defineType({
       name: 'journeySteps',
       title: 'Journey steps',
       type: 'array',
-      group: 'location',
+      group: 'identity',
+      hidden: true,
       of: [
         {
           type: 'object',
@@ -714,7 +831,8 @@ export const lodge = defineType({
       name: 'highlights',
       title: 'Science highlights',
       type: 'array',
-      group: 'science',
+      group: 'identity',
+      hidden: true,
       description: 'Máximo 3 tarjetas destacadas (research / science).',
       of: [
         {
@@ -742,7 +860,8 @@ export const lodge = defineType({
       name: 'researchAreas',
       title: 'Research areas',
       type: 'array',
-      group: 'science',
+      group: 'identity',
+      hidden: true,
       of: [
         {
           type: 'object',
@@ -770,7 +889,8 @@ export const lodge = defineType({
       name: 'specialMessage',
       title: 'Special message',
       type: 'text',
-      group: 'science',
+      group: 'identity',
+      hidden: true,
       rows: 4,
       validation: (Rule) => Rule.max(2000),
     }),
@@ -780,7 +900,8 @@ export const lodge = defineType({
       name: 'experiences',
       title: 'Related experiences',
       type: 'array',
-      group: 'relations',
+      group: 'identity',
+      hidden: true,
       of: [{type: 'reference', to: [{type: 'experience'}]}],
       validation: (Rule) => Rule.max(24),
     }),
@@ -788,7 +909,8 @@ export const lodge = defineType({
       name: 'reviews',
       title: 'Reviews',
       type: 'array',
-      group: 'relations',
+      group: 'identity',
+      hidden: true,
       of: [{type: 'reference', to: [{type: 'review'}]}],
       validation: (Rule) => Rule.max(48),
     }),
@@ -796,7 +918,8 @@ export const lodge = defineType({
       name: 'experienceCardCtaLabel',
       title: 'Experience cards: CTA label',
       type: 'string',
-      group: 'relations',
+      group: 'identity',
+      hidden: true,
       description: 'Texto del enlace en cada tarjeta de experiencia (p. ej. “View”).',
       validation: (Rule) => Rule.max(40),
     }),
@@ -804,7 +927,8 @@ export const lodge = defineType({
       name: 'experienceCardPricePrefix',
       title: 'Experience cards: price prefix',
       type: 'string',
-      group: 'relations',
+      group: 'identity',
+      hidden: true,
       description: 'Si no hay `priceLabel` en el experience, se antepone al número (p. ej. “USD ”).',
       validation: (Rule) => Rule.max(20),
     }),
@@ -812,7 +936,8 @@ export const lodge = defineType({
       name: 'experienceCardPriceSuffix',
       title: 'Experience cards: price suffix',
       type: 'string',
-      group: 'relations',
+      group: 'identity',
+      hidden: true,
       description: 'Línea secundaria cuando hay precio numérico (p. ej. “per person”).',
       validation: (Rule) => Rule.max(40),
     }),
@@ -822,7 +947,8 @@ export const lodge = defineType({
       name: 'faqs',
       title: 'FAQs',
       type: 'array',
-      group: 'faq',
+      group: 'identity',
+      hidden: true,
       of: [
         {
           type: 'object',
@@ -852,14 +978,16 @@ export const lodge = defineType({
       name: 'startingPrice',
       title: 'Starting price',
       type: 'number',
-      group: 'booking',
+      group: 'identity',
+      hidden: true,
       validation: (Rule) => Rule.min(0),
     }),
     defineField({
       name: 'currency',
       title: 'Currency code',
       type: 'string',
-      group: 'booking',
+      group: 'identity',
+      hidden: true,
       description: 'Ej. USD',
       initialValue: 'USD',
       validation: (Rule) => Rule.max(8),
@@ -868,21 +996,24 @@ export const lodge = defineType({
       name: 'maxGroupSize',
       title: 'Max group size',
       type: 'number',
-      group: 'booking',
+      group: 'identity',
+      hidden: true,
       validation: (Rule) => Rule.min(1).max(500),
     }),
     defineField({
       name: 'availabilityNote',
       title: 'Availability note',
       type: 'string',
-      group: 'booking',
+      group: 'identity',
+      hidden: true,
       validation: (Rule) => Rule.max(300),
     }),
     defineField({
       name: 'bookingMessage',
       title: 'Booking message',
       type: 'text',
-      group: 'booking',
+      group: 'identity',
+      hidden: true,
       rows: 4,
       validation: (Rule) => Rule.max(2000),
     }),
@@ -890,7 +1021,8 @@ export const lodge = defineType({
       name: 'bookingDetailRowLabels',
       title: 'Booking block: row labels (left column)',
       type: 'object',
-      group: 'booking',
+      group: 'identity',
+      hidden: true,
       description:
         'Etiquetas de las filas del resumen de reserva. Los valores (derecha) siguen viniendo de precio / grupo / disponibilidad.',
       fields: [
@@ -926,7 +1058,8 @@ export const lodge = defineType({
       name: 'trustItems',
       title: 'Trust items',
       type: 'array',
-      group: 'trust',
+      group: 'identity',
+      hidden: true,
       of: [
         {
           type: 'object',
@@ -955,20 +1088,23 @@ export const lodge = defineType({
       name: 'seo',
       title: 'SEO',
       type: 'seo',
-      group: 'seo',
+      group: 'identity',
+      hidden: true,
     }),
     defineField({
       name: 'seoTitle',
       title: 'SEO title (legacy / override)',
       type: 'string',
-      group: 'seo',
+      group: 'identity',
+      hidden: true,
       validation: (Rule) => Rule.max(70),
     }),
     defineField({
       name: 'seoDescription',
       title: 'SEO description (legacy / override)',
       type: 'text',
-      group: 'seo',
+      group: 'identity',
+      hidden: true,
       rows: 3,
       validation: (Rule) => Rule.max(200),
     }),
@@ -976,7 +1112,8 @@ export const lodge = defineType({
       name: 'ogImage',
       title: 'Open Graph image (legacy / override)',
       type: 'image',
-      group: 'seo',
+      group: 'identity',
+      hidden: true,
       options: imgHot,
       description: 'Preferir `seo.ogImage` si unificas en el objeto SEO.',
     }),
@@ -986,7 +1123,8 @@ export const lodge = defineType({
       name: 'mainImage',
       title: 'Main / hero image',
       type: 'image',
-      group: 'hero',
+      group: 'identity',
+      hidden: true,
       options: imgHot,
       description: 'Imagen principal del lodge (hero canónico).',
     }),

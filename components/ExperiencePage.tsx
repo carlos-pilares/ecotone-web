@@ -14,6 +14,7 @@ import type {
   TechnologyProductDoc,
 } from '@/lib/queries'
 import { cdnImageUrl } from '@/lib/sanity'
+import { formatLodgeAltitudeForSubtitle } from '@/lib/lodgeAltitudeDisplay'
 import { DEFAULT_REVIEWS_RATING_SUMMARY } from '@/lib/reviewsRatingSummary'
 
 const U_FALL =
@@ -584,7 +585,7 @@ export function ExperiencePage({ experience, reviewsFiltered, featuredQuoteItems
                       </div>
                     </div>
                     <div className="lodge-card-meta" style={{ marginTop: 6 }}>
-                      {[lodge.altitude, ROUTE_LABEL[e.route!] || e.route, lodge.capacity ? `Max ${lodge.capacity} guests` : null]
+                      {[formatLodgeAltitudeForSubtitle(lodge.altitude), ROUTE_LABEL[e.route!] || e.route, lodge.capacity ? `Max ${lodge.capacity} guests` : null]
                         .filter(Boolean)
                         .join(' · ')}
                     </div>

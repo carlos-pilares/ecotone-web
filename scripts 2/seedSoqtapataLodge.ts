@@ -441,6 +441,11 @@ async function buildLodgePageDoc(
     },
     reviewsSelection: [],
     reviewsPresentation: {
+      sourceLabel: lodgeSoqtapataReviewsSectionDefaults.sourceLabel,
+      averageRating: lodgeSoqtapataReviewsSectionDefaults.averageRating,
+      secondaryRatingLine: lodgeSoqtapataReviewsSectionDefaults.secondaryRatingLine,
+      carouselEndLabel: lodgeSoqtapataReviewsSectionDefaults.carouselEndLabel,
+      carouselEndHref: lodgeSoqtapataReviewsSectionDefaults.carouselEndHref,
       emptyMessage: lodgeSoqtapataReviewsSectionDefaults.emptyMessage,
     },
     bookingCta: {
