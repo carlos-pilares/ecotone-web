@@ -19,6 +19,8 @@ import type { ReviewDoc, TechnologyProductDoc } from '@/lib/queries'
 import type { CmsInternalNav } from '@/lib/soqtapataInternalNav'
 import type { SoqtapataPageModuleRow } from '@/lib/soqtapataSectionPresentation'
 import { urlFor } from '@/lib/sanity'
+import { formatLodgeAltitudeForSubtitle } from '@/lib/lodgeAltitudeDisplay'
+import { resolveRouteLabel } from '@/data/lodgeSoqtapataResolverDefaults'
 import { DEFAULT_EXPERIENCE_RESOURCE_DOWNLOAD_CTA_LABEL } from '@/lib/experienceResourceCmsDefaults'
 import type { ReserveCtaSettingsGroq } from '@/lib/reserveCtaGroq'
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
@@ -26,6 +28,24 @@ import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmar
 import { buildDefaultExperienceReserveRows, type ExperienceReserveFacts } from '@/lib/experienceReserveRows'
 import { isActiveExperienceStatus } from '@/lib/reserveCtaPricing'
 import { resolveReserveCtaCard } from '@/lib/resolveReserveCtaCard'
+
+/** CMS sometimes stores non-string rows in string-array fields; coerce to display lines. */
+function normalizeStringHighlightList(raw: unknown[] | null | undefined): string[] {
+  if (!raw?.length) return []
+  const out: string[] = []
+  for (const item of raw) {
+    if (typeof item === 'string') {
+      const t = item.trim()
+      if (t) out.push(t)
+      continue
+    }
+    if (item && typeof item === 'object') {
+      const t = String((item as { title?: unknown }).title ?? '').trim()
+      if (t) out.push(t)
+    }
+  }
+  return out
+}
 
 // --- public row shape (subset of GROQ result) ---
 
@@ -276,12 +296,6 @@ const PROGRAM: Record<string, string> = {
   'family-adventure': 'Family Adventure',
   'experiential-learning': 'Exp. Learning',
   'tailor-made': 'Tailor Made',
-}
-
-const ROUTE: Record<string, string> = {
-  camanti: 'Camanti Route',
-  'manu-road': 'Manu Road',
-  'manu-core': 'Manu Core',
 }
 
 const MONTH_SLUG: Record<string, string> = {
@@ -536,7 +550,7 @@ export function soqtapataPartialFromStructuredRow(
   const l = local
 
   const programBadge = (e.programType && PROGRAM[e.programType]) || 'Nature Core'
-  const routeBadge = (e.route && ROUTE[e.route]) || 'Camanti Route'
+  const routeBadge = e.route?.trim() ? resolveRouteLabel(e.route) : 'Camanti Route'
   const priceLine =
     ph?.useProductPrice !== false
       ? ph?.priceLine?.trim() ||
@@ -622,7 +636,7 @@ export function soqtapataPartialFromStructuredRow(
         })()
 
   const br = [...l.hero.breadcrumb] as (typeof l.hero)['breadcrumb']
-  const routeName = (e.routeDocument && e.routeDocument.name) || ROUTE[e.route || ''] || (br[4] as { type: 'link'; text: string }).text
+  const routeName = (e.routeDocument && e.routeDocument.name) || resolveRouteLabel(e.route) || (br[4] as { type: 'link'; text: string }).text
   ;(br[4] as { type: 'link'; href: string; text: string }) = { type: 'link', href: '#', text: routeName }
 
   const out: Partial<SoqtapataExperience> = {
@@ -662,10 +676,16 @@ export function soqtapataPartialFromStructuredRow(
         (parts[0] || (e.shortDescription && e.shortDescription.trim()) || l.overview.paragraphs[0])!,
         (parts[1] || l.overview.paragraphs[1])!,
       ] as [string, string],
-      highlights: (e.highlights && e.highlights.length > 0 ? e.highlights : l.overview.highlights) as string[],
+      highlights: (() => {
+        const hl = normalizeStringHighlightList(e.highlights)
+        return hl.length > 0 ? hl : l.overview.highlights
+      })(),
     }
   } else if (e.highlights && e.highlights.length > 0) {
-    out.overview = { ...l.overview, highlights: e.highlights }
+    const hl = normalizeStringHighlightList(e.highlights)
+    if (hl.length > 0) {
+      out.overview = { ...l.overview, highlights: hl }
+    }
   }
 
   if (e.itinerary && e.itinerary.length > 0) {
@@ -711,10 +731,17 @@ export function soqtapataPartialFromStructuredRow(
         imageSrc: (e.lodge.mainImageUrl && imgW(e.lodge.mainImageUrl, 500)) || ld.card.imageSrc,
         nightBadge: (e.lodgeNightLabel && e.lodgeNightLabel.trim()) || ld.card.nightBadge,
         meta:
-          [e.lodge!.altitude, e.lodge!.route && ROUTE[e.lodge!.route] || e.lodge!.route, e.lodge!.shortDescription]
+          [
+            formatLodgeAltitudeForSubtitle(e.lodge!.altitude),
+            e.lodge!.route?.trim() ? resolveRouteLabel(e.lodge!.route) : null,
+            e.lodge!.shortDescription,
+          ]
             .filter(Boolean)
             .join(' · ') || ld.card.meta,
-        chips: (e.lodge.amenities && e.lodge.amenities.length > 0 ? e.lodge.amenities : ld.card.chips) as string[],
+        chips:
+          e.lodge.amenities && e.lodge.amenities.length > 0
+            ? normalizeStringHighlightList(e.lodge.amenities as unknown[])
+            : ld.card.chips,
       },
       ctaHref: ld.ctaHref,
       ctaLabel: ld.ctaLabel,
@@ -756,10 +783,12 @@ export function soqtapataPartialFromStructuredRow(
   }
 
   if ((e.includes && e.includes.length > 0) || (e.notIncludes && e.notIncludes.length > 0)) {
+    const yes = normalizeStringHighlightList(e.includes)
+    const no = normalizeStringHighlightList(e.notIncludes)
     out.includes = {
       ...l.includes,
-      yes: (e.includes && e.includes.length > 0 ? e.includes : l.includes.yes) as string[],
-      no: (e.notIncludes && e.notIncludes.length > 0 ? e.notIncludes : l.includes.no) as string[],
+      yes: yes.length > 0 ? yes : l.includes.yes,
+      no: no.length > 0 ? no : l.includes.no,
     }
   }
 
@@ -768,7 +797,7 @@ export function soqtapataPartialFromStructuredRow(
     out.stats = [
       { n: (e.duration && e.duration.trim()) || st[0]!.n, l: st[0]!.l },
       { n: (e.distanceFromCusco && e.distanceFromCusco.trim()) || st[1]!.n, l: st[1]!.l },
-      { n: (e.altitude && e.altitude.trim()) || st[2]!.n, l: st[2]!.l },
+      { n: formatLodgeAltitudeForSubtitle(e.altitude) ?? st[2]!.n, l: st[2]!.l },
       { n: (e.groupSizeMax != null ? `Max ${e.groupSizeMax}` : st[3]!.n) || st[3]!.n, l: st[3]!.l },
       { n: st[4]!.n, l: st[4]!.l },
       { n: (e.ecosystem && e.ecosystem.trim()) || st[5]!.n, l: st[5]!.l },
@@ -1000,7 +1029,7 @@ function relatedExperienceToCard(
   fallbackImage: string,
 ): SoqtapataRelatedCardImage {
   const programLabel = (exp.programType && PROGRAM[exp.programType]) || 'Experience'
-  const routeLabel = (exp.route && ROUTE[exp.route]) || exp.route || ''
+  const routeLabel = exp.route?.trim() ? resolveRouteLabel(exp.route) : ''
   const pillLeft = programLabel
   const pillRight = (exp.duration && exp.duration.trim()) || '—'
   const typeLabel = programLabel

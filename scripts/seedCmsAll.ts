@@ -293,7 +293,7 @@ export async function seedCmsAll() {
     name: 'Soqtapata Lodge',
     slug: { _type: 'slug' as const, current: 'soqtapata-lodge' },
     route: 'camanti',
-    altitude: '1,200 m',
+    altitudeLegacy: '1,200 m',
     shortDescription: soqtapataPhase3.lodge.card.meta,
   }
 

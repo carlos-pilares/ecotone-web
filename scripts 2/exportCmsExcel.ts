@@ -142,7 +142,7 @@ async function main() {
     _id, title, category, readingMinutes, externalLink, "slug": slug.current, publishedAt
   }`)
   const lodges = await client.fetch<any[]>(`*[_type == "lodge"] | order(name asc){
-    _id, name, "slug": slug.current, tagline, shortDescription, altitude, route, ecosystem, amenities
+    _id, name, "slug": slug.current, tagline, shortDescription, "altitude": coalesce(altitudeLegacy, altitude), route, ecosystem, amenities
   }`)
   const routes = await client.fetch<any[]>(`*[_type == "route"] | order(name asc){
     _id, name, "slug": slug.current, tagline, shortDescription, highlights

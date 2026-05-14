@@ -95,6 +95,8 @@ export type LodgeDocument = {
   slug: {current?: string}
   route?: string
   location?: string
+  /** Typed legacy altitude (string). Raw `altitude` may still exist on old documents. */
+  altitudeLegacy?: string | null
   altitude?: number | string
   certifications?: LodgeCertification[]
   shortDescription?: string

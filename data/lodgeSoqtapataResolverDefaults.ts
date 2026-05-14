@@ -13,6 +13,34 @@ export const lodgeSoqtapataRouteLabels: Record<string, string> = {
 
 export const lodgeSoqtapataRouteFallbackLabel = 'Camanti Route'
 
+/** Canonical keys for commercial routes (lodges, experiences, filters). */
+export type LodgeRouteKey = 'camanti' | 'manu-road' | 'manu-core'
+
+/**
+ * Maps legacy or human-readable route text to a canonical key.
+ * Empty string when unknown (callers may fall back to raw text or program-type styling).
+ */
+export function normalizeLodgeRouteKey(route: string | null | undefined): LodgeRouteKey | '' {
+  const raw = route?.trim()
+  if (!raw) return ''
+  const spaced = raw.toLowerCase().replace(/_/g, '-').replace(/\s+/g, ' ').trim()
+  const hyphen = spaced.replace(/\s+/g, '-')
+
+  const toKey: Record<string, LodgeRouteKey> = {
+    camanti: 'camanti',
+    'camanti-route': 'camanti',
+    'camanti route': 'camanti',
+    'manu-road': 'manu-road',
+    'manu road': 'manu-road',
+    'manu-core': 'manu-core',
+    'manu core': 'manu-core',
+  }
+
+  if (toKey[spaced]) return toKey[spaced]
+  if (toKey[hyphen]) return toKey[hyphen]
+  return ''
+}
+
 export function resolveProgramTypeLabel(pt: string | null | undefined): string {
   if (!pt?.trim()) return lodgeSoqtapataProgramTypeFallbackLabel
   return pt
@@ -22,9 +50,10 @@ export function resolveProgramTypeLabel(pt: string | null | undefined): string {
 }
 
 export function resolveRouteLabel(route: string | null | undefined): string {
+  const canon = normalizeLodgeRouteKey(route)
+  if (canon) return lodgeSoqtapataRouteLabels[canon] ?? canon
   if (!route?.trim()) return lodgeSoqtapataRouteFallbackLabel
-  const k = route.trim().toLowerCase()
-  return lodgeSoqtapataRouteLabels[k] ?? resolveProgramTypeLabel(route)
+  return resolveProgramTypeLabel(route)
 }
 
 export function formatLodgeRoomMetaLine(units: number, cap: string): string {

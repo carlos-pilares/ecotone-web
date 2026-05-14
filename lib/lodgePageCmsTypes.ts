@@ -194,6 +194,8 @@ export type LodgeDocumentRow = {
   slug?: { current?: string | null } | null
   route?: string | null
   location?: string | null
+  /** Canonical string in CMS; GROQ may still merge raw legacy `altitude`. */
+  altitudeLegacy?: string | null
   altitude?: number | string | null
   certifications?: LodgeCertificationRow[] | null
   shortDescription?: string | null

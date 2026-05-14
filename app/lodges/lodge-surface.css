@@ -85,6 +85,10 @@
   transition: color 0.2s;
 }
 
+.lodge-breadcrumb .lodge-bc-label {
+  color: inherit;
+}
+
 .lodge-breadcrumb a:hover {
   color: rgba(236, 229, 213, 0.75);
 }

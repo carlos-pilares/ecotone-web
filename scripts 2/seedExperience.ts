@@ -30,7 +30,7 @@ const lodgeSoqtapata = {
   name: 'Soqtapata Lodge',
   slug: { _type: 'slug' as const, current: 'soqtapata-lodge' },
   route: 'camanti' as const,
-  altitude: '1,200 m.a.s.l.',
+  altitudeLegacy: '1,200 m.a.s.l.',
   distanceFromCusco: '~2.5 hrs',
   capacity: 8,
   ecosystem: 'Cloud forest',

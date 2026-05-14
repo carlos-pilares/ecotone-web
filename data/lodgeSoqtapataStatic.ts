@@ -109,8 +109,8 @@ export const lodgeSoqtapataHero = {
   photoCountLabel: '+12 photos',
   gallery: lodgeHeroGallery,
   breadcrumbs: [
-    { href: '/', label: 'Lodges' },
-    { href: '/experiences/soqtapata-pristine-immersion', label: 'Camanti Route' },
+    { href: '', label: 'Lodges' },
+    { href: '', label: 'Camanti Route' },
   ] satisfies LodgeBreadcrumbItem[],
   currentCrumbLabel: 'Soqtapata Lodge',
   badges: ['Camanti Route', 'Research station', 'B Corp'],

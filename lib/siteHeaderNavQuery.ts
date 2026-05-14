@@ -1,6 +1,7 @@
 import { groq } from 'next-sanity'
 
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
+import { GROQ_LODGE_ALTITUDE_AS_ALTITUDE } from '@/lib/lodgeAltitudeGroq'
 import { GROQ_SMART_LINK_FIELDS } from '@/lib/smartLinkGroq'
 
 export type HeaderNavProgramGroupRow = {
@@ -223,7 +224,7 @@ export const siteHeaderNavBundleQuery = groq`{
       route,
       shortDescription,
       location,
-      altitude,
+      ${GROQ_LODGE_ALTITUDE_AS_ALTITUDE},
       certifications[]{ label },
       "mainImageUrl": mainImage.asset->url
     }

@@ -35,13 +35,13 @@ export function LodgeHero({ data }: LodgeHeroProps) {
           <div className="lodge-hero-identity-inner">
             <div className="lodge-breadcrumb">
               {data.breadcrumbs.map((crumb, i) => (
-                <Fragment key={`${crumb.href}-${crumb.label}`}>
+                <Fragment key={`${crumb.href}-${crumb.label}-${i}`}>
                   {i > 0 ? (
                     <span className="lodge-bc-sep" aria-hidden>
                       ›
                     </span>
                   ) : null}
-                  <Link href={crumb.href}>{crumb.label}</Link>
+                  <span className="lodge-bc-label">{crumb.label}</span>
                 </Fragment>
               ))}
               <span className="lodge-bc-sep" aria-hidden>

@@ -1,5 +1,6 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
 import {GalleryAccommodationRoomInput} from '../components/lodge/GalleryAccommodationRoomInput'
+import {LODGE_ROUTE_SELECT_OPTIONS} from '../lib/lodgeRouteOptions.js'
 
 const imgHot = {hotspot: true}
 
@@ -60,11 +61,13 @@ export const lodge = defineType({
     }),
     defineField({
       name: 'route',
-      title: 'Route (optional)',
+      title: 'Route',
       type: 'string',
       group: 'identity',
-      description: 'Ruta comercial o segmento libre si no basta el slug.',
-      validation: (Rule) => Rule.max(120),
+      description:
+        'Commercial corridor (filters, nav, experience cards). Values: camanti, manu-road, manu-core. Legacy free-text values still resolve on the site until updated.',
+      options: {list: LODGE_ROUTE_SELECT_OPTIONS, layout: 'dropdown'},
+      validation: (Rule) => Rule.max(32),
     }),
     defineField({
       name: 'location',
@@ -76,13 +79,14 @@ export const lodge = defineType({
       validation: (Rule) => Rule.max(200),
     }),
     defineField({
-      name: 'altitude',
+      name: 'altitudeLegacy',
       title: 'Altitude (legacy)',
       type: 'string',
       group: 'identity',
       hidden: true,
       description:
-        'Legacy field — optional. Plain metres as digits (e.g. 1200) or leave empty. Kept for backward compatibility only; does not block publishing.',
+        'Optional legacy altitude text (e.g. 1200, 1,200 m, or 1,200 m.a.s.l.). Older datasets may still have a legacy `altitude` value (number or string) on the document; the site merges `altitudeLegacy` with that raw field in GROQ. This field is optional and never blocks publishing.',
+      validation: (Rule) => Rule.max(200),
     }),
     defineField({
       name: 'certifications',

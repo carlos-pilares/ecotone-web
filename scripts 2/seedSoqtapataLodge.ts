@@ -268,7 +268,7 @@ async function buildLodgeDoc(client: SanityClient, imgCache: Map<string, Uploade
     slug: { _type: 'slug', current: 'soqtapata-lodge' },
     route: 'camanti',
     location: 'Camanti Route, Cusco · Soqtapata Reserve',
-    altitude: 1200,
+    altitudeLegacy: '1200',
     certifications: lodgeSoqtapataHero.badges.map((label, i) => ({
       _key: `cert-${i}`,
       _type: 'lodgeCertification',

@@ -1,6 +1,7 @@
 /**
  * Legacy lodge `altitude` may be number, digits-as-string, or free text (e.g. "1,200 m.a.s.l.").
  * Used for nav / subtitles; returns null when absent or blank so nothing is appended.
+ * GROQ exposes a single `altitude` via `coalesce(altitudeLegacy, altitude)`; values may be number or string.
  */
 export function formatLodgeAltitudeForSubtitle(alt: unknown): string | null {
   if (alt == null) return null

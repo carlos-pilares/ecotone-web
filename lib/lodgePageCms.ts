@@ -26,6 +26,7 @@ import {
   lodgeSoqtapataReviewCards,
   lodgeSoqtapataRooms,
   lodgeSoqtapataSnapshot,
+  type LodgeBreadcrumbItem,
   type LodgeExperienceCard,
   type LodgeExperiencesTailor,
   type LodgeFacilitiesData,
@@ -405,6 +406,68 @@ function experienceLinkedToLodge(e: LodgeCmsExperienceCardRow | null | undefined
 function experienceDisplayableOnLodgePage(status: string | null | undefined): boolean {
   const s = typeof status === 'string' ? status.trim() : ''
   return s === 'active' || s === 'coming-soon' || s === ''
+}
+
+function pickLinkedDisplayableExperiences(
+  lodge: LodgeDocumentRow,
+  row: NonNullable<LodgeStructuredPageRow>,
+): LodgeCmsExperienceCardRow[] {
+  const lodgeId = typeof lodge._id === 'string' ? lodge._id.trim() : ''
+  const pick = (rows: (LodgeCmsExperienceCardRow | null | undefined)[] | null | undefined) =>
+    (rows ?? [])
+      .filter((e): e is LodgeCmsExperienceCardRow => Boolean(e && e._id))
+      .filter((e) => experienceLinkedToLodge(e, lodgeId) && experienceDisplayableOnLodgePage(e.status))
+
+  const fromSelection = pick(row.experiencesSelection)
+  const fromLodgeRelations = pick(lodge.experiences ?? undefined)
+  if (fromSelection.length > 0) return fromSelection
+  if (row.fallbackToLodgeRelations !== false && fromLodgeRelations.length > 0) return fromLodgeRelations
+  return []
+}
+
+function computeLodgeHeroReviewStats(reviews: ReviewDoc[] | null | undefined): {
+  ratingScore: string
+  reviewCountLabel: string
+} {
+  const list = reviews ?? []
+  const n = list.length
+  const ratings = list
+    .map((r) => r.rating)
+    .filter((v): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0)
+  const avg = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null
+  return {
+    ratingScore: avg != null ? avg.toFixed(1) : '—',
+    reviewCountLabel: `${n} ${n === 1 ? 'review' : 'reviews'}`,
+  }
+}
+
+function buildLodgeHeroBreadcrumbs(lodge: LodgeDocumentRow): LodgeBreadcrumbItem[] {
+  const crumbs: LodgeBreadcrumbItem[] = [{ href: '', label: 'Lodges' }]
+  if (lodge.route?.trim()) {
+    crumbs.push({ href: '', label: resolveRouteLabel(lodge.route) })
+  }
+  return crumbs
+}
+
+/** When CMS hero pills are empty, derive up to three labels from this lodge only (no static bundle). */
+function resolveLodgeHeroBadgesFallback(lodge: LodgeDocumentRow): string[] {
+  const out: string[] = []
+  if (lodge.route?.trim()) {
+    out.push(resolveRouteLabel(lodge.route))
+  }
+  for (const h of lodge.highlights ?? []) {
+    const t = h?.title?.trim()
+    if (t) {
+      out.push(t)
+      if (out.length >= 3) break
+    }
+  }
+  for (const si of lodge.snapshotItems ?? []) {
+    if (out.length >= 3) break
+    const line = [si.value?.trim(), si.label?.trim()].filter(Boolean).join(' · ')
+    if (line) out.push(line)
+  }
+  return out.slice(0, 3)
 }
 
 function mapExperienceToCard(e: LodgeCmsExperienceCardRow, lodge: LodgeDocumentRow): LodgeExperienceCard {
@@ -799,47 +862,82 @@ export function mergeLodgePageWithFallback(
 
   const lodge = row.lodge
   const seo = resolveSeo(row, lodge)
+  const resolvedExperienceRows = pickLinkedDisplayableExperiences(lodge, row)
 
   const heroBadgePills = resolveHeroHighlightBadges(row.heroHighlights, lodge)
 
-  // Hero
+  // Hero — `mergeLodgePageWithFallback` starts from the Soqtapata static bundle; overwrite hero fields
+  // so other lodge pages never inherit Soqtapata breadcrumbs, tagline, ratings, or dummy gallery.
   const heroImg = row.heroImage || lodge.mainImage
   const heroBaseSrc = cdnImageUrl(heroImg, 1600, lodge.mainImageUrl || out.hero.imageSrc)
+  const heroTitle = sectionFieldTrim(row.heroTitle) ?? lodge.name?.trim() ?? ''
+  const heroTagline =
+    sectionFieldTrim(row.heroShortDescription) ?? lodge.shortDescription?.trim() ?? ''
+  const currentCrumbLabel = heroTitle || lodge.name?.trim() || 'Lodge'
+  const reviewStats = computeLodgeHeroReviewStats(lodge.reviews)
+  const expCount = resolvedExperienceRows.length
+  const secondaryMeta = `${expCount} ${expCount === 1 ? 'experience' : 'experiences'}`
+
+  const galleryPhotos: LodgeGalleryPhoto[] = lodge.gallery?.length
+    ? pickHeroGalleryItems(lodge.gallery).map((g, i) =>
+        galleryItemToPhoto(g, 1400, heroBaseSrc || `https://placehold.co/1400?text=${i}`),
+      )
+    : heroBaseSrc
+      ? [
+          {
+            src: heroBaseSrc,
+            alt: (heroTitle || lodge.name?.trim() || '').trim(),
+            title: '',
+            description: '',
+          },
+        ]
+      : []
+
+  const badgeList = heroBadgePills?.length
+    ? heroBadgePills
+    : lodge.certifications?.length
+      ? lodge.certifications.map((c) => c.label!).filter(Boolean)
+      : resolveLodgeHeroBadgesFallback(lodge)
+
+  const heroCtaResolved = (() => {
+    const fb = out.hero.primaryCta
+    const leg = row.heroCTA
+    const hasLeg = Boolean(leg?.label?.trim() && leg?.href?.trim())
+    const hasSmart = Boolean(row.heroCtaSmartLink?.label?.trim())
+    if (!hasSmart && !hasLeg) {
+      return { primaryCta: { label: '', href: '' } }
+    }
+    if (smartLinkIsDisabled(row.heroCtaSmartLink)) {
+      return { primaryCta: { label: '', href: '' } }
+    }
+    const r = resolveSmartLinkOrLegacy(
+      row.heroCtaSmartLink,
+      hasLeg ? leg : undefined,
+      { label: fb.label, href: fb.href, openInNewTab: leg?.openInNewTab === true },
+    )
+    if (!r?.href?.trim()) return { primaryCta: { label: '', href: '' } }
+    return { primaryCta: { label: r.label, href: r.href } }
+  })()
+
+  const photoCountLabel =
+    galleryPhotos.length > 0 ? `+${galleryPhotos.length} photos` : '+0 photos'
+
   out.hero = {
     ...out.hero,
-    ...(lodge.name?.trim() ? { title: lodge.name.trim() } : {}),
-    ...(lodge.shortDescription?.trim() ? { tagline: lodge.shortDescription.trim() } : {}),
+    breadcrumbs: buildLodgeHeroBreadcrumbs(lodge),
+    currentCrumbLabel,
+    title: heroTitle,
+    tagline: heroTagline,
     imageSrc: heroBaseSrc,
-    ...(() => {
-      const fb = out.hero.primaryCta
-      const leg = row.heroCTA
-      const hasLeg = Boolean(leg?.label?.trim() && leg?.href?.trim())
-      const hasSmart = Boolean(row.heroCtaSmartLink?.label?.trim())
-      if (!hasSmart && !hasLeg) return {}
-      if (smartLinkIsDisabled(row.heroCtaSmartLink)) {
-        return { primaryCta: { label: '', href: '' } }
-      }
-      const r = resolveSmartLinkOrLegacy(
-        row.heroCtaSmartLink,
-        hasLeg ? leg : undefined,
-        { label: fb.label, href: fb.href, openInNewTab: leg?.openInNewTab === true },
-      )
-      if (!r) return {}
-      return { primaryCta: { label: r.label, href: r.href } }
-    })(),
-    ...(heroBadgePills?.length
-      ? { badges: heroBadgePills }
-      : lodge.certifications?.length
-        ? { badges: lodge.certifications.map((c) => c.label!).filter(Boolean) }
-        : {}),
-    ...(lodge.gallery?.length
-      ? {
-          gallery: pickHeroGalleryItems(lodge.gallery).map((g, i) =>
-            galleryItemToPhoto(g, 1400, heroBaseSrc || `https://placehold.co/1400?text=${i}`),
-          ),
-        }
-      : {}),
-  } as LodgeStaticBundle['hero']
+    imageAlt: (heroTitle || lodge.name?.trim() || '').trim() || out.hero.imageAlt,
+    badges: badgeList,
+    gallery: galleryPhotos,
+    photoCountLabel,
+    ratingScore: reviewStats.ratingScore,
+    reviewCountLabel: reviewStats.reviewCountLabel,
+    secondaryMeta,
+    ...heroCtaResolved,
+  } as unknown as LodgeStaticBundle['hero']
   const heroAria = sectionFieldTrim(lodge.heroGalleryOpenAriaLabel)
   if (heroAria) {
     out.hero = { ...out.hero, galleryOpenAriaLabel: heroAria }
@@ -993,22 +1091,6 @@ export function mergeLodgePageWithFallback(
   out.research = { ...out.research, stats, pillars, footnote }
 
   // Experiences — only experiences linked to this lodge in CMS; no static Soqtapata dummy cards.
-  const lodgeId = typeof lodge._id === 'string' ? lodge._id.trim() : ''
-  const pickLinkedPublished = (rows: (LodgeCmsExperienceCardRow | null | undefined)[] | null | undefined) =>
-    (rows ?? [])
-      .filter((e): e is LodgeCmsExperienceCardRow => Boolean(e && e._id))
-      .filter((e) => experienceLinkedToLodge(e, lodgeId) && experienceDisplayableOnLodgePage(e.status))
-
-  const fromSelection = pickLinkedPublished(row.experiencesSelection)
-  const fromLodgeRelations = pickLinkedPublished(lodge.experiences ?? undefined)
-
-  let resolvedExperienceRows: LodgeCmsExperienceCardRow[] = []
-  if (fromSelection.length > 0) {
-    resolvedExperienceRows = fromSelection
-  } else if (row.fallbackToLodgeRelations !== false && fromLodgeRelations.length > 0) {
-    resolvedExperienceRows = fromLodgeRelations
-  }
-
   const usedCmsExperiences = resolvedExperienceRows.length > 0
   const { tailor: _omitTailor, ...experiencesWithoutTailor } = out.experiences
   out.experiences = {
