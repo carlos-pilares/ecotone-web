@@ -129,7 +129,7 @@ export const lodgePage = defineType({
       options: {layout: 'list'},
       validation: (Rule) => Rule.max(3),
       description:
-        'Optional short lines shown as pills under the hero title. Write the text here — no lodge snapshot keys. Leave empty to fall back to lodge certification labels when available.',
+        'Optional short lines shown as pills under the hero title and in the header lodges mega menu. Leave empty for no pills.',
     }),
     defineField({
       name: 'heroCtaSmartLink',
@@ -179,6 +179,21 @@ export const lodgePage = defineType({
     }),
     lodgeLegacyPreviewField('lpStudioHighlights', 'highlights', 'highlights'),
 
+    defineField({
+      name: 'menuCtaLabel',
+      title: 'Mega menu — CTA label',
+      type: 'string',
+      group: 'navigation',
+      validation: (Rule) => Rule.max(80),
+      description: 'Optional. Shown on the lodge card in the header mega menu. Defaults to “View lodge”.',
+    }),
+    defineField({
+      name: 'menuCtaSmartLink',
+      title: 'Mega menu — CTA link',
+      type: 'smartLink',
+      group: 'navigation',
+      description: 'Optional. Defaults to this lodge landing (`/lodges/{slug}`).',
+    }),
     defineField({
       name: 'navTitle',
       title: 'Menu title',

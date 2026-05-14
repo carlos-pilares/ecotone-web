@@ -130,11 +130,12 @@ const headerBlock = [
   }),
   defineField({
     name: 'lodgesRouteOverrides',
-    title: 'Lodges — route overrides',
+    title: 'Legacy — Lodges route overrides',
     type: 'array',
     of: [{type: 'headerNavLodgeRouteOverride'}],
+    hidden: () => true,
     description:
-      'Optional. One row per route column. Valid route keys come from published lodge pages: **camanti**, **manu-road**, **manu-core**. Routes with no visible lodges are hidden automatically.',
+      'Deprecated. Route columns come from Route documents + lodge.route. Data preserved for rollback; not read by the site.',
   }),
   defineField({
     name: 'lodgesItemOverrides',

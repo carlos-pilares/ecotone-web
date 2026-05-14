@@ -1,6 +1,6 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
 import {GalleryAccommodationRoomInput} from '../components/lodge/GalleryAccommodationRoomInput'
-import {LODGE_ROUTE_SELECT_OPTIONS} from '../lib/lodgeRouteOptions.js'
+import {LodgeRouteSlugSelectInput} from '../components/lodge/LodgeRouteSlugSelectInput'
 
 const imgHot = {hotspot: true}
 
@@ -64,10 +64,10 @@ export const lodge = defineType({
       title: 'Route',
       type: 'string',
       group: 'identity',
+      components: {input: LodgeRouteSlugSelectInput},
       description:
-        'Commercial corridor (filters, nav, experience cards). Values: camanti, manu-road, manu-core. Legacy free-text values still resolve on the site until updated.',
-      options: {list: LODGE_ROUTE_SELECT_OPTIONS, layout: 'dropdown'},
-      validation: (Rule) => Rule.max(32),
+        'Must match a Route document slug (Knowledge Center → Route). Stored as the canonical slug string (e.g. camanti, manu-road, manu-core).',
+      validation: (Rule) => Rule.max(96),
     }),
     defineField({
       name: 'location',

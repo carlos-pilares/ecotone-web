@@ -12,12 +12,17 @@ export type { ResolvedSiteHeaderNav, SiteHeaderNavChrome } from '@/lib/resolveSi
  */
 export const getSiteHeaderNav = cache(async () => {
   if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || !process.env.NEXT_PUBLIC_SANITY_DATASET) {
-    return resolveSiteHeaderNavData(null, [], [])
+    return resolveSiteHeaderNavData(null, [], [], [])
   }
   try {
     const row = await clientServer.fetch<SiteHeaderNavBundleRow>(siteHeaderNavBundleQuery)
-    return resolveSiteHeaderNavData(row?.settings ?? null, row?.experiencePages ?? [], row?.lodgePages ?? [])
+    return resolveSiteHeaderNavData(
+      row?.settings ?? null,
+      row?.experiencePages ?? [],
+      row?.lodgePages ?? [],
+      row?.routeNavDocs ?? [],
+    )
   } catch {
-    return resolveSiteHeaderNavData(null, [], [])
+    return resolveSiteHeaderNavData(null, [], [], [])
   }
 })

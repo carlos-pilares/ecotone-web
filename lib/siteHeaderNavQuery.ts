@@ -37,13 +37,6 @@ export type HeaderNavExperiencesTailorMenuRow = {
   label?: string | null
 }
 
-export type HeaderNavLodgeRouteOverrideRow = {
-  routeKey?: string | null
-  labelOverride?: string | null
-  showInMenu?: boolean | null
-  order?: number | null
-}
-
 export type HeaderNavLodgeItemOverrideRow = {
   lodgePageId?: string | null
   showInMenu?: boolean | null
@@ -56,6 +49,7 @@ export type SiteHeaderNavBundleRow = {
   settings: SiteHeaderNavSettingsRow | null
   experiencePages: SiteHeaderNavExperiencePageRow[] | null
   lodgePages: SiteHeaderNavLodgePageRow[] | null
+  routeNavDocs: SiteHeaderNavRouteNavRow[] | null
 }
 
 export type SiteHeaderNavSettingsRow = {
@@ -79,7 +73,6 @@ export type SiteHeaderNavSettingsRow = {
   experiencesSeeAll?: HeaderNavSeeAllRow | null
   lodgesEnabled?: boolean | null
   lodgesLabel?: string | null
-  lodgesRouteOverrides?: HeaderNavLodgeRouteOverrideRow[] | null
   lodgesItemOverrides?: HeaderNavLodgeItemOverrideRow[] | null
   lodgeGroups?: {
     camanti?: HeaderNavLodgeRouteGroupRow | null
@@ -113,10 +106,25 @@ export type SiteHeaderNavExperiencePageRow = {
   } | null
 }
 
+export type SiteHeaderNavRouteNavRow = {
+  _id: string
+  name?: string | null
+  slug?: string | null
+  shortLabel?: string | null
+  menuOrder?: number | null
+  showInMenu?: boolean | null
+}
+
 export type SiteHeaderNavLodgePageRow = {
   _id: string
   pageSlug?: string | null
   headerNavOrder?: number | null
+  heroTitle?: string | null
+  heroShortDescription?: string | null
+  heroHighlights?: Array<{ text?: string | null } | null> | null
+  heroImageUrl?: string | null
+  menuCtaLabel?: string | null
+  menuCtaSmartLink?: SmartLinkGroq | null
   lodge: {
     name?: string | null
     route?: string | null
@@ -125,6 +133,8 @@ export type SiteHeaderNavLodgePageRow = {
     altitude?: number | string | null
     certifications?: Array<{ label?: string | null } | null> | null
     mainImageUrl?: string | null
+    firstHeroGalleryUrl?: string | null
+    firstGalleryUrl?: string | null
   } | null
 }
 
@@ -169,12 +179,6 @@ export const siteHeaderNavBundleQuery = groq`{
     },
     lodgesEnabled,
     lodgesLabel,
-    "lodgesRouteOverrides": header.lodgesRouteOverrides[]{
-      routeKey,
-      labelOverride,
-      showInMenu,
-      order
-    },
     "lodgesItemOverrides": header.lodgesItemOverrides[]{
       "lodgePageId": lodgePage->_id,
       showInMenu,
@@ -219,6 +223,12 @@ export const siteHeaderNavBundleQuery = groq`{
     _id,
     "pageSlug": slug.current,
     headerNavOrder,
+    heroTitle,
+    heroShortDescription,
+    heroHighlights[]{ text },
+    "heroImageUrl": heroImage.asset->url,
+    menuCtaLabel,
+    "menuCtaSmartLink": menuCtaSmartLink ${SL},
     "lodge": lodge-> {
       name,
       route,
@@ -226,7 +236,18 @@ export const siteHeaderNavBundleQuery = groq`{
       location,
       ${GROQ_LODGE_ALTITUDE_AS_ALTITUDE},
       certifications[]{ label },
-      "mainImageUrl": mainImage.asset->url
+      "mainImageUrl": mainImage.asset->url,
+      "firstHeroGalleryUrl": gallery[(photoCategory == "hero" || usageSection == "hero") && defined(image.asset)][0].image.asset->url,
+      "firstGalleryUrl": gallery[defined(image.asset)][0].image.asset->url
     }
+  },
+  "routeNavDocs": *[_type == "route" && defined(slug.current)]
+    | order(coalesce(menuOrder, 999) asc, lower(name) asc) {
+    _id,
+    name,
+    "slug": slug.current,
+    shortLabel,
+    menuOrder,
+    showInMenu
   }
 }`

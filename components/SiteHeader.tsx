@@ -330,7 +330,7 @@ function LodgesMega({ nav }: { nav: ResolvedSiteHeaderNav['lodges'] }) {
                       <div className="dd-mega-title">{L.name}</div>
                       <div className="dd-mega-desc">{L.description}</div>
                       <div className="dd-mega-view">
-                        View lodge
+                        {L.ctaLabel}
                         <ArrowSeeAll />
                       </div>
                     </div>
@@ -432,7 +432,11 @@ function MobileDrawer({ nav }: { nav: ResolvedSiteHeaderNav }) {
       <button type="button" className="mob-acc-btn" data-mob-acc-panel="mob-acc-lodges">
         <div>
           Lodges
-          <span className="mob-acc-sub">Camanti · Manu Road · Manu Core</span>
+          <span className="mob-acc-sub">
+            {nav.lodges.routes.length
+              ? nav.lodges.routes.map((r) => r.sidebarLabel).join(' · ')
+              : 'By route'}
+          </span>
         </div>
         <svg className="mob-acc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
           <polyline points="6 9 12 15 18 9" />

@@ -41,6 +41,18 @@ export function normalizeLodgeRouteKey(route: string | null | undefined): LodgeR
   return ''
 }
 
+/**
+ * Single slug segment for matching Route documents (`slug.current`) and lodge grouping.
+ * Known commercial keys normalize like `normalizeLodgeRouteKey`; other values become hyphenated lowercase.
+ */
+export function canonicalizeLodgeRouteSlug(route: string | null | undefined): string {
+  const k = normalizeLodgeRouteKey(route)
+  if (k) return k
+  const raw = route?.trim().toLowerCase() ?? ''
+  if (!raw) return ''
+  return raw.replace(/_/g, '-').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '')
+}
+
 export function resolveProgramTypeLabel(pt: string | null | undefined): string {
   if (!pt?.trim()) return lodgeSoqtapataProgramTypeFallbackLabel
   return pt

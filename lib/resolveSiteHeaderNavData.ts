@@ -8,8 +8,7 @@ import {
   HEADER_NAV_LODGE_GROUPS_DEFAULT,
   HEADER_NAV_ROUTES_SMART_LINK,
 } from '@/data/cmsApproved/siteSettingsApprovedContent'
-import { LODGE_SOQTAPATA_PAGE_SLUG } from '@/lib/lodgePageCmsTypes'
-import { formatLodgeAltitudeForSubtitle } from '@/lib/lodgeAltitudeDisplay'
+import { canonicalizeLodgeRouteSlug } from '@/data/lodgeSoqtapataResolverDefaults'
 import { resolveRouteLabel } from '@/data/lodgeSoqtapataResolverDefaults'
 import { resolveExperiencePublicSlug } from '@/lib/resolveExperiencePublicHref'
 import {
@@ -24,6 +23,7 @@ import type {
   HeaderNavSeeAllRow,
   SiteHeaderNavExperiencePageRow,
   SiteHeaderNavLodgePageRow,
+  SiteHeaderNavRouteNavRow,
   SiteHeaderNavSettingsRow,
 } from '@/lib/siteHeaderNavQuery'
 
@@ -74,11 +74,13 @@ export type SiteHeaderNavLodgeItem = {
   imageUrl: string | null
   badges: { label: string; tone: 'own' | 'alliance' | 'neutral' }[]
   description: string
+  ctaLabel: string
 }
 
 export type SiteHeaderNavLodgeRoute = {
   panelId: string
-  routeKey: 'camanti' | 'manu-road' | 'manu-core'
+  /** Canonical route slug from Route documents, or `__other__` for lodges with missing/unknown route. */
+  routeSlug: string
   sidebarLabel: string
   sidebarMeta: string
   eyebrow: string
@@ -183,22 +185,6 @@ function normalizeExpGroupKeyFromOverride(raw: string | null | undefined): ExpBu
   return null
 }
 
-function lodgeRouteKeyFromLodge(route: string | null | undefined): LodgeRK | null {
-  const r = route?.trim().toLowerCase() ?? ''
-  if (r === 'camanti') return 'camanti'
-  if (r === 'manu-road' || r === 'manuroad') return 'manu-road'
-  if (r === 'manu-core' || r === 'manucore') return 'manu-core'
-  return null
-}
-
-function normalizeLodgeRouteOverrideKey(raw: string | null | undefined): LodgeRK | null {
-  const t = raw?.trim().toLowerCase() ?? ''
-  if (t === 'camanti') return 'camanti'
-  if (t === 'manu-road' || t === 'manuroad') return 'manu-road'
-  if (t === 'manu-core' || t === 'manucore') return 'manu-core'
-  return null
-}
-
 function formatExpMeta(exp: NonNullable<SiteHeaderNavExperiencePageRow['experience']>): string {
   const routeLbl = resolveRouteLabel(exp.route)
   const dur = exp.duration?.trim() || ''
@@ -212,24 +198,6 @@ function formatExpRouteLine(exp: NonNullable<SiteHeaderNavExperiencePageRow['exp
   const routeLbl = resolveRouteLabel(exp.route)
   const dur = exp.duration?.trim() || ''
   return [routeLbl, dur].filter(Boolean).join(' · ')
-}
-
-function lodgeBadges(certs: SiteHeaderNavLodgePageRow['lodge']): { label: string; tone: 'own' | 'alliance' | 'neutral' }[] {
-  const list = certs?.certifications?.filter(Boolean) as { label?: string | null }[] | undefined
-  if (!list?.length) return []
-  return list
-    .map((c) => (c?.label?.trim() ? { label: c.label!.trim(), tone: 'neutral' as const } : null))
-    .filter(Boolean) as { label: string; tone: 'own' | 'alliance' | 'neutral' }[]
-}
-
-function lodgeDescription(lodge: NonNullable<SiteHeaderNavLodgePageRow['lodge']>): string {
-  const sd = lodge.shortDescription?.trim()
-  if (sd) return sd
-  const bits: string[] = []
-  const alt = formatLodgeAltitudeForSubtitle(lodge.altitude)
-  if (alt) bits.push(alt)
-  if (lodge.location?.trim()) bits.push(lodge.location.trim())
-  return bits.join(' · ')
 }
 
 function ctaFromResolved(r: ResolvedSmartLink): SiteHeaderNavCta {
@@ -353,19 +321,6 @@ function effectiveExpGroupConfig(
   return { label, enabled, order }
 }
 
-function effectiveLodgeRouteConfig(
-  settings: SiteHeaderNavSettingsRow | null | undefined,
-  rk: LodgeRK,
-): { label: string; enabled: boolean; order: number } {
-  const base = ROUTE_META[rk]
-  const fromArr = (settings?.lodgesRouteOverrides ?? []).find((r) => normalizeLodgeRouteOverrideKey(r.routeKey) === rk)
-  const legacy = legacyLodgeRouteRow(settings, rk)
-  const label = fromArr?.labelOverride?.trim() || legacy.label?.trim() || base.defaultLabel
-  const enabled = fromArr?.showInMenu !== false && legacy.enabled !== false
-  const order = fromArr?.order ?? legacy.order ?? base.defaultOrder
-  return { label, enabled, order }
-}
-
 function tailorMenuResolved(settings: SiteHeaderNavSettingsRow | null | undefined): { enabled: boolean; label: string } {
   const t = settings?.experiencesTailorMenu
   if (t && (t.enabled !== undefined || t.label != null)) {
@@ -405,6 +360,94 @@ function lodgeItemOverrideMap(
   return m
 }
 
+const OTHER_ROUTE_SLUG = '__other__' as const
+
+function panelIdForLodgeRouteSlug(slug: string): string {
+  if (slug === OTHER_ROUTE_SLUG) return 'dd-lodges-other'
+  const safe = slug.replace(/[^a-z0-9-]/gi, '-').replace(/-+/g, '-').toLowerCase()
+  return `dd-lodges-${safe || 'route'}`
+}
+
+function trimUrl(s: string | null | undefined): string | null {
+  const t = s?.trim()
+  return t || null
+}
+
+function lodgeMenuImageUrl(row: SiteHeaderNavLodgePageRow): string | null {
+  const lodge = row.lodge
+  if (!lodge) return null
+  return (
+    trimUrl(row.heroImageUrl) ||
+    trimUrl(lodge.firstHeroGalleryUrl) ||
+    trimUrl(lodge.firstGalleryUrl) ||
+    trimUrl(lodge.mainImageUrl) ||
+    null
+  )
+}
+
+function lodgeMenuBadges(row: SiteHeaderNavLodgePageRow): { label: string; tone: 'own' | 'alliance' | 'neutral' }[] {
+  const hl = row.heroHighlights?.filter(Boolean) as { text?: string | null }[] | undefined
+  if (!hl?.length) return []
+  return hl
+    .map((h) => {
+      const t = h?.text?.trim()
+      return t ? { label: t, tone: 'neutral' as const } : null
+    })
+    .filter(Boolean) as { label: string; tone: 'own' | 'alliance' | 'neutral' }[]
+}
+
+function lodgeMenuDescription(row: SiteHeaderNavLodgePageRow): string {
+  const fromHero = row.heroShortDescription?.trim()
+  if (fromHero) return fromHero
+  return row.lodge?.shortDescription?.trim() || ''
+}
+
+type LodgeRouteCol = { slug: string; panelId: string; label: string; order: number }
+
+function buildLodgeRouteColumns(
+  settings: SiteHeaderNavSettingsRow | null | undefined,
+  routeNavDocs: SiteHeaderNavRouteNavRow[] | null | undefined,
+): LodgeRouteCol[] {
+  const docs = Array.isArray(routeNavDocs) ? routeNavDocs : []
+  const fromCms: LodgeRouteCol[] = []
+  for (const d of docs) {
+    const slug = d.slug?.trim().toLowerCase()
+    if (!slug || d.showInMenu === false) continue
+    const order = typeof d.menuOrder === 'number' && Number.isFinite(d.menuOrder) ? d.menuOrder : 999
+    const label = (d.shortLabel?.trim() || d.name?.trim() || slug).trim()
+    fromCms.push({ slug, panelId: panelIdForLodgeRouteSlug(slug), label, order })
+  }
+  fromCms.sort((a, b) => (a.order !== b.order ? a.order - b.order : a.label.localeCompare(b.label)))
+  if (fromCms.length) return fromCms
+
+  const legacyKeys: LodgeRK[] = ['camanti', 'manu-road', 'manu-core']
+  const out: LodgeRouteCol[] = []
+  for (const rk of legacyKeys) {
+    const leg = legacyLodgeRouteRow(settings, rk)
+    if (leg.enabled === false) continue
+    const meta = ROUTE_META[rk]
+    out.push({
+      slug: rk,
+      panelId: meta.panelId,
+      label: (leg.label?.trim() || meta.defaultLabel).trim(),
+      order: typeof leg.order === 'number' ? leg.order : meta.defaultOrder,
+    })
+  }
+  out.sort((a, b) => a.order - b.order)
+  return out
+}
+
+function sortLodgeTmpList(
+  arr: { it: SiteHeaderNavLodgeItem; sk: number; sn: string }[],
+): SiteHeaderNavLodgeItem[] {
+  const copy = [...arr]
+  copy.sort((a, z) => {
+    if (a.sk !== z.sk) return a.sk - z.sk
+    return a.sn.localeCompare(z.sn)
+  })
+  return copy.map((x) => x.it)
+}
+
 function emptyNav(): ResolvedSiteHeaderNav {
   const routes = resolveDirectNavCta({
     enabled: true,
@@ -438,7 +481,7 @@ function emptyNav(): ResolvedSiteHeaderNav {
       smartLink: HEADER_NAV_LODGES_SEE_ALL_BLOCK.smartLink,
     }),
     'All lodges',
-    `/lodges/${LODGE_SOQTAPATA_PAGE_SLUG}`,
+    '/lodges',
   )
   const fbTailor = resolveSmartLinkOrLegacy(undefined, undefined, {
     label: 'Enquire',
@@ -480,6 +523,7 @@ export function resolveSiteHeaderNavData(
   settings: SiteHeaderNavSettingsRow | null | undefined,
   experiencePages: SiteHeaderNavExperiencePageRow[] | null | undefined,
   lodgePages: SiteHeaderNavLodgePageRow[] | null | undefined,
+  routeNavDocs: SiteHeaderNavRouteNavRow[] | null | undefined,
 ): ResolvedSiteHeaderNav {
   const base = emptyNav()
   const pages = Array.isArray(experiencePages) ? experiencePages : []
@@ -650,118 +694,95 @@ export function resolveSiteHeaderNavData(
 
   const lodgeItemOv = lodgeItemOverrideMap(settings)
   type LodgeTmp = { it: SiteHeaderNavLodgeItem; sk: number; sn: string }
-  const byRouteTmp: Record<LodgeRK, LodgeTmp[]> = {
-    camanti: [],
-    'manu-road': [],
-    'manu-core': [],
-  }
+
+  const routeColsBase = buildLodgeRouteColumns(settings, routeNavDocs)
+  const knownSlugs = new Set(routeColsBase.map((c) => c.slug))
+  const bySlug = new Map<string, LodgeTmp[]>()
+  for (const c of routeColsBase) bySlug.set(c.slug, [])
+  const otherBucket: LodgeTmp[] = []
 
   for (const row of lodges) {
     const pageSlug = row.pageSlug?.trim()
     const lodge = row.lodge
     const pageId = row._id?.trim()
     if (!pageSlug || !lodge?.name?.trim() || !pageId) continue
-    const rk = lodgeRouteKeyFromLodge(lodge.route) ?? 'camanti'
+
+    const canon = canonicalizeLodgeRouteSlug(lodge.route)
+    const bucketSlug = canon && knownSlugs.has(canon) ? canon : OTHER_ROUTE_SLUG
+
     const io = lodgeItemOv.get(pageId)
     if (io?.show === false) continue
     const sk = (typeof io?.order === 'number' ? io.order : row.headerNavOrder) ?? 999
-    const name = io?.label?.trim() || lodge.name.trim()
+    const defaultHref = `/lodges/${pageSlug}`
+    const ctaResolved = resolveSmartLinkOrLegacy(row.menuCtaSmartLink, undefined, {
+      label: row.menuCtaLabel?.trim() || 'View lodge',
+      href: defaultHref,
+      openInNewTab: false,
+    })
+    const href =
+      ctaResolved && ctaResolved.href && ctaResolved.href !== '#' ? ctaResolved.href : defaultHref
+    const ctaLabel = row.menuCtaLabel?.trim() || 'View lodge'
+
+    const name = io?.label?.trim() || row.heroTitle?.trim() || lodge.name.trim()
     const item: SiteHeaderNavLodgeItem = {
       id: pageId,
       name,
-      href: `/lodges/${pageSlug}`,
-      imageUrl: lodge.mainImageUrl?.trim() || null,
-      badges: lodgeBadges(lodge).slice(0, 3),
-      description: lodgeDescription(lodge),
+      href,
+      imageUrl: lodgeMenuImageUrl(row),
+      badges: lodgeMenuBadges(row).slice(0, 3),
+      description: lodgeMenuDescription(row),
+      ctaLabel,
     }
-    byRouteTmp[rk].push({ it: item, sk, sn: name.toLowerCase() })
-  }
-
-  const byRoute: Record<LodgeRK, SiteHeaderNavLodgeItem[]> = {
-    camanti: [],
-    'manu-road': [],
-    'manu-core': [],
-  }
-  for (const rk of Object.keys(byRouteTmp) as LodgeRK[]) {
-    byRouteTmp[rk].sort((a, z) => {
-      if (a.sk !== z.sk) return a.sk - z.sk
-      return a.sn.localeCompare(z.sn)
-    })
-    byRoute[rk] = byRouteTmp[rk].map((x) => x.it)
+    const tmp: LodgeTmp = { it: item, sk, sn: name.toLowerCase() }
+    if (bucketSlug === OTHER_ROUTE_SLUG) otherBucket.push(tmp)
+    else {
+      const list = bySlug.get(bucketSlug)
+      if (list) list.push(tmp)
+      else otherBucket.push(tmp)
+    }
   }
 
   base.lodges.enabled = settings?.lodgesEnabled !== false
-  const lodgeRoutesBuilt: Array<{
-    order: number
-    panelId: string
-    routeKey: LodgeRK
-    sidebarLabel: string
-    sidebarMeta: string
-    eyebrow: string
-    lodges: SiteHeaderNavLodgeItem[]
-  }> = []
 
-  for (const rk of Object.keys(byRoute) as LodgeRK[]) {
-    const list = byRoute[rk]
-    if (!list.length) continue
-    const cfg = effectiveLodgeRouteConfig(settings, rk)
-    if (!cfg.enabled) continue
-    const meta = ROUTE_META[rk]
-    lodgeRoutesBuilt.push({
-      order: cfg.order,
-      panelId: meta.panelId,
-      routeKey: rk,
-      sidebarLabel: cfg.label,
-      sidebarMeta: `${list.length} lodge${list.length === 1 ? '' : 's'}`,
-      eyebrow: cfg.label,
-      lodges: list,
+  const colsForShells: LodgeRouteCol[] = [...routeColsBase]
+  if (otherBucket.length) {
+    colsForShells.push({
+      slug: OTHER_ROUTE_SLUG,
+      panelId: panelIdForLodgeRouteSlug(OTHER_ROUTE_SLUG),
+      label: 'Other',
+      order: 100000,
     })
   }
-  lodgeRoutesBuilt.sort((a, b) => a.order - b.order)
+  colsForShells.sort((a, b) => a.order - b.order)
 
-  if (lodgeRoutesBuilt.length === 0) {
-    const shells: typeof lodgeRoutesBuilt = []
-    for (const rk of Object.keys(byRoute) as LodgeRK[]) {
-      const cfg = effectiveLodgeRouteConfig(settings, rk)
-      if (!cfg.enabled) continue
-      const meta = ROUTE_META[rk]
-      shells.push({
-        order: cfg.order,
-        panelId: meta.panelId,
-        routeKey: rk,
-        sidebarLabel: cfg.label,
-        sidebarMeta: '0 lodges',
-        eyebrow: cfg.label,
-        lodges: [],
-      })
+  const lodgeRoutesBuilt: SiteHeaderNavLodgeRoute[] = colsForShells.map((col) => {
+    const rawTmp = col.slug === OTHER_ROUTE_SLUG ? otherBucket : bySlug.get(col.slug) ?? []
+    const lodgesSorted = sortLodgeTmpList(rawTmp)
+    return {
+      panelId: col.panelId,
+      routeSlug: col.slug,
+      sidebarLabel: col.label,
+      sidebarMeta: `${lodgesSorted.length} lodge${lodgesSorted.length === 1 ? '' : 's'}`,
+      eyebrow: col.label,
+      lodges: lodgesSorted,
     }
-    shells.sort((a, b) => a.order - b.order)
-    if (shells.length) {
-      lodgeRoutesBuilt.push(...shells)
-    } else {
-      const rk: LodgeRK = 'camanti'
-      const cfg = effectiveLodgeRouteConfig(settings, rk)
-      const meta = ROUTE_META[rk]
-      lodgeRoutesBuilt.push({
-        order: cfg.order,
-        panelId: meta.panelId,
-        routeKey: rk,
-        sidebarLabel: cfg.label,
-        sidebarMeta: '0 lodges',
-        eyebrow: cfg.label,
-        lodges: [],
-      })
-    }
-  }
+  })
 
-  base.lodges.routes = lodgeRoutesBuilt.map(({ order: _o, ...rest }) => rest)
+  base.lodges.routes = lodgeRoutesBuilt.length ? lodgeRoutesBuilt : buildLodgeRouteColumns(settings, routeNavDocs).map((col) => ({
+    panelId: col.panelId,
+    routeSlug: col.slug,
+    sidebarLabel: col.label,
+    sidebarMeta: '0 lodges',
+    eyebrow: col.label,
+    lodges: [],
+  }))
 
   const lodgeSeeBlock = effectiveSeeAllBlock(settings?.lodgesSeeAll, settings?.navLodgesSeeAllSmartLink, {
     enabled: HEADER_NAV_LODGES_SEE_ALL_BLOCK.enabled,
     label: HEADER_NAV_LODGES_SEE_ALL_BLOCK.label,
     smartLink: HEADER_NAV_LODGES_SEE_ALL_BLOCK.smartLink,
   })
-  base.lodges.seeAll = resolveSeeAllToCta(lodgeSeeBlock, 'All lodges', `/lodges/${LODGE_SOQTAPATA_PAGE_SLUG}`)
+  base.lodges.seeAll = resolveSeeAllToCta(lodgeSeeBlock, 'All lodges', '/lodges')
 
   return base
 }
