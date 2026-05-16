@@ -8,10 +8,16 @@ import { soqtapataExperience } from '@/data/soqtapataExperienceLocal'
 import type {
   SoqtapataAlsoCamanti,
   SoqtapataBook,
+  SoqtapataMedia,
+  SoqtapataMediaThumb,
+  SoqtapataPhase1BreadcrumbItem,
+  SoqtapataPhase1GalleryCell,
   SoqtapataRelatedCardImage,
+  SoqtapataRelatedCardTailor,
   SoqtapataResourceCard,
   SoqtapataWhen,
   SoqtapataWhenMonth,
+  BfygCard,
 } from '@/data/soqtapataExperienceLocal'
 
 type SoqtapataExperience = typeof soqtapataExperience
@@ -23,11 +29,23 @@ import { formatLodgeAltitudeForSubtitle } from '@/lib/lodgeAltitudeDisplay'
 import { resolveRouteLabel } from '@/data/lodgeSoqtapataResolverDefaults'
 import { DEFAULT_EXPERIENCE_RESOURCE_DOWNLOAD_CTA_LABEL } from '@/lib/experienceResourceCmsDefaults'
 import type { ReserveCtaSettingsGroq } from '@/lib/reserveCtaGroq'
+import type { ExperienceBookingSummary } from '@/components/booking/types'
+import { buildBookingSummaryFromCmsExperience } from '@/lib/buildBookingSummaryFromCms'
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
 import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
 import { buildDefaultExperienceReserveRows, type ExperienceReserveFacts } from '@/lib/experienceReserveRows'
 import { isActiveExperienceStatus } from '@/lib/reserveCtaPricing'
 import { resolveReserveCtaCard } from '@/lib/resolveReserveCtaCard'
+import {
+  HIGHLIGHT_LIST_KEY_PREFIX,
+  INCLUDE_LIST_KEY_PREFIX,
+  NOT_INCLUDE_LIST_KEY_PREFIX,
+  resolvePlainStringKcList,
+} from '@/lib/experienceKcStringListKeys'
+import {
+  buildStatsBarFromPageCms,
+  type SnapshotStatSelectionRow,
+} from '@/lib/snapshotBarResolve'
 
 /** CMS sometimes stores non-string rows in string-array fields; coerce to display lines. */
 function normalizeStringHighlightList(raw: unknown[] | null | undefined): string[] {
@@ -40,11 +58,88 @@ function normalizeStringHighlightList(raw: unknown[] | null | undefined): string
       continue
     }
     if (item && typeof item === 'object') {
-      const t = String((item as { title?: unknown }).title ?? '').trim()
+      const o = item as { text?: unknown; title?: unknown; value?: unknown }
+      const t = String(o.text ?? o.value ?? o.title ?? '').trim()
       if (t) out.push(t)
     }
   }
   return out
+}
+
+function pickByIndices<T>(source: T[] | null | undefined, order: number[] | null | undefined): T[] | null {
+  if (!source?.length) return null
+  if (!order?.length) return null
+  const out: T[] = []
+  const seen = new Set<number>()
+  for (const raw of order) {
+    const i = typeof raw === 'number' ? raw : Number(raw)
+    if (!Number.isFinite(i) || i < 0 || i >= source.length || seen.has(i)) continue
+    seen.add(i)
+    const v = source[i]
+    if (v !== undefined) out.push(v)
+  }
+  return out.length ? out : null
+}
+
+type CmsKeyedStringRow = { _key?: string | null; text?: string | null }
+
+function pickByKeys<T extends { _key?: string | null }>(
+  source: T[] | null | undefined,
+  order: string[] | null | undefined,
+): T[] | null {
+  if (!source?.length || !order?.length) return null
+  const m = new Map<string, T>()
+  source.forEach((item, i) => {
+    if (item == null || typeof item !== 'object') return
+    const k = item._key
+    if (k && !m.has(k)) m.set(k, item)
+    if (!m.has(`legacy-str:${i}`)) m.set(`legacy-str:${i}`, item)
+    if (!m.has(String(i))) m.set(String(i), item)
+  })
+  const out: T[] = []
+  const seen = new Set<string>()
+  for (const rawKey of order) {
+    const key = typeof rawKey === 'string' ? rawKey.trim() : String(rawKey).trim()
+    if (!key || seen.has(key)) continue
+    let v = m.get(key)
+    if (v === undefined) {
+      const legacy = /^legacy-str:(\d+)$/.exec(key)
+      if (legacy) v = m.get(`legacy-str:${legacy[1]}`) ?? m.get(legacy[1]!)
+    }
+    if (v !== undefined) {
+      seen.add(key)
+      out.push(v)
+    }
+  }
+  return out.length ? out : null
+}
+
+/** Order / filter string lines from Knowledge Center using Sanity `_key`s, with legacy index fallback. */
+function orderedExperienceStringLines(
+  keyed: CmsKeyedStringRow[] | null | undefined,
+  orderKeys: string[] | null | undefined,
+  legacyFlat: unknown[] | null | undefined,
+  legacyIdx: number[] | null | undefined,
+): string[] {
+  const baseFlat = normalizeStringHighlightList(legacyFlat)
+  if (orderKeys?.length && keyed?.length) {
+    const keyedRows = keyed
+      .filter((k): k is CmsKeyedStringRow => k != null && typeof k === 'object')
+      .map((k, i) => ({
+        _key: (k._key && String(k._key)) || `__idx${i}`,
+        text: k.text,
+      }))
+    const picked = pickByKeys(keyedRows, orderKeys)
+    if (picked?.length) {
+      const texts = picked.map((p) => String((p as CmsKeyedStringRow).text ?? '').trim()).filter(Boolean)
+      if (texts.length) return texts
+    }
+  }
+  if (legacyIdx?.length && baseFlat.length) {
+    const p = pickByIndices([...baseFlat], legacyIdx)
+    if (p?.length) return p
+  }
+  return baseFlat
 }
 
 // --- public row shape (subset of GROQ result) ---
@@ -71,18 +166,50 @@ export type SoqtapataStructuredPageRow = {
   techProductRefs?: unknown[] | null
   techProductDocs?: CmsTechProduct[] | null
   includedTechProductIds?: string[] | null
+  galleryOrderKeys?: string[] | null
   relatedSectionEyebrow?: string | null
   relatedSectionTitle?: string | null
   relatedRefIds?: string[] | null
-  relatedExperiencesFromLanding?: CmsRelatedExperience[] | null
+  relatedExperiencesFromLanding?: CmsRelatedLandingRow[] | null
+  showTailorMade?: boolean | null
+  tailorMadeEyebrow?: string | null
+  tailorMadeTitle?: string | null
+  tailorMadeBody?: string | null
+  tailorMadeCtaLabel?: string | null
+  tailorMadeCtaSmartLink?: SmartLinkGroq | null
+  tailorMadeImage?: SanityImageSource | null
+  tailorMadeImageUrl?: string | null
+  tailorMadeAlt?: string | null
   reserveCtaSettings?: ReserveCtaSettingsGroq
   reserveBlock?: CmsReserveBlock | null
   /** Landing: prioridad sobre `experience.resources` para tarjetas + preview map/brochure. */
   resources?: CmsExperiencePageResources | null
   internalNav?: CmsInternalNav | null
+  /** Stats bar under hero — slot picks from linked Experience (visible rows only). */
+  snapshotStatSelections?: SnapshotStatSelectionRow[] | null
+  /** Curate Knowledge Center rows (Sanity `_key` order; omitted = hidden). */
+  overviewHighlightKeys?: string[] | null
+  wildlifeOrderKeys?: string[] | null
+  includesOrderKeys?: string[] | null
+  notIncludesOrderKeys?: string[] | null
+  faqOrderKeys?: string[] | null
+  resourcesFromExperienceKeys?: string[] | null
+  termsOrderKeys?: string[] | null
+  termsImportantNotesKeys?: string[] | null
+  /** @deprecated Hidden legacy: 0-based indices; resolver still reads for old documents */
+  overviewHighlightOrder?: number[] | null
+  wildlifeDisplayOrder?: number[] | null
+  includesDisplayOrder?: number[] | null
+  notIncludesDisplayOrder?: number[] | null
+  faqDisplayOrder?: number[] | null
+  resourcesFromExperienceOrder?: number[] | null
+  termsImportantNotesOrder?: number[] | null
+  termsDownloadEnabled?: boolean | null
+  termsDownloadLabel?: string | null
   /** `lodgePageLink` dereferenciado en GROQ (`slug.current`). */
   lodgePageSlug?: string | null
   /** Etiqueta del botón «View full lodge page» en esta landing. */
+  lodgeCtaVisible?: boolean | null
   lodgeCtaLabel?: string | null
   lodgeCtaSmartLink?: SmartLinkGroq | null
   experience?: CmsExperience | null
@@ -107,6 +234,16 @@ type CmsRelatedExperience = {
   shortDescription?: string | null
   mainImageUrl?: string | null
   slug?: string | null
+  /** Parent `experiencePage` document id (for `relatedRefIds` ordering). */
+  pageId?: string | null
+}
+
+/** Dereferenced `relatedExperienceRefs[]` (experience page or legacy experience doc). */
+type CmsRelatedLandingRow = {
+  _id: string
+  _type?: string | null
+  pageSlug?: string | null
+  experience?: CmsRelatedExperience | null
 }
 
 type CmsReserveBlock = {
@@ -134,6 +271,9 @@ type CmsPageHero = {
   headline?: string | null
   headlineSub?: string | null
   pills?: string[] | null
+  manualRatingValue?: string | null
+  manualReviewCount?: number | null
+  manualReviewProviderLabel?: string | null
   priceLine?: string | null
   priceSub?: string | null
   useProductPrice?: boolean | null
@@ -203,6 +343,10 @@ type CmsExperienceResourceRow = {
 
 type CmsExperience = {
   _id: string
+  highlightsKeyed?: CmsKeyedStringRow[] | null
+  includesKeyed?: CmsKeyedStringRow[] | null
+  notIncludesKeyed?: CmsKeyedStringRow[] | null
+  importantNotesKeyed?: CmsKeyedStringRow[] | null
   name?: string | null
   tagline?: string | null
   programType?: string | null
@@ -244,37 +388,133 @@ type CmsExperience = {
   brochurePdfUrl?: string | null
   brochurePdfLabel?: string | null
   resources?: CmsExperienceResourceRow[] | null
-  faqs?: { question?: string; answer?: string }[] | null
+  knowledgeResources?: CmsKnowledgeResourceRow[] | null
+  termsPanels?: { _key?: string | null; title?: string | null; text?: string | null }[] | null
+  fullTermsPdfUrl?: string | null
+  seasonLegend?: CmsSeasonLegend | null
+  travelerGuideSections?: CmsTravelerGuideSection[] | null
+  travelerGuideSubsections?: CmsTravelerGuideSubsection[] | null
+  lodgePresentationRows?: CmsLodgePresentationRow[] | null
+  faqs?: { _key?: string | null; question?: string; answer?: string }[] | null
   seo?: { title?: string | null; description?: string | null } | null
-  routeDocument?: { name?: string | null; shortDescription?: string | null; slug?: { current?: string | null } | null } | null
+  routeDocument?: {
+    name?: string | null
+    shortDescription?: string | null
+    slug?: string | null | { current?: string | null }
+    shortLabel?: string | null
+    tagline?: string | null
+  } | null
   status?: string | null
-} | null
-
-type CmsGalleryItem = {
-  image?: SanityImageSource | null
-  imageUrl?: string | null
-  caption?: string | null
-  category?: string | null
 }
 
-type CmsItineraryDay = {
-  dayNumber?: number | null
+type CmsKnowledgeResourceRow = {
+  _key?: string
   title?: string | null
-  subtitle?: string | null
-  image?: SanityImageSource | null
-  imageUrl?: string | null
-  photoCaption?: string | null
-  timeline?: { time?: string; title?: string; description?: string }[] | null
-  lodgeOvernight?: string | null
-  lodgeSub?: string | null
+  text?: string | null
+  showCta?: boolean | null
+  ctaLabel?: string | null
+  ctaSmartLink?: SmartLinkGroq | null
+  image?: { alt?: string | null; title?: string | null; image?: SanityImageSource | null; imageUrl?: string | null } | null
 }
 
-type CmsWildlifeItem = {
-  name?: string
-  description?: string | null
-  iconType?: string | null
-  imageUrl?: string | null
-  badge?: string | null
+type CmsSeasonLegend = {
+  seasonKeyTitle?: string | null
+  intro?: string | null
+  peakLabel?: string | null
+  peakDescription?: string | null
+  greatLabel?: string | null
+  greatDescription?: string | null
+  alwaysLabel?: string | null
+  alwaysDescription?: string | null
+  /** @deprecated Use seasonKeyTitle */
+  eyebrow?: string | null
+  peak?: { label?: string | null; description?: string | null; visualKey?: string | null } | null
+  good?: { label?: string | null; description?: string | null; visualKey?: string | null } | null
+  alwaysGood?: { label?: string | null; description?: string | null; visualKey?: string | null } | null
+}
+
+/** Resolved copy for month ★ aria + legend (flat CMS or legacy nested). */
+type ResolvedSeasonLegendCopy = {
+  seasonKeyEyebrow: string
+  peak: { label: string; description: string }
+  great: { label: string; description: string }
+  always: { label: string; description: string }
+}
+
+function resolveSeasonLegendCopy(legend: CmsSeasonLegend | null | undefined, mergedWhen: SoqtapataWhen): ResolvedSeasonLegendCopy {
+  const lg = mergedWhen.legend
+  const fb0 = lg.items[0]!
+  const fb1 = lg.items[1]!
+  const fb2 = lg.items[2]!
+  const descFromRest = (rest: string) => {
+    const t = rest.trim()
+    if (!t.startsWith('—')) return ''
+    return t.replace(/^—\s*/, '').trim()
+  }
+  if (!legend) {
+    return {
+      seasonKeyEyebrow: lg.eyebrow,
+      peak: { label: fb0.strong, description: descFromRest(fb0.rest) },
+      great: { label: fb1.strong, description: descFromRest(fb1.rest) },
+      always: { label: fb2.strong, description: descFromRest(fb2.rest) },
+    }
+  }
+  const peakLabel = legend.peakLabel?.trim() || legend.peak?.label?.trim() || fb0.strong
+  const peakDescription =
+    legend.peakDescription?.trim() || legend.peak?.description?.trim() || descFromRest(fb0.rest)
+  const greatLabel = legend.greatLabel?.trim() || legend.good?.label?.trim() || fb1.strong
+  const greatDescription =
+    legend.greatDescription?.trim() || legend.good?.description?.trim() || descFromRest(fb1.rest)
+  const alwaysLabel = legend.alwaysLabel?.trim() || legend.alwaysGood?.label?.trim() || fb2.strong
+  const alwaysDescription =
+    legend.alwaysDescription?.trim() || legend.alwaysGood?.description?.trim() || descFromRest(fb2.rest)
+  return {
+    seasonKeyEyebrow: legend.seasonKeyTitle?.trim() || legend.eyebrow?.trim() || lg.eyebrow,
+    peak: { label: peakLabel, description: peakDescription },
+    great: { label: greatLabel, description: greatDescription },
+    always: { label: alwaysLabel, description: alwaysDescription },
+  }
+}
+
+type CmsTravelerGuideSection = {
+  bucket?: string | null
+  headerIcon?: string | null
+  title?: string | null
+  packingLead?: string | null
+  pairItems?: { iconKey?: string | null; title?: string | null; body?: string | null }[] | null
+  bulletItems?: string[] | null
+}
+
+type CmsTravelerGuideQaRowCms = {
+  _type?: string | null
+  iconKey?: string | null
+  title?: string | null
+  body?: string | null
+  label?: string | null
+}
+
+type CmsTravelerGuideChecklistRowCms = {
+  _type: 'experienceTravelerGuideChecklistRow'
+  iconKey?: string | null
+  label?: string | null
+}
+
+type CmsTravelerGuideRowUnion = CmsTravelerGuideQaRowCms | CmsTravelerGuideChecklistRowCms
+
+type CmsTravelerGuideSubsection = {
+  _key?: string
+  displayType?: string | null
+  headerIcon?: string | null
+  title?: string | null
+  rows?: CmsTravelerGuideRowUnion[] | null
+}
+
+function isTravelerGuideChecklistRow(r: unknown): r is CmsTravelerGuideChecklistRowCms {
+  return Boolean(
+    r &&
+      typeof r === 'object' &&
+      (r as {_type?: string | null})._type === 'experienceTravelerGuideChecklistRow',
+  )
 }
 
 type CmsLodge = {
@@ -285,6 +525,647 @@ type CmsLodge = {
   route?: string | null
   mainImageUrl?: string | null
   amenities?: string[] | null
+}
+
+type CmsLodgePresentationRow = {
+  lodge?: (CmsLodge & { _id?: string }) | null
+  nightsLabel?: string | null
+  highlightLabel?: string | null
+  highlights?: string[] | null
+  ctaLabel?: string | null
+  ctaSmartLink?: SmartLinkGroq | null
+}
+
+type CmsGalleryItem = {
+  _key?: string | null
+  mediaType?: string | null
+  title?: string | null
+  alt?: string | null
+  image?: SanityImageSource | null
+  imageUrl?: string | null
+  videoUrl?: string | null
+  videoThumbnail?: SanityImageSource | null
+  videoThumbnailUrl?: string | null
+  caption?: string | null
+  category?: string | null
+}
+
+export type ResolvedExperienceMediaItem = {
+  _key: string
+  kind: 'photo' | 'video'
+  title: string
+  caption: string
+  alt: string
+  imageSrc: string
+  videoUrl?: string
+}
+
+const MEDIA_VISIBLE_MAX = 6
+const MEDIA_SECONDARY_MAX = 5
+
+function galleryPhotoUrl(g: CmsGalleryItem, width: number): string | null {
+  const direct = g.imageUrl?.trim()
+  if (direct) return direct
+  if (g.image) {
+    const built = assetToUrl(g.image, width, '')
+    return built?.trim() ? built : null
+  }
+  return null
+}
+
+function galleryVideoThumbnailUrl(g: CmsGalleryItem, width: number): string | null {
+  const direct = g.videoThumbnailUrl?.trim()
+  if (direct) return direct
+  if (g.videoThumbnail) {
+    const built = assetToUrl(g.videoThumbnail, width, '')
+    return built?.trim() ? built : null
+  }
+  return galleryPhotoUrl(g, width)
+}
+
+function mediaItemLabel(g: CmsGalleryItem, idx: number): string {
+  return (
+    (g.alt && g.alt.trim()) ||
+    (g.caption && g.caption.trim()) ||
+    (g.title && g.title.trim()) ||
+    `Media ${idx + 1}`
+  ).slice(0, 80)
+}
+
+function normalizeCmsGalleryItem(g: CmsGalleryItem, idx: number): ResolvedExperienceMediaItem | null {
+  const isVideo = g.mediaType?.trim() === 'video'
+  const title = (g.title && g.title.trim()) || ''
+  const caption = (g.caption && g.caption.trim()) || ''
+  const alt = mediaItemLabel(g, idx)
+
+  if (isVideo) {
+    const videoUrl = g.videoUrl?.trim()
+    const imageSrc = galleryVideoThumbnailUrl(g, 1200)
+    if (!videoUrl || !imageSrc) return null
+    return {
+      _key: g._key || `media-${idx}`,
+      kind: 'video',
+      title,
+      caption,
+      alt,
+      imageSrc,
+      videoUrl,
+    }
+  }
+
+  const imageSrc = galleryPhotoUrl(g, 1200)
+  if (!imageSrc) return null
+  return {
+    _key: g._key || `media-${idx}`,
+    kind: 'photo',
+    title,
+    caption,
+    alt,
+    imageSrc,
+  }
+}
+
+function resolveExperienceGalleryItems(
+  e: CmsExperience,
+  row: NonNullable<SoqtapataStructuredPageRow>,
+  h1: string,
+): ResolvedExperienceMediaItem[] {
+  let items = [...(e.gallery ?? [])]
+  if (row.galleryOrderKeys?.length) {
+    const picked = pickByKeys(items, row.galleryOrderKeys)
+    if (picked?.length) items = picked
+  }
+
+  let resolved = items
+    .map((g, i) => normalizeCmsGalleryItem(g, i))
+    .filter((x): x is ResolvedExperienceMediaItem => x != null)
+
+  const hasGalleryVideo = resolved.some((i) => i.kind === 'video')
+  if (!hasGalleryVideo && e.videoUrl?.trim() && !items.some((g) => g.mediaType === 'video')) {
+    const thumb = e.mainImageUrl?.trim() || resolved[0]?.imageSrc
+    if (thumb) {
+      const legacyTitle = (e.videoTitle && e.videoTitle.trim()) || h1
+      resolved = [
+        {
+          _key: 'legacy-experience-video',
+          kind: 'video',
+          title: legacyTitle,
+          caption: '',
+          alt: legacyTitle,
+          imageSrc: thumb,
+          videoUrl: e.videoUrl.trim(),
+        },
+        ...resolved,
+      ]
+    }
+  }
+
+  return resolved
+}
+
+function pickMainMediaItem(items: ResolvedExperienceMediaItem[]): ResolvedExperienceMediaItem | null {
+  if (!items.length) return null
+  return items.find((i) => i.kind === 'video') ?? items[0]!
+}
+
+function layoutMediaTiles(items: ResolvedExperienceMediaItem[]): {
+  main: ResolvedExperienceMediaItem | null
+  secondary: ResolvedExperienceMediaItem[]
+  moreCount?: SoqtapataMedia['moreCount']
+} {
+  const n = items.length
+  if (n === 0) return { main: null, secondary: [] }
+
+  const main = pickMainMediaItem(items)
+  if (!main) return { main: null, secondary: [] }
+  const rest = items.filter((i) => i._key !== main._key)
+
+  if (n <= MEDIA_VISIBLE_MAX) {
+    return { main, secondary: rest }
+  }
+
+  const hidden = n - MEDIA_VISIBLE_MAX
+  if (hidden === 1) {
+    return { main, secondary: rest }
+  }
+
+  return {
+    main,
+    secondary: rest.slice(0, MEDIA_SECONDARY_MAX),
+    moreCount: {
+      dataExpLb: '0',
+      countLabel: `+${hidden}`,
+      subLabel: 'See all',
+      ariaLabel: 'Open full photo gallery',
+    },
+  }
+}
+
+function mediaThumbFromItem(item: ResolvedExperienceMediaItem, dataExpLb: string): SoqtapataMediaThumb {
+  const label = (item.caption || item.title || item.alt).slice(0, 40)
+  if (item.kind === 'video') {
+    return {
+      kind: 'video',
+      dataExpLb,
+      ariaLabel: `Open video, ${item.alt}`,
+      imageSrc: item.imageSrc,
+      imageAlt: item.alt,
+      overlayStyle: { background: 'rgba(0,0,0,.35)' },
+      label,
+      labelStyle: { background: 'rgba(144,103,48,.75)' },
+    }
+  }
+  return {
+    kind: 'image',
+    dataExpLb,
+    ariaLabel: `Open photo, ${item.alt}`,
+    imageSrc: item.imageSrc,
+    imageAlt: item.alt,
+    label,
+    labelStyle: { background: 'rgba(0,0,0,.55)' },
+  }
+}
+
+export function buildHeroGalleryFromItems(items: ResolvedExperienceMediaItem[]): SoqtapataPhase1GalleryCell[] {
+  const photos = items.filter((i) => i.kind === 'photo')
+  if (!photos.length) return []
+
+  const cells: SoqtapataPhase1GalleryCell[] = [
+    {
+      kind: 'main',
+      dataExpLb: '0',
+      ariaLabel: 'Open photo gallery, image 1',
+      imageSrc: photos[0]!.imageSrc,
+      imageAlt: photos[0]!.alt,
+    },
+  ]
+
+  if (photos.length > 1) {
+    cells.push({
+      kind: 'thumb',
+      dataExpLb: '1',
+      ariaLabel: 'Open photo gallery, image 2',
+      imageSrc: photos[1]!.imageSrc,
+      imageAlt: photos[1]!.alt,
+      galleryLabel: (photos[1]!.caption || photos[1]!.title || photos[1]!.alt).slice(0, 40),
+    })
+  }
+
+  if (photos.length > 2) {
+    const hiddenPhotos = photos.length - 2
+    cells.push({
+      kind: 'thumb',
+      dataExpLb: '2',
+      ariaLabel: 'Open photo gallery, image 3',
+      imageSrc: photos[2]!.imageSrc,
+      imageAlt: photos[2]!.alt,
+      stylePositionRelative: true,
+      galleryLabel: (photos[2]!.caption || photos[2]!.title || photos[2]!.alt).slice(0, 40),
+      ...(hiddenPhotos > 1
+        ? {
+            moreBadge: {
+              text: `+${hiddenPhotos} more`,
+              dataExpLb: '0',
+              ariaLabel: 'Open full photo gallery',
+            },
+          }
+        : {}),
+    })
+  }
+
+  return cells
+}
+
+export function buildMediaFromGalleryItems(
+  items: ResolvedExperienceMediaItem[],
+  lMedia: SoqtapataMedia,
+  h1: string,
+): SoqtapataMedia | null {
+  const { main, secondary, moreCount } = layoutMediaTiles(items)
+  if (!main) return null
+
+  const thumbs = secondary.map((item, i) => mediaThumbFromItem(item, String(i + 1)))
+  const filmPill = main.title || main.caption || h1
+
+  return {
+    eyebrow: lMedia.eyebrow,
+    h2: lMedia.h2,
+    h2Style: lMedia.h2Style,
+    lead: lMedia.lead,
+    video: {
+      imageSrc: main.imageSrc,
+      imageAlt: main.alt,
+      filmPill,
+      officialPill: lMedia.video.officialPill,
+      isVideo: main.kind === 'video',
+      videoUrl: main.videoUrl,
+    },
+    thumbs,
+    ...(moreCount ? { moreCount } : {}),
+  }
+}
+
+function emptyMediaShell(lMedia: SoqtapataMedia, h1: string): SoqtapataMedia {
+  return {
+    eyebrow: lMedia.eyebrow,
+    h2: lMedia.h2,
+    h2Style: lMedia.h2Style,
+    lead: lMedia.lead,
+    video: {
+      imageSrc: '',
+      imageAlt: h1,
+      filmPill: h1,
+      officialPill: lMedia.video.officialPill,
+      isVideo: false,
+    },
+    thumbs: [],
+  }
+}
+
+function warnCurateKeyMiss(context: string, key: string): void {
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(`[experiencePage CMS] ${context}: could not resolve curated key "${key}"`)
+  }
+}
+
+/**
+ * String-list curation: when `orderKeys` is non-empty, returns ONLY matched keys in order (never all KC).
+ * When `orderKeys` is empty, returns full KC list (legacy index or flat order).
+ */
+function pageCuratedStringList(
+  keyed: CmsKeyedStringRow[] | null | undefined,
+  orderKeys: string[] | null | undefined,
+  legacyFlat: unknown[] | null | undefined,
+  legacyIdx: number[] | null | undefined,
+  context = 'curated strings',
+): string[] {
+  const flat = normalizeStringHighlightList(legacyFlat)
+  const hasSelection = (orderKeys?.length ?? 0) > 0
+
+  if (!hasSelection) {
+    if (legacyIdx?.length && flat.length) {
+      const p = pickByIndices([...flat], legacyIdx)
+      if (p?.length) return p
+    }
+    return flat
+  }
+
+  const keyedList = Array.isArray(keyed) ? keyed.filter((k): k is CmsKeyedStringRow => k != null) : []
+  const byKey = new Map<string, string>()
+  keyedList.forEach((k, i) => {
+    const key = (k._key && String(k._key)) || `legacy-str:${i}`
+    const text = String(k.text ?? '').trim() || (flat[i] ?? '').trim()
+    if (text) {
+      byKey.set(key, text)
+      byKey.set(`legacy-str:${i}`, text)
+    }
+  })
+
+  const out: string[] = []
+  for (const rawKey of orderKeys!) {
+    const key = String(rawKey).trim()
+    if (!key) continue
+    let text = byKey.get(key) ?? ''
+    if (!text) {
+      const legacy = /^legacy-str:(\d+)$/.exec(key)
+      if (legacy) text = (flat[Number(legacy[1])] ?? '').trim()
+    }
+    if (text) {
+      out.push(text)
+    } else {
+      warnCurateKeyMiss(context, key)
+    }
+  }
+  return out
+}
+
+/** KC rows with `_key`: when `orderKeys` is set, return only those rows (strict). */
+function curateKeyedRowsStrict<T extends { _key?: string | null }>(
+  source: T[] | null | undefined,
+  orderKeys: string[] | null | undefined,
+  context: string,
+): T[] | null {
+  const hasSelection = (orderKeys?.length ?? 0) > 0
+  if (!hasSelection) return null
+  if (!source?.length) return []
+  const picked = pickByKeys(source, orderKeys)
+  if (picked?.length) return picked
+  for (const rawKey of orderKeys!) {
+    const key = String(rawKey).trim()
+    if (!key) continue
+    if (!source.some((row) => row._key === key)) warnCurateKeyMiss(context, key)
+  }
+  return []
+}
+
+function applyTermsPageSettings(
+  terms: SoqtapataExperience['terms'],
+  row: NonNullable<SoqtapataStructuredPageRow>,
+  local: SoqtapataExperience,
+): SoqtapataExperience['terms'] {
+  let t = terms
+  const label = row.termsDownloadLabel?.trim()
+  if (label) {
+    t = { ...t, pdfDownloadLabel: label }
+  } else if (!t.pdfDownloadLabel?.trim()) {
+    t = { ...t, pdfDownloadLabel: local.terms.pdfDownloadLabel }
+  }
+  if (row.termsDownloadEnabled === false) {
+    t = { ...t, pdfHref: '#' }
+  }
+  return t
+}
+
+function buildIncludesFromCms(
+  e: CmsExperience,
+  row: NonNullable<SoqtapataStructuredPageRow>,
+  local: SoqtapataExperience,
+): SoqtapataExperience['includes'] | null {
+  if (!(e.includes?.length || e.notIncludes?.length)) return null
+
+  const yes = resolvePlainStringKcList(
+    e.includes as unknown[],
+    row.includesOrderKeys,
+    row.includesDisplayOrder,
+    INCLUDE_LIST_KEY_PREFIX,
+    'includes',
+    pickByIndices,
+  )
+  const no = resolvePlainStringKcList(
+    e.notIncludes as unknown[],
+    row.notIncludesOrderKeys,
+    row.notIncludesDisplayOrder,
+    NOT_INCLUDE_LIST_KEY_PREFIX,
+    'notIncludes',
+    pickByIndices,
+  )
+
+  return {
+    eyebrow: local.includes.eyebrow,
+    h2: local.includes.h2,
+    h2Style: local.includes.h2Style,
+    lead: local.includes.lead,
+    includedTitle: local.includes.includedTitle,
+    notTitle: local.includes.notTitle,
+    yes,
+    no,
+  }
+}
+
+function buildWildlifeFromCms(
+  e: CmsExperience,
+  row: NonNullable<SoqtapataStructuredPageRow>,
+  local: SoqtapataExperience,
+): SoqtapataExperience['wildlife'] | null {
+  if (!e.wildlife?.length) return null
+  const l = local.wildlife
+  let wRows = [...e.wildlife]
+  if (row.wildlifeOrderKeys?.length) {
+    wRows = (curateKeyedRowsStrict(wRows as { _key?: string | null }[], row.wildlifeOrderKeys, 'wildlife') ??
+      []) as CmsWildlifeItem[]
+  } else if (row.wildlifeDisplayOrder?.length) {
+    const p = pickByIndices(wRows, row.wildlifeDisplayOrder)
+    if (p?.length) wRows = p
+  }
+  const species = wRows.map((s, i) => {
+    const nameMatch = s.name
+      ? l.species.find((sp) => (sp.name || '').trim() === (s.name || '').trim())
+      : undefined
+    const fallback = nameMatch ?? l.species[i] ?? l.species[0]!
+    const cmsImg = s.imageUrl ? imgW(s.imageUrl, 960) : null
+    const badgeTrim = (s.badge && s.badge.trim()) || fallback?.badge
+    const base = {
+      name: s.name || fallback?.name || '',
+      sub: s.description || fallback?.sub || '',
+      iconId: (s.iconType && W_ICON[s.iconType] !== undefined ? W_ICON[s.iconType]! : fallback?.iconId ?? 6) as
+        | 0
+        | 1
+        | 2
+        | 3
+        | 4
+        | 5
+        | 6,
+    }
+    const photo =
+      cmsImg != null
+        ? { imageSrc: cmsImg, imageAlt: (s.name || fallback?.name || 'Species').trim() }
+        : fallback?.imageSrc
+          ? { imageSrc: fallback.imageSrc, imageAlt: (fallback.imageAlt ?? fallback.name).trim() }
+          : {}
+    return {
+      ...base,
+      ...photo,
+      ...(badgeTrim ? { badge: badgeTrim } : {}),
+    }
+  })
+  return {
+    ...l,
+    species,
+  }
+}
+
+function buildOverviewFromCms(
+  e: CmsExperience,
+  row: NonNullable<SoqtapataStructuredPageRow>,
+  local: SoqtapataExperience,
+): SoqtapataExperience['overview'] {
+  const highlights = resolvePlainStringKcList(
+    e.highlights,
+    row.overviewHighlightKeys,
+    row.overviewHighlightOrder,
+    HIGHLIGHT_LIST_KEY_PREFIX,
+    'overview highlights',
+    pickByIndices,
+  ).slice(0, 6)
+  return {
+    eyebrow: local.overview.eyebrow,
+    h2: local.overview.h2,
+    paragraphs: ['', ''] as [string, string],
+    highlights,
+  }
+}
+
+function buildTermsFromCms(
+  e: CmsExperience,
+  row: NonNullable<SoqtapataStructuredPageRow>,
+  local: SoqtapataExperience,
+): SoqtapataExperience['terms'] | null {
+  if (e.termsPanels?.length) {
+    let panels = [...e.termsPanels]
+    if (row.termsOrderKeys?.length) {
+      panels = curateKeyedRowsStrict(panels, row.termsOrderKeys, 'terms panels') ?? []
+    }
+    const tc = local.terms
+    const pdf = e.fullTermsPdfUrl?.trim()
+    return {
+      ...tc,
+      ...(pdf ? { pdfHref: pdf } : {}),
+      cards: panels.map((p, i) => ({
+        id: p._key ? `terms-panel-${p._key}` : `terms-panel-${i}`,
+        title: (p.title && p.title.trim()) || '',
+        body: (p.text && p.text.trim()) || '',
+      })),
+    }
+  }
+
+  if (!e.cancellationPolicy?.trim() && !e.termsAndConditions?.trim() && !e.importantNotes?.length) {
+    return null
+  }
+
+  const tc = local.terms
+  const cards = tc.cards.map((c, i) => {
+    if (i === 0 && e.cancellationPolicy?.trim()) {
+      return { ...c, body: e.cancellationPolicy.trim() }
+    }
+    if (i === 1 && e.termsAndConditions?.trim()) {
+      return { ...c, body: e.termsAndConditions.trim() }
+    }
+    if (i === 4 && e.importantNotes?.length) {
+      const notes = pageCuratedStringList(
+        e.importantNotesKeyed,
+        row.termsImportantNotesKeys,
+        e.importantNotes,
+        row.termsImportantNotesOrder,
+        'terms important notes',
+      )
+      return { ...c, body: [c.body, notes.join('\n')].filter(Boolean).join('\n\n') }
+    }
+    return c
+  })
+  const pdf = e.fullTermsPdfUrl?.trim()
+  return { ...tc, ...(pdf ? { pdfHref: pdf } : {}), cards }
+}
+
+/** KC-only fields for a published landing — replaces local/static fallbacks after merge. */
+export function applyCmsExclusiveExperienceContent(
+  experience: SoqtapataExperience,
+  row: NonNullable<SoqtapataStructuredPageRow>,
+  local: SoqtapataExperience,
+  alsoBook: { also: SoqtapataAlsoCamanti; book: SoqtapataBook },
+): SoqtapataExperience {
+  const e = row.experience
+  if (!e) return experience
+
+  const ph = row.pageHero
+  const h1 = resolveExperiencePageTitle(ph, e, row.internalTitle)
+  const priceLine = resolveExperienceHeroPriceLine(e, ph)
+  const priceSub = resolveExperienceHeroPriceSub(ph)
+  const breadcrumb = buildExperiencePageBreadcrumb(h1, resolveExperienceRouteLabel(e))
+  const items = resolveExperienceGalleryItems(e, row, h1)
+  const heroGallery = buildHeroGalleryFromItems(items)
+  const media = buildMediaFromGalleryItems(items, local.media, h1)
+  const includes = buildIncludesFromCms(e, row, local)
+  const termsBase = buildTermsFromCms(e, row, local) ?? experience.terms
+  const terms = applyTermsPageSettings(termsBase, row, local)
+  const overview = buildOverviewFromCms(e, row, local)
+  const wildlife = buildWildlifeFromCms(e, row, local)
+  const stats = buildStatsBarFromPageCms(e, row.snapshotStatSelections, local.stats)
+
+  return {
+    ...experience,
+    hero: { ...experience.hero, h1, gallery: heroGallery, price: priceLine, priceSub, breadcrumb },
+    pageNav: {
+      ...experience.pageNav,
+      leadName: h1,
+      fromNum: priceLine,
+      fromAriaLabel: `From ${priceLine} per person`,
+    },
+    stats,
+    overview,
+    ...(wildlife ? { wildlife } : {}),
+    also: {
+      eyebrow: alsoBook.also.eyebrow,
+      h2: alsoBook.also.h2,
+      h2Style: alsoBook.also.h2Style,
+      lead: alsoBook.also.lead,
+      cards: alsoBook.also.cards,
+    },
+    media: media ?? emptyMediaShell(local.media, h1),
+    ...(includes ? { includes } : {}),
+    ...(terms ? { terms } : {}),
+  }
+}
+
+export function experienceHasMediaSection(media: SoqtapataMedia): boolean {
+  return Boolean(media.video.imageSrc?.trim()) || media.thumbs.length > 0
+}
+
+function relatedProductsFromLanding(rows: CmsRelatedLandingRow[] | null | undefined): CmsRelatedExperience[] {
+  if (!rows?.length) return []
+  const out: CmsRelatedExperience[] = []
+  for (const row of rows) {
+    const exp = row.experience
+    if (!exp?._id) continue
+    out.push({
+      ...exp,
+      pageId: row._id,
+      slug: (row.pageSlug && row.pageSlug.trim()) || exp.slug || null,
+    })
+  }
+  return out
+}
+
+type CmsItineraryDay = {
+  dayNumber?: number | null
+  title?: string | null
+  subtitle?: string | null
+  image?: SanityImageSource | null
+  imageUrl?: string | null
+  photoCaption?: string | null
+  timeline?: { time?: string; title?: string; description?: string }[] | null
+  overnight?: { mode?: string | null } | null
+  overnightLodge?: CmsLodge | null
+  lodgeOvernight?: string | null
+  lodgeSub?: string | null
+}
+
+type CmsWildlifeItem = {
+  _key?: string | null
+  name?: string
+  description?: string | null
+  iconType?: string | null
+  imageUrl?: string | null
+  badge?: string | null
 }
 
 type CmsMonthRow = { month?: string; highlight?: string; level?: string }
@@ -340,48 +1221,12 @@ function applyExperiencePageLodgeLandingCta(
   if (!row) return
 
   const base = out.lodge ?? local.lodge
-  const hrefDefault = base.card.ctaHref
-  const labelDefault = base.card.ctaLabel
-
+  const hide = row.lodgeCtaVisible === false
   const rawSlug = row.lodgePageSlug?.trim()
   const slugOk = rawSlug && LODGE_PAGE_SLUG_SEGMENT.test(rawSlug) ? rawSlug : ''
-  const labelFromRow = row.lodgeCtaLabel?.trim()
-  const legacyHref = slugOk ? `/lodges/${slugOk}` : undefined
-  const legacyLabel = labelFromRow || undefined
+  const href = hide || !slugOk ? '' : `/lodges/${slugOk}`
+  const label = hide ? '' : row.lodgeCtaLabel?.trim() || base.card.ctaLabel
 
-  if (smartLinkIsDisabled(row.lodgeCtaSmartLink)) {
-    out.lodge = {
-      ...base,
-      ctaHref: '',
-      ctaLabel: '',
-      card: { ...base.card, ctaHref: '', ctaLabel: '' },
-    }
-    return
-  }
-
-  // 1) Optional smart link (overrides legacy link + label when set with a label)
-  if (row.lodgeCtaSmartLink?.label?.trim()) {
-    const r = resolveSmartLinkOrLegacy(
-      row.lodgeCtaSmartLink,
-      { label: legacyLabel, href: legacyHref },
-      { label: labelDefault, href: hrefDefault, openInNewTab: false },
-    )
-    if (r) {
-      out.lodge = {
-        ...base,
-        ctaHref: r.href,
-        ctaLabel: r.label,
-        card: { ...base.card, ctaHref: r.href, ctaLabel: r.label },
-      }
-      return
-    }
-  }
-
-  // 2) Legacy lodgePageLink → /lodges/{slug} (validated), 3) static fallback
-  if (!slugOk && !labelFromRow) return
-
-  const href = slugOk ? `/lodges/${slugOk}` : hrefDefault
-  const label = labelFromRow || labelDefault
   out.lodge = {
     ...base,
     ctaHref: href,
@@ -440,11 +1285,13 @@ function reviewToDoc(r: CmsReviewDoc | null | undefined): ReviewDoc | null {
   }
 }
 
-function levelToCardClass(
-  level: string | null | undefined,
-): 'default' | 'good' | 'peak' {
-  if (level === 'peak') return 'peak'
-  if (level === 'good') return 'good'
+function normalizedMonthTier(level: string | null | undefined): 'default' | 'good' | 'peak' {
+  const v = String(level ?? '')
+    .trim()
+    .toLowerCase()
+  if (v === 'peak') return 'peak'
+  if (v === 'great' || v === 'good') return 'good'
+  if (v === 'always' || v === 'always-good') return 'default'
   return 'default'
 }
 
@@ -454,24 +1301,353 @@ function levelToBar(level: 'default' | 'good' | 'peak'): string {
   return 'linear-gradient(90deg,#5a8a3a,#4a7a2a)'
 }
 
-function levelToStars(level: 'default' | 'good' | 'peak'): { level: 1 | 2; aria: string } | null {
-  if (level === 'peak') return { level: 2, aria: 'Peak season' }
-  if (level === 'good') return { level: 1, aria: 'Great season' }
+function levelToStars(
+  tier: 'default' | 'good' | 'peak',
+  tierLabels: ResolvedSeasonLegendCopy,
+): { level: 1 | 2; aria: string } | null {
+  if (tier === 'peak') return { level: 2, aria: tierLabels.peak.label.trim() || 'Peak season' }
+  if (tier === 'good') return { level: 1, aria: tierLabels.great.label.trim() || 'Great season' }
   return null
 }
 
-function whenMonthFromCms(m: CmsMonthRow, base: SoqtapataWhen, idx: number): SoqtapataWhenMonth {
+function whenMonthFromCms(
+  m: CmsMonthRow,
+  base: SoqtapataWhen,
+  idx: number,
+  tierLabels: ResolvedSeasonLegendCopy,
+): SoqtapataWhenMonth {
   const b = base.months[idx]!
-  const cardClass = levelToCardClass(m.level)
-  const cc = cardClass as 'default' | 'good' | 'peak'
+  const tier = normalizedMonthTier(m.level)
   const name = (m.month && MONTH_SLUG[m.month]) || b.name
   return {
-    cardClass: cc,
-    barStyle: levelToBar(cc),
+    cardClass: tier,
+    barStyle: levelToBar(tier),
     name,
-    stars: levelToStars(cc),
+    stars: levelToStars(tier, tierLabels),
     highlight: m.highlight && m.highlight.trim() ? m.highlight : b.highlight,
   }
+}
+
+const DEFAULT_EXPERIENCE_PRICE_SUB = 'per person · all inclusive'
+
+/** KC price wins when `useProductPrice` is true; legacy `pageHero.priceLine` only when KC empty or override off. */
+function resolveExperienceHeroPriceLine(
+  e: Pick<CmsExperience, 'price' | 'priceLabel'>,
+  ph?: { priceLine?: string | null; useProductPrice?: boolean | null } | null,
+): string {
+  const kc =
+    e.priceLabel?.trim() ||
+    (e.price != null && e.price > 0 ? `USD ${e.price}` : '') ||
+    ''
+  if (ph?.useProductPrice === false) {
+    return ph.priceLine?.trim() || 'Enquire'
+  }
+  return kc || ph?.priceLine?.trim() || 'Enquire'
+}
+
+function resolveExperienceHeroPriceSub(ph?: { priceSub?: string | null } | null): string {
+  return ph?.priceSub?.trim() || DEFAULT_EXPERIENCE_PRICE_SUB
+}
+
+/** Plain-text breadcrumb trail (non-clickable), aligned with lodge pages. */
+function buildExperiencePageBreadcrumb(pageTitle: string, routeLabel: string): SoqtapataPhase1BreadcrumbItem[] {
+  const route = routeLabel.trim() || 'Route'
+  const current = pageTitle.trim() || 'Experience'
+  return [
+    { type: 'span-muted', text: 'Home' },
+    { type: 'span-muted', text: '›' },
+    { type: 'span-muted', text: 'Experiences' },
+    { type: 'span-muted', text: '›' },
+    { type: 'span-muted', text: route },
+    { type: 'span-muted', text: '›' },
+    { type: 'current', text: current },
+  ]
+}
+
+function resolveExperiencePageTitle(
+  ph: CmsPageHero | null | undefined,
+  e: CmsExperience,
+  rowTitle?: string | null,
+): string {
+  return (
+    (ph?.headline && ph.headline.trim()) ||
+    e.name?.trim() ||
+    rowTitle?.trim() ||
+    'Experience'
+  )
+}
+
+function resolveExperienceRouteLabel(e: CmsExperience): string {
+  const routeSlug = experienceRouteSlug(e)
+  return (
+    (e.routeDocument?.name && e.routeDocument.name.trim()) ||
+    (routeSlug ? resolveRouteLabel(routeSlug) : '') ||
+    'Route'
+  )
+}
+
+function experienceRouteSlug(e: CmsExperience): string | null {
+  const doc = e.routeDocument
+  const rawSlug = doc?.slug
+  const slug =
+    typeof rawSlug === 'string'
+      ? rawSlug.trim()
+      : rawSlug && typeof rawSlug === 'object'
+        ? String((rawSlug as { current?: string | null }).current ?? '').trim()
+        : ''
+  if (slug) return slug
+  return e.route?.trim() || null
+}
+
+function resolvePrimaryLodgeForExperience(e: CmsExperience): CmsLodge | null {
+  if (e.lodge?.name) return e.lodge
+  const fromRow = e.lodgePresentationRows?.map((r) => r.lodge).find((l) => l?.name)
+  if (fromRow?.name) return fromRow
+  const days = [...(e.itinerary ?? [])].sort((a, b) => (a.dayNumber ?? 0) - (b.dayNumber ?? 0))
+  for (const d of days) {
+    if (d.overnight?.mode === 'none') continue
+    const ld = d.overnightLodge
+    if (ld?.name) return ld
+  }
+  return null
+}
+
+function lodgeModifiersFor(e: CmsExperience, lodgeId: string | undefined | null): CmsLodgePresentationRow | null {
+  if (!lodgeId || !e.lodgePresentationRows?.length) return null
+  return e.lodgePresentationRows.find((r) => r.lodge?._id === lodgeId) ?? null
+}
+
+function buildFlexibleTravelerGuideCards(e: CmsExperience): BfygCard[] | null {
+  const subs = e.travelerGuideSubsections
+  if (!subs?.length) return null
+  const cards: BfygCard[] = []
+  for (let i = 0; i < subs.length; i++) {
+    const s = subs[i]!
+    const layout = s.displayType?.trim() === 'checklist' ? 'checklist' : 'qa'
+    const rawHi = s.headerIcon?.trim()
+    const headerIcon = rawHi === 'luggage' || rawHi === 'phone' ? rawHi : 'entry'
+    const id = (s._key && `bfyg-${s._key}`) || `bfyg-flex-${i}`
+    const title = (s.title && s.title.trim()) || `Section ${cards.length + 1}`
+    const defaultOpen = cards.length === 0
+
+    if (layout === 'checklist') {
+      const checklistItems = (s.rows ?? [])
+        .filter(isTravelerGuideChecklistRow)
+        .map((r) => ({
+          label: (r.label && String(r.label).trim()) || '',
+          ...(r.iconKey && String(r.iconKey).trim()
+            ? { iconKey: String(r.iconKey).trim() }
+            : {}),
+        }))
+        .filter((x): x is { label: string; iconKey?: string } => Boolean(x.label))
+      if (!checklistItems.length) continue
+      cards.push({
+        kind: 'flex',
+        flexLayout: 'checklist',
+        id,
+        defaultOpen,
+        title,
+        headerIcon,
+        items: [],
+        checklistItems,
+      })
+      continue
+    }
+
+    const items = (s.rows ?? [])
+      .filter(
+        (r): r is CmsTravelerGuideQaRowCms =>
+          r != null && typeof r === 'object' && !isTravelerGuideChecklistRow(r),
+      )
+      .map((r) => {
+        const titleCell = (r.title && String(r.title).trim()) || ''
+        const body = r.body != null ? String(r.body).trim() : ''
+        const iconKey = r.iconKey && String(r.iconKey).trim() ? String(r.iconKey).trim() : undefined
+        if (!titleCell) return null
+        return iconKey ? { title: titleCell, body, iconKey } : { title: titleCell, body }
+      })
+      .filter((x): x is { title: string; body: string; iconKey?: string } => x != null)
+    if (!items.length) continue
+    cards.push({
+      kind: 'flex',
+      flexLayout: 'qa',
+      id,
+      defaultOpen,
+      title,
+      headerIcon,
+      items,
+    })
+  }
+  if (!cards.length) return null
+  return cards
+}
+
+function mergeTravelerGuideFromCms(e: CmsExperience, l: SoqtapataExperience, out: Partial<SoqtapataExperience>): void {
+  const sections = e.travelerGuideSections
+  if (!sections?.length) return
+  const entry = sections.filter((s) => s.bucket === 'entry')
+  const packing = sections.filter((s) => s.bucket === 'packing')
+  const logistics = sections.filter((s) => s.bucket === 'logistics')
+  const c0 = l.beforeYouGo.cards[0] as { id: 'bfyg1'; defaultOpen: true; title: string; headerIcon: 'entry'; items: { title: string; body: string }[] }
+  const c1 = l.beforeYouGo.cards[1] as {
+    id: 'bfyg2'
+    defaultOpen: false
+    title: string
+    headerIcon: 'luggage'
+    lead: string
+    packItems: string[]
+  }
+  const c2 = l.beforeYouGo.cards[2] as {
+    id: 'bfyg3'
+    defaultOpen: false
+    title: string
+    headerIcon: 'phone'
+    items: { title: string; body: string }[]
+  }
+  out.beforeYouGo = { ...l.beforeYouGo, cards: [...l.beforeYouGo.cards] }
+
+  if (entry.length) {
+    const top = entry[0]!
+    const items = entry
+      .flatMap((s) =>
+        (s.pairItems ?? []).map((p) => ({
+          title: (p.title && String(p.title).trim()) || '',
+          body: (p.body && String(p.body).trim()) || '',
+        })),
+      )
+      .filter((x) => x.title)
+    if (items.length) {
+      const hi = top.headerIcon === 'luggage' || top.headerIcon === 'phone' ? 'entry' : top.headerIcon || 'entry'
+      ;(out.beforeYouGo!.cards[0] as typeof c0) = {
+        ...c0,
+        title: top.title?.trim() || c0.title,
+        headerIcon: hi as 'entry',
+        items,
+      }
+    }
+  }
+
+  if (packing.length) {
+    const top = packing[0]!
+    const packItems = packing.flatMap((s) => normalizeStringHighlightList((s.bulletItems ?? []) as unknown[]))
+    if (packItems.length) {
+      const lead =
+        packing
+          .map((s) => s.packingLead?.trim())
+          .filter(Boolean)
+          .join('\n\n') || c1.lead
+      const hi = top.headerIcon === 'entry' || top.headerIcon === 'phone' ? 'luggage' : top.headerIcon || 'luggage'
+      ;(out.beforeYouGo!.cards[1] as typeof c1) = {
+        ...c1,
+        title: top.title?.trim() || c1.title,
+        headerIcon: hi as 'luggage',
+        lead,
+        packItems,
+      }
+    }
+  }
+
+  if (logistics.length) {
+    const top = logistics[0]!
+    const items = logistics
+      .flatMap((s) =>
+        (s.pairItems ?? []).map((p) => ({
+          title: (p.title && String(p.title).trim()) || '',
+          body: (p.body && String(p.body).trim()) || '',
+        })),
+      )
+      .filter((x) => x.title)
+    if (items.length) {
+      const hi = top.headerIcon === 'entry' || top.headerIcon === 'luggage' ? 'phone' : top.headerIcon || 'phone'
+      ;(out.beforeYouGo!.cards[2] as typeof c2) = {
+        ...c2,
+        title: top.title?.trim() || c2.title,
+        headerIcon: hi as 'phone',
+        items,
+      }
+    }
+  }
+}
+
+function applySeasonLegendToWhen(
+  merged: SoqtapataWhen,
+  legend: CmsSeasonLegend | null | undefined,
+  localWhen: SoqtapataWhen,
+): SoqtapataWhen {
+  if (!legend) return merged
+  const copy = resolveSeasonLegendCopy(legend, localWhen)
+  const baseLg = localWhen.legend
+  const items: typeof baseLg.items = [
+    {
+      swatchStyle: baseLg.items[0]!.swatchStyle,
+      strong: copy.peak.label || baseLg.items[0]!.strong,
+      rest: copy.peak.description.trim()
+        ? ` — ${copy.peak.description.trim()}`
+        : baseLg.items[0]!.rest,
+    },
+    {
+      swatchStyle: baseLg.items[1]!.swatchStyle,
+      strong: copy.great.label || baseLg.items[1]!.strong,
+      rest: copy.great.description.trim()
+        ? ` — ${copy.great.description.trim()}`
+        : baseLg.items[1]!.rest,
+    },
+    {
+      swatchStyle: baseLg.items[2]!.swatchStyle,
+      strong: copy.always.label || baseLg.items[2]!.strong,
+      rest: copy.always.description.trim()
+        ? ` — ${copy.always.description.trim()}`
+        : baseLg.items[2]!.rest,
+    },
+  ]
+  return {
+    ...merged,
+    ...(legend.intro?.trim() ? { intro: legend.intro.trim() } : {}),
+    legend: {
+      eyebrow: copy.seasonKeyEyebrow,
+      items,
+    },
+  }
+}
+
+function mapKnowledgeResourcesRows(
+  rows: CmsKnowledgeResourceRow[] | null | undefined,
+): SoqtapataResourceCard[] | null {
+  if (!rows?.length) return null
+  const cards: SoqtapataResourceCard[] = []
+  let idx = 0
+  for (const r of rows) {
+    const title = (r.title && r.title.trim()) || ''
+    if (!title) continue
+    const imgUrl = r.image?.imageUrl?.trim()
+    const imgAlt = (r.image?.alt && r.image.alt.trim()) || title
+    const show = r.showCta !== false
+    const resolved = resolveSmartLinkOrLegacy(
+      r.ctaSmartLink,
+      undefined,
+      {
+        label: (r.ctaLabel && r.ctaLabel.trim()) || DEFAULT_EXPERIENCE_RESOURCE_DOWNLOAD_CTA_LABEL,
+        href: '#',
+        openInNewTab: true,
+      },
+    )
+    const href = show ? (resolved?.href?.trim() || '#') : '#'
+    const label = show ? (resolved?.label?.trim() || r.ctaLabel?.trim() || DEFAULT_EXPERIENCE_RESOURCE_DOWNLOAD_CTA_LABEL) : ''
+    const openInNewTab = show && resolved?.openInNewTab === true
+    cards.push({
+      id: r._key || `kr-${idx}`,
+      kind: 'custom',
+      previewKind: 'custom',
+      title,
+      meta: (r.text && r.text.trim()) || '',
+      downloadHref: href,
+      downloadLabel: label,
+      ...(openInNewTab ? { openInNewTab: true } : {}),
+      ...(imgUrl ? { previewImageSrc: imgUrl, previewImageAlt: imgAlt } : {}),
+    })
+    idx += 1
+  }
+  return cards.length ? cards : null
 }
 
 function cmsResourceKind(resourceType: string | null | undefined): SoqtapataResourceCard['kind'] {
@@ -522,6 +1698,7 @@ function mapExperienceResourcesFromCms(
     const meta = (r.subtitle && r.subtitle.trim()) || ''
     const imgUrl = r.previewImage?.imageUrl?.trim()
     const imgAlt = (r.previewImage?.alt && r.previewImage.alt.trim()) || title
+    const openInNewTab = /^https?:/i.test(href)
     cards.push({
       id: r._key || `resource-${idx}`,
       kind,
@@ -530,6 +1707,7 @@ function mapExperienceResourcesFromCms(
       meta,
       downloadHref: href,
       downloadLabel: label,
+      ...(openInNewTab ? { openInNewTab: true } : {}),
       ...(imgUrl ? { previewImageSrc: imgUrl, previewImageAlt: imgAlt } : {}),
     })
   }
@@ -550,16 +1728,11 @@ export function soqtapataPartialFromStructuredRow(
   const l = local
 
   const programBadge = (e.programType && PROGRAM[e.programType]) || 'Nature Core'
-  const routeBadge = e.route?.trim() ? resolveRouteLabel(e.route) : 'Camanti Route'
-  const priceLine =
-    ph?.useProductPrice !== false
-      ? ph?.priceLine?.trim() ||
-        e.priceLabel?.trim() ||
-        (e.price != null && e.price > 0 ? `USD ${e.price}` : undefined) ||
-        l.hero.price
-      : ph?.priceLine?.trim() || l.hero.price
-  const priceSubline = ph?.priceSub?.trim() || l.hero.priceSub
-  const h1 = (ph?.headline && ph.headline.trim()) || e.name?.trim() || l.hero.h1
+  const routeSlug = experienceRouteSlug(e)
+  const routeBadge = routeSlug ? resolveRouteLabel(routeSlug) : 'Camanti Route'
+  const priceLine = resolveExperienceHeroPriceLine(e, ph)
+  const priceSubline = resolveExperienceHeroPriceSub(ph)
+  const h1 = resolveExperiencePageTitle(ph, e, row.internalTitle)
   const tag = (ph?.headlineSub && ph.headlineSub.trim()) || e.tagline?.trim() || l.hero.tagline
   const badges =
     (ph?.pills && ph.pills.length > 0) ? ph.pills : [programBadge, routeBadge, e.duration || l.stats[0]?.n || '3D · 2N']
@@ -577,67 +1750,18 @@ export function soqtapataPartialFromStructuredRow(
   const bookUrl = bookHidden ? '' : (bookResolved?.href ?? l.hero.bookUrl)
   const bookLabel = bookHidden ? '' : (bookResolved?.label ?? l.hero.bookLabel)
 
-  const mainFallback = l.hero.gallery[0]?.imageSrc || ''
-  const mainUrl = e.mainImageUrl || (e.mainImage ? assetToUrl(e.mainImage, 1200, mainFallback) : null) || mainFallback
-  const gal = e.gallery && e.gallery.length > 0 ? e.gallery : null
+  const breadcrumb = buildExperiencePageBreadcrumb(h1, resolveExperienceRouteLabel(e))
 
-  const galleryCells =
-    gal && gal.length > 0
-      ? (() => {
-          const g0 = gal[0]!
-          const u0 = g0.imageUrl || (g0.image ? assetToUrl(g0.image, 900, mainUrl) : mainUrl)
-          const u1 = gal[1]
-            ? gal[1]!.imageUrl || (gal[1]!.image
-                ? assetToUrl(gal[1]!.image, 500, l.hero.gallery[1]?.imageSrc || u0)
-                : l.hero.gallery[1]?.imageSrc)
-            : l.hero.gallery[1]?.imageSrc
-          const u2 = gal[2]
-            ? gal[2]!.imageUrl || (gal[2]!.image
-                ? assetToUrl(gal[2]!.image, 500, l.hero.gallery[2]?.imageSrc || u0)
-                : l.hero.gallery[2]?.imageSrc)
-            : l.hero.gallery[2]?.imageSrc
-          const cap0 = (g0.caption && g0.caption.slice(0, 80)) || 'Main'
-          return [
-            {
-              kind: 'main' as const,
-              dataExpLb: '0',
-              ariaLabel: 'Open photo gallery, image 1',
-              imageSrc: u0,
-              imageAlt: cap0,
-            },
-            {
-              kind: 'thumb' as const,
-              dataExpLb: '0',
-              ariaLabel: 'Open photo gallery, image 1',
-              imageSrc: u1 || u0,
-              imageAlt: cap0,
-              galleryLabel: (gal[1]?.caption && gal[1]!.caption.slice(0, 40)) || 'Gallery',
-            },
-            {
-              kind: 'thumb' as const,
-              dataExpLb: '1',
-              ariaLabel: 'Open photo gallery, image 2',
-              imageSrc: u2 || u0,
-              imageAlt: (gal[2]?.caption && gal[2]!.caption.slice(0, 40)) || 'More',
-              stylePositionRelative: true,
-              galleryLabel: (gal[2]?.caption && gal[2]!.caption.slice(0, 40)) || 'Cloud forest',
-              moreBadge: l.hero.gallery[2]!.moreBadge,
-            },
-          ]
-        })()
-      : (ph?.heroImage?.imageUrl || ph?.heroImage?.image) &&
-        (() => {
-          const ov = ph.heroImage!.imageUrl || assetToUrl(ph!.heroImage!.image!, 1200, mainUrl)
-          const alt = ph!.heroImage!.alt || h1
-          return [
-            { kind: 'main' as const, dataExpLb: '0', ariaLabel: 'Hero', imageSrc: ov, imageAlt: alt },
-            ...l.hero.gallery.slice(1, 3),
-          ]
-        })()
-
-  const br = [...l.hero.breadcrumb] as (typeof l.hero)['breadcrumb']
-  const routeName = (e.routeDocument && e.routeDocument.name) || resolveRouteLabel(e.route) || (br[4] as { type: 'link'; text: string }).text
-  ;(br[4] as { type: 'link'; href: string; text: string }) = { type: 'link', href: '#', text: routeName }
+  const ratingScore = ph?.manualRatingValue?.trim() || l.hero.ratingScore
+  const ratingReviews = (() => {
+    const n = ph?.manualReviewCount
+    if (typeof n === 'number' && Number.isFinite(n) && n >= 0) {
+      const suffix = n === 1 ? 'review' : 'reviews'
+      const prov = ph?.manualReviewProviderLabel?.trim()
+      return `· ${n} ${suffix}${prov ? ` · ${prov}` : ''}`
+    }
+    return l.hero.ratingReviews
+  })()
 
   const out: Partial<SoqtapataExperience> = {
     hero: {
@@ -649,9 +1773,10 @@ export function soqtapataPartialFromStructuredRow(
       priceSub: priceSubline,
       bookUrl,
       bookLabel,
-      breadcrumb: br,
-      lodgeName: (e.lodge && e.lodge.name) || l.hero.lodgeName,
-      ...(galleryCells ? { gallery: galleryCells } : {}),
+      breadcrumb,
+      lodgeName: resolvePrimaryLodgeForExperience(e)?.name?.trim() || l.hero.lodgeName,
+      ratingScore,
+      ratingReviews,
     },
     pageNav: {
       ...l.pageNav,
@@ -665,94 +1790,110 @@ export function soqtapataPartialFromStructuredRow(
     },
   }
 
-  if (e.shortDescription || e.fullDescription) {
-    const full = (e.fullDescription && e.fullDescription.trim()) || ''
-    const parts = full.split(/\n\n+/).map((p) => p.trim()).filter(Boolean)
-    out.overview = {
-      ...l.overview,
-      h2: l.overview.h2,
-      eyebrow: l.overview.eyebrow,
-      paragraphs: [
-        (parts[0] || (e.shortDescription && e.shortDescription.trim()) || l.overview.paragraphs[0])!,
-        (parts[1] || l.overview.paragraphs[1])!,
-      ] as [string, string],
-      highlights: (() => {
-        const hl = normalizeStringHighlightList(e.highlights)
-        return hl.length > 0 ? hl : l.overview.highlights
-      })(),
-    }
-  } else if (e.highlights && e.highlights.length > 0) {
-    const hl = normalizeStringHighlightList(e.highlights)
-    if (hl.length > 0) {
-      out.overview = { ...l.overview, highlights: hl }
-    }
-  }
-
   if (e.itinerary && e.itinerary.length > 0) {
+    const localDays = l.itinerary.days
+    const lastLocal = localDays[localDays.length - 1]!
     out.itinerary = {
       ...l.itinerary,
       days: e.itinerary.map((d, i) => {
-        const id = (DAY_IDS[i] || 'day1') as 'day1' | 'day2' | 'day3'
-        const photo = d.imageUrl || (d.image ? assetToUrl(d.image, 1000, l.itinerary.days[i]!.photoSrc) : l.itinerary.days[i]!.photoSrc)
+        const template = localDays[i] ?? lastLocal
+        const id = (DAY_IDS[i] ?? (`day${i + 1}` as (typeof DAY_IDS)[number])) as (typeof l.itinerary.days)[number]['id']
+        const photo = d.imageUrl || (d.image ? assetToUrl(d.image, 1000, template.photoSrc) : template.photoSrc)
         return {
-          ...l.itinerary.days[i]!,
+          ...template,
           id,
           dayNum: String(d.dayNumber ?? i + 1),
-          title: d.title || l.itinerary.days[i]!.title,
-          subtitle: d.subtitle || l.itinerary.days[i]!.subtitle,
+          title: d.title || template.title,
+          subtitle: d.subtitle || template.subtitle,
           photoSrc: photo,
-          photoAlt: d.title || l.itinerary.days[i]!.photoAlt,
-          caption: d.photoCaption || l.itinerary.days[i]!.caption,
+          photoAlt: d.title || template.photoAlt,
+          caption: d.photoCaption || template.caption,
           timeline: (d.timeline && d.timeline.length > 0
             ? d.timeline.map((t) => ({
                 time: t.time || '',
                 title: t.title || '',
                 desc: t.description || '',
               }))
-            : l.itinerary.days[i]!.timeline) as (typeof l.itinerary)['days'][0]['timeline'],
-          lodgeBadge:
-            d.lodgeOvernight || d.lodgeSub
-              ? { name: d.lodgeOvernight || '', sub: d.lodgeSub || '' }
-              : l.itinerary.days[i]!.lodgeBadge,
+            : template.timeline) as (typeof l.itinerary)['days'][0]['timeline'],
+          lodgeBadge: (() => {
+            const mode = d.overnight?.mode
+            if (mode === 'none') return undefined
+            const lod = d.overnightLodge
+            if (lod?.name?.trim()) {
+              const mod = lodgeModifiersFor(e, lod._id)
+              const sub =
+                (mod?.highlightLabel && mod.highlightLabel.trim()) ||
+                (mod?.nightsLabel && mod.nightsLabel.trim()) ||
+                ''
+              return { name: lod.name.trim(), sub }
+            }
+            if (d.lodgeOvernight || d.lodgeSub) {
+              return { name: (d.lodgeOvernight || '').trim(), sub: (d.lodgeSub || '').trim() }
+            }
+            return template.lodgeBadge
+          })(),
         }
       }),
     }
   }
 
-  if (e.lodge && (e.lodge.name || e.lodge.shortDescription || e.lodge.mainImageUrl)) {
+  const primaryLodge = resolvePrimaryLodgeForExperience(e)
+  if (primaryLodge?.name) {
+    const mod = lodgeModifiersFor(e, primaryLodge._id)
     const ld = l.lodge
+    const smart = mod?.ctaSmartLink
+    const ctaResolved = resolveSmartLinkOrLegacy(smart, undefined, {
+      label: (mod?.ctaLabel && mod.ctaLabel.trim()) || ld.ctaLabel,
+      href: ld.ctaHref,
+      openInNewTab: false,
+    })
+    const chips =
+      mod?.highlights?.length && mod.highlights.some((x) => String(x).trim())
+        ? normalizeStringHighlightList(mod.highlights as unknown[])
+        : primaryLodge.amenities && primaryLodge.amenities.length > 0
+          ? normalizeStringHighlightList(primaryLodge.amenities as unknown[])
+          : ld.card.chips
     out.lodge = {
       ...ld,
       intro:
-        (e.lodge!.shortDescription && e.lodge!.shortDescription.trim()) || ld.intro,
+        (primaryLodge.shortDescription && primaryLodge.shortDescription.trim()) || ld.intro,
       card: {
         ...ld.card,
-        name: (e.lodge!.name && e.lodge.name.trim()) || ld.card.name,
-        imageSrc: (e.lodge.mainImageUrl && imgW(e.lodge.mainImageUrl, 500)) || ld.card.imageSrc,
-        nightBadge: (e.lodgeNightLabel && e.lodgeNightLabel.trim()) || ld.card.nightBadge,
+        name: (primaryLodge.name && primaryLodge.name.trim()) || ld.card.name,
+        imageSrc: (primaryLodge.mainImageUrl && imgW(primaryLodge.mainImageUrl, 500)) || ld.card.imageSrc,
+        nightBadge:
+          (mod?.nightsLabel && mod.nightsLabel.trim()) ||
+          (e.lodgeNightLabel && e.lodgeNightLabel.trim()) ||
+          ld.card.nightBadge,
         meta:
           [
-            formatLodgeAltitudeForSubtitle(e.lodge!.altitude),
-            e.lodge!.route?.trim() ? resolveRouteLabel(e.lodge!.route) : null,
-            e.lodge!.shortDescription,
+            formatLodgeAltitudeForSubtitle(primaryLodge.altitude),
+            primaryLodge.route?.trim() ? resolveRouteLabel(primaryLodge.route) : null,
+            primaryLodge.shortDescription,
           ]
             .filter(Boolean)
             .join(' · ') || ld.card.meta,
-        chips:
-          e.lodge.amenities && e.lodge.amenities.length > 0
-            ? normalizeStringHighlightList(e.lodge.amenities as unknown[])
-            : ld.card.chips,
+        chips,
       },
-      ctaHref: ld.ctaHref,
-      ctaLabel: ld.ctaLabel,
+      ctaHref: smartLinkIsDisabled(smart) ? ld.ctaHref : (ctaResolved?.href ?? ld.ctaHref),
+      ctaLabel: smartLinkIsDisabled(smart) ? ld.ctaLabel : (ctaResolved?.label ?? (mod?.ctaLabel && mod.ctaLabel.trim()) ?? ld.ctaLabel),
     }
   }
 
   if (e.wildlife && e.wildlife.length > 0) {
-    out.wildlife = {
-      ...l.wildlife,
-      species: e.wildlife.map((s, i) => {
-        const fallback = l.wildlife.species[i]
+    let wRows = [...e.wildlife]
+    if (row.wildlifeOrderKeys?.length) {
+      const picked = pickByKeys(wRows as { _key?: string | null }[], row.wildlifeOrderKeys)
+      if (picked?.length) wRows = picked as CmsWildlifeItem[]
+    } else if (row.wildlifeDisplayOrder?.length) {
+      const p = pickByIndices(wRows, row.wildlifeDisplayOrder)
+      if (p?.length) wRows = p
+    }
+    let species = wRows.map((s, i) => {
+        const nameMatch = s.name
+          ? l.wildlife.species.find((sp) => (sp.name || '').trim() === (s.name || '').trim())
+          : undefined
+        const fallback = nameMatch ?? l.wildlife.species[i] ?? l.wildlife.species[0]!
         const cmsImg = s.imageUrl ? imgW(s.imageUrl, 960) : null
         const badgeTrim = (s.badge && s.badge.trim()) || fallback?.badge
         const base = {
@@ -778,40 +1919,29 @@ export function soqtapataPartialFromStructuredRow(
           ...photo,
           ...(badgeTrim ? { badge: badgeTrim } : {}),
         }
-      }),
+      })
+    out.wildlife = {
+      ...l.wildlife,
+      species,
     }
   }
 
-  if ((e.includes && e.includes.length > 0) || (e.notIncludes && e.notIncludes.length > 0)) {
-    const yes = normalizeStringHighlightList(e.includes)
-    const no = normalizeStringHighlightList(e.notIncludes)
-    out.includes = {
-      ...l.includes,
-      yes: yes.length > 0 ? yes : l.includes.yes,
-      no: no.length > 0 ? no : l.includes.no,
-    }
-  }
-
-  if (e.groupSizeMax != null || e.altitude || e.distanceFromCusco || e.ecosystem || e.duration) {
-    const st = l.stats
-    out.stats = [
-      { n: (e.duration && e.duration.trim()) || st[0]!.n, l: st[0]!.l },
-      { n: (e.distanceFromCusco && e.distanceFromCusco.trim()) || st[1]!.n, l: st[1]!.l },
-      { n: formatLodgeAltitudeForSubtitle(e.altitude) ?? st[2]!.n, l: st[2]!.l },
-      { n: (e.groupSizeMax != null ? `Max ${e.groupSizeMax}` : st[3]!.n) || st[3]!.n, l: st[3]!.l },
-      { n: st[4]!.n, l: st[4]!.l },
-      { n: (e.ecosystem && e.ecosystem.trim()) || st[5]!.n, l: st[5]!.l },
-    ]
-  }
 
   if (e.bestTimeByMonth && e.bestTimeByMonth.length === 12) {
-    out.when = {
+    const tierLabels = resolveSeasonLegendCopy(e.seasonLegend, l.when)
+    const mergedWhen = {
       ...l.when,
-      months: e.bestTimeByMonth.map((m, i) => whenMonthFromCms(m, l.when, i)),
+      months: e.bestTimeByMonth.map((m, i) => whenMonthFromCms(m, l.when, i, tierLabels)),
     } as SoqtapataWhen
+    out.when = e.seasonLegend ? applySeasonLegendToWhen(mergedWhen, e.seasonLegend, l.when) : mergedWhen
   }
 
-  if (e.entryRequirements?.length || e.packingList?.length || e.gettingHereInfo?.length) {
+  const flexCards = buildFlexibleTravelerGuideCards(e)
+  if (flexCards) {
+    out.beforeYouGo = { ...l.beforeYouGo, cards: flexCards }
+  } else if (e.travelerGuideSections?.length) {
+    mergeTravelerGuideFromCms(e, l, out)
+  } else if (e.entryRequirements?.length || e.packingList?.length || e.gettingHereInfo?.length) {
     const c0 = l.beforeYouGo.cards[0] as { id: string; items: { title: string; body: string }[] }
     const c1 = l.beforeYouGo.cards[1] as { id: string; packItems: string[]; lead: string }
     const c2 = l.beforeYouGo.cards[2] as { id: string; items: { title: string; body: string }[] }
@@ -833,39 +1963,28 @@ export function soqtapataPartialFromStructuredRow(
     }
   }
 
-  if (e.cancellationPolicy?.trim() || e.termsAndConditions?.trim() || (e.importantNotes && e.importantNotes.length > 0)) {
-    const tc = l.terms
-    const cards = tc.cards.map((c, i) => {
-      if (i === 0 && e.cancellationPolicy && e.cancellationPolicy.trim()) {
-        return { ...c, body: e.cancellationPolicy.trim() }
-      }
-      if (i === 1 && e.termsAndConditions && e.termsAndConditions.trim()) {
-        return { ...c, body: e.termsAndConditions.trim() }
-      }
-      if (i === 4 && e.importantNotes && e.importantNotes.length > 0) {
-        return { ...c, body: [c.body, e.importantNotes.join('\n')].filter(Boolean).join('\n\n') }
-      }
-      return c
-    })
-    out.terms = { ...tc, cards }
+  const useKnowledgeResources = Boolean(e.knowledgeResources?.length)
+  let expRes = useKnowledgeResources ? e.knowledgeResources : e.resources
+  if (row.resourcesFromExperienceKeys?.length && expRes && expRes.length > 0) {
+    expRes = (curateKeyedRowsStrict(
+      expRes as { _key?: string | null }[],
+      row.resourcesFromExperienceKeys,
+      'resources',
+    ) ?? []) as typeof expRes
+  } else if (row.resourcesFromExperienceOrder?.length && expRes && expRes.length > 0) {
+    const p = pickByIndices(expRes as unknown[], row.resourcesFromExperienceOrder)
+    if (p?.length) expRes = p as typeof expRes
   }
-
-  const pageRes = row.resources
-  const pageCards = mapExperienceResourcesFromCms(pageRes?.cards ?? null)
-  const expCards = mapExperienceResourcesFromCms(e.resources)
+  const expCards = useKnowledgeResources
+    ? mapKnowledgeResourcesRows(expRes as CmsKnowledgeResourceRow[])
+    : mapExperienceResourcesFromCms(expRes as CmsExperienceResourceRow[])
   const previewBase = {
-    mapPreviewTitle:
-      (pageRes?.mapPreviewTitle && pageRes.mapPreviewTitle.trim()) || l.resources.mapPreviewTitle,
-    mapPreviewSubtitle:
-      (pageRes?.mapPreviewSubtitle && pageRes.mapPreviewSubtitle.trim()) || l.resources.mapPreviewSubtitle,
-    brochurePreviewBadge:
-      (pageRes?.brochurePreviewBadge && pageRes.brochurePreviewBadge.trim()) ||
-      l.resources.brochurePreviewBadge,
+    mapPreviewTitle: l.resources.mapPreviewTitle,
+    mapPreviewSubtitle: l.resources.mapPreviewSubtitle,
+    brochurePreviewBadge: l.resources.brochurePreviewBadge,
   }
 
-  if (pageCards) {
-    out.resources = { ...l.resources, ...previewBase, cards: pageCards }
-  } else if (expCards) {
+  if (expCards) {
     out.resources = { ...l.resources, ...previewBase, cards: expCards }
   } else if (e.mapPdfUrl || e.brochurePdfUrl) {
     const res = l.resources
@@ -879,18 +1998,20 @@ export function soqtapataPartialFromStructuredRow(
       return c
     })
     out.resources = { ...res, ...previewBase, cards }
-  } else if (
-    pageRes?.mapPreviewTitle?.trim() ||
-    pageRes?.mapPreviewSubtitle?.trim() ||
-    pageRes?.brochurePreviewBadge?.trim()
-  ) {
-    out.resources = { ...l.resources, ...previewBase, cards: l.resources.cards }
   }
 
   if (e.faqs && e.faqs.length > 0) {
+    let faqList = [...e.faqs]
+    if (row.faqOrderKeys?.length) {
+      faqList = (curateKeyedRowsStrict(faqList as { _key?: string | null }[], row.faqOrderKeys, 'faq') ??
+        []) as typeof faqList
+    } else if (row.faqDisplayOrder?.length) {
+      const p = pickByIndices(faqList, row.faqDisplayOrder)
+      if (p?.length) faqList = p
+    }
     out.faq = {
       ...l.faq,
-      items: e.faqs.map((f, i) => ({
+      items: faqList.map((f, i) => ({
         id: `faq${i + 1}`,
         question: f.question || '',
         answer: f.answer || '',
@@ -898,21 +2019,12 @@ export function soqtapataPartialFromStructuredRow(
     }
   }
 
-  if (e.videoUrl || (e.gallery && e.gallery.length > 0)) {
-    const m = l.media
-    const videoImg =
-      (e.mainImage && assetToUrl(e.mainImage, 1200, m.video.imageSrc)) ||
-      (e.gallery && e.gallery[0] && (e.gallery[0]!.imageUrl || (e.gallery[0]!.image && assetToUrl(e.gallery[0]!.image!, 1200, m.video.imageSrc)))) ||
-      m.video.imageSrc
-    out.media = {
-      ...m,
-      video: {
-        ...m.video,
-        imageSrc: videoImg,
-        imageAlt: (e.videoTitle && e.videoTitle.trim()) || m.video.imageAlt,
-        filmPill: h1,
-        officialPill: m.video.officialPill,
-      },
+  if (out.terms) {
+    if (row.termsDownloadLabel?.trim()) {
+      out.terms = { ...out.terms, pdfDownloadLabel: row.termsDownloadLabel.trim() }
+    }
+    if (row.termsDownloadEnabled === false) {
+      out.terms = { ...out.terms, pdfHref: '#' }
     }
   }
 
@@ -1020,14 +2132,19 @@ function orderRelatedByRefs(
 ): CmsRelatedExperience[] {
   if (!docs?.length) return []
   if (!refIds?.length) return docs
-  const m = new Map(docs.map((d) => [d._id, d]))
+  const m = new Map<string, CmsRelatedExperience>()
+  for (const d of docs) {
+    if (d.pageId) m.set(d.pageId, d)
+    m.set(d._id, d)
+  }
   return refIds.map((id) => m.get(id)).filter((x): x is CmsRelatedExperience => x != null)
 }
 
-function relatedExperienceToCard(
-  exp: CmsRelatedExperience,
-  fallbackImage: string,
-): SoqtapataRelatedCardImage {
+function relatedExperienceToCard(exp: CmsRelatedExperience): SoqtapataRelatedCardImage | null {
+  const name = (exp.name && exp.name.trim()) || ''
+  if (!name) return null
+  const imageSrc = exp.mainImageUrl?.trim() || ''
+
   const programLabel = (exp.programType && PROGRAM[exp.programType]) || 'Experience'
   const routeLabel = exp.route?.trim() ? resolveRouteLabel(exp.route) : ''
   const pillLeft = programLabel
@@ -1042,9 +2159,11 @@ function relatedExperienceToCard(
   let price = '—'
   if (exp.price != null && exp.price > 0) price = `from $${exp.price}`
   else if (exp.priceLabel && exp.priceLabel.trim()) price = exp.priceLabel.trim()
+  const pageSlug = exp.slug?.trim()
+  const ctaHref = pageSlug ? `/experiences/${pageSlug}` : undefined
   return {
     kind: 'image',
-    imageSrc: (exp.mainImageUrl && exp.mainImageUrl.trim()) || fallbackImage,
+    imageSrc,
     imageAlt: (exp.name && exp.name.trim()) || 'Experience',
     pillLeft,
     pillRight,
@@ -1053,14 +2172,10 @@ function relatedExperienceToCard(
     meta,
     price,
     footRight: 'View →',
+    ...(ctaHref ? { ctaHref } : {}),
   }
 }
 
-/**
- * Aplica `relatedSection*`, `relatedExperienceRefs` (orden de la landing) y `reserveBlock` del documento
- * `experiencePage` sobre el fallback local. Sin refs de relacionadas: se mantienen las cards locales;
- * título/eyebrow de sección se pueden seguir poniendo por CMS aunque no haya refs.
- */
 /**
  * Construye el documento mínimo `experiencePage` en memoria (Studio) para reutilizar
  * `alsoBookFromStructuredRow` y mostrar el mismo texto que en la ruta pública.
@@ -1069,7 +2184,7 @@ export function buildSoqtapataStudioPreviewRow(p: {
   relatedSectionEyebrow?: string | null
   relatedSectionTitle?: string | null
   relatedRefIds: string[]
-  relatedExperiencesFromLanding: CmsRelatedExperience[] | null | undefined
+  relatedExperiencesFromLanding: CmsRelatedLandingRow[] | null | undefined
   reserveCtaSettings?: ReserveCtaSettingsGroq
   reserveBlock?: CmsReserveBlock | null
 }): SoqtapataStructuredPageRow {
@@ -1084,9 +2199,14 @@ export function buildSoqtapataStudioPreviewRow(p: {
   }
 }
 
+/**
+ * Aplica refs relacionadas (orden) y CTAs legacy / reserve.
+ * Copy “Also like” viene de **sectionModules** (`applySoqtapataSectionPresentation`); `relatedSection*` ya no aplica aquí.
+ */
 export function alsoBookFromStructuredRow(
   row: SoqtapataStructuredPageRow,
   local: SoqtapataExperience,
+  pageBookingSummary?: ExperienceBookingSummary | null,
 ): { also: SoqtapataAlsoCamanti; book: SoqtapataBook } {
   if (!row) {
     return { also: local.also, book: local.book }
@@ -1094,17 +2214,61 @@ export function alsoBookFromStructuredRow(
   const lAlso = local.also
   const lBook = local.book
   const refIds = row.relatedRefIds || []
-  const ordered = orderRelatedByRefs(row.relatedExperiencesFromLanding, refIds)
-  const fallbackImage =
-    lAlso.cards.find((c): c is SoqtapataRelatedCardImage => c.kind === 'image')?.imageSrc ||
-    'https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=600&q=80'
+  const relatedProducts = relatedProductsFromLanding(row.relatedExperiencesFromLanding)
+  const ordered = orderRelatedByRefs(relatedProducts, refIds)
 
-  const eyebrow = strOrNull(row.relatedSectionEyebrow) ?? lAlso.eyebrow
-  const h2 = strOrNull(row.relatedSectionTitle) ?? lAlso.h2
-  const cards: SoqtapataAlsoCamanti['cards'] =
-    ordered.length > 0 ? ordered.map((exp) => relatedExperienceToCard(exp, fallbackImage)) : lAlso.cards
+  const cards: SoqtapataAlsoCamanti['cards'] = []
+  for (const exp of ordered) {
+    const card = relatedExperienceToCard(exp)
+    if (card) cards.push(card)
+  }
 
-  const also: SoqtapataAlsoCamanti = { ...lAlso, eyebrow, h2, cards }
+  if (row.showTailorMade) {
+    const legacyTailor = lAlso.cards.find((c): c is SoqtapataRelatedCardTailor => c.kind === 'tailor')
+    const priceLine = row.tailorMadeCtaLabel?.trim() || legacyTailor?.footLeft || 'Custom pricing'
+    const cta = resolveSmartLinkOrLegacy(
+      row.tailorMadeCtaSmartLink,
+      undefined,
+      {
+        label: legacyTailor?.footRight || 'Enquire →',
+        href: '#',
+        openInNewTab: false,
+      },
+      { pageBookingSummary: pageBookingSummary ?? null },
+    )
+    const tailorImageSrc =
+      row.tailorMadeImageUrl?.trim() ||
+      (row.tailorMadeImage ? assetToUrl(row.tailorMadeImage, 800, '') : '')
+    const tailorCard: SoqtapataRelatedCardTailor = {
+      kind: 'tailor',
+      typeLabel: row.tailorMadeEyebrow?.trim() || legacyTailor?.typeLabel || 'Tailor Made',
+      name: row.tailorMadeTitle?.trim() || legacyTailor?.name || '',
+      meta: row.tailorMadeBody?.trim() || legacyTailor?.meta || '',
+      footLeft: priceLine,
+      footRight: cta?.label?.trim() || legacyTailor?.footRight || 'Enquire →',
+      ...(tailorImageSrc ? { imageSrc: tailorImageSrc } : {}),
+      ...(row.tailorMadeAlt?.trim() || legacyTailor?.imageAlt
+        ? { imageAlt: row.tailorMadeAlt?.trim() || legacyTailor?.imageAlt }
+        : {}),
+    }
+    if (cta?.bookingModal) {
+      tailorCard.bookingModal = cta.bookingModal
+      if (cta.bookingSummary) tailorCard.bookingSummary = cta.bookingSummary
+    } else if (cta?.href?.trim() && cta.href !== '#') {
+      tailorCard.ctaHref = cta.href
+      tailorCard.ctaOpenInNewTab = cta.openInNewTab
+      tailorCard.ctaRel = cta.rel
+    }
+    cards.push(tailorCard)
+  }
+
+  const also: SoqtapataAlsoCamanti = {
+    eyebrow: lAlso.eyebrow,
+    h2: lAlso.h2,
+    h2Style: lAlso.h2Style,
+    lead: lAlso.lead,
+    cards,
+  }
 
   const rb = row.reserveBlock
   const wetResolved = resolveSmartLinkOrLegacy(
@@ -1196,6 +2360,7 @@ export function alsoBookFromStructuredRow(
       secondaryHref: book.whatsappUrl || rb?.whatsappUrl,
     },
     defaultTermsHref: defTermsHref,
+    pageBookingSummary: pageBookingSummary ?? null,
   })
 
   const ctaP = reserveCard.ctas.find((c) => c.variant === 'primary')
@@ -1210,8 +2375,14 @@ export function alsoBookFromStructuredRow(
     priceSmall: reserveCard.priceSuffix,
     sub: reserveCard.subline,
     rows: reserveCard.rows,
-    wetravelUrl: ctaP?.href ?? book.wetravelUrl,
+    wetravelUrl: ctaP?.bookingModal ? '' : (ctaP?.href ?? book.wetravelUrl),
     wetravelLabel: ctaP?.label ?? book.wetravelLabel,
+    ...(ctaP?.bookingModal
+      ? {
+          primaryBookingModal: ctaP.bookingModal,
+          primaryBookingSummary: ctaP.bookingSummary ?? pageBookingSummary ?? undefined,
+        }
+      : {}),
     whatsappUrl: ctaS?.href ?? book.whatsappUrl,
     whatsappLabel: ctaS?.label ?? book.whatsappLabel,
     termsHash: reserveCard.termsHref?.trim() || book.termsHash,

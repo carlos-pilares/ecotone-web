@@ -45,15 +45,23 @@ export function ExperienceMediaSoqtapata({ data }: { data: SoqtapataMedia }) {
             {data.lead}
           </p>
         ) : null}
-        <div className="video-hero">
+        <div
+          className="video-hero"
+          data-exp-lb="0"
+          role="button"
+          tabIndex={0}
+          aria-label={data.video.imageAlt}
+        >
           <img src={data.video.imageSrc} alt={data.video.imageAlt} />
-          <div className="video-overlay">
-            <div className="play-btn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--brown)">
-                <polygon points="5 3 19 12 5 21 5 3" />
-              </svg>
+          {data.video.isVideo ? (
+            <div className="video-overlay">
+              <div className="play-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--brown)">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+              </div>
             </div>
-          </div>
+          ) : null}
           <div className="video-meta">
             <span className="video-meta-pill video-meta-pill--film">{data.video.filmPill}</span>
             <span className="video-meta-pill video-meta-pill--accent">{data.video.officialPill}</span>
@@ -63,16 +71,18 @@ export function ExperienceMediaSoqtapata({ data }: { data: SoqtapataMedia }) {
           {data.thumbs.map((t, i) => (
             <MediaThumb key={`${i}-${t.imageAlt}`} t={t} />
           ))}
-          <div
-            className="media-count"
-            data-exp-lb={data.moreCount.dataExpLb}
-            role="button"
-            tabIndex={0}
-            aria-label={data.moreCount.ariaLabel}
-          >
-            <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--n900)' }}>{data.moreCount.countLabel}</span>
-            <span style={{ fontSize: 12, fontWeight: 300, color: 'var(--n400)' }}>{data.moreCount.subLabel}</span>
-          </div>
+          {data.moreCount ? (
+            <div
+              className="media-count"
+              data-exp-lb={data.moreCount.dataExpLb}
+              role="button"
+              tabIndex={0}
+              aria-label={data.moreCount.ariaLabel}
+            >
+              <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--n900)' }}>{data.moreCount.countLabel}</span>
+              <span style={{ fontSize: 12, fontWeight: 300, color: 'var(--n400)' }}>{data.moreCount.subLabel}</span>
+            </div>
+          ) : null}
         </div>
       </div>
     </section>

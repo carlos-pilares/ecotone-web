@@ -1,4 +1,14 @@
 import {defineField, defineType} from 'sanity'
+import {
+  experienceGalleryItem,
+  experienceItineraryOvernight,
+  experienceKnowledgeResource,
+  experienceLodgePresentationRow,
+  experienceSeasonLegend,
+  experienceTermsPanel,
+  experienceTravelerGuideSection,
+  experienceTravelerGuideSubsection,
+} from './objects/experienceKnowledgeObjects'
 
 const PROGRAM_TYPE_OPTIONS = [
   {title: 'Nature Core', value: 'nature-core'},
@@ -16,13 +26,6 @@ const ROUTE_OPTIONS = [
 const STATUS_OPTIONS = [
   {title: 'Activo (visible y bookeable)', value: 'active'},
   {title: 'Coming soon (visible sin booking)', value: 'coming-soon'},
-]
-
-const GALLERY_CATEGORY = [
-  {title: 'Trail & Wildlife', value: 'trail-wildlife'},
-  {title: 'Lodge', value: 'lodge'},
-  {title: 'Drone footage', value: 'drone-footage'},
-  {title: 'Research station', value: 'research'},
 ]
 
 const WILDLIFE_ICONS = [
@@ -54,10 +57,11 @@ const MONTHS = [
   {title: 'Diciembre', value: 'december'},
 ]
 
-const SEASONAL_LEVELS = [
-  {title: 'Verde — Siempre bueno', value: 'always-good'},
-  {title: 'Ámbar ★ — Gran temporada', value: 'good'},
-  {title: 'Marrón ★★ — Temporada pico', value: 'peak'},
+/** Canonical month band: peak → two stars · great → one star · always → neutral bar, no stars. Legacy values still accepted in the API. */
+const SEASON_MONTH_LEVEL = [
+  {title: 'Peak — strongest band, two ★★', value: 'peak'},
+  {title: 'Great — medium band, one ★', value: 'great'},
+  {title: 'Always worthwhile — neutral band, no ★', value: 'always'},
 ]
 
 const imgHot = {hotspot: true}
@@ -69,17 +73,19 @@ export const experience = defineType({
   groups: [
     {name: 'identity', title: '① Identidad', default: true},
     {name: 'media', title: '② Media'},
-    {name: 'content', title: '③ Contenido'},
+    {name: 'content', title: '③ Overview · datos'},
     {name: 'itinerary', title: '④ Itinerario'},
-    {name: 'logistics', title: '⑤ Logística'},
-    {name: 'wildlife', title: '⑥ Wildlife'},
-    {name: 'tech', title: '⑦ Tecnología'},
-    {name: 'seasonal', title: '⑧ Cuándo ir'},
-    {name: 'practical', title: '⑨ Antes de viajar'},
-    {name: 'terms', title: '⑩ Términos'},
-    {name: 'resources', title: '⑪ Recursos'},
-    {name: 'faq', title: '⑫ FAQs'},
-    {name: 'seo', title: '⑬ SEO'},
+    {name: 'lodges', title: '⑤ Lodges'},
+    {name: 'logistics', title: '⑥ Logística'},
+    {name: 'wildlife', title: '⑦ Wildlife'},
+    {name: 'tech', title: '⑧ Tecnología'},
+    {name: 'seasonal', title: '⑨ Cuándo ir'},
+    {name: 'practical', title: '⑩ Guía viajero'},
+    {name: 'terms', title: '⑪ Términos'},
+    {name: 'resources', title: '⑫ Recursos'},
+    {name: 'related', title: '⑬ Relacionadas'},
+    {name: 'faq', title: '⑭ FAQs'},
+    {name: 'seo', title: '⑮ SEO'},
   ],
   fields: [
     // --- Identity ---
@@ -110,12 +116,22 @@ export const experience = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'routeRef',
+      title: 'Route',
+      type: 'reference',
+      to: [{type: 'route'}],
+      group: 'identity',
+      description:
+        'Canonical route from **Route Knowledge Center**. Display name comes from that document; slug drives filters and resolving.',
+    }),
+    defineField({
       name: 'route',
-      title: 'Ruta',
+      title: 'Route slug (legacy)',
       type: 'string',
       group: 'identity',
+      hidden: true,
       options: {list: ROUTE_OPTIONS, layout: 'radio'},
-      validation: (Rule) => Rule.required(),
+      description: 'Deprecated — use Route reference. Kept for migration.',
     }),
     defineField({
       name: 'status',
@@ -176,11 +192,13 @@ export const experience = defineType({
     }),
     defineField({
       name: 'fullDescription',
-      title: 'Descripción completa (Overview)',
+      title: 'Descripción overview (legacy)',
       type: 'text',
       group: 'identity',
       rows: 6,
-      description: 'Descripción larga del Overview. Máx 600 caracteres. 2-3 párrafos cortos.',
+      hidden: true,
+      description:
+        'Deprecated: editorial overview body belongs on **Experience page**. Highlights stay here as product facts.',
       validation: (Rule) => Rule.max(600),
     }),
 
@@ -197,77 +215,50 @@ export const experience = defineType({
     }),
     defineField({
       name: 'gallery',
-      title: 'Galería',
+      title: 'Media gallery',
       type: 'array',
       group: 'media',
-      of: [
-        {
-          type: 'object',
-          name: 'galleryItem',
-          fields: [
-            defineField({
-              name: 'image',
-              title: 'Imagen',
-              type: 'image',
-              options: imgHot,
-              validation: (Rule) => Rule.required(),
-              description: '1200×800px mínimo, ratio 3:2',
-            }),
-            defineField({
-              name: 'caption',
-              title: 'Pie de foto / overlay',
-              type: 'string',
-              description: 'Texto que aparece sobre la imagen en la galería. Máx 80 caracteres.',
-              validation: (Rule) => Rule.max(80),
-            }),
-            defineField({
-              name: 'category',
-              title: 'Categoría',
-              type: 'string',
-              options: {list: GALLERY_CATEGORY, layout: 'dropdown'},
-              description: 'Filtra las fotos en los tabs de la galería.',
-            }),
-          ],
-          preview: {select: {title: 'caption', media: 'image', subtitle: 'category'}},
-        },
-      ],
-      description: 'Galería completa de la experiencia. Recomendado: 1200×800px, ratio 3:2. Máx 20 fotos.',
+      of: [{type: 'experienceGalleryItem'}],
+      description:
+        'Photos and videos for this experience. Each landing page picks and orders items from this list.',
       validation: (Rule) => Rule.max(20),
     }),
     defineField({
       name: 'videoUrl',
-      title: 'URL del vídeo',
+      title: 'URL del vídeo (legacy)',
       type: 'url',
       group: 'media',
-      description:
-        'URL del video principal. YouTube o Vimeo. La sección See it before you go solo aparece si hay video o fotos de galería.',
+      hidden: true,
+      description: 'Deprecated — add videos as **Media gallery** items (type Video). Kept for migration.',
     }),
     defineField({
       name: 'videoTitle',
-      title: 'Título del video',
+      title: 'Título del video (legacy)',
       type: 'string',
       group: 'media',
-      description: 'Título del video. Aparece en el badge sobre el player. Máx 60 caracteres.',
+      hidden: true,
       validation: (Rule) => Rule.max(60),
+      description: 'Deprecated — use a video media item title instead.',
     }),
     defineField({
       name: 'videoDuration',
-      title: 'Duración',
+      title: 'Duración (legacy)',
       type: 'string',
       group: 'media',
-      description: 'Duración. Ej: 3:24. Máx 8 caracteres.',
+      hidden: true,
       validation: (Rule) => Rule.max(8),
+      description: 'Deprecated.',
     }),
 
     // --- Content (highlights) ---
     defineField({
       name: 'highlights',
-      title: 'Highlights (Overview)',
+      title: 'Overview highlights / product facts',
       type: 'array',
       group: 'content',
       of: [{type: 'string', validation: (Rule) => Rule.max(100)}],
       description:
-        'Bullets del Overview. Máx 5. Cada item máx 100 caracteres. Usa verbos en infinitivo: Fly the canopy with EcoDroneView®.',
+        'Short factual bullets only (no editorial overview body — that lives on Experience pages). Max 5 lines.',
       validation: (Rule) => Rule.max(5),
     }),
 
@@ -353,22 +344,43 @@ export const experience = defineType({
               validation: (Rule) => Rule.max(8),
             }),
             defineField({
+              name: 'overnight',
+              title: 'Overnight lodging',
+              type: 'experienceItineraryOvernight',
+              description:
+                'Pick the lodge guests stay at after this day, or “no lodge” on the final travel day.',
+            }),
+            defineField({
               name: 'lodgeOvernight',
-              title: 'Lodge (noche)',
+              title: 'Lodge label (legacy)',
               type: 'string',
-              description: 'Dejar vacío en el último día. Máx 50 caracteres.',
+              hidden: true,
               validation: (Rule) => Rule.max(50),
+              description: 'Deprecated — use Overnight lodging.',
             }),
             defineField({
               name: 'lodgeSub',
-              title: 'Detalle alojamiento',
+              title: 'Detalle alojamiento (legacy)',
               type: 'string',
-              description: 'Ej: Private bungalow · full board. Máx 70 caracteres.',
+              hidden: true,
               validation: (Rule) => Rule.max(70),
+              description: 'Deprecated.',
             }),
           ],
         },
       ],
+    }),
+
+    // --- Lodges (presentation per lodge used on this programme) ---
+    defineField({
+      name: 'lodgePresentationRows',
+      title: 'Lodges on this programme',
+      type: 'array',
+      group: 'lodges',
+      of: [{type: 'experienceLodgePresentationRow'}],
+      description:
+        'One row per lodge guests stay at (typically matches itinerary overnight lodges). Sets nights label, bullets and CTA for **Your lodge** — name and description always come from Lodge KC.',
+      validation: (Rule) => Rule.max(8),
     }),
 
     // --- Logistics ---
@@ -392,18 +404,20 @@ export const experience = defineType({
     }),
     defineField({
       name: 'lodge',
-      title: 'Lodge principal',
+      title: 'Lodge principal (legacy)',
       type: 'reference',
       to: [{type: 'lodge'}],
       group: 'logistics',
-      description: "Lodge principal. Aparece en Where you'll stay.",
+      hidden: true,
+      description: 'Deprecated — use Lodges tab + itinerary overnight references.',
     }),
     defineField({
       name: 'lodgeNightLabel',
-      title: 'Etiqueta de noches',
+      title: 'Etiqueta de noches (legacy)',
       type: 'string',
       group: 'logistics',
-      description: 'Ej: Nights 1 & 2 · Night 2 only. Máx 30 caracteres.',
+      hidden: true,
+      description: 'Deprecated — use Lodges tab.',
       validation: (Rule) => Rule.max(30),
     }),
     defineField({
@@ -411,7 +425,9 @@ export const experience = defineType({
       title: 'Grupo mín.',
       type: 'number',
       group: 'logistics',
-      description: 'Tamaño mínimo del grupo.',
+      hidden: true,
+      description:
+        'Hidden from Logistics — still used for reserve/snapshot product facts where needed. Legacy data preserved.',
       validation: (Rule) => Rule.min(1),
     }),
     defineField({
@@ -419,7 +435,9 @@ export const experience = defineType({
       title: 'Grupo máx.',
       type: 'number',
       group: 'logistics',
-      description: 'Tamaño máximo del grupo. Aparece en snapshot bar como Max 8.',
+      hidden: true,
+      description:
+        'Hidden from Logistics — still used in hero snapshot stats when set. Legacy data preserved.',
       validation: (Rule) => Rule.max(20),
     }),
     defineField({
@@ -427,7 +445,9 @@ export const experience = defineType({
       title: 'Altitud (destino)',
       type: 'string',
       group: 'logistics',
-      description: 'Ej: 1,200 m · 3,400 m. Máx 20 caracteres. Aparece en snapshot bar.',
+      hidden: true,
+      description:
+        'Hidden from Logistics — still drives snapshot altitude line when set. Legacy data preserved.',
       validation: (Rule) => Rule.max(20),
     }),
     defineField({
@@ -435,7 +455,8 @@ export const experience = defineType({
       title: 'Distancia / tiempo desde Cusco',
       type: 'string',
       group: 'logistics',
-      description: 'Ej: ~2.5h · ~8h. Máx 20 caracteres. Aparece en snapshot bar.',
+      hidden: true,
+      description: 'Hidden from Logistics — still used in snapshot stats when set.',
       validation: (Rule) => Rule.max(20),
     }),
     defineField({
@@ -443,7 +464,8 @@ export const experience = defineType({
       title: 'Ecosistema',
       type: 'string',
       group: 'logistics',
-      description: 'Ej: Cloud forest · Deep jungle. Máx 30 caracteres. Aparece en snapshot bar.',
+      hidden: true,
+      description: 'Hidden from Logistics — still used in snapshot stats when set.',
       validation: (Rule) => Rule.max(30),
     }),
 
@@ -538,10 +560,12 @@ export const experience = defineType({
             }),
             defineField({
               name: 'level',
-              title: 'Nivel',
+              title: 'Season level',
               type: 'string',
-              options: {list: SEASONAL_LEVELS, layout: 'radio'},
+              options: {list: SEASON_MONTH_LEVEL, layout: 'radio'},
               validation: (Rule) => Rule.required(),
+              description:
+                'Controls the month card bar intensity and ★ markers. Editors set labels for these tiers in Season legend.',
             }),
           ],
         },
@@ -556,13 +580,42 @@ export const experience = defineType({
         }),
       ],
     }),
+    defineField({
+      name: 'seasonLegend',
+      title: 'Season legend & level definitions',
+      type: 'experienceSeasonLegend',
+      group: 'seasonal',
+      description:
+        'Legend eyebrow/intro and copy for peak / great / always-worthwhile tiers (shown next to the month grid).',
+    }),
 
     // --- Practical ---
     defineField({
-      name: 'entryRequirements',
-      title: 'Requisitos de entrada',
+      name: 'travelerGuideSubsections',
+      title: 'Traveller guide',
       type: 'array',
       group: 'practical',
+      of: [{type: 'experienceTravelerGuideSubsection'}],
+      description:
+        'Any number of accordion cards: header icon, title, and Q&A rows each. Prefer this over legacy bucket sections.',
+      validation: (Rule) => Rule.max(24),
+    }),
+    defineField({
+      name: 'travelerGuideSections',
+      title: 'Subsections (legacy — buckets)',
+      type: 'array',
+      group: 'practical',
+      hidden: true,
+      of: [{type: 'experienceTravelerGuideSection'}],
+      description: 'Deprecated — use **Traveller guide**. Kept for existing documents; resolver fallback.',
+      validation: (Rule) => Rule.max(24),
+    }),
+    defineField({
+      name: 'entryRequirements',
+      title: 'Requisitos de entrada (legacy)',
+      type: 'array',
+      group: 'practical',
+      hidden: true,
       of: [
         {
           type: 'object',
@@ -583,23 +636,23 @@ export const experience = defineType({
           ],
         },
       ],
-      description: "Requisitos. Acordeón 'Entry requirements' pre-expandido. Máx 6 items.",
       validation: (Rule) => Rule.max(6),
     }),
     defineField({
       name: 'packingList',
-      title: 'Lista de equipaje',
+      title: 'Lista de equipaje (legacy)',
       type: 'array',
       group: 'practical',
+      hidden: true,
       of: [{type: 'string', validation: (Rule) => Rule.max(60)}],
-      description: "Acordeón 'Packing list'. Máx 20 items.",
       validation: (Rule) => Rule.max(20),
     }),
     defineField({
       name: 'gettingHereInfo',
-      title: 'Cómo llegar / logística',
+      title: 'Cómo llegar (legacy)',
       type: 'array',
       group: 'practical',
+      hidden: true,
       of: [
         {
           type: 'object',
@@ -620,48 +673,71 @@ export const experience = defineType({
           ],
         },
       ],
-      description: "Acordeón 'Getting to Cusco'. Máx 4 items.",
       validation: (Rule) => Rule.max(4),
     }),
 
     // --- Terms ---
     defineField({
+      name: 'termsPanels',
+      title: 'Terms sections',
+      type: 'array',
+      group: 'terms',
+      of: [{type: 'experienceTermsPanel'}],
+      validation: (Rule) => Rule.max(10),
+      description: 'Up to 10 titled sections. Shown as accordion cards on the experience page.',
+    }),
+    defineField({
+      name: 'fullTermsPdf',
+      title: 'Full terms PDF',
+      type: 'file',
+      group: 'terms',
+      options: {accept: 'application/pdf'},
+      description: 'Download for “full terms” — surfaced via existing Terms PDF control.',
+    }),
+    defineField({
       name: 'cancellationPolicy',
-      title: 'Política de cancelación',
+      title: 'Política de cancelación (legacy)',
       type: 'text',
       group: 'terms',
       rows: 4,
-      description: 'Aparece en la sección Terms. Máx 400 caracteres.',
+      hidden: true,
       validation: (Rule) => Rule.max(400),
     }),
     defineField({
       name: 'termsAndConditions',
-      title: 'Términos y condiciones',
+      title: 'Términos — texto largo (legacy)',
       type: 'text',
       group: 'terms',
       rows: 6,
-      description: 'Términos completos. Aparece expandible en la sección Terms. Máx 800 caracteres.',
+      hidden: true,
       validation: (Rule) => Rule.max(800),
     }),
     defineField({
       name: 'importantNotes',
-      title: 'Notas importantes',
+      title: 'Notas importantes (legacy)',
       type: 'array',
       group: 'terms',
+      hidden: true,
       of: [{type: 'string', validation: (Rule) => Rule.max(100)}],
-      description: 'Bullets adicionales en la sección Terms. Máx 5 items.',
       validation: (Rule) => Rule.max(5),
     }),
 
-    // --- Resources (maps, brochure, related) ---
+    // --- Resources ---
     defineField({
-      name: 'resources',
-      title: 'Tarjetas de recursos',
+      name: 'knowledgeResources',
+      title: 'Resources',
       type: 'array',
       group: 'resources',
+      of: [{type: 'experienceKnowledgeResource'}],
+      description: 'Download / link cards (image, copy, optional CTA).',
+    }),
+    defineField({
+      name: 'resources',
+      title: 'Tarjetas de recursos (legacy)',
+      type: 'array',
+      group: 'resources',
+      hidden: true,
       of: [{type: 'experienceResourceCard'}],
-      description:
-        'Contenido editorial de la sección Resources (título, subtítulo, preview, PDF/enlace, CTA). Si esta lista tiene ítems visibles, sustituye las tarjetas de respaldo hardcodeadas en el sitio.',
     }),
     defineField({
       name: 'mapPdfUrl',
@@ -704,11 +780,13 @@ export const experience = defineType({
     }),
     defineField({
       name: 'relatedExperiences',
-      title: 'Experiencias relacionadas',
+      title: 'Experiencias relacionadas (legacy)',
       type: 'array',
-      group: 'resources',
+      group: 'related',
       of: [{type: 'reference', to: [{type: 'experience'}]}],
-      description: 'Máx 3. No te incluyas a ti mismo.',
+      hidden: true,
+      description:
+        'Deprecated — related cards are curated on each **Experience page** landing. Kept for old documents only.',
       validation: (Rule) => Rule.max(3),
     }),
 

@@ -1,7 +1,7 @@
 'use client'
 
-import { useCallback, useState } from 'react'
-import type { BfygCard, SoqtapataBeforeYouGo } from '@/data/soqtapataExperienceLocal'
+import { useCallback, useState, createElement } from 'react'
+import type { BfygCard, BfygFlexCard, SoqtapataBeforeYouGo } from '@/data/soqtapataExperienceLocal'
 
 function IconCheck() {
   return (
@@ -96,6 +96,32 @@ function CuscoIcon2() {
 }
 const CUSCO_ITEM_ICONS = [CuscoIcon0, CuscoIcon1, CuscoIcon2]
 
+type BfygRowIconComponent = (typeof ENTRY_ITEM_ICONS)[number]
+
+const FLEX_ROW_ICON_BY_KEY: Record<string, BfygRowIconComponent> = {
+  doc: ItemIcon0,
+  shield: ItemIcon1,
+  check: ItemIcon2,
+  heart: ItemIcon3,
+  package: CuscoIcon0,
+  clock: CuscoIcon1,
+  user: CuscoIcon2,
+}
+
+function FlexRowSvg({ iconKey, index }: { iconKey?: string; index: number }) {
+  const byKey = iconKey && FLEX_ROW_ICON_BY_KEY[iconKey]
+  const Cmp = byKey ?? ENTRY_ITEM_ICONS[index % ENTRY_ITEM_ICONS.length]!
+  return createElement(Cmp)
+}
+
+function isPackingCard(card: BfygCard): card is Extract<BfygCard, { id: 'bfyg2' }> {
+  return card.id === 'bfyg2'
+}
+
+function isFlexBfygCard(card: BfygCard): card is BfygFlexCard {
+  return 'kind' in card && card.kind === 'flex'
+}
+
 function BfygHeaderIcon({ k }: { k: 'entry' | 'luggage' | 'phone' }) {
   if (k === 'luggage') return <HeaderIconLuggage />
   if (k === 'phone') return <HeaderIconPhone />
@@ -166,23 +192,7 @@ function BfygCardView({
       </div>
       <div className="bfyg-body">
         <div className="bfyg-body-inner">
-          {card.id === 'bfyg1'
-            ? card.items.map((it, j) => {
-                const Ic = ENTRY_ITEM_ICONS[j]!
-                return (
-                  <div className="bfyg-item" key={it.title}>
-                    <div className="bfyg-item-icon">
-                      <Ic />
-                    </div>
-                    <div>
-                      <div className="bfyg-item-title">{it.title}</div>
-                      <div className="bfyg-item-desc">{it.body}</div>
-                    </div>
-                  </div>
-                )
-              })
-            : null}
-          {card.id === 'bfyg2' ? (
+          {isPackingCard(card) ? (
             <>
               <p
                 style={{
@@ -204,23 +214,42 @@ function BfygCardView({
                 ))}
               </div>
             </>
-          ) : null}
-          {card.id === 'bfyg3'
-            ? card.items.map((it, j) => {
-                const Ic = CUSCO_ITEM_ICONS[j]!
-                return (
-                  <div className="bfyg-item" key={it.title}>
-                    <div className="bfyg-item-icon">
-                      <Ic />
-                    </div>
-                    <div>
-                      <div className="bfyg-item-title">{it.title}</div>
-                      <div className="bfyg-item-desc">{it.body}</div>
-                    </div>
-                  </div>
-                )
-              })
-            : null}
+          ) : isFlexBfygCard(card) && card.flexLayout === 'checklist' && card.checklistItems?.length ? (
+            <div className="packing-grid">
+              {card.checklistItems.map((row, j) => (
+                <div className="packing-item" key={`${card.id}-cl-${j}-${row.label}`}>
+                  {row.iconKey ? (
+                    <span className="bfyg-checklist-icon" aria-hidden>
+                      <FlexRowSvg iconKey={row.iconKey} index={j} />
+                    </span>
+                  ) : (
+                    <IconCheck />
+                  )}
+                  {row.label}
+                </div>
+              ))}
+            </div>
+          ) : (
+            card.items.map((it, j) => (
+              <div className="bfyg-item" key={`${card.id}-${j}-${it.title}`}>
+                <div className="bfyg-item-icon">
+                  {isFlexBfygCard(card) ? (
+                    <FlexRowSvg iconKey={it.iconKey} index={j} />
+                  ) : (() => {
+                    const Cmp =
+                      card.id === 'bfyg3'
+                        ? CUSCO_ITEM_ICONS[j % CUSCO_ITEM_ICONS.length]!
+                        : ENTRY_ITEM_ICONS[j % ENTRY_ITEM_ICONS.length]!
+                    return createElement(Cmp)
+                  })()}
+                </div>
+                <div>
+                  <div className="bfyg-item-title">{it.title}</div>
+                  <div className="bfyg-item-desc">{it.body}</div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

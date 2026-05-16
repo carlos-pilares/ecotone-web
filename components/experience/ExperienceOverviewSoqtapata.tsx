@@ -22,29 +22,33 @@ export function ExperienceOverviewSoqtapata({ data }: { data: SoqtapataOverview 
             {data.lead}
           </p>
         ) : null}
-        <p
-          style={{
-            fontSize: 15,
-            fontWeight: 300,
-            color: 'var(--n700)',
-            lineHeight: 1.8,
-            maxWidth: 640,
-            marginBottom: 12,
-          }}
-        >
-          {data.paragraphs[0]}
-        </p>
-        <p
-          style={{
-            fontSize: 15,
-            fontWeight: 300,
-            color: 'var(--n700)',
-            lineHeight: 1.8,
-            maxWidth: 640,
-          }}
-        >
-          {data.paragraphs[1]}
-        </p>
+        {data.paragraphs[0]?.trim() ? (
+          <p
+            style={{
+              fontSize: 15,
+              fontWeight: 300,
+              color: 'var(--n700)',
+              lineHeight: 1.8,
+              maxWidth: 640,
+              marginBottom: 12,
+            }}
+          >
+            {data.paragraphs[0]}
+          </p>
+        ) : null}
+        {data.paragraphs[1]?.trim() ? (
+          <p
+            style={{
+              fontSize: 15,
+              fontWeight: 300,
+              color: 'var(--n700)',
+              lineHeight: 1.8,
+              maxWidth: 640,
+            }}
+          >
+            {data.paragraphs[1]}
+          </p>
+        ) : null}
         <ul className="highlights" style={{ maxWidth: 560, marginTop: 20 }}>
           {data.highlights.map((h) => (
             <li className="highlight-item" key={h}>

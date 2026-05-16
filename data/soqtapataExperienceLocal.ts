@@ -163,8 +163,20 @@ export type SoqtapataDayLodgeBadge = {
   sub: string
 }
 
+export type SoqtapataItineraryDayId =
+  | 'day1'
+  | 'day2'
+  | 'day3'
+  | 'day4'
+  | 'day5'
+  | 'day6'
+  | 'day7'
+  | 'day8'
+  | 'day9'
+  | 'day10'
+
 export type SoqtapataItineraryDay = {
-  id: 'day1' | 'day2' | 'day3'
+  id: SoqtapataItineraryDayId
   photoSrc: string
   photoAlt: string
   caption: string
@@ -558,9 +570,13 @@ export type SoqtapataMedia = {
     imageAlt: string
     filmPill: string
     officialPill: string
+    /** Main tile is a KC video item (show play chrome). */
+    isVideo?: boolean
+    videoUrl?: string
   }
   thumbs: SoqtapataMediaThumb[]
-  moreCount: { dataExpLb: string; countLabel: string; subLabel: string; ariaLabel: string }
+  /** Omitted when every gallery image is already visible in the thumb grid. */
+  moreCount?: { dataExpLb: string; countLabel: string; subLabel: string; ariaLabel: string }
 }
 
 export const soqtapataPhase4Media: SoqtapataMedia = {
@@ -790,7 +806,18 @@ export const soqtapataPhase4 = {
 /** Sin CMS: sin tarjetas inventadas; el bloque reseñas usa emptyMessage del resolver. */
 export const soqtapataPhase5Reviews: ReviewDoc[] = []
 
-export type BfygEntryItem = { title: string; body: string }
+export type BfygEntryItem = { title: string; body: string; iconKey?: string }
+
+export type BfygFlexCard = {
+  kind: 'flex'
+  flexLayout: 'qa' | 'checklist'
+  id: string
+  defaultOpen: boolean
+  title: string
+  headerIcon: 'entry' | 'luggage' | 'phone'
+  items: BfygEntryItem[]
+  checklistItems?: { label: string; iconKey?: string }[]
+}
 
 export type BfygCard =
   | {
@@ -815,6 +842,7 @@ export type BfygCard =
       headerIcon: 'phone'
       items: BfygEntryItem[]
     }
+  | BfygFlexCard
 
 export type SoqtapataBeforeYouGo = {
   eyebrow: string
@@ -974,6 +1002,7 @@ export type SoqtapataResourceCard = {
   meta: string
   downloadHref: string
   downloadLabel: string
+  openInNewTab?: boolean
   previewImageSrc?: string
   previewImageAlt?: string
 }
@@ -1014,6 +1043,8 @@ export type SoqtapataRelatedCardImage = {
   meta: string
   price: string
   footRight: string
+  /** Related experience page path (`/experiences/{slug}`). */
+  ctaHref?: string
 }
 
 export type SoqtapataRelatedCardTailor = {
@@ -1023,6 +1054,13 @@ export type SoqtapataRelatedCardTailor = {
   meta: string
   footLeft: string
   footRight: string
+  imageSrc?: string
+  imageAlt?: string
+  ctaHref?: string
+  ctaOpenInNewTab?: boolean
+  ctaRel?: string
+  bookingModal?: 'plan' | 'experience'
+  bookingSummary?: import('@/components/booking/types').ExperienceBookingSummary
 }
 
 export type SoqtapataAlsoCamanti = {
@@ -1063,6 +1101,9 @@ export type SoqtapataBook = {
   termsSuffixText?: string | null
   termsOpenInNewTab?: boolean
   termsRel?: string
+  /** When primary reserve CTA is a booking SmartLink. */
+  primaryBookingModal?: 'plan' | 'experience'
+  primaryBookingSummary?: import('@/components/booking/types').ExperienceBookingSummary
 }
 
 export const soqtapataPhase6Resources: SoqtapataResources = {

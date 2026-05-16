@@ -1,5 +1,6 @@
 import type { SoqtapataBook, SoqtapataPhase1Hero } from '@/data/soqtapataExperienceLocal'
 import type { ExperienceBookingSummary } from '@/components/booking/types'
+import { EXPERIENCE_BOOKING_PRICE_SUB } from '@/lib/buildBookingSummaryFromCms'
 
 function rowValue(rows: { label: string; value: string }[], label: string): string {
   const hit = rows.find((r) => r.label.trim().toLowerCase() === label.toLowerCase())
@@ -23,6 +24,6 @@ export function buildSoqtapataBookingSummary(hero: SoqtapataPhase1Hero, book: So
     duration: duration || rowValue(book.rows, 'Duration'),
     programType,
     priceLine: hero.price.trim(),
-    priceSub: hero.priceSub.trim() || undefined,
+    priceSub: hero.priceSub.trim() || EXPERIENCE_BOOKING_PRICE_SUB,
   }
 }

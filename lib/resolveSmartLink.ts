@@ -7,6 +7,12 @@
  * `resolveSmartLink` / `resolveLegacyLinkWithLabel` are module-private helpers — do not import them.
  */
 
+import type { ExperienceBookingSummary } from '@/components/booking/types'
+import {
+  buildBookingSummaryFromCmsExperience,
+  type CmsBookingExperienceRow,
+} from '@/lib/buildBookingSummaryFromCms'
+
 export type SmartLinkGroq = {
   enabled?: boolean | null
   label?: string | null
@@ -20,6 +26,8 @@ export type SmartLinkGroq = {
   externalUrl?: string | null
   fileUrl?: string | null
   bookFallbackUrl?: string | null
+  bookingMode?: string | null
+  bookingExperience?: CmsBookingExperienceRow | null
   emailAddress?: string | null
   whatsappNumber?: string | null
   whatsappMessage?: string | null
@@ -33,12 +41,20 @@ export type ResolvedSmartLink = {
   href: string
   openInNewTab: boolean
   rel: string
+  /** Opens PlanJourneyModal (general booking) or BookExperienceModal (specific experience). */
+  bookingModal?: 'plan' | 'experience'
+  bookingSummary?: ExperienceBookingSummary
 }
 
 export type LegacyLinkWithLabel = {
   label?: string | null
   href?: string | null
   openInNewTab?: boolean | null
+}
+
+export type ResolveSmartLinkOptions = {
+  /** Current page experience — fallback when booking link is “specific” but no ref is set. */
+  pageBookingSummary?: ExperienceBookingSummary | null
 }
 
 function sanitizeSectionId(raw: string | null | undefined): string {
@@ -123,8 +139,53 @@ function buildWhatsAppHref(number: string, message?: string | null): string {
   return `${base}?text=${encodeURIComponent(msg)}`
 }
 
+function resolveBookingSmartLink(
+  doc: SmartLinkGroq,
+  label: string,
+  fallback: ResolvedSmartLink,
+  options?: ResolveSmartLinkOptions,
+): ResolvedSmartLink {
+  const mode = doc.bookingMode?.trim() === 'specific' ? 'specific' : 'general'
+
+  if (mode === 'general') {
+    return {
+      label,
+      href: '#',
+      openInNewTab: false,
+      rel: '',
+      bookingModal: 'plan',
+    }
+  }
+
+  const fromRef = buildBookingSummaryFromCmsExperience(doc.bookingExperience ?? null)
+  const summary = fromRef ?? options?.pageBookingSummary ?? null
+  if (summary) {
+    return {
+      label,
+      href: '#',
+      openInNewTab: false,
+      rel: '',
+      bookingModal: 'experience',
+      bookingSummary: summary,
+    }
+  }
+
+  const u = validateHttpUrl(doc.bookFallbackUrl)
+  const href = u || fallback.href
+  return {
+    label,
+    href,
+    openInNewTab: doc.openInNewTab === true,
+    rel: computeRel(href, doc.openInNewTab === true),
+  }
+}
+
 /** Core resolver: returns fallback when smart link is incomplete or invalid. @internal */
-function resolveSmartLink(doc: SmartLinkGroq | null | undefined, fallback: ResolvedSmartLink): ResolvedSmartLink {
+function resolveSmartLink(
+  doc: SmartLinkGroq | null | undefined,
+  fallback: ResolvedSmartLink,
+  options?: ResolveSmartLinkOptions,
+): ResolvedSmartLink {
   const label = doc?.label?.trim() || fallback.label
   const linkType = doc?.linkType?.trim() || 'websitePage'
 
@@ -153,10 +214,8 @@ function resolveSmartLink(doc: SmartLinkGroq | null | undefined, fallback: Resol
   } else if (linkType === 'samePageSection') {
     const id = sanitizeSectionId(doc?.samePageSectionId || doc?.sectionId)
     href = id ? `#${id}` : ''
-  } else if (linkType === 'book') {
-    const u = validateHttpUrl(doc?.bookFallbackUrl)
-    href = u || fallback.href
-    if (doc?.openInNewTab != null) openInNewTab = doc.openInNewTab === true
+  } else if (linkType === 'book' || linkType === 'booking') {
+    return resolveBookingSmartLink(doc!, label, fallback, options)
   } else if (linkType === 'websitePage' || linkType === 'internalPage' || linkType === 'pageSection') {
     const base = pagePathFor(doc?.internalPage, doc?.experiencePageSlug, doc?.lodgePageSlug)
     const hash = sanitizeSectionId(doc?.websitePageSectionId ?? doc?.sectionId)
@@ -197,6 +256,8 @@ export function smartLinkIsDisabled(smart: SmartLinkGroq | null | undefined): bo
 function smartLinkIsPresent(smart: SmartLinkGroq | null | undefined): boolean {
   if (!smart || typeof smart !== 'object') return false
   if (smart.enabled === false) return false
+  const lt = smart.linkType?.trim()
+  if (lt === 'book' || lt === 'booking') return true
   return Boolean(smart.label?.trim())
 }
 
@@ -208,6 +269,7 @@ export function resolveSmartLinkOrLegacy(
   smart: SmartLinkGroq | null | undefined,
   legacy: LegacyLinkWithLabel | null | undefined,
   fallback: { label: string; href: string; openInNewTab?: boolean },
+  options?: ResolveSmartLinkOptions,
 ): ResolvedSmartLink | null {
   if (smartLinkIsDisabled(smart)) return null
 
@@ -219,7 +281,8 @@ export function resolveSmartLinkOrLegacy(
   }
 
   if (smartLinkIsPresent(smart)) {
-    const r = resolveSmartLink(smart!, fbResolved)
+    const r = resolveSmartLink(smart!, fbResolved, options)
+    if (r.bookingModal) return r
     if (r.href && r.href !== '#') return r
   }
   return resolveLegacyLinkWithLabel(legacy, fallback.label, fallback.href, fallback.openInNewTab)

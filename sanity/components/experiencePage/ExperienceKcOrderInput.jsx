@@ -1,0 +1,326 @@
+'use client'
+
+import {useCallback, useEffect, useMemo, useState} from 'react'
+import {Box, Button, Card, Checkbox, Flex, Stack, Text} from '@sanity/ui'
+import {PatchEvent, set, useClient, useFormValue} from 'sanity'
+import {experienceKcOrderDocProjection} from './experienceKcOrderDocProjection'
+import {highlightListKeyAt, includeListKeyAt, notIncludeListKeyAt} from '../../lib/experienceKcStringListKeys'
+
+/**
+ * Ordered multi-select of Knowledge Center rows (linked Experience document).
+ * Stores Sanity `_key` strings only; labels are loaded for display.
+ */
+function normalizeRefId(ref) {
+  if (!ref) return ''
+  if (typeof ref === 'string') return ref
+  return ref._ref || ref._id || ''
+}
+
+function lineText(item) {
+  if (typeof item === 'string') return item.trim()
+  if (item && typeof item === 'object') {
+    const raw = item.text ?? item.value ?? item.title
+    return raw != null ? String(raw).trim() : ''
+  }
+  return ''
+}
+
+function stringRowMeta(item, idx) {
+  if (typeof item === 'string') {
+    const t = item.trim()
+    return {key: `legacy-str:${idx}`, label: t || `Item ${idx + 1}`}
+  }
+  if (item && typeof item === 'object') {
+    const key = item._key || `legacy-str:${idx}`
+    const t = lineText(item)
+    return {key, label: t || `Item ${idx + 1}`}
+  }
+  return {key: `legacy-str:${idx}`, label: `Item ${idx + 1}`}
+}
+
+function keyedStringRowMeta(item, idx, rawFlat, fallbackPrefix) {
+  const key = item?._key || `${fallbackPrefix}-${idx}`
+  const t = lineText(item) || (Array.isArray(rawFlat) && typeof rawFlat[idx] === 'string' ? rawFlat[idx].trim() : '')
+  return {key, label: t || `${fallbackPrefix} ${idx + 1}`}
+}
+
+function wildlifeMeta(item, idx) {
+  const key = item?._key || `legacy-w:${idx}`
+  const name = (item?.name && String(item.name).trim()) || `Species ${idx + 1}`
+  return {key, label: name}
+}
+
+function faqMeta(item, idx) {
+  const key = item?._key || `legacy-f:${idx}`
+  const q = (item?.question && String(item.question).trim()) || `FAQ ${idx + 1}`
+  const label = q.length > 72 ? `${q.slice(0, 69)}…` : q
+  return {key, label}
+}
+
+function resourceMeta(item, idx) {
+  const key = item?._key || `legacy-r:${idx}`
+  const t = (item?.title && String(item.title).trim()) || `Resource ${idx + 1}`
+  return {key, label: t}
+}
+
+function buildOptions(source, doc) {
+  if (!doc) return []
+  switch (source) {
+    case 'overviewHighlights': {
+      const raw = doc.highlights
+      if (!Array.isArray(raw)) return []
+      return raw.map((item, idx) => {
+        const label = lineText(item) || `Highlight ${idx + 1}`
+        return {key: highlightListKeyAt(idx), label}
+      })
+    }
+    case 'wildlife': {
+      const raw = doc.wildlife
+      if (!Array.isArray(raw)) return []
+      return raw.map(wildlifeMeta)
+    }
+    case 'includes': {
+      const raw = doc.includes
+      if (!Array.isArray(raw)) return []
+      return raw.map((item, idx) => {
+        const label = lineText(item) || `Included ${idx + 1}`
+        return {key: includeListKeyAt(idx), label}
+      })
+    }
+    case 'notIncludes': {
+      const raw = doc.notIncludes
+      if (!Array.isArray(raw)) return []
+      return raw.map((item, idx) => {
+        const label = lineText(item) || `Not included ${idx + 1}`
+        return {key: notIncludeListKeyAt(idx), label}
+      })
+    }
+    case 'termsPanels': {
+      const raw = doc.termsPanels
+      if (!Array.isArray(raw)) return []
+      return raw.map((item, idx) => {
+        const key = item?._key || `terms-${idx}`
+        const t = (item?.title && String(item.title).trim()) || `Terms section ${idx + 1}`
+        const label = t.length > 72 ? `${t.slice(0, 69)}…` : t
+        return {key, label}
+      })
+    }
+    case 'importantNotes': {
+      const keyed = doc.importantNotesKeyed
+      if (Array.isArray(keyed) && keyed.length) {
+        return keyed.map((item, idx) => {
+          const key = item?._key || `note-${idx}`
+          const t = item?.text != null ? String(item.text).trim() : ''
+          return {key, label: t || `Note ${idx + 1}`}
+        })
+      }
+      const raw = doc.importantNotes
+      if (!Array.isArray(raw)) return []
+      return raw.map(stringRowMeta)
+    }
+    case 'faq': {
+      const raw = doc.faqs
+      if (!Array.isArray(raw)) return []
+      return raw.map(faqMeta)
+    }
+    case 'resources': {
+      const raw =
+        doc.knowledgeResources?.length > 0 ? doc.knowledgeResources : doc.resources
+      if (!Array.isArray(raw)) return []
+      return raw.map(resourceMeta)
+    }
+    case 'gallery': {
+      const raw = doc.gallery
+      if (!Array.isArray(raw)) return []
+      return raw.map((item, idx) => {
+        const key = item?._key || `legacy-g:${idx}`
+        const typeLabel = item?.mediaType === 'video' ? 'Video' : 'Photo'
+        const label =
+          (item?.caption && String(item.caption).trim()) ||
+          (item?.title && String(item.title).trim()) ||
+          (item?.alt && String(item.alt).trim()) ||
+          `${typeLabel} ${idx + 1}`
+        return {key, label: `${typeLabel}: ${label}`}
+      })
+    }
+    default:
+      return []
+  }
+}
+
+export function ExperienceKcOrderInput(props) {
+  const {value, onChange, schemaType} = props
+  const client = useClient({apiVersion: '2024-01-01'})
+  const experienceRef = useFormValue(['experience'])
+  const source = schemaType?.options?.kcSource
+
+  const [doc, setDoc] = useState(null)
+  const [loadErr, setLoadErr] = useState(null)
+
+  const id = normalizeRefId(experienceRef)
+
+  useEffect(() => {
+    let cancelled = false
+    async function run() {
+      if (!id) {
+        setDoc(null)
+        setLoadErr(null)
+        return
+      }
+      const pub = id.replace(/^drafts\./, '')
+      const candidates = [pub, `drafts.${pub}`]
+      setLoadErr(null)
+      try {
+        const q = `*[_id in $ids] | order(_updatedAt desc)[0] ${experienceKcOrderDocProjection}`
+        const res = await client.fetch(q, {ids: candidates})
+        if (!cancelled) setDoc(res || null)
+      } catch (e) {
+        if (!cancelled) {
+          setDoc(null)
+          setLoadErr(e?.message || 'Could not load experience')
+        }
+      }
+    }
+    run()
+    return () => {
+      cancelled = true
+    }
+  }, [client, id])
+
+  const options = useMemo(() => buildOptions(source, doc), [doc, source])
+  const optionMap = useMemo(() => new Map(options.map((o) => [o.key, o])), [options])
+
+  const selectedKeys = Array.isArray(value) ? value.filter(Boolean) : []
+
+  const emit = useCallback(
+    (next) => {
+      onChange(PatchEvent.from(set(next === undefined ? [] : next)))
+    },
+    [onChange],
+  )
+
+  const toggle = useCallback(
+    (k) => {
+      const has = selectedKeys.includes(k)
+      const next = has ? selectedKeys.filter((x) => x !== k) : [...selectedKeys, k]
+      emit(next)
+    },
+    [emit, selectedKeys],
+  )
+
+  const move = useCallback(
+    (from, to) => {
+      if (to < 0 || to >= selectedKeys.length) return
+      const next = [...selectedKeys]
+      const [x] = next.splice(from, 1)
+      next.splice(to, 0, x)
+      emit(next)
+    },
+    [emit, selectedKeys],
+  )
+
+  const onDragStart = useCallback((e, index) => {
+    e.dataTransfer.setData('text/plain', String(index))
+    e.dataTransfer.effectAllowed = 'move'
+  }, [])
+
+  const onDragOver = useCallback((e) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+  }, [])
+
+  const onDrop = useCallback(
+    (e, dropIndex) => {
+      e.preventDefault()
+      const from = Number(e.dataTransfer.getData('text/plain'))
+      if (!Number.isFinite(from)) return
+      if (from === dropIndex) return
+      move(from, dropIndex)
+    },
+    [move],
+  )
+
+  if (!id) {
+    return (
+      <Card padding={3} radius={2} border tone="transparent">
+        <Text size={1} muted>
+          Link an <strong>Experience</strong> first to load items from the Knowledge Center.
+        </Text>
+      </Card>
+    )
+  }
+
+  if (loadErr) {
+    return (
+      <Card padding={3} radius={2} border tone="critical">
+        <Text size={1}>{loadErr}</Text>
+      </Card>
+    )
+  }
+
+  if (!options.length) {
+    return (
+      <Card padding={3} radius={2} border tone="transparent">
+        <Text size={1} muted>
+          No items in the linked Experience for this list yet.
+        </Text>
+      </Card>
+    )
+  }
+
+  return (
+    <Stack space={4}>
+      <Card padding={3} radius={2} border tone="transparent">
+        <Text size={1} weight="semibold" style={{marginBottom: 10}}>
+          Selected order (drag or use arrows)
+        </Text>
+        {selectedKeys.length === 0 ? (
+          <Text size={1} muted>
+            None selected — the site shows all items in Knowledge Center order (or legacy index order if configured).
+          </Text>
+        ) : (
+          <Stack space={2}>
+            {selectedKeys.map((k, i) => (
+              <Card
+                key={k}
+                padding={2}
+                radius={1}
+                border
+                tone="default"
+                draggable
+                onDragStart={(ev) => onDragStart(ev, i)}
+                onDragOver={onDragOver}
+                onDrop={(ev) => onDrop(ev, i)}
+              >
+                <Flex align="center" gap={2}>
+                  <Text size={1} style={{flex: 1}}>
+                    {optionMap.get(k)?.label ?? k}
+                  </Text>
+                  <Button text="↑" disabled={i === 0} onClick={() => move(i, i - 1)} padding={2} />
+                  <Button text="↓" disabled={i >= selectedKeys.length - 1} onClick={() => move(i, i + 1)} padding={2} />
+                  <Button text="Remove" tone="critical" onClick={() => toggle(k)} padding={2} />
+                </Flex>
+              </Card>
+            ))}
+          </Stack>
+        )}
+      </Card>
+
+      <Card padding={3} radius={2} border tone="transparent">
+        <Text size={1} weight="semibold" style={{marginBottom: 10}}>
+          Add items
+        </Text>
+        <Stack space={2}>
+          {options.map((o) => (
+            <Flex key={o.key} align="center" gap={2}>
+              <Checkbox checked={selectedKeys.includes(o.key)} onChange={() => toggle(o.key)} />
+              <Box flex={1}>
+                <Text size={1}>{o.label}</Text>
+              </Box>
+            </Flex>
+          ))}
+        </Stack>
+      </Card>
+    </Stack>
+  )
+}

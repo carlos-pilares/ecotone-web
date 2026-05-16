@@ -3,6 +3,9 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
+import { useBookingModal } from '@/components/booking/BookingModalContext'
+import type { ExperienceBookingSummary } from '@/components/booking/types'
+
 import './reserve-cta-section.css'
 
 export type ReserveCtaDetailRow = { label: string; value: string }
@@ -16,6 +19,8 @@ export type ReserveCtaCta = {
   variant?: 'primary' | 'secondary'
   external?: boolean
   whatsappIcon?: boolean
+  bookingModal?: 'plan' | 'experience'
+  bookingSummary?: import('@/components/booking/types').ExperienceBookingSummary
 }
 
 export type ReserveCtaCardProps = {
@@ -106,10 +111,9 @@ function WhatsAppGlyph() {
 }
 
 function ReserveCtaLink({ cta }: { cta: ReserveCtaCta }) {
+  const { openPlanJourney, openExperienceBooking } = useBookingModal()
   const variant = cta.variant ?? 'primary'
   const cls = `reserve-cta-btn ${variant === 'secondary' ? 'reserve-cta-btn--secondary' : 'reserve-cta-btn--primary'}`
-  const external = cta.external === true
-  const href = cta.href.trim()
   const inner = (
     <>
       {cta.whatsappIcon ? <WhatsAppGlyph /> : null}
@@ -117,6 +121,24 @@ function ReserveCtaLink({ cta }: { cta: ReserveCtaCta }) {
     </>
   )
 
+  if (cta.bookingModal === 'plan') {
+    return (
+      <button type="button" className={cls} onClick={() => openPlanJourney()}>
+        {inner}
+      </button>
+    )
+  }
+  if (cta.bookingModal === 'experience' && cta.bookingSummary) {
+    const summary: ExperienceBookingSummary = cta.bookingSummary
+    return (
+      <button type="button" className={cls} onClick={() => openExperienceBooking(summary)}>
+        {inner}
+      </button>
+    )
+  }
+
+  const external = cta.external === true
+  const href = cta.href.trim()
   if (!external && href.startsWith('/') && !href.startsWith('//')) {
     return (
       <Link href={href} className={cls}>
@@ -168,7 +190,12 @@ export function ReserveCtaSection({
     .join(' ')
 
   const ctas = card.ctas
-    .filter((c) => (c.label ?? '').trim() && (c.href ?? '').trim())
+    .filter((c) => {
+      const label = (c.label ?? '').trim()
+      if (!label) return false
+      if (c.bookingModal) return true
+      return Boolean((c.href ?? '').trim())
+    })
     .slice(0, 2)
 
   const primaryBookModalIdx =

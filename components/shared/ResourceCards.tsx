@@ -7,6 +7,7 @@ export type ResourceCardsItem = {
   meta: string
   downloadHref: string
   downloadLabel: string
+  openInNewTab?: boolean
   previewImageSrc?: string
   previewImageAlt?: string
 }
@@ -186,7 +187,12 @@ export function ResourceCards({
             <div className="download-body">
               <div className="download-title">{card.title}</div>
               <div className="download-meta">{card.meta}</div>
-              <a href={card.downloadHref} className="download-btn" {...termsAttrs}>
+              <a
+                href={card.downloadHref}
+                className="download-btn"
+                {...termsAttrs}
+                {...(card.openInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+              >
                 <DownloadIcon />
                 {card.downloadLabel}
               </a>

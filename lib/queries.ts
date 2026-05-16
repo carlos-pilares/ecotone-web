@@ -403,6 +403,11 @@ export const experiencePageBySlugQuery = groq`
   }
 `
 
+/** Published `experiencePage` URL segments for `generateStaticParams` (same API as runtime: no drafts without preview). */
+export const experiencePageSlugsQuery = groq`
+  *[_type == "experiencePage" && defined(slug.current)].slug.current
+`
+
 /** Soqtapata landing: full `experiencePage` + dereferenced `experience`, lodge, route, reviews, tech. No `payloadV1`. */
 export const soqtapataStructuredPageBySlugQuery = groq`
   *[_type == "experiencePage" && slug.current == $slug][0] {
@@ -437,11 +442,34 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       sectionTitle,
       sectionText
     },
+    snapshotStatSelections[] {
+      slot,
+      visible
+    },
+    overviewHighlightKeys,
+    wildlifeOrderKeys,
+    includesOrderKeys,
+    notIncludesOrderKeys,
+    faqOrderKeys,
+    resourcesFromExperienceKeys,
+    overviewHighlightOrder,
+    wildlifeDisplayOrder,
+    includesDisplayOrder,
+    notIncludesDisplayOrder,
+    faqDisplayOrder,
+    resourcesFromExperienceOrder,
+    termsImportantNotesOrder,
+    termsImportantNotesKeys,
+    termsDownloadEnabled,
+    termsDownloadLabel,
     pageHero {
       eyebrow,
       headline,
       headlineSub,
       pills,
+      manualRatingValue,
+      manualReviewCount,
+      manualReviewProviderLabel,
       priceLine,
       priceSub,
       useProductPrice,
@@ -532,25 +560,58 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       _id, stableId, name, number, description, image, badgeText, badgeTextWhenExcluded, slug
     },
     includedTechProductIds,
+    lodgeCtaVisible,
     lodgeCtaLabel,
     "lodgePageSlug": lodgePageLink->slug.current,
     lodgeCtaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    termsOrderKeys,
+    galleryOrderKeys,
     relatedSectionEyebrow,
     relatedSectionTitle,
+    showTailorMade,
+    tailorMadeEyebrow,
+    tailorMadeTitle,
+    tailorMadeBody,
+    tailorMadeCtaLabel,
+    tailorMadeCtaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    tailorMadeImage,
+    "tailorMadeImageUrl": tailorMadeImage.asset->url,
+    tailorMadeAlt,
     "relatedRefIds": relatedExperienceRefs[]._ref,
     "relatedExperiencesFromLanding": relatedExperienceRefs[]-> {
       _id,
-      name,
-      tagline,
-      programType,
-      route,
-      duration,
-      price,
-      priceLabel,
-      shortDescription,
-      mainImage,
-      "mainImageUrl": mainImage.asset->url,
-      "slug": slug.current
+      _type,
+      "pageSlug": slug.current,
+      "experience": select(
+        _type == "experiencePage" => experience-> {
+          _id,
+          name,
+          tagline,
+          programType,
+          route,
+          duration,
+          price,
+          priceLabel,
+          shortDescription,
+          mainImage,
+          "mainImageUrl": mainImage.asset->url,
+          "slug": slug.current
+        },
+        {
+          _id,
+          name,
+          tagline,
+          programType,
+          route,
+          duration,
+          price,
+          priceLabel,
+          shortDescription,
+          mainImage,
+          "mainImageUrl": mainImage.asset->url,
+          "slug": slug.current
+        }
+      )
     },
     reserveCtaSettings {
       ${GROQ_RESERVE_CTA_SETTINGS_FIELDS}
@@ -604,31 +665,81 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       mainImage,
       "mainImageUrl": mainImage.asset->url,
       gallery[] {
-        caption, category,
+        _key,
+        mediaType,
+        title,
+        caption,
+        alt,
+        category,
+        videoUrl,
+        videoThumbnail,
+        "videoThumbnailUrl": videoThumbnail.asset->url,
         image,
         "imageUrl": image.asset->url
       },
       videoUrl, videoTitle, videoDuration,
       highlights,
-      itinerary[] {
+      "highlightsKeyed": highlights[] { "_key": _key, "text": @ },
+      "itinerary": itinerary | order(dayNumber asc) {
         dayNumber, title, subtitle, photoCaption,
         image,
         "imageUrl": image.asset->url,
         timeline[] { time, title, description },
-        lodgeOvernight, lodgeSub
+        lodgeOvernight, lodgeSub,
+        overnight,
+        "overnightLodge": overnight.lodge-> {
+          _id, name, shortDescription, ${GROQ_LODGE_ALTITUDE_AS_ALTITUDE}, route, amenities,
+          "mainImageUrl": mainImage.asset->url
+        }
       },
-      includes, notIncludes,
+      includes,
+      notIncludes,
+      "includesKeyed": includes[] { "_key": _key, "text": @ },
+      "notIncludesKeyed": notIncludes[] { "_key": _key, "text": @ },
       lodgeNightLabel, groupSizeMin, groupSizeMax,
       altitude, distanceFromCusco, ecosystem,
-      wildlife[] { name, description, iconType, badge, image, "imageUrl": image.asset->url },
+      wildlife[] { _key, name, description, iconType, badge, image, "imageUrl": image.asset->url },
       "includedTechProductDocs": includedTechProducts[]-> {
         _id, stableId, name, number, description, image, badgeText, badgeTextWhenExcluded, slug
       },
       bestTimeByMonth[] { month, highlight, level },
+      seasonLegend {
+        seasonKeyTitle,
+        intro,
+        peakLabel,
+        peakDescription,
+        greatLabel,
+        greatDescription,
+        alwaysLabel,
+        alwaysDescription,
+        eyebrow,
+        peak,
+        good,
+        alwaysGood
+      },
+      travelerGuideSections[] {
+        _key,
+        bucket,
+        headerIcon,
+        title,
+        packingLead,
+        pairItems[]{ iconKey, title, body },
+        bulletItems
+      },
+      travelerGuideSubsections[] {
+        _key,
+        displayType,
+        headerIcon,
+        title,
+        rows[]{ _type, _key, iconKey, title, body, label }
+      },
       entryRequirements[] { title, description },
       packingList,
       gettingHereInfo[] { title, description },
       cancellationPolicy, termsAndConditions, importantNotes,
+      "importantNotesKeyed": importantNotes[] { "_key": _key, "text": @ },
+      termsPanels[]{ _key, title, text },
+      "fullTermsPdfUrl": fullTermsPdf.asset->url,
       mapPdfUrl, mapPdfLabel, brochurePdfUrl, brochurePdfLabel,
       resources[] {
         _key,
@@ -647,15 +758,49 @@ export const soqtapataStructuredPageBySlugQuery = groq`
         visible,
         order
       },
-      faqs[] { question, answer },
+      knowledgeResources[] {
+        _key,
+        title,
+        text,
+        showCta,
+        ctaLabel,
+        ctaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
+        image {
+          alt,
+          title,
+          caption,
+          image,
+          "imageUrl": image.asset->url
+        }
+      },
+      lodgePresentationRows[] {
+        _key,
+        nightsLabel,
+        highlightLabel,
+        highlights,
+        ctaLabel,
+        ctaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
+        "lodge": lodge-> {
+          _id, name, shortDescription, ${GROQ_LODGE_ALTITUDE_AS_ALTITUDE}, route, amenities,
+          "mainImageUrl": mainImage.asset->url
+        }
+      },
+      faqs[] { _key, question, answer },
       seo,
       "lodge": lodge-> {
         _id, name, shortDescription, ${GROQ_LODGE_ALTITUDE_AS_ALTITUDE}, route, amenities,
         "mainImageUrl": mainImage.asset->url
       },
-      "routeDocument": *[_type == "route" && slug.current == ^.route][0] {
-        name, shortDescription, tagline, "slug": slug.current
-      }
+      "routeDocument": coalesce(
+        routeRef->{ name, shortLabel, shortDescription, tagline, "slug": slug.current },
+        *[_type == "route" && slug.current == ^.route][0] {
+          name,
+          shortLabel,
+          shortDescription,
+          tagline,
+          "slug": slug.current
+        }
+      )
     }
   }
 `
@@ -1270,7 +1415,15 @@ export type ExperienceCardTeaser = {
 
 export const experienceBySlugQuery = groq`
   *[_type == "experience" && slug.current == $slug][0] {
-    _id, name, slug, programType, route, status,
+    _id, name, slug, programType, route,
+    routeRef->{ "slug": slug.current, name, shortLabel },
+    "routeDocument": coalesce(
+      routeRef->{ name, shortLabel, shortDescription, tagline, "slug": slug.current },
+      *[_type == "route" && slug.current == ^.route][0] {
+        name, shortLabel, shortDescription, tagline, "slug": slug.current
+      }
+    ),
+    status,
     duration, price, priceLabel, tagline,
     shortDescription, fullDescription,
     highlights[],
@@ -1278,8 +1431,16 @@ export const experienceBySlugQuery = groq`
     "mainImageUrl": mainImage.asset->url,
     gallery[] {
       _key,
-      caption, category,
+      mediaType,
+      title,
+      caption,
+      alt,
+      category,
+      videoUrl,
+      videoThumbnail,
+      "videoThumbnailUrl": videoThumbnail.asset->url,
       image,
+      "imageUrl": image.asset->url,
       "url": image.asset->url
     },
     videoUrl, videoTitle, videoDuration,
@@ -1288,9 +1449,31 @@ export const experienceBySlugQuery = groq`
       image,
       "imageUrl": image.asset->url,
       lodgeOvernight, lodgeSub,
+      overnight,
+      "overnightLodge": overnight.lodge-> {
+        _id, name, shortDescription,
+        ${GROQ_LODGE_ALTITUDE_AS_ALTITUDE}, route, amenities,
+        "mainImageUrl": mainImage.asset->url
+      },
       timeline[] { time, title, description }
     },
     includes[], notIncludes[],
+    lodgePresentationRows[] {
+      _key,
+      nightsLabel,
+      highlightLabel,
+      highlights,
+      ctaLabel,
+      ctaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
+      "lodge": lodge-> {
+        _id, name, slug,
+        ${GROQ_LODGE_ALTITUDE_AS_ALTITUDE}, distanceFromCusco, capacity,
+        ecosystem, shortDescription, researchStation,
+        mainImage,
+        "mainImageUrl": mainImage.asset->url,
+        amenities[], roomTypes
+      }
+    },
     "lodge": lodge-> {
       _id, name, slug,
       ${GROQ_LODGE_ALTITUDE_AS_ALTITUDE}, distanceFromCusco, capacity,
@@ -1325,11 +1508,43 @@ export const experienceBySlugQuery = groq`
     },
     "includedTechIds": includedTechProducts[]-> _id,
     bestTimeByMonth[] { month, highlight, level },
+    seasonLegend {
+      seasonKeyTitle,
+      intro,
+      peakLabel,
+      peakDescription,
+      greatLabel,
+      greatDescription,
+      alwaysLabel,
+      alwaysDescription,
+      eyebrow,
+      peak,
+      good,
+      alwaysGood
+    },
+    travelerGuideSections[] {
+      _key,
+      bucket,
+      headerIcon,
+      title,
+      packingLead,
+      pairItems[]{ iconKey, title, body },
+      bulletItems
+    },
+    travelerGuideSubsections[] {
+      _key,
+      displayType,
+      headerIcon,
+      title,
+      rows[]{ _type, _key, iconKey, title, body, label }
+    },
     packingList[],
     entryRequirements[] { title, description },
     gettingHereInfo[] { title, description },
     cancellationPolicy, termsAndConditions,
     importantNotes[],
+    termsPanels[]{ _key, title, text },
+    "fullTermsPdfUrl": fullTermsPdf.asset->url,
     mapPdfUrl, mapPdfLabel,
     brochurePdfUrl, brochurePdfLabel,
     resources[] {
@@ -1349,6 +1564,21 @@ export const experienceBySlugQuery = groq`
       visible,
       order
     },
+    knowledgeResources[] {
+      _key,
+      title,
+      text,
+      showCta,
+      ctaLabel,
+      ctaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
+      image {
+        alt,
+        title,
+        caption,
+        image,
+        "imageUrl": image.asset->url
+      }
+    },
     "related": relatedExperiences[]-> {
       _id, name, slug, price, priceLabel,
       duration, programType, shortDescription,
@@ -1361,7 +1591,7 @@ export const experienceBySlugQuery = groq`
       mainImage,
       "mainImageUrl": mainImage.asset->url
     },
-    faqs[] { question, answer },
+    faqs[] { _key, question, answer },
     seoTitle, seoDescription,
     "reviews": *[_type == "review"] | order(_createdAt asc) {
       _id, quote, authorName, authorCity, authorCountry,

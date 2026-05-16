@@ -49,6 +49,7 @@ const INTERNAL_NAV_TARGET_META: Record<string, { href: string; dataActiveWhen?: 
 function hasAnyValidVisibleItem(nav: CmsInternalNav | null | undefined): boolean {
   if (!nav?.items?.length) return false
   return nav.items.some((i) => {
+    if (i == null || typeof i !== 'object') return false
     if (i.visible === false) return false
     const label = String(i.label ?? '').trim()
     if (!label) return false
@@ -69,6 +70,7 @@ export function mergeInternalNavIntoPageNav(
 
   const rows = (doc.items ?? [])
     .map((item, idx) => ({ item, idx }))
+    .filter((x): x is { item: CmsInternalNavItem; idx: number } => x.item != null && typeof x.item === 'object')
     .filter(({ item }) => item.visible !== false && String(item.label ?? '').trim())
     .filter(({ item }) => {
       const key = item.targetSection

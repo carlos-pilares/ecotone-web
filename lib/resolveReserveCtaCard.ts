@@ -3,7 +3,8 @@ import type { ExperienceReserveFacts } from '@/lib/experienceReserveRows'
 import { resolveExperienceReserveCardRows as resolveExpReserveRows } from '@/lib/experienceReserveRows'
 import type { ReserveCtaSettingsGroq, ReserveCtaTrustItemGroq } from '@/lib/reserveCtaGroq'
 import { formatReservePriceDisplay } from '@/lib/reserveCtaPricing'
-import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
+import type { ExperienceBookingSummary } from '@/components/booking/types'
+import type { ResolvedSmartLink, SmartLinkGroq } from '@/lib/resolveSmartLink'
 import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
 
 const DEFAULT_TERMS_PREFIX = 'By booking, you agree to our'
@@ -45,13 +46,24 @@ function rowFromOverride(
 }
 
 function ctaFromResolved(
-  resolved: { label: string; href: string; openInNewTab?: boolean } | null,
+  resolved: ResolvedSmartLink | null,
   variant: 'primary' | 'secondary',
 ): ReserveCtaCta | null {
   if (!resolved) return null
   const label = resolved.label.trim()
+  if (!label) return null
+  if (resolved.bookingModal) {
+    return {
+      label,
+      href: '#',
+      variant,
+      external: false,
+      bookingModal: resolved.bookingModal,
+      bookingSummary: resolved.bookingSummary,
+    }
+  }
   const href = resolved.href.trim()
-  if (!label || !href) return null
+  if (!href) return null
   const external =
     resolved.openInNewTab === true || /^https?:/i.test(href) || href.startsWith('mailto:')
   const whatsappIcon = variant === 'secondary' && (/wa\.me\//i.test(href) || /whatsapp/i.test(label))
@@ -76,6 +88,7 @@ export function resolveReserveCtaCard(opts: {
   experienceReserveFacts?: ExperienceReserveFacts | null
   legacyCtas: LegacyCtaPair
   defaultTermsHref: string
+  pageBookingSummary?: ExperienceBookingSummary | null
 }): {
   priceLine: string
   priceSuffix: string
@@ -138,20 +151,31 @@ export function resolveReserveCtaCard(opts: {
     openInNewTab: true,
   }
 
+  const linkOpts = { pageBookingSummary: opts.pageBookingSummary ?? null }
   const pRes = smartLinkIsDisabled(s?.primaryCtaSmartLink)
     ? null
-    : resolveSmartLinkOrLegacy(s?.primaryCtaSmartLink, pLegacy, {
-        label: pLegacy.label ?? '',
-        href: pLegacy.href ?? '',
-        openInNewTab: pLegacy.openInNewTab === true,
-      })
+    : resolveSmartLinkOrLegacy(
+        s?.primaryCtaSmartLink,
+        pLegacy,
+        {
+          label: pLegacy.label ?? '',
+          href: pLegacy.href ?? '',
+          openInNewTab: pLegacy.openInNewTab === true,
+        },
+        linkOpts,
+      )
   const sRes = smartLinkIsDisabled(s?.secondaryCtaSmartLink)
     ? null
-    : resolveSmartLinkOrLegacy(s?.secondaryCtaSmartLink, sLegacy, {
-        label: sLegacy.label ?? '',
-        href: sLegacy.href ?? '',
-        openInNewTab: true,
-      })
+    : resolveSmartLinkOrLegacy(
+        s?.secondaryCtaSmartLink,
+        sLegacy,
+        {
+          label: sLegacy.label ?? '',
+          href: sLegacy.href ?? '',
+          openInNewTab: true,
+        },
+        linkOpts,
+      )
 
   const ctas = [
     ctaFromResolved(pRes, 'primary'),

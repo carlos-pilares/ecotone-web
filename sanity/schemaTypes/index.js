@@ -26,6 +26,18 @@ import {headerNavLodgeRouteOverride} from './objects/headerNavLodgeRouteOverride
 import {headerNavLodgeItemOverride} from './objects/headerNavLodgeItemOverride'
 import {headerNavExperiencesTailorMenu} from './objects/headerNavExperiencesTailorMenu'
 import {landingHero} from './objects/landingHero'
+import {
+  experienceGalleryItem,
+  experienceItineraryOvernight,
+  experienceKnowledgeResource,
+  experienceLodgePresentationRow,
+  experienceSeasonLegend,
+  experienceTermsPanel,
+  experienceTravelerGuideSection,
+  experienceTravelerGuideRow,
+  experienceTravelerGuideChecklistRow,
+  experienceTravelerGuideSubsection,
+} from './objects/experienceKnowledgeObjects'
 import {experienceResourceCard} from './objects/experienceResourceCard'
 import {experiencePageResources} from './objects/experiencePageResources'
 import {landingReserveBlock} from './objects/landingReserveBlock'
@@ -110,6 +122,16 @@ const objects = [
   headerNavExperiencesTailorMenu,
   cta,
   imageWithAlt,
+  experienceGalleryItem,
+  experienceItineraryOvernight,
+  experienceLodgePresentationRow,
+  experienceSeasonLegend,
+  experienceTravelerGuideRow,
+  experienceTravelerGuideChecklistRow,
+  experienceTravelerGuideSection,
+  experienceTravelerGuideSubsection,
+  experienceTermsPanel,
+  experienceKnowledgeResource,
   experienceResourceCard,
   experiencePageResources,
   internalNavItem,

@@ -55,7 +55,7 @@ export const pageModule = defineType({
       title: 'Override (opcional) — Intro / lead corto',
       type: 'text',
       rows: 3,
-      validation: (Rule) => Rule.max(480),
+      validation: (Rule) => Rule.max(1200),
       description:
         'Texto corto bajo el H2 (intro editorial). No sustituye listados, FAQs ni descripciones largas del Experience.',
     }),

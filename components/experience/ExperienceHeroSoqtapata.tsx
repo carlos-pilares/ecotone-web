@@ -18,6 +18,7 @@ export function ExperienceHeroSoqtapata({
   const bookOpensModal = Boolean(bookingSummary) && Boolean(data.bookLabel.trim())
   return (
     <section className="exp-hero" id="top">
+      {data.gallery.length > 0 ? (
       <div className="gallery-grid">
         {data.gallery.map((g, i) => {
           if (g.kind === 'main') {
@@ -71,6 +72,7 @@ export function ExperienceHeroSoqtapata({
           )
         })}
       </div>
+      ) : null}
 
       <div className="exp-identity">
         <div className="exp-identity-inner">

@@ -13,6 +13,17 @@ export const GROQ_SMART_LINK_FIELDS = `
   externalUrl,
   "fileUrl": file.asset->url,
   bookFallbackUrl,
+  bookingMode,
+  "bookingExperience": bookingExperiencePageRef->experience-> {
+    name,
+    tagline,
+    programType,
+    route,
+    duration,
+    price,
+    priceLabel,
+    "mainImageUrl": mainImage.asset->url
+  },
   emailAddress,
   whatsappNumber,
   whatsappMessage,

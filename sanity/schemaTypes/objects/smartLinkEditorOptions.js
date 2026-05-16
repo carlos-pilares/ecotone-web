@@ -7,7 +7,7 @@ export const SMART_LINK_LINK_TYPE_EDITOR_OPTIONS = [
   {title: 'B. Page within the website', value: 'websitePage'},
   {title: 'C. External page', value: 'externalUrl'},
   {title: 'D. File download', value: 'file'},
-  {title: 'E. Book (flow pending — optional fallback URL)', value: 'book'},
+  {title: 'E. Booking (opens modal)', value: 'book'},
   {title: 'F. WhatsApp', value: 'whatsapp'},
 ]
 

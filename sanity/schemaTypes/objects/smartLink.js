@@ -202,11 +202,50 @@ export const smartLink = defineType({
         }),
     }),
     defineField({
+      name: 'bookingMode',
+      title: 'Booking mode',
+      type: 'string',
+      initialValue: 'general',
+      options: {
+        list: [
+          {title: 'General — Plan your journey', value: 'general'},
+          {title: 'Specific — Book this experience', value: 'specific'},
+        ],
+        layout: 'radio',
+      },
+      hidden: ({parent}) => hiddenWhenDisabled(parent) || !linkTypeIs('book')(parent),
+      validation: (Rule) =>
+        Rule.custom((v, ctx) => {
+          const p = ctx.parent
+          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p)) return true
+          if (p.linkType !== 'book') return true
+          const t = typeof v === 'string' ? v.trim() : ''
+          return t === 'general' || t === 'specific' ? true : 'Pick a booking mode'
+        }),
+    }),
+    defineField({
+      name: 'bookingExperiencePageRef',
+      title: 'Experience page (specific booking)',
+      type: 'reference',
+      to: [{type: 'experiencePage'}],
+      description:
+        'Required for “Specific” mode. Opens the booking modal for that experience. If unset on a live page, the current page experience is used when available.',
+      hidden: ({parent}) =>
+        hiddenWhenDisabled(parent) || !linkTypeIs('book')(parent) || parent?.bookingMode !== 'specific',
+      validation: (Rule) =>
+        Rule.custom((ref, ctx) => {
+          const p = ctx.parent
+          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p)) return true
+          if (p.linkType !== 'book' || p.bookingMode !== 'specific') return true
+          return ref?._ref ? true : 'Pick an experience page for specific booking'
+        }),
+    }),
+    defineField({
       name: 'bookFallbackUrl',
-      title: 'Temporary booking URL (optional)',
+      title: 'Booking fallback URL (optional)',
       type: 'url',
       description:
-        'Booking flow pending. If set, visitors use this URL until the real booking flow is wired. Must be http(s).',
+        'Used only when “Specific” mode has no experience data to load. Must be http(s).',
       hidden: ({parent}) => hiddenWhenDisabled(parent) || !linkTypeIs('book')(parent),
       validation: (Rule) =>
         Rule.custom((url, ctx) => {

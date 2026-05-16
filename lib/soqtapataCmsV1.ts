@@ -8,6 +8,7 @@ import { soqtapataStructuredPageBySlugQuery } from '@/lib/queries'
 import { clientServer } from '@/lib/sanity'
 import {
   alsoBookFromStructuredRow,
+  applyCmsExclusiveExperienceContent,
   includedIdsFromRow,
   reviewsFromRow,
   reviewsLayoutFromRow,
@@ -16,6 +17,7 @@ import {
   techProductsFromRow,
   type SoqtapataStructuredPageRow,
 } from '@/lib/soqtapataStructuredCms'
+import { buildSoqtapataBookingSummary } from '@/lib/buildSoqtapataBookingSummary'
 import { mergeInternalNavIntoPageNav } from '@/lib/soqtapataInternalNav'
 import { buildRotatingQuoteItemsFromReviews } from '@/lib/reviewQuoteItems'
 import {
@@ -200,10 +202,23 @@ export type SoqtapataCmsPageDoc = {
 export type SoqtapataSectionVisibility = Record<SectionModuleKey, boolean>
 
 /**
- * Carga un documento `experiencePage` y fusiona v1 + fallback local.
- * Cacheada por request (Next dedup entre page + generateMetadata).
+ * When Sanity env vars are missing or the published `experiencePage` / `experience` ref is unavailable,
+ * the app can still render this slug using local static `soqtapataExperience` (dev / resilient builds).
  */
-const SOQTAPAT_SLUG = 'soqtapata-pristine-immersion' as const
+export const SOQTAPATA_LOCAL_FALLBACK_SLUG = 'soqtapata-pristine-immersion' as const
+
+/** Payload merged from Sanity `experiencePage` + KC `experience` + local fallback. */
+export type SoqtapataPageCmsPayload = {
+  experience: SoqtapataExperience
+  reviewsLayout: ExperienceReviewsLayoutMutable
+  doc: SoqtapataCmsPageDoc
+  cmsError: string | null
+  seo: { title: string; description: string }
+  sectionVisibility: SoqtapataSectionVisibility
+  reviewsSectionLead: string | null | undefined
+  reviewsRatingSummary: ReviewsRatingSummary
+  rotatingQuoteItems: { text: string; attr: string }[]
+}
 
 export const soqtapataPristineSeoDefault = {
   title: 'Soqtapata Pristine Immersion — Ecotone · Cusco, Perú',
@@ -211,7 +226,19 @@ export const soqtapataPristineSeoDefault = {
     'The untouched cloud forest. Soqtapata Reserve, EcoDroneView®, ForestWhisper®, expert naturalist guide.',
 } as const
 
-export const getSoqtapataPageCms = cache(async () => {
+/**
+ * Loads `experiencePage` by slug, merges KC `experience` with local fallback shape.
+ *
+ * Returns `null` when there is no published page for `slug`, no linked Experience KC (`!row.experience`),
+ * or `slug` is empty — callers should `notFound()`.
+ *
+ * Exception: **`soqtapata-pristine-immersion`** may still resolve from **local static data only** when
+ * Sanity env is not configured or the fetch fails, so offline dev keeps working.
+ */
+export const getSoqtapataPageCms = cache(async (slug: string): Promise<SoqtapataPageCmsPayload | null> => {
+  const normalized = typeof slug === 'string' ? slug.trim() : ''
+  if (!normalized) return null
+
   const local = soqtapataExperience
   const defaultsRl = soqtapataExperienceReviewsLayout
 
@@ -225,7 +252,7 @@ export const getSoqtapataPageCms = cache(async () => {
     pageReviews: { eyebrow?: string | null; title?: string | null; body?: string | null } | null | undefined
     reviewsRatingSummary: ReviewsRatingSummary
     rotatingQuoteItems: { text: string; attr: string }[]
-  }) {
+  }): SoqtapataPageCmsPayload {
     const pres = applySoqtapataSectionPresentation({
       experience: params.experience,
       reviewsLayout: params.reviewsLayout,
@@ -250,14 +277,15 @@ export const getSoqtapataPageCms = cache(async () => {
     }
   }
 
-  if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || !process.env.NEXT_PUBLIC_SANITY_DATASET) {
+  function payloadFromLocalFallback(cmsErr: string | null): SoqtapataPageCmsPayload | null {
+    if (normalized !== SOQTAPATA_LOCAL_FALLBACK_SLUG) return null
     const experience = structuredClone(local) as SoqtapataExperience
     const reviewsLayout = reviewsLayoutFromRow(null, defaultsRl)
     return finalizePayload({
       experience,
       reviewsLayout,
       doc: null,
-      cmsError: null,
+      cmsError: cmsErr,
       seo: soqtapataPristineSeoDefault,
       sectionModules: null,
       pageReviews: null,
@@ -265,35 +293,27 @@ export const getSoqtapataPageCms = cache(async () => {
       rotatingQuoteItems: [],
     })
   }
-  let row: SoqtapataStructuredPageRow = null
+
+  if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || !process.env.NEXT_PUBLIC_SANITY_DATASET) {
+    return payloadFromLocalFallback(null)
+  }
+
+  let row: SoqtapataStructuredPageRow | null = null
   let cmsError: string | null = null
   try {
     row = await clientServer.fetch<SoqtapataStructuredPageRow | null>(soqtapataStructuredPageBySlugQuery, {
-      slug: SOQTAPAT_SLUG,
+      slug: normalized,
     })
   } catch (e) {
     cmsError = e instanceof Error ? e.message : 'Sanity fetch failed'
+    return payloadFromLocalFallback(cmsError)
   }
-  if (!row?.experience) {
-    const experience = structuredClone(local) as SoqtapataExperience
-    const reviewsLayout = reviewsLayoutFromRow(row ?? null, defaultsRl)
-    return finalizePayload({
-      experience,
-      reviewsLayout,
-      doc: null,
-      cmsError,
-      seo: soqtapataPristineSeoDefault,
-      sectionModules: row?.sectionModules ?? null,
-      pageReviews: row?.reviewsSection ?? null,
-      reviewsRatingSummary: normalizeReviewsRatingSummary(row?.reviewsSettings ?? null),
-      rotatingQuoteItems: buildRotatingQuoteItemsFromReviews(row?.reviewsSection?.rotatingReviews ?? []),
-    })
-  }
+
+  if (!row) return null
+  if (!row.experience) return null
   const soqtapataPartial = soqtapataPartialFromStructuredRow(row)
-  const alsoBook = alsoBookFromStructuredRow(row, local)
   const partial: Partial<SoqtapataExperience> = {
     ...soqtapataPartial,
-    ...alsoBook,
   }
   const t = techProductsFromRow(row)
   if (t) partial.techProducts = t
@@ -313,6 +333,15 @@ export const getSoqtapataPageCms = cache(async () => {
       book: { ...experience.book, ...partial.book },
     }
   }
+  const pageBookingSummary = buildSoqtapataBookingSummary(experience.hero, experience.book)
+  const alsoBook = alsoBookFromStructuredRow(row, local, pageBookingSummary)
+  if (alsoBook.book) {
+    experience = {
+      ...experience,
+      book: { ...experience.book, ...alsoBook.book },
+    }
+  }
+  experience = applyCmsExclusiveExperienceContent(experience, row, local, alsoBook)
   const curatedReviews = reviewsFromRow(row)
   if (curatedReviews !== null) {
     experience = normalizeMergedExperience({ ...experience, reviews: curatedReviews })

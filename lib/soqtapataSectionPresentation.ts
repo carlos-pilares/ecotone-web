@@ -53,6 +53,7 @@ export function landingOverridesFromSectionModules(
   const map = new Map<SectionModuleKey, LandingSectionOverride>()
   if (!modules?.length) return map
   for (const row of modules) {
+    if (row == null || typeof row !== 'object') continue
     const key = row?.key as SectionModuleKey | undefined
     if (!key || !SOQTAPATA_SECTION_KEYS.includes(key)) continue
     map.set(key, {

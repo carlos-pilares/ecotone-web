@@ -1,0 +1,597 @@
+import {defineField, defineType} from 'sanity'
+
+const imgHot = {hotspot: true}
+
+/** Gallery / media row on Experience KC (photo or video). */
+export const experienceGalleryItem = defineType({
+  name: 'experienceGalleryItem',
+  title: 'Media item',
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'mediaType',
+      title: 'Type',
+      type: 'string',
+      initialValue: 'photo',
+      options: {
+        list: [
+          {title: 'Photo', value: 'photo'},
+          {title: 'Video', value: 'video'},
+        ],
+        layout: 'radio',
+      },
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'title',
+      title: 'Title',
+      type: 'string',
+      validation: (Rule) => Rule.max(120),
+      description: 'Short label for editors and on-page pills.',
+    }),
+    defineField({
+      name: 'caption',
+      title: 'Caption',
+      type: 'string',
+      validation: (Rule) => Rule.max(80),
+      description: 'Overlay label on gallery tiles.',
+    }),
+    defineField({
+      name: 'alt',
+      title: 'Alt text',
+      type: 'string',
+      validation: (Rule) => Rule.max(160),
+      description: 'Describe the visual for screen readers.',
+    }),
+    defineField({
+      name: 'image',
+      title: 'Photo',
+      type: 'image',
+      options: imgHot,
+      hidden: ({parent}) => parent?.mediaType === 'video',
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const parent = context.parent
+          if (parent?.mediaType === 'video') return true
+          if (!value) return 'Photo image is required'
+          return true
+        }),
+    }),
+    defineField({
+      name: 'videoUrl',
+      title: 'Video URL',
+      type: 'url',
+      hidden: ({parent}) => parent?.mediaType !== 'video',
+      description: 'YouTube or Vimeo URL.',
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          if (context.parent?.mediaType !== 'video') return true
+          if (!value || !String(value).trim()) return 'Video URL is required for video items'
+          return true
+        }),
+    }),
+    defineField({
+      name: 'videoThumbnail',
+      title: 'Video thumbnail',
+      type: 'image',
+      options: imgHot,
+      hidden: ({parent}) => parent?.mediaType !== 'video',
+      description: 'Poster frame shown with the play button.',
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          if (context.parent?.mediaType !== 'video') return true
+          if (!value) return 'Video thumbnail is required'
+          return true
+        }),
+    }),
+    defineField({
+      name: 'category',
+      title: 'Category (legacy)',
+      type: 'string',
+      hidden: true,
+      description: 'Deprecated — kept only so older documents retain data.',
+    }),
+  ],
+  preview: {
+    select: {title: 'title', caption: 'caption', mediaType: 'mediaType', media: 'image', thumb: 'videoThumbnail'},
+    prepare: ({title, caption, mediaType, media, thumb}) => ({
+      title: title || caption || (mediaType === 'video' ? 'Video' : 'Photo'),
+      subtitle: mediaType === 'video' ? 'Video' : 'Photo',
+      media: mediaType === 'video' ? thumb : media,
+    }),
+  },
+})
+
+/** Lodging line on an itinerary day */
+export const experienceItineraryOvernight = defineType({
+  name: 'experienceItineraryOvernight',
+  title: 'Overnight lodging',
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'mode',
+      title: 'Night display',
+      type: 'string',
+      initialValue: 'lodge',
+      options: {
+        list: [
+          {title: 'Stay at lodge (select below)', value: 'lodge'},
+          {title: 'Last travel day / no lodge after this day', value: 'none'},
+        ],
+        layout: 'radio',
+      },
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'lodge',
+      title: 'Lodge',
+      type: 'reference',
+      to: [{type: 'lodge'}],
+      hidden: ({parent}) => parent?.mode !== 'lodge',
+      description: 'Where guests stay after this day’s activities.',
+    }),
+  ],
+})
+
+/** Per-lodge editorial modifiers on an experience (lodges tab). */
+export const experienceLodgePresentationRow = defineType({
+  name: 'experienceLodgePresentationRow',
+  title: 'Lodge on this programme',
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'lodge',
+      title: 'Lodge',
+      type: 'reference',
+      to: [{type: 'lodge'}],
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'nightsLabel',
+      title: 'Nights label',
+      type: 'string',
+      validation: (Rule) => Rule.max(80),
+      description: 'e.g. Nights 1 & 2 · displayed on programme cards.',
+    }),
+    defineField({
+      name: 'highlightLabel',
+      title: 'Highlight label',
+      type: 'string',
+      validation: (Rule) => Rule.max(80),
+    }),
+    defineField({
+      name: 'highlights',
+      title: 'Extra highlights (bullets)',
+      type: 'array',
+      of: [{type: 'string', validation: (Rule) => Rule.max(120)}],
+      validation: (Rule) => Rule.max(12),
+    }),
+    defineField({
+      name: 'ctaLabel',
+      title: 'CTA label',
+      type: 'string',
+      validation: (Rule) => Rule.max(80),
+    }),
+    defineField({
+      name: 'ctaSmartLink',
+      title: 'CTA link',
+      type: 'smartLink',
+    }),
+  ],
+  preview: {
+    select: {name: 'lodge.name'},
+    prepare: ({name}) => ({title: name || 'Lodge'}),
+  },
+})
+
+/** Legend + editable copy for the three month season levels (peak / great / always). */
+export const experienceSeasonLegend = defineType({
+  name: 'experienceSeasonLegend',
+  title: 'Season legend',
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'seasonKeyTitle',
+      title: 'Season key title',
+      type: 'string',
+      initialValue: 'Season key',
+      validation: (Rule) => Rule.max(80),
+      description: 'Eyebrow above the legend (e.g. “Season key”).',
+    }),
+    defineField({
+      name: 'intro',
+      title: 'Legend intro (paragraph)',
+      type: 'text',
+      rows: 3,
+      validation: (Rule) => Rule.max(400),
+      description: 'Explains how to read the month bars.',
+    }),
+    defineField({
+      name: 'peakLabel',
+      title: 'Peak — label',
+      type: 'string',
+      validation: (Rule) => Rule.max(80),
+      description: 'Shown in the legend for the peak tier (matches ★★ on month cards).',
+    }),
+    defineField({
+      name: 'peakDescription',
+      title: 'Peak — description',
+      type: 'text',
+      rows: 2,
+      validation: (Rule) => Rule.max(220),
+    }),
+    defineField({
+      name: 'greatLabel',
+      title: 'Great — label',
+      type: 'string',
+      validation: (Rule) => Rule.max(80),
+      description: 'Legend label for the great tier (matches ★ on month cards).',
+    }),
+    defineField({
+      name: 'greatDescription',
+      title: 'Great — description',
+      type: 'text',
+      rows: 2,
+      validation: (Rule) => Rule.max(220),
+    }),
+    defineField({
+      name: 'alwaysLabel',
+      title: 'Always worthwhile — label',
+      type: 'string',
+      validation: (Rule) => Rule.max(80),
+      description: 'Legend label for neutral / year-round tier.',
+    }),
+    defineField({
+      name: 'alwaysDescription',
+      title: 'Always worthwhile — description',
+      type: 'text',
+      rows: 2,
+      validation: (Rule) => Rule.max(220),
+    }),
+    defineField({
+      name: 'eyebrow',
+      title: 'Season key title (legacy)',
+      type: 'string',
+      hidden: true,
+      description: 'Superseded by **Season key title**; kept for migration.',
+    }),
+    defineField({
+      name: 'peak',
+      title: 'Peak tier (legacy)',
+      type: 'object',
+      hidden: true,
+      fields: [
+        defineField({name: 'label', type: 'string'}),
+        defineField({name: 'description', type: 'text', rows: 2}),
+        defineField({name: 'visualKey', type: 'string', hidden: true}),
+      ],
+    }),
+    defineField({
+      name: 'good',
+      title: 'Great tier (legacy)',
+      type: 'object',
+      hidden: true,
+      fields: [
+        defineField({name: 'label', type: 'string'}),
+        defineField({name: 'description', type: 'text', rows: 2}),
+        defineField({name: 'visualKey', type: 'string', hidden: true}),
+      ],
+    }),
+    defineField({
+      name: 'alwaysGood',
+      title: 'Always tier (legacy)',
+      type: 'object',
+      hidden: true,
+      fields: [
+        defineField({name: 'label', type: 'string'}),
+        defineField({name: 'description', type: 'text', rows: 2}),
+        defineField({name: 'visualKey', type: 'string', hidden: true}),
+      ],
+    }),
+  ],
+})
+
+const TRAVEL_GUIDE_ROW_ICONS = [
+  {title: 'Document', value: 'doc'},
+  {title: 'Shield', value: 'shield'},
+  {title: 'Check', value: 'check'},
+  {title: 'Heart', value: 'heart'},
+  {title: 'Package', value: 'package'},
+  {title: 'Clock', value: 'clock'},
+  {title: 'User', value: 'user'},
+]
+
+/** Q&A row (title + body) for traveller guide flex cards. */
+export const experienceTravelerGuideRow = defineType({
+  name: 'experienceTravelerGuideRow',
+  title: 'Q&A row',
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'iconKey',
+      title: 'Row icon (optional)',
+      type: 'string',
+      options: {list: TRAVEL_GUIDE_ROW_ICONS, layout: 'dropdown'},
+    }),
+    defineField({
+      name: 'title',
+      title: 'Title / question',
+      type: 'string',
+      validation: (Rule) => [Rule.required(), Rule.max(120)],
+    }),
+    defineField({
+      name: 'body',
+      title: 'Body / answer',
+      type: 'text',
+      rows: 4,
+      validation: (Rule) => [Rule.required(), Rule.max(800)],
+    }),
+  ],
+})
+
+/** Checklist row (label only) — packing-style lines. */
+export const experienceTravelerGuideChecklistRow = defineType({
+  name: 'experienceTravelerGuideChecklistRow',
+  title: 'Checklist row',
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'iconKey',
+      title: 'Row icon (optional)',
+      type: 'string',
+      options: {list: TRAVEL_GUIDE_ROW_ICONS, layout: 'dropdown'},
+    }),
+    defineField({
+      name: 'label',
+      title: 'Label',
+      type: 'string',
+      validation: (Rule) => [Rule.required(), Rule.max(120)],
+    }),
+  ],
+})
+
+/**
+ * Flexible traveller guide: any number of accordion cards; each card has icon + title + Q&A rows.
+ * (Replaces editor flow of bucket-based `experienceTravelerGuideSection`; legacy objects kept for old docs.)
+ */
+export const experienceTravelerGuideSubsection = defineType({
+  name: 'experienceTravelerGuideSubsection',
+  title: 'Traveller guide card',
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'displayType',
+      title: 'Row layout',
+      type: 'string',
+      initialValue: 'qa',
+      options: {
+        list: [
+          {title: 'Q&A — title + body per row', value: 'qa'},
+          {title: 'Checklist — label only per row (packing list)', value: 'checklist'},
+        ],
+        layout: 'radio',
+      },
+    }),
+    defineField({
+      name: 'headerIcon',
+      title: 'Card header icon',
+      type: 'string',
+      initialValue: 'entry',
+      options: {
+        list: [
+          {title: 'Entry / documents', value: 'entry'},
+          {title: 'Luggage', value: 'luggage'},
+          {title: 'Phone / logistics', value: 'phone'},
+        ],
+        layout: 'radio',
+      },
+    }),
+    defineField({
+      name: 'title',
+      title: 'Card title',
+      type: 'string',
+      validation: (Rule) => [Rule.required(), Rule.max(120)],
+    }),
+    defineField({
+      name: 'rows',
+      title: 'Rows',
+      type: 'array',
+      validation: (Rule) => Rule.min(1).max(40),
+      description:
+        'Choose **Q&A** for paragraphs; **Checklist** for simple packing-style lines (no body). Add only rows that match the layout.',
+      of: [{type: 'experienceTravelerGuideRow'}, {type: 'experienceTravelerGuideChecklistRow'}],
+    }),
+  ],
+  preview: {
+    select: {title: 'title', rows: 'rows'},
+    prepare: ({title, rows}) => ({
+      title: title || 'Traveller guide card',
+      subtitle: rows?.length != null ? `${rows.length} row${rows.length === 1 ? '' : 's'}` : undefined,
+    }),
+  },
+})
+
+/** @deprecated Hidden field — bucket merge into 3 fixed cards; prefer `experienceTravelerGuideSubsection`. */
+export const experienceTravelerGuideSection = defineType({
+  name: 'experienceTravelerGuideSection',
+  title: 'Traveller guide subsection (legacy)',
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'bucket',
+      title: 'Maps to section',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'Entry / visas / insurance', value: 'entry'},
+          {title: 'Packing list', value: 'packing'},
+          {title: 'Getting there / logistics', value: 'logistics'},
+        ],
+        layout: 'radio',
+      },
+      validation: (Rule) => Rule.required(),
+      description: 'Multiple rows can share one bucket — they merge into the same accordion on the site.',
+    }),
+    defineField({
+      name: 'headerIcon',
+      title: 'Header icon',
+      type: 'string',
+      initialValue: 'entry',
+      options: {
+        list: [
+          {title: 'Entry / documents', value: 'entry'},
+          {title: 'Luggage', value: 'luggage'},
+          {title: 'Phone / logistics', value: 'phone'},
+        ],
+        layout: 'radio',
+      },
+    }),
+    defineField({
+      name: 'title',
+      title: 'Accordion title',
+      type: 'string',
+      validation: (Rule) => [Rule.required(), Rule.max(120)],
+    }),
+    defineField({
+      name: 'packingLead',
+      title: 'Packing intro (only for packing bucket)',
+      type: 'text',
+      rows: 3,
+      hidden: ({parent}) => parent?.bucket !== 'packing',
+      validation: (Rule) => Rule.max(400),
+    }),
+    defineField({
+      name: 'pairItems',
+      title: 'Q&A rows (title + body)',
+      type: 'array',
+      hidden: ({parent}) => parent?.bucket === 'packing',
+      of: [
+        {
+          type: 'object',
+          name: 'travelerPairItem',
+          fields: [
+            defineField({
+              name: 'iconKey',
+              title: 'Row icon',
+              type: 'string',
+              options: {
+                list: [
+                  {title: 'Document', value: 'doc'},
+                  {title: 'Shield', value: 'shield'},
+                  {title: 'Check', value: 'check'},
+                  {title: 'Heart', value: 'heart'},
+                  {title: 'Package', value: 'package'},
+                  {title: 'Clock', value: 'clock'},
+                  {title: 'User', value: 'user'},
+                ],
+                layout: 'dropdown',
+              },
+              description: 'Maps to existing icon slots on the live page (cycles if there are many rows).',
+            }),
+            defineField({
+              name: 'title',
+              title: 'Title',
+              type: 'string',
+              validation: (Rule) => [Rule.required(), Rule.max(80)],
+            }),
+            defineField({
+              name: 'body',
+              title: 'Body',
+              type: 'text',
+              validation: (Rule) => [Rule.required(), Rule.max(600)],
+            }),
+          ],
+        },
+      ],
+    }),
+    defineField({
+      name: 'bulletItems',
+      title: 'Bullet lines (packing bucket)',
+      type: 'array',
+      hidden: ({parent}) => parent?.bucket !== 'packing',
+      of: [{type: 'string', validation: (Rule) => Rule.max(100)}],
+      validation: (Rule) => Rule.max(40),
+    }),
+  ],
+  preview: {
+    select: {bucket: 'bucket', title: 'title'},
+    prepare: ({bucket, title}) => ({
+      title: title || 'Subsection',
+      subtitle: bucket,
+    }),
+  },
+})
+
+export const experienceTermsPanel = defineType({
+  name: 'experienceTermsPanel',
+  title: 'Terms panel',
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'title',
+      title: 'Title',
+      type: 'string',
+      validation: (Rule) => [Rule.required(), Rule.max(120)],
+    }),
+    defineField({
+      name: 'text',
+      title: 'Text',
+      type: 'text',
+      rows: 6,
+      validation: (Rule) => [Rule.required(), Rule.max(4000)],
+    }),
+  ],
+})
+
+export const experienceKnowledgeResource = defineType({
+  name: 'experienceKnowledgeResource',
+  title: 'Resource',
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'image',
+      title: 'Image',
+      type: 'imageWithAlt',
+      description: 'Optional preview image.',
+    }),
+    defineField({
+      name: 'title',
+      title: 'Title',
+      type: 'string',
+      validation: (Rule) => [Rule.required(), Rule.max(120)],
+    }),
+    defineField({
+      name: 'text',
+      title: 'Text',
+      type: 'text',
+      rows: 4,
+      validation: (Rule) => Rule.max(400),
+    }),
+    defineField({
+      name: 'showCta',
+      title: 'Show CTA',
+      type: 'boolean',
+      initialValue: true,
+    }),
+    defineField({
+      name: 'ctaLabel',
+      title: 'CTA label',
+      type: 'string',
+      validation: (Rule) => Rule.max(80),
+      hidden: ({parent}) => parent?.showCta === false,
+    }),
+    defineField({
+      name: 'ctaSmartLink',
+      title: 'CTA link',
+      type: 'smartLink',
+      hidden: ({parent}) => parent?.showCta === false,
+    }),
+  ],
+  preview: {
+    select: {title: 'title', media: 'image.image'},
+    prepare: ({title, media}) => ({
+      title: title || 'Resource',
+      media,
+    }),
+  },
+})

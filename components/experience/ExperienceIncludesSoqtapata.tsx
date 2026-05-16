@@ -40,8 +40,8 @@ export function ExperienceIncludesSoqtapata({ data }: { data: SoqtapataIncludes 
               {data.includedTitle}
             </div>
             <ul className="includes-list">
-              {data.yes.map((line) => (
-                <li className="includes-item includes-item-yes" key={line}>
+              {data.yes.map((line, i) => (
+                <li className="includes-item includes-item-yes" key={`yes-${i}-${line}`}>
                   <div className="inc-check">
                     <IncCheckSvg />
                   </div>
@@ -59,8 +59,8 @@ export function ExperienceIncludesSoqtapata({ data }: { data: SoqtapataIncludes 
               {data.notTitle}
             </div>
             <ul className="includes-list">
-              {data.no.map((line) => (
-                <li className="includes-item includes-item-no" key={line}>
+              {data.no.map((line, i) => (
+                <li className="includes-item includes-item-no" key={`no-${i}-${line}`}>
                   <div className="inc-cross">
                     <IncCrossSvg />
                   </div>

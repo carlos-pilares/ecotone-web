@@ -20,14 +20,24 @@ export function ExperienceBookSoqtapata({
   }, [openExperienceBooking, bookingSummary])
 
   const ctas: ReserveCtaCta[] = []
-  const wt = data.wetravelUrl.trim()
-  if (wt) {
+  if (data.primaryBookingModal) {
     ctas.push({
-      label: 'Book now',
-      href: wt,
+      label: data.wetravelLabel.trim() || 'Book now',
+      href: '#',
       variant: 'primary',
-      external: true,
+      bookingModal: data.primaryBookingModal,
+      bookingSummary: data.primaryBookingSummary,
     })
+  } else {
+    const wt = data.wetravelUrl.trim()
+    if (wt) {
+      ctas.push({
+        label: data.wetravelLabel.trim() || 'Book now',
+        href: wt,
+        variant: 'primary',
+        external: true,
+      })
+    }
   }
   const wa = data.whatsappUrl.trim()
   const waLab = data.whatsappLabel.trim()
@@ -55,6 +65,9 @@ export function ExperienceBookSoqtapata({
           .filter((t) => t.text.trim())
       : undefined
 
+  const legacyPrimaryOpensPageModal =
+    !data.primaryBookingModal && Boolean(data.wetravelUrl.trim())
+
   return (
     <ReserveCtaSection
       id="book"
@@ -62,8 +75,8 @@ export function ExperienceBookSoqtapata({
       eyebrow={data.eyebrow}
       title={data.h2}
       body={data.lead?.trim() ? data.lead : undefined}
-      experienceBookPrimaryModal
-      onExperienceBookPrimaryClick={onPrimary}
+      experienceBookPrimaryModal={legacyPrimaryOpensPageModal}
+      onExperienceBookPrimaryClick={legacyPrimaryOpensPageModal ? onPrimary : undefined}
       experienceReserveTrustTermsExact
       card={{
         priceLine: data.price,

@@ -87,10 +87,10 @@ export function SectionModuleOverridesForm({previewSection, onRootPatch}) {
       <Stack space={4}>
         <div>
           <Text size={0} weight="semibold" style={{textTransform: 'uppercase', letterSpacing: 0.4}}>
-            3. Edición de esta landing
+            Section on this URL
           </Text>
           <Text size={1} muted style={{marginTop: 6, lineHeight: 1.5}}>
-            Personaliza solo esta landing. Si dejas un campo vacío, se mantiene el contenido base.
+            Empty fields inherit defaults from the linked Experience (or site layout). Changes are stored in sectionModules.
           </Text>
         </div>
 
