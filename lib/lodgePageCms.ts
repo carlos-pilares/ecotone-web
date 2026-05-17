@@ -72,6 +72,7 @@ import { getLodgeReserveLowestUsd, buildReserveRowsForLodge } from '@/lib/reserv
 import { formatLodgeAltitudeForSubtitle } from '@/lib/lodgeAltitudeDisplay'
 import { resolveReserveCtaCard } from '@/lib/resolveReserveCtaCard'
 import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
+import { resolveHeroGalleryRows } from '@/lib/lodgeGalleryResolve'
 import { cdnImageUrl } from '@/lib/sanity'
 import type { ReviewDoc } from '@/lib/queries'
 import { buildRotatingQuoteItemsFromReviews } from '@/lib/reviewQuoteItems'
@@ -215,13 +216,6 @@ function galleryRowDedupeKey(g: LodgeGalleryItemRow): string {
       : undefined
   if (assetRef) return `asset:${assetRef}`
   return `u:${g.imageUrl ?? ''}:${g.title ?? ''}`
-}
-
-/** Prefer `usageSection === hero`; if none, use entire gallery (fallback compatible). */
-function pickHeroGalleryItems(gallery: LodgeGalleryItemRow[] | null | undefined): LodgeGalleryItemRow[] {
-  const rows = gallery ?? []
-  const heroTagged = rows.filter((g) => gallerySection(g) === 'hero')
-  return heroTagged.length > 0 ? heroTagged : rows
 }
 
 function buildGalleryByStableKey(gallery: LodgeGalleryItemRow[] | null | undefined): Map<string, LodgeGalleryItemRow> {
@@ -396,33 +390,31 @@ function resolveExperiencesTailorCta(
   }
 }
 
-function experienceLinkedToLodge(e: LodgeCmsExperienceCardRow | null | undefined, lodgeId: string): boolean {
-  if (!e || !lodgeId) return false
-  const r = typeof e.linkedLodgeId === 'string' ? e.linkedLodgeId.trim() : ''
-  return Boolean(r && r === lodgeId)
-}
-
 /** Lodge page lists `active` and `coming-soon` experiences linked to this lodge. */
 function experienceDisplayableOnLodgePage(status: string | null | undefined): boolean {
   const s = typeof status === 'string' ? status.trim() : ''
   return s === 'active' || s === 'coming-soon' || s === ''
 }
 
+function pickDisplayableExperiences(
+  rows: (LodgeCmsExperienceCardRow | null | undefined)[] | null | undefined,
+): LodgeCmsExperienceCardRow[] {
+  const seen = new Set<string>()
+  const out: LodgeCmsExperienceCardRow[] = []
+  for (const e of rows ?? []) {
+    if (!e?._id || !experienceDisplayableOnLodgePage(e.status)) continue
+    if (seen.has(e._id)) continue
+    seen.add(e._id)
+    out.push(e)
+  }
+  return out
+}
+
+/** Experiences for the lodge landing: KC → Lodges → `lodgePresentationRows[].lodge` only. */
 function pickLinkedDisplayableExperiences(
-  lodge: LodgeDocumentRow,
   row: NonNullable<LodgeStructuredPageRow>,
 ): LodgeCmsExperienceCardRow[] {
-  const lodgeId = typeof lodge._id === 'string' ? lodge._id.trim() : ''
-  const pick = (rows: (LodgeCmsExperienceCardRow | null | undefined)[] | null | undefined) =>
-    (rows ?? [])
-      .filter((e): e is LodgeCmsExperienceCardRow => Boolean(e && e._id))
-      .filter((e) => experienceLinkedToLodge(e, lodgeId) && experienceDisplayableOnLodgePage(e.status))
-
-  const fromSelection = pick(row.experiencesSelection)
-  const fromLodgeRelations = pick(lodge.experiences ?? undefined)
-  if (fromSelection.length > 0) return fromSelection
-  if (row.fallbackToLodgeRelations !== false && fromLodgeRelations.length > 0) return fromLodgeRelations
-  return []
+  return pickDisplayableExperiences(row.linkedExperiencesFromPresentation)
 }
 
 function computeLodgeHeroReviewStats(reviews: ReviewDoc[] | null | undefined): {
@@ -673,7 +665,7 @@ function galleryRowToPrimaryPhoto(g: LodgeGalleryItemRow): LodgePrimaryPhoto {
     image,
     imageAlt: (g.altText ?? g.alt ?? g.title ?? '').trim(),
     label: g.title || '',
-    sub: (g.caption ?? g.description ?? '').trim() || undefined,
+    sub: undefined,
   }
 }
 
@@ -862,14 +854,16 @@ export function mergeLodgePageWithFallback(
 
   const lodge = row.lodge
   const seo = resolveSeo(row, lodge)
-  const resolvedExperienceRows = pickLinkedDisplayableExperiences(lodge, row)
+  const resolvedExperienceRows = pickLinkedDisplayableExperiences(row)
 
   const heroBadgePills = resolveHeroHighlightBadges(row.heroHighlights, lodge)
 
   // Hero — `mergeLodgePageWithFallback` starts from the Soqtapata static bundle; overwrite hero fields
   // so other lodge pages never inherit Soqtapata breadcrumbs, tagline, ratings, or dummy gallery.
-  const heroImg = row.heroImage || lodge.mainImage
-  const heroBaseSrc = cdnImageUrl(heroImg, 1600, lodge.mainImageUrl || out.hero.imageSrc)
+  const heroRows = resolveHeroGalleryRows(lodge.gallery, row.heroGalleryOrderKeys)
+  const galleryPhotos: LodgeGalleryPhoto[] = heroRows.map((g) => galleryItemToPhoto(g, 1400, ''))
+  const heroBaseSrc =
+    galleryPhotos[0]?.src?.trim() || cdnImageUrl(lodge.mainImage, 1600, '') || lodge.mainImageUrl?.trim() || ''
   const heroTitle = sectionFieldTrim(row.heroTitle) ?? lodge.name?.trim() ?? ''
   const heroTagline =
     sectionFieldTrim(row.heroShortDescription) ?? lodge.shortDescription?.trim() ?? ''
@@ -877,21 +871,6 @@ export function mergeLodgePageWithFallback(
   const reviewStats = computeLodgeHeroReviewStats(lodge.reviews)
   const expCount = resolvedExperienceRows.length
   const secondaryMeta = `${expCount} ${expCount === 1 ? 'experience' : 'experiences'}`
-
-  const galleryPhotos: LodgeGalleryPhoto[] = lodge.gallery?.length
-    ? pickHeroGalleryItems(lodge.gallery).map((g, i) =>
-        galleryItemToPhoto(g, 1400, heroBaseSrc || `https://placehold.co/1400?text=${i}`),
-      )
-    : heroBaseSrc
-      ? [
-          {
-            src: heroBaseSrc,
-            alt: (heroTitle || lodge.name?.trim() || '').trim(),
-            title: '',
-            description: '',
-          },
-        ]
-      : []
 
   const badgeList = heroBadgePills?.length
     ? heroBadgePills

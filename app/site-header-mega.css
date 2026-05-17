@@ -443,12 +443,12 @@
 
 /* Tailor Made panel — compact premium card, not full panel width */
 .dd-tailor-stack {
-  max-width: 520px;
+  max-width: 360px;
   width: 100%;
 }
 .dd-tailor-stack-link {
   display: block;
-  max-width: 520px;
+  max-width: 360px;
   text-decoration: none;
   color: inherit;
   font: inherit;
@@ -459,17 +459,39 @@
 .dd-tailor {
   background: var(--brown-xdk);
   border-radius: 12px;
-  padding: 14px 16px;
+  padding: 10px 12px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  max-width: 460px;
+  gap: 8px;
+  max-width: 100%;
   width: 100%;
   box-sizing: border-box;
   margin: 0;
   text-align: left;
   border: none;
   flex-shrink: 0;
+}
+.dd-tailor-thumb {
+  width: 64px;
+  height: 48px;
+  min-width: 64px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  overflow: visible;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dd-tailor-thumb img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+  background: none;
 }
 .dd-tailor-icon {
   width: 34px;
@@ -507,7 +529,7 @@
   line-height: 1.35;
 }
 .dd-tailor-body {
-  max-width: 430px;
+  max-width: 360px;
   margin: 12px 0 0;
   padding: 0;
   font-size: 13px;
@@ -523,6 +545,30 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--brown);
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+button.dd-tailor-cta:hover {
+  text-decoration: underline;
+}
+.mob-tailor-thumb {
+  background: transparent;
+}
+.mob-tailor-thumb img {
+  object-fit: contain;
+  object-position: center;
+}
+#drawer.site-header-mobile-drawer button.mob-item.mob-tailor-row {
+  width: 100%;
+  text-align: left;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
 }
 
 .site-header-mobile-drawer.mobile-drawer {

@@ -3,7 +3,7 @@
  * Fallback técnico cuando Sanity no aporta el campo; sustituir por proyección GROQ cuando exista en `lodge` / `lodgePage` / `experience`.
  */
 
-export const lodgeSoqtapataProgramTypeFallbackLabel = 'Nature Core'
+export const lodgeSoqtapataProgramTypeFallbackLabel = 'Classic Nature'
 
 export const lodgeSoqtapataRouteLabels: Record<string, string> = {
   camanti: 'Camanti Route',

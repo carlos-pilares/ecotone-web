@@ -734,8 +734,13 @@ function layoutMediaTiles(items: ResolvedExperienceMediaItem[]): {
   }
 }
 
+/** Thumbnail overlay: title only; caption is reserved for lightbox/detail. */
+function mediaThumbDisplayTitle(item: ResolvedExperienceMediaItem): string {
+  return (item.title || item.alt || '').trim().slice(0, 40)
+}
+
 function mediaThumbFromItem(item: ResolvedExperienceMediaItem, dataExpLb: string): SoqtapataMediaThumb {
-  const label = (item.caption || item.title || item.alt).slice(0, 40)
+  const label = mediaThumbDisplayTitle(item)
   if (item.kind === 'video') {
     return {
       kind: 'video',
@@ -793,7 +798,7 @@ export function buildHeroGalleryFromItems(items: ResolvedExperienceMediaItem[]):
       imageSrc: photos[2]!.imageSrc,
       imageAlt: photos[2]!.alt,
       stylePositionRelative: true,
-      galleryLabel: (photos[2]!.caption || photos[2]!.title || photos[2]!.alt).slice(0, 40),
+      galleryLabel: mediaThumbDisplayTitle(photos[2]!),
       ...(hiddenPhotos > 1
         ? {
             moreBadge: {
@@ -1208,8 +1213,8 @@ type CmsMonthRow = { month?: string; highlight?: string; level?: string }
 // --- mappers ---
 
 const PROGRAM: Record<string, string> = {
-  'nature-core': 'Nature Core',
-  'family-adventure': 'Family Adventure',
+  'nature-core': 'Classic Nature',
+  'family-adventure': 'Signature Expeditions',
   'experiential-learning': 'Exp. Learning',
   'tailor-made': 'Tailor Made',
 }
@@ -1822,7 +1827,7 @@ export function soqtapataPartialFromStructuredRow(
   const ph = row.pageHero
   const l = local
 
-  const programBadge = (e.programType && PROGRAM[e.programType]) || 'Nature Core'
+  const programBadge = (e.programType && PROGRAM[e.programType]) || 'Classic Nature'
   const routeSlug = experienceRouteSlug(e)
   const routeBadge = routeSlug ? resolveRouteLabel(routeSlug) : 'Camanti Route'
   const priceLine = resolveExperienceHeroPriceLine(e, ph)

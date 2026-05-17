@@ -10,9 +10,9 @@ export const HOME_EXPERIENCE_PROGRAM_TO_FILTER: Record<string, 'nature' | 'famil
 }
 
 export const HOME_EXPERIENCE_PROGRAM_BADGE: Record<string, string> = {
-  'nature-core': 'Nature Core',
-  'family-adventure': 'Family Adventure',
-  'experiential-learning': 'Exp. Learning',
+  'nature-core': 'Classic Nature',
+  'family-adventure': 'Signature Expeditions',
+  'experiential-learning': 'Experiential Learning',
   'tailor-made': 'Tailor Made',
 }
 

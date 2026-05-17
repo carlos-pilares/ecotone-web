@@ -35,7 +35,7 @@ export const experienceGalleryItem = defineType({
       title: 'Caption',
       type: 'string',
       validation: (Rule) => Rule.max(80),
-      description: 'Overlay label on gallery tiles.',
+      description: 'Longer caption for lightbox / detail views — not shown on thumbnail tiles.',
     }),
     defineField({
       name: 'alt',

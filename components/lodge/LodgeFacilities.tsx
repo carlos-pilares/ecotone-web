@@ -163,7 +163,6 @@ export function LodgeFacilities({ data }: LodgeFacilitiesProps) {
                   />
                   <div className="common-photo-overlay" aria-hidden />
                   <span className="common-photo-label">{p.label}</span>
-                  {p.sub ? <span className="common-photo-sub">{p.sub}</span> : null}
                 </button>
               ))}
             </div>

@@ -7,6 +7,7 @@ import { homePageTextFields } from '@/data/cmsApproved/homePageFields'
 import type { ReviewDoc } from '@/lib/queries'
 import { buildRotatingQuoteItemsFromReviews } from '@/lib/reviewQuoteItems'
 import { normalizeReviewsRatingSummary, type ReviewsRatingSummary } from '@/lib/reviewsRatingSummary'
+import { buildRouteFootPriceHtmlById } from '@/lib/routeCardFootPrice'
 import { getLowestActiveExperiencePrice, buildReserveRowsForHome } from '@/lib/reserveCtaPricing'
 import { resolveReserveCtaCard } from '@/lib/resolveReserveCtaCard'
 import {
@@ -189,7 +190,10 @@ function isBadgeTone(s: string | null | undefined): s is RoutesCardBadge['tone']
   return s === 'amber' || s === 'neutral' || s === 'custom'
 }
 
-function mapRouteCards(cards: RoutesPageSanityRouteCard[] | null | undefined): RoutesCardStatic[] | null {
+function mapRouteCards(
+  cards: RoutesPageSanityRouteCard[] | null | undefined,
+  footPriceByRouteId: Map<string, string> | null,
+): RoutesCardStatic[] | null {
   if (!Array.isArray(cards) || cards.length === 0) return null
   const out: RoutesCardStatic[] = []
   for (const c of cards) {
@@ -231,7 +235,7 @@ function mapRouteCards(cards: RoutesPageSanityRouteCard[] | null | undefined): R
       name: c.name.trim(),
       description: c.description?.trim() ?? '',
       chips: (c.chips ?? []).map((x) => x.trim()).filter(Boolean),
-      footPriceHtml: c.footPriceHtml?.trim() ?? '',
+      footPriceHtml: (id && footPriceByRouteId?.get(id)) || c.footPriceHtml?.trim() || '',
       cta: { label, href, buttonVariant: btn },
     })
   }
@@ -260,11 +264,19 @@ function routeLineLabel(route: Exclude<RoutesExpRouteFilter, 'all'>): string {
   return 'Manu Core'
 }
 
+const PROGRAM_TYPE_PUBLIC_LABEL: Record<string, string> = {
+  'nature-core': 'Classic Nature',
+  'family-adventure': 'Signature Expeditions',
+  'experiential-learning': 'Experiential Learning',
+  'tailor-made': 'Tailor Made',
+}
+
 function typePillLabel(programType: string | null | undefined): string {
   const p = programType?.trim().toLowerCase()
-  if (p === 'signature') return 'Signature'
-  if (p === 'custom') return 'Custom'
-  return 'Nature Core'
+  if (p && PROGRAM_TYPE_PUBLIC_LABEL[p]) return PROGRAM_TYPE_PUBLIC_LABEL[p]
+  if (p === 'signature') return 'Signature Expeditions'
+  if (p === 'custom') return 'Tailor Made'
+  return 'Classic Nature'
 }
 
 function mapExperienceRefsToCards(experiences: RoutesPageSanityExperienceRef[] | null | undefined): RoutesExpCardStatic[] | null {
@@ -501,7 +513,12 @@ export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPa
     strip: stripFromCms.length ? stripFromCms : fallbackTerritory.strip,
   }
 
-  const routesCards = mapRouteCards(cms?.routeCards ?? null) ?? fallbackRoutesCards
+  const footPriceByRouteId = buildRouteFootPriceHtmlById(cms?.publishedExperiencePages ?? null)
+  const routesCardsFromCms = mapRouteCards(cms?.routeCards ?? null, footPriceByRouteId)
+  const routesCards = (routesCardsFromCms ?? fallbackRoutesCards).map((card) => ({
+    ...card,
+    footPriceHtml: footPriceByRouteId.get(card.id) ?? card.footPriceHtml,
+  }))
 
   const compareSection = {
     sectionId: trimOr(fallbackCompareSection.sectionId, cms?.compareSectionId),

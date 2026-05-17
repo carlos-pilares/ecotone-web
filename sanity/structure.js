@@ -26,6 +26,26 @@ export const structure = (S) =>
             .title('Settings')
             .items([
               S.listItem()
+                .title('Header')
+                .icon(CogIcon)
+                .id('headerSettingsItem')
+                .child(
+                  S.document()
+                    .schemaType('headerSettings')
+                    .documentId('headerSettings')
+                    .title('Header'),
+                ),
+              S.listItem()
+                .title('Footer')
+                .icon(CogIcon)
+                .id('footerSettingsItem')
+                .child(
+                  S.document()
+                    .schemaType('footerSettings')
+                    .documentId('footerSettings')
+                    .title('Footer'),
+                ),
+              S.listItem()
                 .title('Site settings')
                 .icon(CogIcon)
                 .id('siteSettingsItem')
@@ -33,7 +53,7 @@ export const structure = (S) =>
                   S.document()
                     .schemaType('siteSettings')
                     .documentId('siteSettings')
-                    .title('Site: header, footer & brand'),
+                    .title('Site settings — brand & defaults'),
                 ),
               S.listItem()
                 .title('Booking modals')

@@ -33,14 +33,52 @@ const ALLOWED_INTERNAL_PAGE = new Set([
   ...SMART_LINK_INTERNAL_PAGE_LEGACY_ALIASES,
 ])
 
+/** @param {import('@sanity/types').ValidationContext | undefined} ctx */
+function validationPath(ctx) {
+  const p = ctx?.path
+  return Array.isArray(p) ? p : null
+}
+
+function lodgeTailorBandIsActive(doc) {
+  const band = doc?.experiencesTailorCta
+  if (!band || typeof band !== 'object') return false
+  return band.showTailorMade === true || band.enabled === true
+}
+
+/**
+ * Hidden legacy smart links and inactive optional bands must not block publish.
+ * @param {import('@sanity/types').ValidationContext | undefined} ctx
+ */
+function isRelaxedSmartLinkContext(ctx) {
+  const path = validationPath(ctx)
+  if (!path) return false
+
+  const linkIdx = path.findIndex((seg) => seg === 'ctaSmartLink' || seg === 'tailorMadeCta')
+  if (linkIdx < 0) return false
+  const linkField = path[linkIdx]
+  const parentSeg = path[linkIdx - 1]
+
+  if (linkField === 'ctaSmartLink' && parentSeg === 'experiencesTailorCta') return true
+  if (linkField === 'ctaSmartLink' && path.includes('lodgePresentationRows')) return true
+
+  if (linkField === 'tailorMadeCta' && parentSeg === 'experiencesTailorCta') {
+    return !lodgeTailorBandIsActive(ctx?.document)
+  }
+
+  return false
+}
+
 /**
  * Optional smartLink fields (e.g. reserve CTAs): no label ⇒ not a real CTA — do not validate
  * link targets (avoids `initialValue` on linkType forcing picks while the block is unused).
- * `enabled === false` ⇒ same.
+ * `enabled === false`, hidden legacy paths, and inactive lodge Tailor Made ⇒ skip.
+ * @param {import('@sanity/types').ValidationContext | undefined} ctx
  */
-function skipSmartLinkTargetValidation(parent) {
+function skipSmartLinkTargetValidation(parent, ctx) {
   if (!parent || typeof parent !== 'object') return true
   if (parent.enabled === false) return true
+  if (ctx?.field?.options?.relaxTargetValidation === true) return true
+  if (isRelaxedSmartLinkContext(ctx)) return true
   const label = typeof parent.label === 'string' ? parent.label.trim() : ''
   if (!label) return true
   return false
@@ -80,7 +118,7 @@ export const smartLink = defineType({
         Rule.custom((v, ctx) => {
           const p = ctx.parent
           if (!p || typeof p !== 'object') return true
-          if (skipSmartLinkTargetValidation(p)) return true
+          if (skipSmartLinkTargetValidation(p, ctx)) return true
           const t = typeof v === 'string' ? v.trim() : ''
           if (!t) return 'Pick a link type'
           if (!ALLOWED_LINK_TYPES.has(t)) return 'Invalid or unsupported link type'
@@ -99,7 +137,7 @@ export const smartLink = defineType({
       validation: (Rule) =>
         Rule.custom((v, ctx) => {
           const p = ctx.parent
-          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p)) return true
+          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p, ctx)) return true
           if (p.linkType !== 'samePageSection') return true
           return v?.trim() ? true : 'Pick a section'
         }),
@@ -116,7 +154,7 @@ export const smartLink = defineType({
       validation: (Rule) =>
         Rule.custom((v, ctx) => {
           const p = ctx.parent
-          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p)) return true
+          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p, ctx)) return true
           if (!websitePageLike(p)) return true
           const t = typeof v === 'string' ? v.trim() : ''
           if (!t) return 'Pick a site page'
@@ -134,7 +172,7 @@ export const smartLink = defineType({
       validation: (Rule) =>
         Rule.custom((ref, ctx) => {
           const p = ctx.parent
-          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p)) return true
+          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p, ctx)) return true
           if (!websitePageLike(p) || p.internalPage !== 'experiencePage') return true
           return ref?._ref ? true : 'Pick an experience page'
         }),
@@ -149,7 +187,7 @@ export const smartLink = defineType({
       validation: (Rule) =>
         Rule.custom((ref, ctx) => {
           const p = ctx.parent
-          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p)) return true
+          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p, ctx)) return true
           if (!websitePageLike(p) || p.internalPage !== 'lodgePage') return true
           return ref?._ref ? true : 'Pick a lodge page'
         }),
@@ -180,7 +218,7 @@ export const smartLink = defineType({
       validation: (Rule) =>
         Rule.custom((url, ctx) => {
           const p = ctx.parent
-          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p)) return true
+          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p, ctx)) return true
           if (p.linkType !== 'externalUrl') return true
           if (!url || typeof url !== 'string') return 'URL required'
           const t = url.trim()
@@ -196,7 +234,7 @@ export const smartLink = defineType({
       validation: (Rule) =>
         Rule.custom((file, ctx) => {
           const p = ctx.parent
-          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p)) return true
+          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p, ctx)) return true
           if (p.linkType !== 'file') return true
           return file?.asset ? true : 'Upload a file'
         }),
@@ -217,7 +255,7 @@ export const smartLink = defineType({
       validation: (Rule) =>
         Rule.custom((v, ctx) => {
           const p = ctx.parent
-          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p)) return true
+          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p, ctx)) return true
           if (p.linkType !== 'book') return true
           const t = typeof v === 'string' ? v.trim() : ''
           return t === 'general' || t === 'specific' ? true : 'Pick a booking mode'
@@ -235,7 +273,7 @@ export const smartLink = defineType({
       validation: (Rule) =>
         Rule.custom((ref, ctx) => {
           const p = ctx.parent
-          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p)) return true
+          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p, ctx)) return true
           if (p.linkType !== 'book' || p.bookingMode !== 'specific') return true
           return ref?._ref ? true : 'Pick an experience page for specific booking'
         }),
@@ -250,7 +288,7 @@ export const smartLink = defineType({
       validation: (Rule) =>
         Rule.custom((url, ctx) => {
           const p = ctx.parent
-          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p)) return true
+          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p, ctx)) return true
           if (p.linkType !== 'book') return true
           if (url == null || url === '') return true
           const t = String(url).trim()
@@ -267,7 +305,7 @@ export const smartLink = defineType({
       validation: (Rule) =>
         Rule.custom((v, ctx) => {
           const p = ctx.parent
-          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p)) return true
+          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p, ctx)) return true
           if (p.linkType !== 'email') return true
           return v?.trim() ? true : 'Email address is required'
         }),
@@ -281,7 +319,7 @@ export const smartLink = defineType({
       validation: (Rule) =>
         Rule.custom((v, ctx) => {
           const p = ctx.parent
-          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p)) return true
+          if (!p || typeof p !== 'object' || skipSmartLinkTargetValidation(p, ctx)) return true
           if (p.linkType !== 'whatsapp') return true
           const t = v?.trim()
           if (!t) return 'WhatsApp number is required'

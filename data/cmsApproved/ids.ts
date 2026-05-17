@@ -6,6 +6,8 @@ export const CMS_IDS = {
   /** Singleton `aboutPage` (seed + Studio). */
   aboutPage: 'aboutPage',
   siteSettings: 'siteSettings',
+  headerSettings: 'headerSettings',
+  footerSettings: 'footerSettings',
   /** Singleton: copy for Plan + Experience booking modals. */
   bookingModalSettings: 'bookingModalSettings',
   routeCamanti: 'routeCamanti',

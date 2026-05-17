@@ -9,8 +9,7 @@ function isDesktopNav(): boolean {
 
 function closeAllMega() {
   document.getElementById('navOverlay')?.classList.remove('visible')
-  document.getElementById('site-nav-dd-experiences')?.classList.remove('open')
-  document.getElementById('site-nav-dd-lodges')?.classList.remove('open')
+  document.querySelectorAll('.site-header-desktop-dd.nav-dropdown.open').forEach((dd) => dd.classList.remove('open'))
   document.querySelectorAll('.nav-link-btn.open').forEach((b) => b.classList.remove('open'))
 }
 
@@ -39,71 +38,55 @@ function wireSidebar(dd: HTMLElement) {
  * Markup lives in `SiteHeader`; this module attaches listeners (DOM ids).
  */
 export function SiteHeaderShellClient() {
-  const openKeyRef = useRef<'exp' | 'lodges' | null>(null)
+  const openDdIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     const overlay = document.getElementById('navOverlay')
-    const ddExp = document.getElementById('site-nav-dd-experiences')
-    const ddLodges = document.getElementById('site-nav-dd-lodges')
     const ham = document.getElementById('ham')
     const drawer = document.getElementById('drawer')
 
-    if (ddExp) wireSidebar(ddExp)
-    if (ddLodges) wireSidebar(ddLodges)
-
-    const openMega = (which: 'exp' | 'lodges', btn: HTMLElement) => {
-      if (!isDesktopNav()) return
-      closeAllMega()
-      openKeyRef.current = which
-      if (which === 'exp') ddExp?.classList.add('open')
-      else ddLodges?.classList.add('open')
-      overlay?.classList.add('visible')
-      btn.classList.add('open')
-    }
-
-    const toggleMegaClick = (which: 'exp' | 'lodges', btn: HTMLElement) => {
-      if (!isDesktopNav()) return
-      if (openKeyRef.current === which && (which === 'exp' ? ddExp?.classList.contains('open') : ddLodges?.classList.contains('open'))) {
-        closeAllMega()
-        openKeyRef.current = null
-        return
-      }
-      openMega(which, btn)
-    }
-
-    const onBtnEnter = (which: 'exp' | 'lodges', btn: HTMLElement) => {
-      if (!isDesktopNav()) return
-      openMega(which, btn)
-    }
-
-    const btnExp = document.getElementById('site-nav-btn-experiences')
-    const btnLodges = document.getElementById('site-nav-btn-lodges')
+    const ddButtons = document.querySelectorAll<HTMLElement>('.nav-link-btn[aria-controls]')
     const cleanups: Array<() => void> = []
 
-    if (btnExp) {
-      const h = () => onBtnEnter('exp', btnExp)
-      const c = () => toggleMegaClick('exp', btnExp)
-      btnExp.addEventListener('mouseenter', h)
-      btnExp.addEventListener('click', c)
+    ddButtons.forEach((btn) => {
+      const ddId = btn.getAttribute('aria-controls')
+      if (!ddId) return
+      const dd = document.getElementById(ddId)
+      if (!dd) return
+
+      wireSidebar(dd)
+
+      const openMega = () => {
+        if (!isDesktopNav()) return
+        closeAllMega()
+        openDdIdRef.current = ddId
+        dd.classList.add('open')
+        overlay?.classList.add('visible')
+        btn.classList.add('open')
+      }
+
+      const toggleMegaClick = () => {
+        if (!isDesktopNav()) return
+        if (openDdIdRef.current === ddId && dd.classList.contains('open')) {
+          closeAllMega()
+          openDdIdRef.current = null
+          return
+        }
+        openMega()
+      }
+
+      const onEnter = () => openMega()
+      btn.addEventListener('mouseenter', onEnter)
+      btn.addEventListener('click', toggleMegaClick)
       cleanups.push(() => {
-        btnExp.removeEventListener('mouseenter', h)
-        btnExp.removeEventListener('click', c)
+        btn.removeEventListener('mouseenter', onEnter)
+        btn.removeEventListener('click', toggleMegaClick)
       })
-    }
-    if (btnLodges) {
-      const h = () => onBtnEnter('lodges', btnLodges)
-      const c = () => toggleMegaClick('lodges', btnLodges)
-      btnLodges.addEventListener('mouseenter', h)
-      btnLodges.addEventListener('click', c)
-      cleanups.push(() => {
-        btnLodges.removeEventListener('mouseenter', h)
-        btnLodges.removeEventListener('click', c)
-      })
-    }
+    })
 
     const onOverlayClick = () => {
       closeAllMega()
-      openKeyRef.current = null
+      openDdIdRef.current = null
     }
     overlay?.addEventListener('click', onOverlayClick)
     cleanups.push(() => overlay?.removeEventListener('click', onOverlayClick))
@@ -111,7 +94,7 @@ export function SiteHeaderShellClient() {
     const onDocKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         closeAllMega()
-        openKeyRef.current = null
+        openDdIdRef.current = null
         drawer?.classList.remove('open')
         ham?.classList.remove('open')
         document.body.style.overflow = ''
@@ -131,7 +114,7 @@ export function SiteHeaderShellClient() {
       const openDd = document.querySelector('.nav-dropdown.open')
       if (topNav?.contains(t) || openDd?.contains(t)) return
       closeAllMega()
-      openKeyRef.current = null
+      openDdIdRef.current = null
     }
     document.addEventListener('pointerdown', onPointerDown, true)
     cleanups.push(() => document.removeEventListener('pointerdown', onPointerDown, true))

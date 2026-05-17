@@ -376,11 +376,11 @@ export const experiencePage = defineType({
     ),
     defineField({
       name: 'reviewsSection',
-      title: '4. Reviews section (this landing)',
-      type: 'pageReviewsSection',
+      title: 'Reviews — quotes & cards',
+      type: 'experiencePageReviewsSection',
       group: 'reviews',
       description:
-        'Eyebrow, title, optional body, rotating quotes (max 3), cards (max 4). Global rating: Settings → Reviews — global summary.',
+        'Rotating quotes (max 3) and review cards (max 4). Section eyebrow / title / intro: **Section presentation** above. Global rating: Settings → Reviews.',
     }),
     defineField({
       name: 'reviewRefs',
@@ -619,12 +619,16 @@ export const experiencePage = defineType({
       description: 'Deprecated — use **Section presentation**.',
     }),
 
-    previewField(
-      'stPrevReserve',
-      'Section presentation',
-      'reserve',
-      'reserve',
-    ),
+    defineField({
+      name: 'stPrevReserve',
+      title: 'Section presentation (legacy)',
+      type: 'string',
+      readOnly: true,
+      group: 'reserve',
+      hidden: true,
+      description:
+        'Deprecated — Reserve copy is edited in **Reserve CTA (#book)** below. Legacy sectionModules data preserved.',
+    }),
     defineField({
       name: 'reserveCtaSettings',
       title: 'Reserve CTA (#book) — preferido',

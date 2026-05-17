@@ -90,6 +90,8 @@ export const lodgePageExperiencesTailorCta = defineType({
       title: 'CTA smart link (legacy)',
       type: 'smartLink',
       hidden: true,
+      description: 'Deprecated — kept for existing documents. Does not block publish.',
+      options: {relaxTargetValidation: true},
     }),
   ],
 })

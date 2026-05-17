@@ -11,8 +11,8 @@ import {
 } from './objects/experienceKnowledgeObjects'
 
 const PROGRAM_TYPE_OPTIONS = [
-  {title: 'Nature Core', value: 'nature-core'},
-  {title: 'Family Adventure', value: 'family-adventure'},
+  {title: 'Classic Nature', value: 'nature-core'},
+  {title: 'Signature Expeditions', value: 'family-adventure'},
   {title: 'Experiential Learning', value: 'experiential-learning'},
   {title: 'Tailor Made', value: 'tailor-made'},
 ]
@@ -175,11 +175,13 @@ export const experience = defineType({
     }),
     defineField({
       name: 'lodgeEnquireSmartLink',
-      title: 'Lodge card — Enquire link (sin precio)',
+      title: 'Lodge card — Enquire link (sin precio) (legacy)',
       type: 'smartLink',
       group: 'identity',
+      hidden: true,
+      options: {relaxTargetValidation: true},
       description:
-        'Cuando la tarjeta de experiencia en la página del lodge muestra Enquire (sin precio numérico), el clic usa este enlace. Si está vacío, se abre WhatsApp con un mensaje prefijado.',
+        'Deprecated in Studio — not used on standard experience cards (View → /experiences/{slug}). Legacy data preserved; lodge/routes enquire flows may still read stored values on the site.',
     }),
     defineField({
       name: 'tagline',
@@ -516,18 +518,19 @@ export const experience = defineType({
             }),
             defineField({
               name: 'iconType',
-              title: 'Icono',
+              title: 'Icono (legacy)',
               type: 'string',
+              hidden: true,
               options: {list: WILDLIFE_ICONS, layout: 'dropdown'},
-              description: 'Icono SVG en la card. Elige el más representativo de la especie.',
+              description: 'Deprecated — wildlife cards use photos. Data preserved for legacy documents.',
             }),
             defineField({
               name: 'image',
-              title: 'Foto (opcional)',
+              title: 'Foto',
               type: 'image',
               options: imgHot,
               description:
-                'Foto editorial de la especie (opcional). Recomendado: horizontal ~16:10 o 4:3, mín. ~900px de ancho.',
+                'Species photo for the card. Recommended: horizontal ~16:10 or 4:3, min. ~900px wide.',
             }),
             defineField({
               name: 'badge',

@@ -3,8 +3,8 @@ import type { ExperienceReserveCardRowGroq } from '@/lib/reserveCtaGroq'
 import { EXPERIENCE_ROUTE_DISPLAY, isActiveExperienceStatus } from '@/lib/reserveCtaPricing'
 
 const PROGRAM_TYPE_LABEL: Record<string, string> = {
-  'nature-core': 'Nature Core',
-  'family-adventure': 'Family Adventure',
+  'nature-core': 'Classic Nature',
+  'family-adventure': 'Signature Expeditions',
   'experiential-learning': 'Experiential Learning',
   'tailor-made': 'Tailor Made',
 }

@@ -44,23 +44,61 @@ export type HeaderNavLodgeItemOverrideRow = {
   order?: number | null
 }
 
+export type HeaderNavProgramTypeGroupRow = {
+  programType?: string | null
+  label?: string | null
+  sidebarSubLabel?: string | null
+  showInMenu?: boolean | null
+  order?: number | null
+  eyebrow?: string | null
+  title?: string | null
+  subtitle?: string | null
+  body?: string | null
+  ctaLabel?: string | null
+  ctaSmartLink?: SmartLinkGroq | null
+  imageUrl?: string | null
+  imageAlt?: string | null
+}
+
+export type HeaderNavRouteGroupOverrideRow = {
+  route?: {
+    _id?: string
+    slug?: string | null
+    shortLabel?: string | null
+    name?: string | null
+  } | null
+  labelOverride?: string | null
+  showInMenu?: boolean | null
+  order?: number | null
+}
+
 /** Raw bundle for `getSiteHeaderNav` (mega menu + mobile + chrome). */
 export type SiteHeaderNavBundleRow = {
-  settings: SiteHeaderNavSettingsRow | null
+  headerSettings: Record<string, unknown> | null
+  legacyHeader: Record<string, unknown> | null
   experiencePages: SiteHeaderNavExperiencePageRow[] | null
   lodgePages: SiteHeaderNavLodgePageRow[] | null
   routeNavDocs: SiteHeaderNavRouteNavRow[] | null
 }
 
 export type SiteHeaderNavSettingsRow = {
+  /** When true, resolver must not apply legacy siteSettings header fallbacks. */
+  usesHeaderSettings?: boolean
   routesEnabled?: boolean | null
   routesLabel?: string | null
   routesLinkSmartLink?: SmartLinkGroq | null
   aboutEnabled?: boolean | null
   aboutLabel?: string | null
   aboutLinkSmartLink?: SmartLinkGroq | null
+  blogEnabled?: boolean | null
+  blogLabel?: string | null
+  blogLinkSmartLink?: SmartLinkGroq | null
   experiencesEnabled?: boolean | null
   experiencesLabel?: string | null
+  experiencesSideMenuTitle?: string | null
+  lodgesSideMenuTitle?: string | null
+  programGroups?: HeaderNavProgramTypeGroupRow[] | null
+  routeGroupOverrides?: HeaderNavRouteGroupOverrideRow[] | null
   experiencesGroupOverrides?: HeaderNavExperienceGroupOverrideRow[] | null
   experiencesItemOverrides?: HeaderNavExperienceItemOverrideRow[] | null
   experiencesTailorMenu?: HeaderNavExperiencesTailorMenuRow | null
@@ -84,10 +122,14 @@ export type SiteHeaderNavSettingsRow = {
   navTailorMadeSubtitle?: string | null
   navTailorMadeBody?: string | null
   navTailorMadeSmartLink?: SmartLinkGroq | null
-  /** Legacy flat smart link — merged when `experiencesSeeAll` is empty. */
   navExperiencesSeeAllSmartLink?: SmartLinkGroq | null
-  /** Legacy flat smart link — merged when `lodgesSeeAll` is empty. */
   navLodgesSeeAllSmartLink?: SmartLinkGroq | null
+}
+
+export type SiteHeaderNavExperienceRouteRefRow = {
+  slug?: string | null
+  shortLabel?: string | null
+  name?: string | null
 }
 
 export type SiteHeaderNavExperiencePageRow = {
@@ -99,10 +141,12 @@ export type SiteHeaderNavExperiencePageRow = {
     name?: string | null
     programType?: string | null
     route?: string | null
+    routeRef?: SiteHeaderNavExperienceRouteRefRow | null
     duration?: string | null
     price?: number | null
     priceLabel?: string | null
     mainImageUrl?: string | null
+    navImageUrl?: string | null
   } | null
 }
 
@@ -123,8 +167,9 @@ export type SiteHeaderNavLodgePageRow = {
   heroShortDescription?: string | null
   heroHighlights?: Array<{ text?: string | null } | null> | null
   heroImageUrl?: string | null
-  menuCtaLabel?: string | null
-  menuCtaSmartLink?: SmartLinkGroq | null
+  heroGalleryOrderKeys?: string[] | null
+  menuThumbnailImage?: string | null
+  menuThumbnailImageUrl?: string | null
   lodge: {
     name?: string | null
     route?: string | null
@@ -140,68 +185,120 @@ export type SiteHeaderNavLodgePageRow = {
 
 const SL = `{ ${GROQ_SMART_LINK_FIELDS} }`
 
-export const siteHeaderNavBundleQuery = groq`{
-  "settings": *[_id == "siteSettings"][0]{
-    routesEnabled,
-    routesLabel,
-    "routesLinkSmartLink": header.routesLinkSmartLink ${SL},
-    aboutEnabled,
-    aboutLabel,
-    "aboutLinkSmartLink": header.aboutLinkSmartLink ${SL},
-    experiencesEnabled,
-    experiencesLabel,
-    "experiencesGroupOverrides": header.experiencesGroupOverrides[]{
-      groupKey,
-      labelOverride,
-      showInMenu,
-      order
-    },
-    "experiencesItemOverrides": header.experiencesItemOverrides[]{
-      "experiencePageId": experiencePage->_id,
-      showInMenu,
-      "labelOverride": labelOverride,
-      order
-    },
-    "experiencesTailorMenu": header.experiencesTailorMenu {
-      enabled,
-      label
-    },
-    "experiencesGroups": header.experiencesGroups {
-      classicNature { label, enabled, order },
-      signatureExpeditions { label, enabled, order },
-      experientialLearning { label, enabled, order },
-      tailorMade { label, enabled, order }
-    },
-    "experiencesSeeAll": header.experiencesSeeAll {
-      enabled,
-      label,
-      "smartLink": smartLink ${SL}
-    },
-    lodgesEnabled,
-    lodgesLabel,
-    "lodgesItemOverrides": header.lodgesItemOverrides[]{
-      "lodgePageId": lodgePage->_id,
-      showInMenu,
-      "labelOverride": labelOverride,
-      order
-    },
-    "lodgeGroups": header.lodgeGroups {
-      camanti { label, enabled, order },
-      manuRoad { label, enabled, order },
-      manuCore { label, enabled, order }
-    },
-    "lodgesSeeAll": header.lodgesSeeAll {
-      enabled,
-      label,
-      "smartLink": smartLink ${SL}
-    },
-    "navTailorMadeTitle": header.navTailorMadeTitle,
-    "navTailorMadeSubtitle": header.navTailorMadeSubtitle,
-    "navTailorMadeBody": header.navTailorMadeBody,
-    "navTailorMadeSmartLink": header.navTailorMadeSmartLink ${SL},
-    "navExperiencesSeeAllSmartLink": header.navExperiencesSeeAllSmartLink ${SL},
-    "navLodgesSeeAllSmartLink": header.navLodgesSeeAllSmartLink ${SL}
+const LEGACY_HEADER_NAV = `
+  "routesEnabled": header.routesEnabled,
+  "routesLabel": header.routesLabel,
+  "routesLinkSmartLink": header.routesLinkSmartLink ${SL},
+  "aboutEnabled": header.aboutEnabled,
+  "aboutLabel": header.aboutLabel,
+  "aboutLinkSmartLink": header.aboutLinkSmartLink ${SL},
+  "experiencesEnabled": header.experiencesEnabled,
+  "experiencesLabel": header.experiencesLabel,
+  "experiencesGroupOverrides": header.experiencesGroupOverrides[]{
+    groupKey, labelOverride, showInMenu, order
   },
+  "experiencesItemOverrides": header.experiencesItemOverrides[]{
+    "experiencePageId": experiencePage->_id,
+    showInMenu, labelOverride, order
+  },
+  "experiencesTailorMenu": header.experiencesTailorMenu { enabled, label },
+  "experiencesGroups": header.experiencesGroups {
+    classicNature { label, enabled, order },
+    signatureExpeditions { label, enabled, order },
+    experientialLearning { label, enabled, order },
+    tailorMade { label, enabled, order }
+  },
+  "experiencesSeeAll": header.experiencesSeeAll {
+    enabled, label, "smartLink": smartLink ${SL}
+  },
+  "lodgesEnabled": header.lodgesEnabled,
+  "lodgesLabel": header.lodgesLabel,
+  "lodgesItemOverrides": header.lodgesItemOverrides[]{
+    "lodgePageId": lodgePage->_id,
+    showInMenu, labelOverride, order
+  },
+  "lodgeGroups": header.lodgeGroups {
+    camanti { label, enabled, order },
+    manuRoad { label, enabled, order },
+    manuCore { label, enabled, order }
+  },
+  "lodgesSeeAll": header.lodgesSeeAll {
+    enabled, label, "smartLink": smartLink ${SL}
+  },
+  "navTailorMadeTitle": header.navTailorMadeTitle,
+  "navTailorMadeSubtitle": header.navTailorMadeSubtitle,
+  "navTailorMadeBody": header.navTailorMadeBody,
+  "navTailorMadeSmartLink": header.navTailorMadeSmartLink ${SL},
+  "navExperiencesSeeAllSmartLink": header.navExperiencesSeeAllSmartLink ${SL},
+  "navLodgesSeeAllSmartLink": header.navLodgesSeeAllSmartLink ${SL}
+`
+
+const NAV_TAB_FIELDS = `
+  _key,
+  label,
+  showInHeader,
+  smartLink ${SL},
+  hasDropdown,
+  dropdownType,
+  showSeeAll,
+  seeAllLabel,
+  seeAllSmartLink ${SL},
+  experiencesDropdown {
+    sideMenuTitle,
+    programGroups[]{
+      programType, label, sidebarSubLabel, showInMenu, order,
+      eyebrow, title, subtitle, body, ctaLabel,
+      ctaSmartLink ${SL},
+      imageAlt,
+      "imageUrl": image.asset->url
+    }
+  },
+  lodgesDropdown {
+    sideMenuTitle
+  }
+`
+
+const HEADER_SETTINGS_NAV = `
+  _id,
+  navTabs[]{ ${NAV_TAB_FIELDS} },
+  experiencesShowInHeader,
+  experiencesLabel,
+  experiencesSmartLink ${SL},
+  experiencesSideMenuTitle,
+  programGroups[]{
+    programType, label, sidebarSubLabel, showInMenu, order,
+    eyebrow, title, subtitle, body, ctaLabel,
+    ctaSmartLink ${SL},
+    imageAlt,
+    "imageUrl": image.asset->url
+  },
+  experiencesSeeAll { enabled, label, "smartLink": smartLink ${SL} },
+  lodgesShowInHeader,
+  lodgesLabel,
+  lodgesSmartLink ${SL},
+  lodgesSideMenuTitle,
+  routeGroupOverrides[]{
+    route->{ _id, "slug": slug.current, shortLabel, name },
+    labelOverride, showInMenu, order
+  },
+  lodgesSeeAll { enabled, label, "smartLink": smartLink ${SL} },
+  routesShowInHeader,
+  routesLabel,
+  routesSmartLink ${SL},
+  aboutShowInHeader,
+  aboutLabel,
+  aboutSmartLink ${SL},
+  blogShowInHeader,
+  blogLabel,
+  blogSmartLink ${SL},
+  mainCtaShowInHeader,
+  mainCtaLabel,
+  mainCtaSmartLink ${SL}
+`
+
+export const siteHeaderNavBundleQuery = groq`{
+  "headerSettings": *[_type == "headerSettings" && _id == "headerSettings"][0]{ ${HEADER_SETTINGS_NAV} },
+  "legacyHeader": *[_id == "siteSettings"][0]{ ${LEGACY_HEADER_NAV} },
   "experiencePages": *[_type == "experiencePage" && defined(slug.current) && defined(experience)]
     | order(coalesce(headerNavOrder, 999) asc, experience->name asc) {
     _id,
@@ -212,10 +309,20 @@ export const siteHeaderNavBundleQuery = groq`{
       name,
       programType,
       route,
+      routeRef->{
+        "slug": slug.current,
+        shortLabel,
+        name
+      },
       duration,
       price,
       priceLabel,
-      "mainImageUrl": mainImage.asset->url
+      "mainImageUrl": mainImage.asset->url,
+      "navImageUrl": coalesce(
+        gallery[(photoCategory == "hero" || usageSection == "hero") && defined(image.asset)][0].image.asset->url,
+        gallery[defined(image.asset)][0].image.asset->url,
+        mainImage.asset->url
+      )
     }
   },
   "lodgePages": *[_type == "lodgePage" && defined(slug.current) && defined(lodge)]
@@ -226,9 +333,14 @@ export const siteHeaderNavBundleQuery = groq`{
     heroTitle,
     heroShortDescription,
     heroHighlights[]{ text },
-    "heroImageUrl": heroImage.asset->url,
-    menuCtaLabel,
-    "menuCtaSmartLink": menuCtaSmartLink ${SL},
+    heroGalleryOrderKeys,
+    menuThumbnailImage,
+    "menuThumbnailImageUrl": coalesce(
+      select(menuThumbnailImage != "" => lodge->gallery[_key == ^.menuThumbnailImage][0].image.asset->url),
+      select(count(coalesce(heroGalleryOrderKeys, [])) > 0 => lodge->gallery[_key == ^.heroGalleryOrderKeys[0]][0].image.asset->url),
+      lodge->gallery[defined(image.asset)][0].image.asset->url,
+      lodge->mainImage.asset->url
+    ),
     "lodge": lodge-> {
       name,
       route,

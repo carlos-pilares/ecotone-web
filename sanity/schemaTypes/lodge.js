@@ -505,8 +505,9 @@ export const lodge = defineType({
               name: 'gallery',
               title: 'Gallery (legacy — uploads)',
               type: 'array',
-              hidden: ({parent}) => Array.isArray(parent?.galleryItemKeys) && parent.galleryItemKeys.length > 0,
-              description: 'Deprecated: add photos to **Global gallery** and pick them above. Hidden when picks are set.',
+              hidden: true,
+              description:
+                'Deprecated — not shown in Studio. Room photos come from **Photos library** (link accommodation on each photo). Data preserved for legacy documents.',
               of: [
                 {
                   type: 'object',

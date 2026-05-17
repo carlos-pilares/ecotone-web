@@ -815,6 +815,25 @@ export const soqtapataStructuredPageBySlugQuery = groq`
   }
 `
 
+/** Experience rows linked to a lodge landing via KC → Lodges → `lodgePresentationRows[].lodge` only. */
+const GROQ_LODGE_PAGE_LINKED_EXPERIENCE_FIELDS = `
+  _id,
+  name,
+  tagline,
+  programType,
+  route,
+  duration,
+  price,
+  priceLabel,
+  status,
+  shortDescription,
+  mainImage,
+  "mainImageUrl": mainImage.asset->url,
+  "slug": slug.current,
+  "experienceLandingSlug": *[_type == "experiencePage" && experience._ref == ^._id][0].slug.current,
+  lodgeEnquireSmartLink { ${GROQ_SMART_LINK_FIELDS} }
+`
+
 /** Published lodge landings: slug segments for `generateStaticParams` (requires `lodge` ref). */
 export const lodgePageSlugsQuery = groq`
   *[_type == "lodgePage" && defined(slug.current) && defined(lodge)] | order(slug.current asc) {
@@ -830,6 +849,8 @@ export const lodgeStructuredPageBySlugQuery = groq`
     slug,
     seo,
     heroImage,
+    heroGalleryOrderKeys,
+    menuThumbnailImage,
     heroHighlights[]{ text, key },
     heroTitle,
     heroShortDescription,
@@ -874,25 +895,15 @@ export const lodgeStructuredPageBySlugQuery = groq`
       booking { eyebrow, title, body },
     },
     featuredRoomStableId,
-    experiencesSelection[]-> {
-      _id,
-      "linkedLodgeId": coalesce(lodge->_id, lodge._ref),
-      name,
-      tagline,
-      programType,
-      route,
-      duration,
-      price,
-      priceLabel,
-      status,
-      shortDescription,
-      mainImage,
-      "mainImageUrl": mainImage.asset->url,
-      "slug": slug.current,
-      "experienceLandingSlug": *[_type == "experiencePage" && experience._ref == ^._id][0].slug.current,
-      lodgeEnquireSmartLink { ${GROQ_SMART_LINK_FIELDS} }
+    "lodgeRef": lodge._ref,
+    "linkedExperiencesFromPresentation": *[
+      _type == "experience"
+      && defined(slug.current)
+      && defined(^.lodge._ref)
+      && ^.lodge._ref in lodgePresentationRows[].lodge._ref
+    ] | order(name asc) {
+      ${GROQ_LODGE_PAGE_LINKED_EXPERIENCE_FIELDS}
     },
-    fallbackToLodgeRelations,
     experiencesTailorCta {
       enabled,
       showTailorMade,
@@ -1638,7 +1649,7 @@ export const siteSettingsLogosQuery = groq`
   }
 `
 
-/** Global shell: header nav/CTA + footer copy/links + logos (single fetch for `SiteHeader` / `SiteFooter`). */
+/** @deprecated Shell fetch uses `siteSettingsShellQuery` bundle shape in `getSiteSettingsShell`. */
 export type SiteSettingsShellRow = {
   defaultWhatsappUrl?: string | null
   homePath: string | null
@@ -1658,33 +1669,72 @@ export type SiteSettingsShellRow = {
     exploreLinks: Array<{ label?: string; href?: string; openInNewTab?: boolean }> | null
     contactTitle: string | null
     contactLinks: Array<{ label?: string; href?: string; openInNewTab?: boolean }> | null
+    legalLinks?: Array<{ label?: string; href?: string; openInNewTab?: boolean }> | null
+    footerCertText?: string[] | null
+    footerCertPartners?: unknown
   } | null
   copyright: string | null
   footerCertText: string[] | null
 } | null
 
-export const siteSettingsShellQuery = groq`
-  *[_id == "siteSettings"][0]{
+export const siteSettingsShellQuery = groq`{
+  "headerSettings": *[_type == "headerSettings" && _id == "headerSettings"][0]{
+    headerLogoPrimary,
+    headerLogoLight,
+    headerLogoDark,
+    homePath,
+    mobileMenuAriaLabel,
+    mainCtaShowInHeader,
+    mainCtaLabel,
+    mainCtaSmartLink { ${GROQ_SMART_LINK_FIELDS} }
+  },
+  "footerSettings": *[_id == "footerSettings"][0]{
     defaultWhatsappUrl,
-    "homePath": header.homePath,
-    "mobileMenuAriaLabel": header.mobileMenuAriaLabel,
-    "mainNav": header.mainNav,
-    "navBookNowSmartLink": header.navBookNowSmartLink { ${GROQ_SMART_LINK_FIELDS} },
-    "primaryCta": header.primaryCta,
-    "headerLogoLight": coalesce(header.headerLogoLight, header.headerLogoFullHorizontal),
-    "headerLogoDark": header.headerLogoDark,
-    "footerLogo": coalesce(footer.footerLogo, footer.footerLogoFullHorizontal, header.headerLogoFullHorizontal),
-    "brandIsotipo": brandIsotipo,
-    "footer": {
-      "showBrandDeco": footer.showBrandDeco,
-      "tagline": footer.tagline,
-      "descriptionLines": footer.descriptionLines,
-      "exploreTitle": footer.exploreTitle,
-      "exploreLinks": footer.exploreLinks,
-      "contactTitle": footer.contactTitle,
-      "contactLinks": footer.contactLinks
+    copyright,
+    socialLinks,
+    footer {
+      footerLogo,
+      footerLogoFullHorizontal,
+      showBrandDeco,
+      tagline,
+      descriptionLines,
+      exploreTitle,
+      exploreLinks,
+      contactTitle,
+      contactLinks,
+      legalLinks,
+      footerCertText,
+      footerCertPartners
+    }
+  },
+  "legacySiteSettings": *[_id == "siteSettings"][0]{
+    defaultWhatsappUrl,
+    brandIsotipo,
+    copyright,
+    socialLinks,
+    "header": {
+      headerLogoFullHorizontal,
+      headerLogoLight,
+      headerLogoDark,
+      homePath,
+      mobileMenuAriaLabel,
+      mainNav,
+      navBookNowSmartLink { ${GROQ_SMART_LINK_FIELDS} },
+      primaryCta
     },
-    "copyright": copyright,
-    "footerCertText": footer.footerCertText
+    "footer": {
+      footerLogo,
+      footerLogoFullHorizontal,
+      showBrandDeco,
+      tagline,
+      descriptionLines,
+      exploreTitle,
+      exploreLinks,
+      contactTitle,
+      contactLinks,
+      legalLinks,
+      footerCertText,
+      footerCertPartners
+    }
   }
-`
+}`

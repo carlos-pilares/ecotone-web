@@ -3,11 +3,18 @@ import '@/app/site-header-mega.css'
 import { getSiteHeaderNav } from '@/lib/getSiteHeaderNav'
 import { getSiteSettingsShell } from '@/lib/getSiteSettingsShell'
 import { resolveHeaderLogoDarkUrl } from '@/lib/headerLogoPublic'
-import type { ResolvedSiteHeaderNav } from '@/lib/resolveSiteHeaderNavData'
+import type {
+  ResolvedSiteHeaderNav,
+  ResolvedSiteHeaderNavExperiences,
+  ResolvedSiteHeaderNavLodges,
+  ResolvedSiteHeaderNavTab,
+  SiteHeaderNavCta,
+} from '@/lib/resolveSiteHeaderNavData'
 
 import { SiteHeaderLogoCms } from '@/components/SiteHeaderLogoCms'
 import { SiteHeaderNavBookButtons } from '@/components/SiteHeaderNavBookButtons'
 import { SiteHeaderShellClient } from '@/components/SiteHeaderShellClient'
+import { SiteHeaderTailorMobileRow, SiteHeaderTailorPanel } from '@/components/SiteHeaderTailorPanel'
 
 function InlineHeaderLogo() {
   return (
@@ -84,6 +91,21 @@ function ArrowSeeAll() {
   )
 }
 
+function DirectNavLink({ cta }: { cta: SiteHeaderNavCta | null }) {
+  if (!cta) return null
+  return (
+    <li>
+      <a
+        href={cta.href}
+        className="nav-link-direct"
+        {...(cta.openInNewTab ? { target: '_blank', rel: cta.rel } : {})}
+      >
+        {cta.label}
+      </a>
+    </li>
+  )
+}
+
 function defaultActivePanel(groups: { panelId: string; items: readonly unknown[] }[]): string {
   return groups.find((g) => g.items.length > 0)?.panelId ?? groups[0]!.panelId
 }
@@ -131,15 +153,16 @@ function navExpMetaSansBooking(metaLine: string, routeOnly: string): string {
     .join(' · ')
 }
 
-function ExperiencesMega({ nav }: { nav: ResolvedSiteHeaderNav['experiences'] }) {
+function ExperiencesMega({ tab }: { tab: ResolvedSiteHeaderNavTab }) {
+  const nav = tab.experiences as ResolvedSiteHeaderNavExperiences
   const groupActive = defaultActivePanel(nav.groups)
   const allGroupsEmpty = nav.groups.every((g) => g.items.length === 0)
   const active = allGroupsEmpty ? nav.tailor.panelId : groupActive
   return (
-    <div className="nav-dropdown site-header-desktop-dd" id="site-nav-dd-experiences" role="navigation" aria-label="Experiences menu">
+    <div className="nav-dropdown site-header-desktop-dd" id={tab.ddId} role="navigation" aria-label={`${tab.label} menu`}>
       <div className="nav-dd-inner">
         <div className="dd-sidebar">
-          <div className="dd-sb-head">Programs</div>
+          <div className="dd-sb-head">{nav.sideMenuTitle}</div>
           {nav.groups.map((g) => (
             <button
               key={g.panelId}
@@ -154,17 +177,21 @@ function ExperiencesMega({ nav }: { nav: ResolvedSiteHeaderNav['experiences'] })
               <ChevSb />
             </button>
           ))}
-          <button
-            type="button"
-            className={'dd-sb-item' + (nav.tailor.panelId === active ? ' active' : '')}
-            data-panel={nav.tailor.panelId}
-          >
-            <div>
-              <span className="dd-sb-name">Tailor Made</span>
-              <span className="dd-sb-meta">Custom program</span>
-            </div>
-            <ChevSb />
-          </button>
+          {nav.tailorVisible ? (
+            <button
+              type="button"
+              className={'dd-sb-item' + (nav.tailor.panelId === active ? ' active' : '')}
+              data-panel={nav.tailor.panelId}
+            >
+              <div>
+                <span className="dd-sb-name">{nav.tailorSidebarLabel}</span>
+                {nav.tailorSidebarSubLabel ? (
+                  <span className="dd-sb-meta">{nav.tailorSidebarSubLabel}</span>
+                ) : null}
+              </div>
+              <ChevSb />
+            </button>
+          ) : null}
           {nav.seeAll ? (
             <div className="dd-sb-footer">
               <a href={nav.seeAll.href} className="dd-see-all" {...(nav.seeAll.openInNewTab ? { target: '_blank', rel: nav.seeAll.rel } : {})}>
@@ -194,9 +221,11 @@ function ExperiencesMega({ nav }: { nav: ResolvedSiteHeaderNav['experiences'] })
                     <a key={it.id} href={it.href} className="dd-exp-card">
                       <div className="dd-exp-thumb">{it.thumbUrl ? <img src={it.thumbUrl} alt="" width={160} height={112} /> : null}</div>
                       <div className="dd-exp-body">
-                        <div className="dd-mega-pills">
-                          <span className="dd-mega-pill dd-mega-pill--route">{routeOnly}</span>
-                        </div>
+                        {routeOnly ? (
+                          <div className="dd-mega-pills">
+                            <span className="dd-mega-pill dd-mega-pill--route">{routeOnly}</span>
+                          </div>
+                        ) : null}
                         <div className="dd-exp-title">{it.name}</div>
                         {durationPrice ? <div className="dd-exp-meta">{durationPrice}</div> : null}
                         <div className="dd-exp-view">
@@ -218,62 +247,22 @@ function ExperiencesMega({ nav }: { nav: ResolvedSiteHeaderNav['experiences'] })
           aria-label={nav.tailor.eyebrow}
         >
           <div className="dd-panel-eyebrow">{nav.tailor.eyebrow}</div>
-          <div className="dd-tailor-stack">
-            {(() => {
-              const cta = nav.tailor.cta
-              const inner = (
-                <>
-                  <div className="dd-tailor">
-                    <div className="dd-tailor-icon" aria-hidden>
-                      <svg width="18" height="17" viewBox="0 0 105 101" fill="none">
-                        <path
-                          d="M103.703 59.25C102.343 49.75 97.3635 41.34 89.6735 35.59C89.3235 35.33 88.9635 35.07 88.6035 34.82C88.0135 15.52 72.1235 0 52.6835 0C33.6535 0 18.0434 14.86 16.8234 33.58C11.1834 37.11 6.62343 42.15 3.64343 48.28C-0.556567 56.91 -1.14654 66.66 1.98346 75.74C5.11346 84.81 11.5934 92.13 20.2234 96.33C25.2034 98.75 30.5535 99.98 35.9235 99.98C39.8735 99.98 43.8335 99.32 47.6735 98C49.0635 97.52 50.4034 96.96 51.7134 96.33L51.9534 96.46C56.9534 98.99 62.4335 100.31 68.0535 100.31C69.7735 100.31 71.5035 100.19 73.2335 99.94C82.7335 98.58 91.1434 93.6 96.8934 85.91C102.643 78.22 105.063 68.75 103.703 59.25Z"
-                          fill="#ECE5D5"
-                        />
-                      </svg>
-                    </div>
-                    <div className="dd-tailor-copy">
-                      <div className="dd-tailor-type">Tailor Made</div>
-                      <div className="dd-tailor-name">{nav.tailor.title}</div>
-                      <div className="dd-tailor-sub">{nav.tailor.subtitle}</div>
-                    </div>
-                  </div>
-                  {nav.tailor.body ? <p className="dd-tailor-body">{nav.tailor.body}</p> : null}
-                  {cta ? (
-                    <span className="dd-tailor-cta">
-                      {cta.label}
-                      <ArrowSeeAll />
-                    </span>
-                  ) : null}
-                </>
-              )
-              if (cta) {
-                return (
-                  <a
-                    href={cta.href}
-                    className="dd-tailor-stack-link"
-                    {...(cta.openInNewTab ? { target: '_blank', rel: cta.rel } : {})}
-                  >
-                    {inner}
-                  </a>
-                )
-              }
-              return <div className="dd-tailor-stack-link">{inner}</div>
-            })()}
-          </div>
+          <SiteHeaderTailorPanel tailor={nav.tailor} />
+
         </div>
       </div>
     </div>
   )
 }
 
-function LodgesMega({ nav }: { nav: ResolvedSiteHeaderNav['lodges'] }) {
+function LodgesMega({ tab }: { tab: ResolvedSiteHeaderNavTab }) {
+  const nav = tab.lodges as ResolvedSiteHeaderNavLodges
   const active = defaultActiveLodgeRoute(nav.routes)
   return (
-    <div className="nav-dropdown site-header-desktop-dd" id="site-nav-dd-lodges" role="navigation" aria-label="Lodges menu">
+    <div className="nav-dropdown site-header-desktop-dd" id={tab.ddId} role="navigation" aria-label={`${tab.label} menu`}>
       <div className="nav-dd-inner">
         <div className="dd-sidebar">
-          <div className="dd-sb-head">By route</div>
+          <div className="dd-sb-head">{nav.sideMenuTitle}</div>
           {nav.routes.map((r) => (
             <button
               key={r.panelId}
@@ -345,20 +334,30 @@ function LodgesMega({ nav }: { nav: ResolvedSiteHeaderNav['lodges'] }) {
   )
 }
 
-function MobileDrawer({ nav }: { nav: ResolvedSiteHeaderNav }) {
+function MobAccChevron() {
   return (
-    <div className="mobile-drawer site-header-mobile-drawer site-header-mobile-only" id="drawer" data-header-drawer="managed">
-      <button type="button" className="mob-acc-btn" data-mob-acc-panel="mob-acc-exp">
+    <svg className="mob-acc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  )
+}
+
+function MobileExperiencesPanel({ tab }: { tab: ResolvedSiteHeaderNavTab }) {
+  const exp = tab.experiences!
+  return (
+    <>
+      <button type="button" className="mob-acc-btn" data-mob-acc-panel={tab.mobAccId}>
         <div>
-          Experiences
-          <span className="mob-acc-sub">Classic Nature · Signature · Learning · Tailor Made</span>
+          {tab.label}
+          <span className="mob-acc-sub">
+            {exp.groups.map((g) => g.sidebarLabel).join(' · ')}
+            {exp.tailorVisible ? ` · ${exp.tailorSidebarLabel}` : ''}
+          </span>
         </div>
-        <svg className="mob-acc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
+        <MobAccChevron />
       </button>
-      <div className="mob-acc-content" id="mob-acc-exp">
-        {nav.experiences.groups.map((g) => (
+      <div className="mob-acc-content" id={tab.mobAccId}>
+        {exp.groups.map((g) => (
           <div key={g.panelId}>
             <div className="mob-cat">{g.eyebrow}</div>
             {g.items.map((it) => {
@@ -380,70 +379,38 @@ function MobileDrawer({ nav }: { nav: ResolvedSiteHeaderNav }) {
             })}
           </div>
         ))}
-        <div className="mob-cat">Tailor Made</div>
-        {(() => {
-          const tcta = nav.experiences.tailor.cta
-          const tailorInner = (
-            <>
-              <div className="mob-item-thumb mob-item-thumb--icon mob-tailor-row__icon" aria-hidden>
-                <svg width="16" height="15" viewBox="0 0 105 101" fill="none">
-                  <path
-                    d="M103.703 59.25C102.343 49.75 97.3635 41.34 89.6735 35.59C89.3235 35.33 88.9635 35.07 88.6035 34.82C88.0135 15.52 72.1235 0 52.6835 0C33.6535 0 18.0434 14.86 16.8234 33.58C11.1834 37.11 6.62343 42.15 3.64343 48.28C-0.556567 56.91 -1.14654 66.66 1.98346 75.74C5.11346 84.81 11.5934 92.13 20.2234 96.33C25.2034 98.75 30.5535 99.98 35.9235 99.98C39.8735 99.98 43.8335 99.32 47.6735 98C49.0635 97.52 50.4034 96.96 51.7134 96.33L51.9534 96.46C56.9534 98.99 62.4335 100.31 68.0535 100.31C69.7735 100.31 71.5035 100.19 73.2335 99.94C82.7335 98.58 91.1434 93.6 96.8934 85.91C102.643 78.22 105.063 68.75 103.703 59.25Z"
-                    fill="#ECE5D5"
-                  />
-                </svg>
-              </div>
-              <div className="mob-item-text">
-                <div className="mob-item-route">Tailor Made</div>
-                <div className="mob-item-name">{nav.experiences.tailor.title}</div>
-                <div className="mob-item-meta">{nav.experiences.tailor.subtitle}</div>
-              </div>
-              {tcta ? (
-                <span className="mob-item-arrow" aria-hidden>
-                  →
-                </span>
-              ) : null}
-            </>
-          )
-          if (tcta) {
-            return (
-              <a
-                href={tcta.href}
-                className="mob-item mob-item--tailor mob-tailor-row"
-                {...(tcta.openInNewTab ? { target: '_blank', rel: tcta.rel } : {})}
-              >
-                {tailorInner}
-              </a>
-            )
-          }
-          return <div className="mob-item mob-item--tailor mob-tailor-row">{tailorInner}</div>
-        })()}
-        {nav.experiences.seeAll ? (
+        {exp.tailorVisible ? <div className="mob-cat">{exp.tailorSidebarLabel}</div> : null}
+        {exp.tailorVisible ? <SiteHeaderTailorMobileRow tailor={exp.tailor} /> : null}
+
+        {exp.seeAll ? (
           <a
-            href={nav.experiences.seeAll.href}
+            href={exp.seeAll.href}
             className="mob-see-all"
-            {...(nav.experiences.seeAll.openInNewTab ? { target: '_blank', rel: nav.experiences.seeAll.rel } : {})}
+            {...(exp.seeAll.openInNewTab ? { target: '_blank', rel: exp.seeAll.rel } : {})}
           >
-            {nav.experiences.seeAll.label} →
+            {exp.seeAll.label} →
           </a>
         ) : null}
       </div>
+    </>
+  )
+}
 
-      <button type="button" className="mob-acc-btn" data-mob-acc-panel="mob-acc-lodges">
+function MobileLodgesPanel({ tab }: { tab: ResolvedSiteHeaderNavTab }) {
+  const lodges = tab.lodges!
+  return (
+    <>
+      <button type="button" className="mob-acc-btn" data-mob-acc-panel={tab.mobAccId}>
         <div>
-          Lodges
+          {tab.label}
           <span className="mob-acc-sub">
-            {nav.lodges.routes.length
-              ? nav.lodges.routes.map((r) => r.sidebarLabel).join(' · ')
-              : 'By route'}
+            {lodges.routes.length ? lodges.routes.map((r) => r.sidebarLabel).join(' · ') : 'By route'}
           </span>
         </div>
-        <svg className="mob-acc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
+        <MobAccChevron />
       </button>
-      <div className="mob-acc-content" id="mob-acc-lodges">
-        {nav.lodges.routes.map((r) => (
+      <div className="mob-acc-content" id={tab.mobAccId}>
+        {lodges.routes.map((r) => (
           <div key={r.panelId}>
             <div className="mob-cat">{r.eyebrow}</div>
             {r.lodges.map((L) => (
@@ -451,7 +418,10 @@ function MobileDrawer({ nav }: { nav: ResolvedSiteHeaderNav }) {
                 <div className="mob-item-thumb">{L.imageUrl ? <img src={L.imageUrl} alt="" width={80} height={60} /> : null}</div>
                 <div className="mob-item-text">
                   <div className="mob-item-name">{L.name}</div>
-                  <div className="mob-item-meta">{L.description.slice(0, 80)}{L.description.length > 80 ? '…' : ''}</div>
+                  <div className="mob-item-meta">
+                    {L.description.slice(0, 80)}
+                    {L.description.length > 80 ? '…' : ''}
+                  </div>
                 </div>
                 <span className="mob-item-arrow" aria-hidden>
                   →
@@ -460,29 +430,52 @@ function MobileDrawer({ nav }: { nav: ResolvedSiteHeaderNav }) {
             ))}
           </div>
         ))}
-        {nav.lodges.seeAll ? (
-          <a href={nav.lodges.seeAll.href} className="mob-see-all" {...(nav.lodges.seeAll.openInNewTab ? { target: '_blank', rel: nav.lodges.seeAll.rel } : {})}>
-            {nav.lodges.seeAll.label} →
+        {lodges.seeAll ? (
+          <a
+            href={lodges.seeAll.href}
+            className="mob-see-all"
+            {...(lodges.seeAll.openInNewTab ? { target: '_blank', rel: lodges.seeAll.rel } : {})}
+          >
+            {lodges.seeAll.label} →
           </a>
         ) : null}
       </div>
+    </>
+  )
+}
 
-      <a href="/routes" className="mob-item mob-item--direct">
-        <span className="mob-item-text mob-item-text--single">
-          <span className="mob-item-name">Routes</span>
-        </span>
-        <span className="mob-item-arrow" aria-hidden>
-          →
-        </span>
-      </a>
-      <a href="/about" className="mob-item mob-item--direct">
-        <span className="mob-item-text mob-item-text--single">
-          <span className="mob-item-name">About</span>
-        </span>
-        <span className="mob-item-arrow" aria-hidden>
-          →
-        </span>
-      </a>
+function MobileDirectLink({ cta }: { cta: SiteHeaderNavCta }) {
+  return (
+    <a
+      href={cta.href}
+      className="mob-item mob-item--direct"
+      {...(cta.openInNewTab ? { target: '_blank', rel: cta.rel } : {})}
+    >
+      <span className="mob-item-text mob-item-text--single">
+        <span className="mob-item-name">{cta.label}</span>
+      </span>
+      <span className="mob-item-arrow" aria-hidden>
+        →
+      </span>
+    </a>
+  )
+}
+
+function MobileDrawer({ nav }: { nav: ResolvedSiteHeaderNav }) {
+  return (
+    <div className="mobile-drawer site-header-mobile-drawer site-header-mobile-only" id="drawer" data-header-drawer="managed">
+      {nav.tabs.map((tab) => {
+        if (tab.hasDropdown && tab.dropdownType === 'experiences' && tab.experiences) {
+          return <MobileExperiencesPanel key={tab.key} tab={tab} />
+        }
+        if (tab.hasDropdown && tab.dropdownType === 'lodges' && tab.lodges) {
+          return <MobileLodgesPanel key={tab.key} tab={tab} />
+        }
+        if (tab.simpleLink) {
+          return <MobileDirectLink key={tab.key} cta={tab.simpleLink} />
+        }
+        return null
+      })}
     </div>
   )
 }
@@ -497,6 +490,17 @@ type SiteHeaderProps = {
 
 export async function SiteHeader({ mainNavSolid = true }: SiteHeaderProps = {}) {
   const [shell, nav] = await Promise.all([getSiteSettingsShell(), getSiteHeaderNav()])
+
+  if (process.env.NODE_ENV === 'development') {
+    // eslint-disable-next-line no-console
+    console.log('[HEADER RENDER TABS]', {
+      source: 'nav.tabs',
+      tabsLength: nav.tabs.length,
+      labels: nav.tabs.map((t) => t.label),
+      primaryCta: { label: shell.primaryCta.label, href: shell.primaryCta.href },
+    })
+  }
+
   const { headerLogoLightUrl, headerLogoDarkUrl, homePath, primaryCta, mobileMenuAriaLabel } = shell
   const useCms = typeof headerLogoLightUrl === 'string' && headerLogoLightUrl.length > 0
   const headerDarkResolved = resolveHeaderLogoDarkUrl(headerLogoDarkUrl)
@@ -526,28 +530,46 @@ export async function SiteHeader({ mainNavSolid = true }: SiteHeaderProps = {}) 
               )}
             </a>
             <ul className="nav-links">
-              <li className="site-header-dd-trigger-li site-header-desktop-dd">
-                <button type="button" className="nav-link-btn" id="site-nav-btn-experiences" aria-expanded="false" aria-haspopup="true" aria-controls="site-nav-dd-experiences">
-                  Experiences
-                  <ChevSm />
-                </button>
-              </li>
-              <li className="site-header-dd-trigger-li site-header-desktop-dd">
-                <button type="button" className="nav-link-btn" id="site-nav-btn-lodges" aria-expanded="false" aria-haspopup="true" aria-controls="site-nav-dd-lodges">
-                  Lodges
-                  <ChevSm />
-                </button>
-              </li>
-              <li>
-                <a href="/routes" className="nav-link-direct">
-                  Routes
-                </a>
-              </li>
-              <li>
-                <a href="/about" className="nav-link-direct">
-                  About
-                </a>
-              </li>
+              {nav.tabs.map((tab) => {
+                if (tab.hasDropdown && tab.dropdownType === 'experiences') {
+                  return (
+                    <li key={tab.key} className="site-header-dd-trigger-li site-header-desktop-dd">
+                      <button
+                        type="button"
+                        className="nav-link-btn"
+                        id={tab.btnId}
+                        aria-expanded="false"
+                        aria-haspopup="true"
+                        aria-controls={tab.ddId}
+                      >
+                        {tab.label}
+                        <ChevSm />
+                      </button>
+                    </li>
+                  )
+                }
+                if (tab.hasDropdown && tab.dropdownType === 'lodges') {
+                  return (
+                    <li key={tab.key} className="site-header-dd-trigger-li site-header-desktop-dd">
+                      <button
+                        type="button"
+                        className="nav-link-btn"
+                        id={tab.btnId}
+                        aria-expanded="false"
+                        aria-haspopup="true"
+                        aria-controls={tab.ddId}
+                      >
+                        {tab.label}
+                        <ChevSm />
+                      </button>
+                    </li>
+                  )
+                }
+                if (tab.simpleLink) {
+                  return <DirectNavLink key={tab.key} cta={tab.simpleLink} />
+                }
+                return null
+              })}
             </ul>
             <SiteHeaderNavBookButtons
               label={primaryCta.label}
@@ -561,8 +583,15 @@ export async function SiteHeader({ mainNavSolid = true }: SiteHeaderProps = {}) 
             </button>
           </div>
         </nav>
-        <ExperiencesMega nav={nav.experiences} />
-        <LodgesMega nav={nav.lodges} />
+        {nav.tabs.map((tab) => {
+          if (tab.hasDropdown && tab.dropdownType === 'experiences' && tab.experiences) {
+            return <ExperiencesMega key={tab.key} tab={tab} />
+          }
+          if (tab.hasDropdown && tab.dropdownType === 'lodges' && tab.lodges) {
+            return <LodgesMega key={tab.key} tab={tab} />
+          }
+          return null
+        })}
       </div>
       <div className="nav-overlay" id="navOverlay" aria-hidden="true" />
       <MobileDrawer nav={nav} />

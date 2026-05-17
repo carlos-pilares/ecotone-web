@@ -1,4 +1,6 @@
 import {defineField, defineType} from 'sanity'
+import {FacilitiesGalleryPhotoSelectInput} from '../components/lodgePage/FacilitiesGalleryPhotoSelectInput'
+import {LodgeHeroGalleryOrderInput} from '../components/lodgePage/LodgeHeroGalleryOrderInput'
 import {isLodgePageSlugUnique} from '../lib/isLodgePageSlugUnique'
 
 /** Section copy (eyebrow, title, body) on a lodge landing tab. */
@@ -132,6 +134,26 @@ export const lodgePage = defineType({
         'Optional short lines shown as pills under the hero title and in the header lodges mega menu. Leave empty for no pills.',
     }),
     defineField({
+      name: 'heroGalleryOrderKeys',
+      title: 'Hero photos — select & order',
+      type: 'array',
+      of: [{type: 'string'}],
+      group: 'hero',
+      components: {input: LodgeHeroGalleryOrderInput},
+      validation: (Rule) => Rule.max(24),
+      description:
+        'Pick photos from the linked Lodge knowledge center media library (no uploads here). First selected photo is the main hero image; the rest appear in the hero gallery. Empty = all KC photos in library order.',
+    }),
+    defineField({
+      name: 'menuThumbnailImage',
+      title: 'Menu / card thumbnail',
+      type: 'string',
+      group: 'hero',
+      components: {input: FacilitiesGalleryPhotoSelectInput},
+      description:
+        'One photo from the lodge KC library for the header mega menu and lodge preview cards. Empty = first hero photo, then first KC gallery photo, then site placeholder.',
+    }),
+    defineField({
       name: 'heroCtaSmartLink',
       title: 'Primary CTA',
       type: 'smartLink',
@@ -181,18 +203,21 @@ export const lodgePage = defineType({
 
     defineField({
       name: 'menuCtaLabel',
-      title: 'Mega menu — CTA label',
+      title: 'Mega menu — CTA label (legacy)',
       type: 'string',
       group: 'navigation',
+      hidden: true,
       validation: (Rule) => Rule.max(80),
-      description: 'Optional. Shown on the lodge card in the header mega menu. Defaults to “View lodge”.',
+      description: 'Deprecated — header mega menu uses “View lodge” and `/lodges/{slug}`. Data preserved.',
     }),
     defineField({
       name: 'menuCtaSmartLink',
-      title: 'Mega menu — CTA link',
+      title: 'Mega menu — CTA link (legacy)',
       type: 'smartLink',
       group: 'navigation',
-      description: 'Optional. Defaults to this lodge landing (`/lodges/{slug}`).',
+      hidden: true,
+      options: {relaxTargetValidation: true},
+      description: 'Deprecated — not shown in Studio or used on the site. Data preserved.',
     }),
     defineField({
       name: 'navTitle',

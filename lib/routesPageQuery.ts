@@ -1,5 +1,6 @@
 import { groq } from 'next-sanity'
 
+import type { RouteCardExperienceRow } from '@/lib/routeCardFootPrice'
 import type { ReviewDoc } from '@/lib/queries'
 import type { ReserveCtaSettingsGroq } from '@/lib/reserveCtaGroq'
 import { GROQ_RESERVE_CTA_SETTINGS_FIELDS } from '@/lib/reserveCtaGroq'
@@ -42,6 +43,8 @@ export type RoutesPageSanityDoc = {
     variant?: string | null
   }> | null
   routeCards?: RoutesPageSanityRouteCard[] | null
+  /** Published landings + KC route/price for “Choose your route” card stats. */
+  publishedExperiencePages?: RouteCardExperienceRow[] | null
   compareSectionId?: string | null
   compareEyebrow?: string | null
   compareH2?: string | null
@@ -128,6 +131,8 @@ export type RoutesPageSanityExpCard = {
   priceKind?: string | null
   priceText?: string | null
 }
+
+export type { RouteCardExperienceRow }
 
 export type RoutesPageSanityExperienceRef = {
   _id: string
@@ -402,6 +407,12 @@ export const routesPageQuery = groq`
     finalCtaTrustItems[]{ icon, label },
     reserveCtaSettings {
       ${GROQ_RESERVE_CTA_SETTINGS_FIELDS}
+    },
+    "publishedExperiencePages": *[_type == "experiencePage" && defined(slug.current) && defined(experience)]{
+      "route": experience->route,
+      "price": experience->price,
+      "priceLabel": experience->priceLabel,
+      "status": experience->status
     }
   }
 `

@@ -289,6 +289,8 @@ export type LodgeStructuredPageRow = {
   slug?: { current?: string | null } | null
   seo?: { title?: string | null; description?: string | null; ogImage?: unknown; noIndex?: boolean | null } | null
   heroImage?: SanityImageSource | null
+  heroGalleryOrderKeys?: string[] | null
+  menuThumbnailImage?: string | null
   heroHighlights?: Array<{ text?: string | null; key?: string | null } | null> | null
   heroTitle?: string | null
   heroShortDescription?: string | null
@@ -322,7 +324,13 @@ export type LodgeStructuredPageRow = {
   faqItems?: Array<{ title?: string | null; text?: string | null } | null> | null
   sections?: LodgePageSectionsRow
   featuredRoomStableId?: string | null
+  /** Lodge ref on this page (for reverse experience queries). */
+  lodgeRef?: string | null
+  /** Experiences with this lodge in KC → Lodges → `lodgePresentationRows[]`. */
+  linkedExperiencesFromPresentation?: LodgeCmsExperienceCardRow[] | null
+  /** @deprecated manual lodge page picks — not used on the public site. */
   experiencesSelection?: LodgeCmsExperienceCardRow[] | null
+  /** @deprecated */
   fallbackToLodgeRelations?: boolean | null
   experiencesTailorCta?: LodgePageExperiencesTailorCtaRow
   reviewsSection?: {

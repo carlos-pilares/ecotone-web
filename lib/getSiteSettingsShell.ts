@@ -10,7 +10,18 @@ import {
   SOCIAL,
   type SiteSettingsApprovedLink,
 } from '@/data/cmsApproved/siteSettingsApprovedContent'
-import { siteSettingsShellQuery, type SiteSettingsShellRow } from '@/lib/queries'
+import {
+  mergeFooterLogoFields,
+  mergeFooterShellFields,
+  type FooterSettingsDocumentRow,
+} from '@/lib/mergeFooterSettings'
+import {
+  hasHeaderSettingsDoc,
+  mergeHeaderShellFields,
+  type HeaderSettingsDocumentRow,
+  type LegacySiteSettingsHeaderRow,
+} from '@/lib/mergeHeaderSettings'
+import { siteSettingsShellQuery } from '@/lib/queries'
 import { resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
 import { clientServer, urlFor } from '@/lib/sanity'
 
@@ -43,6 +54,19 @@ export type GlobalSiteSettingsShell = {
   copyright: string
   footerCertText: string[]
 }
+
+type SiteSettingsShellBundleRow = {
+  headerSettings?: HeaderSettingsDocumentRow
+  footerSettings?: FooterSettingsDocumentRow
+  legacySiteSettings?: {
+    defaultWhatsappUrl?: string | null
+    brandIsotipo?: SanityImageSource | null
+    copyright?: string | null
+    socialLinks?: Array<{ label?: string; href?: string; openInNewTab?: boolean }> | null
+    header?: LegacySiteSettingsHeaderRow
+    footer?: NonNullable<FooterSettingsDocumentRow>['footer']
+  } | null
+} | null
 
 function toUrl(source: SanityImageSource | null | undefined): string | null {
   if (!source) return null
@@ -78,7 +102,7 @@ function mapLinkList(
 }
 
 function pickPrimaryCta(
-  raw: NonNullable<SiteSettingsShellRow>['primaryCta'],
+  raw: { label?: string; href?: string; openInNewTab?: boolean } | null | undefined,
 ): ShellNavLink {
   const label = raw?.label?.trim()
   const href = raw?.href?.trim()
@@ -92,9 +116,32 @@ function pickPrimaryCta(
   }
 }
 
-function pickBookNowPrimaryCta(row: NonNullable<SiteSettingsShellRow>): ShellNavLink {
+function pickBookNowPrimaryCta(
+  shell: ReturnType<typeof mergeHeaderShellFields>,
+  headerSettingsOnly: boolean,
+): ShellNavLink {
   const fallback = HEADER.primaryCta
-  const resolved = resolveSmartLinkOrLegacy(row.navBookNowSmartLink, row.primaryCta, {
+  if (headerSettingsOnly) {
+    const resolved = shell.navBookNowSmartLink
+      ? resolveSmartLinkOrLegacy(shell.navBookNowSmartLink, undefined, {
+          label: '',
+          href: '#',
+          openInNewTab: false,
+        })
+      : null
+    if (resolved?.href && resolved.href !== '#') {
+      const label = shell.navBookNowSmartLink?.label?.trim() || resolved.label
+      if (label) {
+        return {
+          label,
+          href: resolved.href,
+          openInNewTab: resolved.openInNewTab,
+        }
+      }
+    }
+    return { label: '', href: '#', openInNewTab: false }
+  }
+  const resolved = resolveSmartLinkOrLegacy(shell.navBookNowSmartLink, shell.primaryCta, {
     label: fallback.label,
     href: fallback.href,
     openInNewTab: fallback.openInNewTab,
@@ -106,7 +153,7 @@ function pickBookNowPrimaryCta(row: NonNullable<SiteSettingsShellRow>): ShellNav
       openInNewTab: resolved.openInNewTab,
     }
   }
-  return pickPrimaryCta(row.primaryCta)
+  return pickPrimaryCta(shell.primaryCta)
 }
 
 function pickStringLines(
@@ -125,9 +172,8 @@ function pickCertText(raw: string[] | null | undefined): string[] {
 }
 
 /**
- * Single cached fetch: logos + header/footer copy for the global shell.
- * When Sanity is off, fetch fails, or fields are empty, values match the previous hardcoded shell
- * (see `data/cmsApproved/siteSettingsApprovedContent.ts`).
+ * Logos + header CTA from `headerSettings` (fallback: legacy `siteSettings.header`).
+ * Footer + social from `footerSettings` (fallback: legacy `siteSettings`).
  */
 export const getSiteSettingsShell = cache(async (): Promise<GlobalSiteSettingsShell> => {
   const empty: GlobalSiteSettingsShell = {
@@ -161,28 +207,48 @@ export const getSiteSettingsShell = cache(async (): Promise<GlobalSiteSettingsSh
     return empty
   }
 
-  let row: SiteSettingsShellRow
+  let bundle: SiteSettingsShellBundleRow
   try {
-    row = await clientServer.fetch<SiteSettingsShellRow>(siteSettingsShellQuery)
+    bundle = await clientServer.fetch<SiteSettingsShellBundleRow>(siteSettingsShellQuery)
   } catch {
     return empty
   }
-  if (!row) {
+  if (!bundle) {
     return empty
   }
 
-  const ft = row.footer
-  const defaultWa = row.defaultWhatsappUrl?.trim() || null
+  const legacy = bundle.legacySiteSettings
+  const headerDoc = bundle.headerSettings ?? null
+  const headerFound = hasHeaderSettingsDoc(headerDoc)
+  const headerShell = mergeHeaderShellFields(
+    headerDoc,
+    headerFound ? null : (legacy?.header ?? null),
+  )
+  const footerMerged = mergeFooterShellFields(bundle.footerSettings ?? null, {
+    footer: legacy?.footer,
+    socialLinks: legacy?.socialLinks,
+    copyright: legacy?.copyright,
+    defaultWhatsappUrl: legacy?.defaultWhatsappUrl,
+  })
+  const footerLogo = mergeFooterLogoFields(
+    bundle.footerSettings ?? null,
+    { footer: legacy?.footer },
+    headerShell.headerLogoLight,
+  )
+
+  const ft = footerMerged.footer
+  const defaultWa = footerMerged.defaultWhatsappUrl?.trim() || legacy?.defaultWhatsappUrl?.trim() || null
+
   return {
     defaultWhatsappUrl: defaultWa,
-    headerLogoLightUrl: toUrl(row.headerLogoLight),
-    headerLogoDarkUrl: toUrl(row.headerLogoDark),
-    footerLogoUrl: toUrl(row.footerLogo),
-    brandIsotipoUrl: toUrl(row.brandIsotipo),
-    homePath: row.homePath?.trim() || HEADER.homePath,
-    mainNav: mapLinkList(row.mainNav, HEADER_MAIN_NAV),
-    primaryCta: pickBookNowPrimaryCta(row),
-    mobileMenuAriaLabel: row.mobileMenuAriaLabel?.trim() || HEADER.mobileMenuAriaLabel,
+    headerLogoLightUrl: toUrl(headerShell.headerLogoLight as SanityImageSource),
+    headerLogoDarkUrl: toUrl(headerShell.headerLogoDark as SanityImageSource),
+    footerLogoUrl: toUrl(footerLogo.footerLogo as SanityImageSource),
+    brandIsotipoUrl: toUrl(legacy?.brandIsotipo),
+    homePath: headerShell.homePath?.trim() || HEADER.homePath,
+    mainNav: mapLinkList(legacy?.header?.mainNav ?? null, HEADER_MAIN_NAV),
+    primaryCta: pickBookNowPrimaryCta(headerShell, headerFound),
+    mobileMenuAriaLabel: headerShell.mobileMenuAriaLabel?.trim() || HEADER.mobileMenuAriaLabel,
     footer: {
       showBrandDeco: ft?.showBrandDeco !== false,
       tagline: ft?.tagline?.trim() || FOOTER.tagline,
@@ -192,7 +258,7 @@ export const getSiteSettingsShell = cache(async (): Promise<GlobalSiteSettingsSh
       contactTitle: ft?.contactTitle?.trim() || FOOTER.contactTitle,
       contactLinks: mapLinkList(ft?.contactLinks, FOOTER_CONTACT_LINKS),
     },
-    copyright: row.copyright?.trim() || SOCIAL.copyright,
-    footerCertText: pickCertText(row.footerCertText),
+    copyright: footerMerged.copyright?.trim() || SOCIAL.copyright,
+    footerCertText: pickCertText(ft?.footerCertText ?? null),
   }
 })

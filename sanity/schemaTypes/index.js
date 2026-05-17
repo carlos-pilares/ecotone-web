@@ -16,6 +16,8 @@ import {review} from './review'
 import {linkWithLabel} from './objects/linkWithLabel'
 import {smartLink} from './objects/smartLink'
 import {headerNavProgramGroup} from './objects/headerNavProgramGroup'
+import {headerNavProgramTypeGroup} from './objects/headerNavProgramTypeGroup'
+import {headerNavRouteGroupOverride} from './objects/headerNavRouteGroupOverride'
 import {headerNavLodgeRouteGroup} from './objects/headerNavLodgeRouteGroup'
 import {headerNavSeeAll} from './objects/headerNavSeeAll'
 import {headerNavExperiencesGroups} from './objects/headerNavExperiencesGroups'
@@ -25,6 +27,9 @@ import {headerNavExperienceItemOverride} from './objects/headerNavExperienceItem
 import {headerNavLodgeRouteOverride} from './objects/headerNavLodgeRouteOverride'
 import {headerNavLodgeItemOverride} from './objects/headerNavLodgeItemOverride'
 import {headerNavExperiencesTailorMenu} from './objects/headerNavExperiencesTailorMenu'
+import {headerNavExperiencesDropdown} from './objects/headerNavExperiencesDropdown'
+import {headerNavLodgesDropdown} from './objects/headerNavLodgesDropdown'
+import {headerNavTab} from './objects/headerNavTab'
 import {landingHero} from './objects/landingHero'
 import {
   experienceGalleryItem,
@@ -63,6 +68,7 @@ import {internalNavItem} from './objects/internalNavItem'
 import {pageModule} from './objects/pageModule'
 import {reviewsLayoutBlock} from './objects/reviewsLayoutBlock'
 import {pageReviewsSection} from './objects/pageReviewsSection'
+import {experiencePageReviewsSection} from './objects/experiencePageReviewsSection'
 import {seo} from './objects/seo'
 import {
   aboutPageParagraph,
@@ -103,6 +109,8 @@ import {lodgePage} from './lodgePage'
 import {partner} from './partner'
 import {route} from './route'
 import {siteSettings} from './siteSettings'
+import {headerSettings} from './headerSettings'
+import {footerSettings} from './footerSettings'
 import {reviewsSettings} from './reviewsSettings'
 import {bookingModalSettings} from './bookingModalSettings'
 import {technologyProduct} from './technologyProduct'
@@ -112,6 +120,8 @@ const objects = [
   linkWithLabel,
   smartLink,
   headerNavProgramGroup,
+  headerNavProgramTypeGroup,
+  headerNavRouteGroupOverride,
   headerNavLodgeRouteGroup,
   headerNavSeeAll,
   headerNavExperiencesGroups,
@@ -121,6 +131,9 @@ const objects = [
   headerNavLodgeRouteOverride,
   headerNavLodgeItemOverride,
   headerNavExperiencesTailorMenu,
+  headerNavExperiencesDropdown,
+  headerNavLodgesDropdown,
+  headerNavTab,
   cta,
   imageWithAlt,
   experienceGalleryItem,
@@ -142,6 +155,7 @@ const objects = [
   pageModule,
   reviewsLayoutBlock,
   pageReviewsSection,
+  experiencePageReviewsSection,
   landingHero,
   landingReserveBlock,
   experienceReserveCardRow,
@@ -192,6 +206,8 @@ const objects = [
 
 const documents = [
   siteSettings,
+  headerSettings,
+  footerSettings,
   bookingModalSettings,
   reviewsSettings,
   lodge,

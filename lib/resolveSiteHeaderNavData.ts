@@ -17,9 +17,14 @@ import {
   type ResolvedSmartLink,
   type SmartLinkGroq,
 } from '@/lib/resolveSmartLink'
+import {
+  HEADER_NAV_BLOG_SMART_LINK_DEFAULT,
+} from '@/lib/mergeHeaderSettings'
 import type {
   HeaderNavLodgeRouteGroupRow,
   HeaderNavProgramGroupRow,
+  HeaderNavProgramTypeGroupRow,
+  HeaderNavRouteGroupOverrideRow,
   HeaderNavSeeAllRow,
   SiteHeaderNavExperiencePageRow,
   SiteHeaderNavLodgePageRow,
@@ -27,19 +32,18 @@ import type {
   SiteHeaderNavSettingsRow,
 } from '@/lib/siteHeaderNavQuery'
 
+import type { ExperienceBookingSummary } from '@/components/booking/types'
+
 export type SiteHeaderNavCta = {
   label: string
   href: string
   openInNewTab: boolean
   rel: string
+  /** Tailor Made / book CTAs: opens plan or experience modal when href is `#`. */
+  bookingModal?: 'plan' | 'experience'
+  bookingSummary?: ExperienceBookingSummary
 }
 
-export type SiteHeaderNavChrome = {
-  experiences: { label: string; enabled: boolean }
-  lodges: { label: string; enabled: boolean }
-  routes: SiteHeaderNavCta | null
-  about: SiteHeaderNavCta | null
-}
 
 export type SiteHeaderNavExpItem = {
   id: string
@@ -64,6 +68,8 @@ export type SiteHeaderNavTailor = {
   title: string
   subtitle: string
   body: string
+  imageUrl: string | null
+  imageAlt: string | null
   cta: SiteHeaderNavCta | null
 }
 
@@ -87,21 +93,47 @@ export type SiteHeaderNavLodgeRoute = {
   lodges: SiteHeaderNavLodgeItem[]
 }
 
+export type ResolvedSiteHeaderNavExperiences = {
+  sideMenuTitle: string
+  tailorSidebarLabel: string
+  /** Sidebar sublabel under Tailor Made (CMS `sidebarSubLabel`, not panel `subtitle`). */
+  tailorSidebarSubLabel: string
+  groups: SiteHeaderNavExpGroup[]
+  tailorVisible: boolean
+  tailor: SiteHeaderNavTailor
+  seeAll: SiteHeaderNavCta | null
+}
+
+export type ResolvedSiteHeaderNavLodges = {
+  sideMenuTitle: string
+  routes: SiteHeaderNavLodgeRoute[]
+  seeAll: SiteHeaderNavCta | null
+}
+
+export type ResolvedSiteHeaderNavTab = {
+  key: string
+  label: string
+  simpleLink: SiteHeaderNavCta | null
+  hasDropdown: boolean
+  dropdownType: 'none' | 'experiences' | 'lodges'
+  btnId: string
+  ddId: string
+  mobAccId: string
+  experiences: ResolvedSiteHeaderNavExperiences | null
+  lodges: ResolvedSiteHeaderNavLodges | null
+}
+
 export type ResolvedSiteHeaderNav = {
-  chrome: SiteHeaderNavChrome
-  experiences: {
-    enabled: boolean
-    tailorSidebarLabel: string
-    groups: SiteHeaderNavExpGroup[]
-    tailorVisible: boolean
-    tailor: SiteHeaderNavTailor
-    seeAll: SiteHeaderNavCta | null
-  }
-  lodges: {
-    enabled: boolean
-    routes: SiteHeaderNavLodgeRoute[]
-    seeAll: SiteHeaderNavCta | null
-  }
+  tabs: ResolvedSiteHeaderNavTab[]
+}
+
+/** @deprecated Legacy chrome shape — used only when converting legacy resolver output to tabs. */
+export type ResolvedSiteHeaderNavChrome = {
+  experiences: { label: string; enabled: boolean }
+  lodges: { label: string; enabled: boolean }
+  routes: SiteHeaderNavCta | null
+  about: SiteHeaderNavCta | null
+  blog: SiteHeaderNavCta | null
 }
 
 type ExpBucket = 'classic' | 'signature' | 'learning'
@@ -185,19 +217,32 @@ function normalizeExpGroupKeyFromOverride(raw: string | null | undefined): ExpBu
   return null
 }
 
-function formatExpMeta(exp: NonNullable<SiteHeaderNavExperiencePageRow['experience']>): string {
-  const routeLbl = resolveRouteLabel(exp.route)
-  const dur = exp.duration?.trim() || ''
+function formatExpPriceLine(exp: NonNullable<SiteHeaderNavExperiencePageRow['experience']>): string {
   const pl = exp.priceLabel?.trim() ?? ''
   const hasPrice = typeof exp.price === 'number' && exp.price > 0
-  const pricePart = pl || (hasPrice ? `from USD ${exp.price}` : 'Enquire')
-  return [routeLbl, dur, pricePart].filter(Boolean).join(' · ')
+  if (pl) {
+    const low = pl.toLowerCase()
+    if (low.includes('per person')) return pl
+    if (low.startsWith('from')) return `${pl} per person`
+    return `from ${pl} per person`
+  }
+  if (hasPrice) return `from USD ${exp.price} per person`
+  return 'Enquire'
 }
 
 function formatExpRouteLine(exp: NonNullable<SiteHeaderNavExperiencePageRow['experience']>): string {
-  const routeLbl = resolveRouteLabel(exp.route)
-  const dur = exp.duration?.trim() || ''
-  return [routeLbl, dur].filter(Boolean).join(' · ')
+  return resolveRouteLabel(exp.route)
+}
+
+function panelIdForProgramType(programType: string): string {
+  const safe = programType.replace(/[^a-z0-9-]/gi, '-').replace(/-+/g, '-').toLowerCase()
+  return `dd-exp-${safe || 'program'}`
+}
+
+function defaultLabelForProgramType(programType: string): string {
+  const bucket = programBucket(programType)
+  if (bucket && bucket !== 'tailor') return BUCKET_META[bucket].defaultLabel
+  return programType
 }
 
 function ctaFromResolved(r: ResolvedSmartLink): SiteHeaderNavCta {
@@ -211,9 +256,9 @@ function ctaFromResolved(r: ResolvedSmartLink): SiteHeaderNavCta {
 
 function mergeSmartWithLabel(smart: SmartLinkGroq | null | undefined, labelFallback: string): SmartLinkGroq | null | undefined {
   if (!smart || typeof smart !== 'object') return smart
-  const lb = smart.label?.trim()
-  if (lb) return smart
-  return { ...smart, label: labelFallback }
+  const fb = labelFallback?.trim()
+  if (fb) return { ...smart, label: fb }
+  return smart
 }
 
 function effectiveSeeAllBlock(
@@ -248,6 +293,139 @@ function resolveSeeAllToCta(
   })
   if (!r || !r.href || r.href === '#') return null
   return ctaFromResolved(r)
+}
+
+const STRICT_LINK_STUB = { label: '', href: '#' } as const
+
+function resolveSmartLinkStrict(smart: SmartLinkGroq | null | undefined): ResolvedSmartLink | null {
+  if (!smart || smartLinkIsDisabled(smart)) return null
+  const r = resolveSmartLinkOrLegacy(smart, undefined, STRICT_LINK_STUB)
+  if (!r?.href || r.href === '#') return null
+  return r
+}
+
+/** Header CMS only: see-all when explicitly enabled with a resolvable smart link. */
+function resolveSeeAllFromCms(block: HeaderNavSeeAllRow | null | undefined): SiteHeaderNavCta | null {
+  if (!block || block.enabled !== true) return null
+  const smart = block.smartLink
+  if (!smart) return null
+  const label = block.label?.trim() || smart.label?.trim() || ''
+  if (!label) return null
+  const r = resolveSmartLinkStrict(smart)
+  if (!r) return null
+  return { ...ctaFromResolved(r), label }
+}
+
+/** Header CMS only: top-bar link when enabled with label + resolvable smart link. */
+function resolveDirectNavCtaFromCms(opts: {
+  enabled?: boolean | null
+  label?: string | null
+  smart?: SmartLinkGroq | null
+}): SiteHeaderNavCta | null {
+  if (opts.enabled !== true) return null
+  const smart = opts.smart
+  if (!smart) return null
+  const label = opts.label?.trim() || smart.label?.trim() || ''
+  if (!label) return null
+  const r = resolveSmartLinkStrict(smart)
+  if (!r) return null
+  return { ...ctaFromResolved(r), label }
+}
+
+type LegacyNavBundle = {
+  chrome: ResolvedSiteHeaderNavChrome
+  experiences: ResolvedSiteHeaderNavExperiences & { enabled: boolean }
+  lodges: ResolvedSiteHeaderNavLodges & { enabled: boolean }
+}
+
+function legacyNavBundleToTabs(bundle: LegacyNavBundle): ResolvedSiteHeaderNav {
+  const tabs: ResolvedSiteHeaderNavTab[] = []
+
+  if (bundle.chrome.experiences.enabled) {
+    tabs.push({
+      key: 'legacy-experiences',
+      label: bundle.chrome.experiences.label,
+      simpleLink: null,
+      hasDropdown: true,
+      dropdownType: 'experiences',
+      btnId: 'site-nav-btn-legacy-experiences',
+      ddId: 'site-nav-dd-legacy-experiences',
+      mobAccId: 'mob-acc-legacy-experiences',
+      experiences: {
+        sideMenuTitle: bundle.experiences.sideMenuTitle,
+        tailorSidebarLabel: bundle.experiences.tailorSidebarLabel,
+        tailorSidebarSubLabel: bundle.experiences.tailorSidebarSubLabel,
+        tailorVisible: bundle.experiences.tailorVisible,
+        groups: bundle.experiences.groups,
+        tailor: bundle.experiences.tailor,
+        seeAll: bundle.experiences.seeAll,
+      },
+      lodges: null,
+    })
+  }
+
+  if (bundle.chrome.lodges.enabled) {
+    tabs.push({
+      key: 'legacy-lodges',
+      label: bundle.chrome.lodges.label,
+      simpleLink: null,
+      hasDropdown: true,
+      dropdownType: 'lodges',
+      btnId: 'site-nav-btn-legacy-lodges',
+      ddId: 'site-nav-dd-legacy-lodges',
+      mobAccId: 'mob-acc-legacy-lodges',
+      experiences: null,
+      lodges: {
+        sideMenuTitle: bundle.lodges.sideMenuTitle,
+        routes: bundle.lodges.routes,
+        seeAll: bundle.lodges.seeAll,
+      },
+    })
+  }
+
+  const pushDirect = (key: string, cta: SiteHeaderNavCta | null) => {
+    if (!cta) return
+    tabs.push({
+      key,
+      label: cta.label,
+      simpleLink: cta,
+      hasDropdown: false,
+      dropdownType: 'none',
+      btnId: `site-nav-btn-${key}`,
+      ddId: `site-nav-dd-${key}`,
+      mobAccId: `mob-acc-${key}`,
+      experiences: null,
+      lodges: null,
+    })
+  }
+
+  pushDirect('legacy-routes', bundle.chrome.routes)
+  pushDirect('legacy-about', bundle.chrome.about)
+  pushDirect('legacy-blog', bundle.chrome.blog)
+
+  return { tabs }
+}
+
+function headerSettingsProgramGroupConfigs(
+  settings: SiteHeaderNavSettingsRow,
+): Array<{ programType: string; label: string; enabled: boolean; order: number }> {
+  return (settings.programGroups ?? [])
+    .filter(
+      (g): g is HeaderNavProgramTypeGroupRow & { programType: string } =>
+        Boolean(g?.programType?.trim()) && g.programType !== 'tailor-made',
+    )
+    .map((g) => ({
+      programType: g.programType!.trim().toLowerCase(),
+      label: g.label?.trim() ?? '',
+      enabled: g.showInMenu !== false,
+      order: typeof g.order === 'number' && Number.isFinite(g.order) ? g.order : 999,
+    }))
+}
+
+function resolveTailorGroupFromHeaderSettings(
+  settings: SiteHeaderNavSettingsRow,
+): HeaderNavProgramTypeGroupRow | null {
+  return (settings.programGroups ?? []).find((g) => g?.programType === 'tailor-made') ?? null
 }
 
 function resolveDirectNavCta(opts: {
@@ -374,15 +552,7 @@ function trimUrl(s: string | null | undefined): string | null {
 }
 
 function lodgeMenuImageUrl(row: SiteHeaderNavLodgePageRow): string | null {
-  const lodge = row.lodge
-  if (!lodge) return null
-  return (
-    trimUrl(row.heroImageUrl) ||
-    trimUrl(lodge.firstHeroGalleryUrl) ||
-    trimUrl(lodge.firstGalleryUrl) ||
-    trimUrl(lodge.mainImageUrl) ||
-    null
-  )
+  return trimUrl(row.menuThumbnailImageUrl) || null
 }
 
 function lodgeMenuBadges(row: SiteHeaderNavLodgePageRow): { label: string; tone: 'own' | 'alliance' | 'neutral' }[] {
@@ -404,6 +574,33 @@ function lodgeMenuDescription(row: SiteHeaderNavLodgePageRow): string {
 
 type LodgeRouteCol = { slug: string; panelId: string; label: string; order: number }
 
+function applyRouteGroupOverrides(
+  cols: LodgeRouteCol[],
+  overrides: HeaderNavRouteGroupOverrideRow[] | null | undefined,
+): LodgeRouteCol[] {
+  if (!overrides?.length) return cols
+  const bySlug = new Map(cols.map((c) => [c.slug, { ...c }]))
+  for (const ov of overrides) {
+    const slug = ov.route?.slug?.trim().toLowerCase()
+    if (!slug) continue
+    if (ov.showInMenu === false) {
+      bySlug.delete(slug)
+      continue
+    }
+    const label = (ov.labelOverride?.trim() || ov.route?.shortLabel?.trim() || ov.route?.name?.trim() || slug).trim()
+    const order = typeof ov.order === 'number' && Number.isFinite(ov.order) ? ov.order : 999
+    const existing = bySlug.get(slug)
+    if (existing) {
+      bySlug.set(slug, { ...existing, label, order })
+    } else {
+      bySlug.set(slug, { slug, panelId: panelIdForLodgeRouteSlug(slug), label, order })
+    }
+  }
+  return [...bySlug.values()].sort((a, b) =>
+    a.order !== b.order ? a.order - b.order : a.label.localeCompare(b.label),
+  )
+}
+
 function buildLodgeRouteColumns(
   settings: SiteHeaderNavSettingsRow | null | undefined,
   routeNavDocs: SiteHeaderNavRouteNavRow[] | null | undefined,
@@ -418,7 +615,13 @@ function buildLodgeRouteColumns(
     fromCms.push({ slug, panelId: panelIdForLodgeRouteSlug(slug), label, order })
   }
   fromCms.sort((a, b) => (a.order !== b.order ? a.order - b.order : a.label.localeCompare(b.label)))
-  if (fromCms.length) return fromCms
+  if (fromCms.length) {
+    return applyRouteGroupOverrides(fromCms, settings?.routeGroupOverrides)
+  }
+
+  if (settings?.usesHeaderSettings) {
+    return applyRouteGroupOverrides([], settings?.routeGroupOverrides)
+  }
 
   const legacyKeys: LodgeRK[] = ['camanti', 'manu-road', 'manu-core']
   const out: LodgeRouteCol[] = []
@@ -448,7 +651,7 @@ function sortLodgeTmpList(
   return copy.map((x) => x.it)
 }
 
-function emptyNav(): ResolvedSiteHeaderNav {
+function emptyNav(): LegacyNavBundle {
   const routes = resolveDirectNavCta({
     enabled: true,
     label: 'Routes',
@@ -464,6 +667,14 @@ function emptyNav(): ResolvedSiteHeaderNav {
     defaultLabel: 'About',
     defaultHref: '/about',
     seedSmart: HEADER_NAV_ABOUT_SMART_LINK,
+  })
+  const blog = resolveDirectNavCta({
+    enabled: false,
+    label: 'Blog',
+    smart: HEADER_NAV_BLOG_SMART_LINK_DEFAULT,
+    defaultLabel: 'Blog',
+    defaultHref: '/journal',
+    seedSmart: HEADER_NAV_BLOG_SMART_LINK_DEFAULT,
   })
   const fbExp = resolveSeeAllToCta(
     effectiveSeeAllBlock(undefined, undefined, {
@@ -495,10 +706,13 @@ function emptyNav(): ResolvedSiteHeaderNav {
       lodges: { label: 'Lodges', enabled: true },
       routes,
       about,
+      blog,
     },
     experiences: {
       enabled: true,
+      sideMenuTitle: 'PROGRAMS',
       tailorSidebarLabel: tailorRow.label,
+      tailorSidebarSubLabel: '',
       tailorVisible: tailorRow.enabled,
       groups: [],
       tailor: {
@@ -507,15 +721,68 @@ function emptyNav(): ResolvedSiteHeaderNav {
         title: TAILOR_FALLBACK.title,
         subtitle: TAILOR_FALLBACK.subtitle,
         body: TAILOR_FALLBACK.body,
+        imageUrl: null,
+        imageAlt: null,
         cta: fbTailor ? ctaFromResolved(fbTailor) : null,
       },
       seeAll: fbExp,
     },
     lodges: {
       enabled: true,
+      sideMenuTitle: 'BY ROUTE',
       routes: [],
       seeAll: fbLodges,
     },
+  }
+}
+
+function effectiveProgramGroupConfigs(
+  settings: SiteHeaderNavSettingsRow | null | undefined,
+): Array<{ programType: string; label: string; enabled: boolean; order: number }> {
+  const fromSettings = (settings?.programGroups ?? []).filter(
+    (g): g is HeaderNavProgramTypeGroupRow & { programType: string } =>
+      Boolean(g?.programType?.trim()) && g.programType !== 'tailor-made',
+  )
+  if (settings?.usesHeaderSettings) {
+    return fromSettings.map((g) => ({
+      programType: g.programType!.trim().toLowerCase(),
+      label: g.label?.trim() || defaultLabelForProgramType(g.programType!),
+      enabled: g.showInMenu !== false,
+      order: typeof g.order === 'number' && Number.isFinite(g.order) ? g.order : 999,
+    }))
+  }
+  if (fromSettings.length) {
+    return fromSettings.map((g) => ({
+      programType: g.programType!.trim().toLowerCase(),
+      label: g.label?.trim() || defaultLabelForProgramType(g.programType!),
+      enabled: g.showInMenu !== false,
+      order: typeof g.order === 'number' && Number.isFinite(g.order) ? g.order : 999,
+    }))
+  }
+  const buckets: ExpBucket[] = ['classic', 'signature', 'learning']
+  return buckets.map((bucket) => {
+    const cfg = effectiveExpGroupConfig(settings, bucket)
+    const pt =
+      bucket === 'classic' ? 'nature-core' : bucket === 'signature' ? 'family-adventure' : 'experiential-learning'
+    return { programType: pt, label: cfg.label, enabled: cfg.enabled, order: cfg.order }
+  })
+}
+
+function resolveTailorGroup(
+  settings: SiteHeaderNavSettingsRow | null | undefined,
+): HeaderNavProgramTypeGroupRow | null {
+  const fromGroups = (settings?.programGroups ?? []).find((g) => g.programType === 'tailor-made')
+  if (fromGroups) return fromGroups
+  if (settings?.usesHeaderSettings) return null
+  const menu = tailorMenuResolved(settings)
+  return {
+    programType: 'tailor-made',
+    label: menu.label,
+    showInMenu: menu.enabled,
+    title: settings?.navTailorMadeTitle,
+    subtitle: settings?.navTailorMadeSubtitle,
+    body: settings?.navTailorMadeBody,
+    ctaSmartLink: settings?.navTailorMadeSmartLink,
   }
 }
 
@@ -553,51 +820,51 @@ export function resolveSiteHeaderNavData(
     defaultHref: '/about',
     seedSmart: HEADER_NAV_ABOUT_SMART_LINK,
   })
+  base.chrome.blog = resolveDirectNavCta({
+    enabled: settings?.blogEnabled,
+    label: settings?.blogLabel,
+    smart: settings?.blogLinkSmartLink ?? undefined,
+    defaultLabel: 'Blog',
+    defaultHref: '/journal',
+    seedSmart: HEADER_NAV_BLOG_SMART_LINK_DEFAULT,
+  })
 
   const expItemOv = experienceItemOverrideMap(settings)
   type ExpTmp = { it: SiteHeaderNavExpItem; sk: number; sn: string }
-  const bucketsTmp: Record<ExpBucket, ExpTmp[]> = {
-    classic: [],
-    signature: [],
-    learning: [],
-  }
+  const byProgramType = new Map<string, ExpTmp[]>()
 
   for (const row of pages) {
     const slug = row.pageSlug?.trim()
     const exp = row.experience
     const pageId = row._id?.trim()
     if (!slug || !exp?.name?.trim() || !pageId) continue
-    const bucket = programBucket(exp.programType)
-    if (bucket === 'tailor' || bucket == null) continue
+    const programType = exp.programType?.trim().toLowerCase() ?? ''
+    if (!programType || programType === 'tailor-made') continue
     const io = expItemOv.get(pageId)
     if (io?.show === false) continue
     const pathSeg = resolveExperiencePublicSlug({ slug }) ?? slug
     const sk = (typeof io?.order === 'number' ? io.order : row.headerNavOrder) ?? 999
     const name = io?.label?.trim() || exp.name!.trim()
+    const thumb =
+      exp.navImageUrl?.trim() || exp.mainImageUrl?.trim() || null
     const item: SiteHeaderNavExpItem = {
       id: pageId,
       name,
       href: `/experiences/${pathSeg}`,
       routeLine: formatExpRouteLine(exp),
-      metaLine: formatExpMeta(exp),
-      thumbUrl: exp.mainImageUrl?.trim() || null,
+      metaLine: formatExpPriceLine(exp),
+      thumbUrl: thumb,
     }
-    bucketsTmp[bucket].push({ it: item, sk, sn: name.toLowerCase() })
+    const list = byProgramType.get(programType) ?? []
+    list.push({ it: item, sk, sn: name.toLowerCase() })
+    byProgramType.set(programType, list)
   }
 
-  const buckets: Record<ExpBucket, SiteHeaderNavExpItem[]> = {
-    classic: [],
-    signature: [],
-    learning: [],
-  }
-  for (const b of Object.keys(bucketsTmp) as ExpBucket[]) {
-    bucketsTmp[b].sort((a, z) => {
-      if (a.sk !== z.sk) return a.sk - z.sk
-      return a.sn.localeCompare(z.sn)
-    })
-    buckets[b] = bucketsTmp[b].map((x) => x.it)
+  for (const list of byProgramType.values()) {
+    list.sort((a, z) => (a.sk !== z.sk ? a.sk - z.sk : a.sn.localeCompare(z.sn)))
   }
 
+  const groupConfigs = effectiveProgramGroupConfigs(settings)
   const expGroupsBuilt: Array<{
     order: number
     panelId: string
@@ -607,15 +874,14 @@ export function resolveSiteHeaderNavData(
     items: SiteHeaderNavExpItem[]
   }> = []
 
-  for (const bucket of Object.keys(buckets) as ExpBucket[]) {
-    const items = buckets[bucket]
-    if (!items.length) continue
-    const cfg = effectiveExpGroupConfig(settings, bucket)
+  for (const cfg of groupConfigs) {
     if (!cfg.enabled) continue
-    const meta = BUCKET_META[bucket]
+    const tmp = byProgramType.get(cfg.programType) ?? []
+    const items = tmp.map((x) => x.it)
+    if (!items.length) continue
     expGroupsBuilt.push({
       order: cfg.order,
-      panelId: meta.panelId,
+      panelId: panelIdForProgramType(cfg.programType),
       sidebarLabel: cfg.label,
       sidebarMeta: `${items.length} program${items.length === 1 ? '' : 's'}`,
       eyebrow: cfg.label,
@@ -624,16 +890,13 @@ export function resolveSiteHeaderNavData(
   }
   expGroupsBuilt.sort((a, b) => a.order - b.order)
 
-  /* Empty CMS lists leave no sidebar tabs; SiteHeader assumes ≥1 group when experiences nav is on. */
   if (expGroupsBuilt.length === 0) {
     const shells: typeof expGroupsBuilt = []
-    for (const bucket of Object.keys(buckets) as ExpBucket[]) {
-      const cfg = effectiveExpGroupConfig(settings, bucket)
+    for (const cfg of groupConfigs) {
       if (!cfg.enabled) continue
-      const meta = BUCKET_META[bucket]
       shells.push({
         order: cfg.order,
-        panelId: meta.panelId,
+        panelId: panelIdForProgramType(cfg.programType),
         sidebarLabel: cfg.label,
         sidebarMeta: '0 programs',
         eyebrow: cfg.label,
@@ -641,15 +904,12 @@ export function resolveSiteHeaderNavData(
       })
     }
     shells.sort((a, b) => a.order - b.order)
-    if (shells.length) {
-      expGroupsBuilt.push(...shells)
-    } else {
-      const bucket: ExpBucket = 'classic'
-      const cfg = effectiveExpGroupConfig(settings, bucket)
-      const meta = BUCKET_META[bucket]
+    if (shells.length) expGroupsBuilt.push(...shells)
+    else if (groupConfigs[0] && !settings?.usesHeaderSettings) {
+      const cfg = groupConfigs[0]
       expGroupsBuilt.push({
         order: cfg.order,
-        panelId: meta.panelId,
+        panelId: panelIdForProgramType(cfg.programType),
         sidebarLabel: cfg.label,
         sidebarMeta: '0 programs',
         eyebrow: cfg.label,
@@ -658,33 +918,51 @@ export function resolveSiteHeaderNavData(
     }
   }
 
-  const tailorRow = tailorMenuResolved(settings)
+  const tailorMenu = tailorMenuResolved(settings)
+  const tailorGroup = resolveTailorGroup(settings)
   base.experiences.enabled = settings?.experiencesEnabled !== false
-  base.experiences.tailorVisible = tailorRow.enabled
-  base.experiences.tailorSidebarLabel = tailorRow.label
+  base.experiences.sideMenuTitle = settings?.experiencesSideMenuTitle?.trim() || 'PROGRAMS'
+  base.experiences.tailorVisible = tailorGroup?.showInMenu !== false && tailorMenu.enabled
+  base.experiences.tailorSidebarLabel = tailorGroup?.label?.trim() || tailorMenu.label
+  base.experiences.tailorSidebarSubLabel = tailorGroup?.sidebarSubLabel?.trim() ?? ''
   base.experiences.groups = expGroupsBuilt.map(({ order: _o, ...rest }) => rest)
 
-  const expSeeBlock = effectiveSeeAllBlock(settings?.experiencesSeeAll, settings?.navExperiencesSeeAllSmartLink, {
-    enabled: HEADER_NAV_EXPERIENCES_SEE_ALL_BLOCK.enabled,
-    label: HEADER_NAV_EXPERIENCES_SEE_ALL_BLOCK.label,
-    smartLink: HEADER_NAV_EXPERIENCES_SEE_ALL_BLOCK.smartLink,
-  })
+  const expSeeBlock = settings?.usesHeaderSettings
+    ? ({
+        enabled: settings?.experiencesSeeAll?.enabled !== false && Boolean(settings?.experiencesSeeAll),
+        label: settings?.experiencesSeeAll?.label ?? null,
+        smartLink: settings?.experiencesSeeAll?.smartLink ?? null,
+      } satisfies HeaderNavSeeAllRow)
+    : effectiveSeeAllBlock(settings?.experiencesSeeAll, settings?.navExperiencesSeeAllSmartLink, {
+        enabled: HEADER_NAV_EXPERIENCES_SEE_ALL_BLOCK.enabled,
+        label: HEADER_NAV_EXPERIENCES_SEE_ALL_BLOCK.label,
+        smartLink: HEADER_NAV_EXPERIENCES_SEE_ALL_BLOCK.smartLink,
+      })
   base.experiences.seeAll = resolveSeeAllToCta(expSeeBlock, 'All experiences', '/#experiences')
 
-  const tailorResolved = resolveSmartLinkOrLegacy(settings?.navTailorMadeSmartLink, undefined, {
-    label: 'Enquire',
-    href: DEFAULT_WHATSAPP_URL,
-    openInNewTab: true,
-  })
+  const tailorCtaLabel = tailorGroup?.ctaLabel?.trim() || 'Enquire'
+  const tailorResolved = resolveSmartLinkOrLegacy(
+    tailorGroup?.ctaSmartLink ?? settings?.navTailorMadeSmartLink,
+    undefined,
+    {
+      label: tailorCtaLabel,
+      href: DEFAULT_WHATSAPP_URL,
+      openInNewTab: true,
+    },
+  )
+  const tailorImageUrl = tailorGroup?.imageUrl?.trim() || null
   base.experiences.tailor = {
     panelId: 'dd-exp-tailor',
-    eyebrow: base.experiences.tailorSidebarLabel,
-    title: settings?.navTailorMadeTitle?.trim() || TAILOR_FALLBACK.title,
-    subtitle: settings?.navTailorMadeSubtitle?.trim() || TAILOR_FALLBACK.subtitle,
-    body: settings?.navTailorMadeBody?.trim() || TAILOR_FALLBACK.body,
+    eyebrow: tailorGroup?.eyebrow?.trim() || base.experiences.tailorSidebarLabel,
+    title: tailorGroup?.title?.trim() || settings?.navTailorMadeTitle?.trim() || TAILOR_FALLBACK.title,
+    subtitle:
+      tailorGroup?.subtitle?.trim() || settings?.navTailorMadeSubtitle?.trim() || TAILOR_FALLBACK.subtitle,
+    body: tailorGroup?.body?.trim() || settings?.navTailorMadeBody?.trim() || TAILOR_FALLBACK.body,
+    imageUrl: tailorImageUrl,
+    imageAlt: tailorGroup?.imageAlt?.trim() || null,
     cta: tailorResolved
       ? {
-          label: tailorResolved.label,
+          label: tailorCtaLabel || tailorResolved.label,
           href: tailorResolved.href,
           openInNewTab: tailorResolved.openInNewTab,
           rel: tailorResolved.rel,
@@ -713,15 +991,8 @@ export function resolveSiteHeaderNavData(
     const io = lodgeItemOv.get(pageId)
     if (io?.show === false) continue
     const sk = (typeof io?.order === 'number' ? io.order : row.headerNavOrder) ?? 999
-    const defaultHref = `/lodges/${pageSlug}`
-    const ctaResolved = resolveSmartLinkOrLegacy(row.menuCtaSmartLink, undefined, {
-      label: row.menuCtaLabel?.trim() || 'View lodge',
-      href: defaultHref,
-      openInNewTab: false,
-    })
-    const href =
-      ctaResolved && ctaResolved.href && ctaResolved.href !== '#' ? ctaResolved.href : defaultHref
-    const ctaLabel = row.menuCtaLabel?.trim() || 'View lodge'
+    const href = `/lodges/${pageSlug}`
+    const ctaLabel = 'View lodge'
 
     const name = io?.label?.trim() || row.heroTitle?.trim() || lodge.name.trim()
     const item: SiteHeaderNavLodgeItem = {
@@ -743,6 +1014,7 @@ export function resolveSiteHeaderNavData(
   }
 
   base.lodges.enabled = settings?.lodgesEnabled !== false
+  base.lodges.sideMenuTitle = settings?.lodgesSideMenuTitle?.trim() || 'BY ROUTE'
 
   const colsForShells: LodgeRouteCol[] = [...routeColsBase]
   if (otherBucket.length) {
@@ -777,12 +1049,18 @@ export function resolveSiteHeaderNavData(
     lodges: [],
   }))
 
-  const lodgeSeeBlock = effectiveSeeAllBlock(settings?.lodgesSeeAll, settings?.navLodgesSeeAllSmartLink, {
-    enabled: HEADER_NAV_LODGES_SEE_ALL_BLOCK.enabled,
-    label: HEADER_NAV_LODGES_SEE_ALL_BLOCK.label,
-    smartLink: HEADER_NAV_LODGES_SEE_ALL_BLOCK.smartLink,
-  })
+  const lodgeSeeBlock = settings?.usesHeaderSettings
+    ? ({
+        enabled: settings?.lodgesSeeAll?.enabled !== false && Boolean(settings?.lodgesSeeAll),
+        label: settings?.lodgesSeeAll?.label ?? null,
+        smartLink: settings?.lodgesSeeAll?.smartLink ?? null,
+      } satisfies HeaderNavSeeAllRow)
+    : effectiveSeeAllBlock(settings?.lodgesSeeAll, settings?.navLodgesSeeAllSmartLink, {
+        enabled: HEADER_NAV_LODGES_SEE_ALL_BLOCK.enabled,
+        label: HEADER_NAV_LODGES_SEE_ALL_BLOCK.label,
+        smartLink: HEADER_NAV_LODGES_SEE_ALL_BLOCK.smartLink,
+      })
   base.lodges.seeAll = resolveSeeAllToCta(lodgeSeeBlock, 'All lodges', '/lodges')
 
-  return base
+  return legacyNavBundleToTabs(base)
 }

@@ -21,9 +21,9 @@ const U_FALL =
   'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80'
 
 const PROGRAM_BADGE: Record<string, string> = {
-  'nature-core': 'Nature Core',
-  'family-adventure': 'Family Adventure',
-  'experiential-learning': 'Exp. Learning',
+  'nature-core': 'Classic Nature',
+  'family-adventure': 'Signature Expeditions',
+  'experiential-learning': 'Experiential Learning',
   'tailor-made': 'Tailor Made',
 }
 
@@ -135,13 +135,18 @@ export function ExperiencePage({ experience, reviewsFiltered, featuredQuoteItems
 
   const mainImg = cdnImageUrl(e.mainImage ?? null, 1200, U_FALL)
   const gallery: Array<{ url: string; key: string; label: string }> = useMemo(() => {
-    const g = (e.gallery as unknown as Array<{ _key?: string; asset?: unknown }> | null) ?? []
+    const g =
+      (e.gallery as unknown as Array<{ _key?: string; asset?: unknown; title?: string; caption?: string }> | null) ??
+      []
     const fromCms = g
-      .map((im, i) => ({
-        url: cdnImageUrl(im as never, 800, U_FALL),
-        key: (im as { _key?: string })._key ?? `g${i}`,
-        label: i === 0 ? 'Gallery' : `Photo ${i + 1}`,
-      }))
+      .map((im, i) => {
+        const title = (im.title ?? '').trim()
+        return {
+          url: cdnImageUrl(im as never, 800, U_FALL),
+          key: (im as { _key?: string })._key ?? `g${i}`,
+          label: title || (i === 0 ? 'Gallery' : `Photo ${i + 1}`),
+        }
+      })
       .filter((x) => x.url)
     if (fromCms.length >= 2) return fromCms
     return [
