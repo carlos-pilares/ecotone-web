@@ -127,21 +127,25 @@ export const experiencePage = defineType({
       'highlights',
     ),
     defineField({
+      name: 'snapshotHighlightOrderKeys',
+      title: 'Snapshot highlights — select & order',
+      type: 'array',
+      of: [{type: 'string'}],
+      group: 'highlights',
+      components: {input: ExperienceKcOrderInput},
+      options: {kcSource: 'snapshotHighlights'},
+      validation: (Rule) => Rule.max(6),
+      description:
+        'From the linked Experience → tab **Highlights** → **Snapshot highlights**. Order = display order; items not listed are hidden. Empty = first 6 in KC order.',
+    }),
+    defineField({
       name: 'snapshotStatSelections',
-      title: 'Stats bar — select & order (from Experience)',
+      title: 'Stats bar — legacy slot picks (hidden)',
       type: 'array',
       of: [{type: 'experiencePageSnapshotStatPick'}],
       group: 'highlights',
-      validation: (Rule) =>
-        Rule.max(6).custom((rows) => {
-          const slots = (rows || []).map((r) => r?.slot).filter(Boolean)
-          if (slots.length !== new Set(slots).size) {
-            return 'No puedes repetir el mismo stat en la lista.'
-          }
-          return true
-        }),
-      description:
-        'Up to 6 rows. Each picks a **stat slot** defined on the linked Experience; visibility is per this URL. Values and labels always come from the Experience document.',
+      hidden: true,
+      description: 'Deprecated — use **Snapshot highlights — select & order** above.',
     }),
 
     // --- Overview … FAQs: preview + overrides vía StudioSectionTabField ---
@@ -161,7 +165,7 @@ export const experiencePage = defineType({
       options: {kcSource: 'overviewHighlights'},
       validation: (Rule) => Rule.max(12),
       description:
-        'Choose lines from the linked Experience **highlights** (overview). Order = display order; items not listed are hidden. Empty = show all in Knowledge Center order.',
+        'Lines come from the linked Experience → tab **③ Overview · datos** → **Overview highlight lines**. Order = display order; items not listed are hidden. Empty = show all in KC order.',
     }),
     defineField({
       name: 'overviewHighlightOrder',
@@ -186,32 +190,45 @@ export const experiencePage = defineType({
       'lodge',
     ),
     defineField({
+      name: 'lodgesOrderKeys',
+      title: 'Lodges on this programme — select & order',
+      type: 'array',
+      of: [{type: 'string'}],
+      group: 'lodge',
+      components: {input: ExperienceKcOrderInput},
+      options: {kcSource: 'lodges'},
+      validation: (Rule) => Rule.max(12),
+      description:
+        'Lodges are defined on the linked Experience → tab **⑤ Lodges** → **Lodges on this programme**. Pick which appear here and in what order. Names and descriptions always come from Lodge KC. Empty = show all KC lodges in programme order.',
+    }),
+    defineField({
       name: 'lodgePageLink',
-      title: '4. Selección / link — Lodge page',
+      title: 'Lodge page (legacy — single lodge)',
       type: 'reference',
       to: [{type: 'lodgePage'}],
       group: 'lodge',
       options: {disableNew: false},
-      description:
-        'Landing del lodge para el botón bajo la tarjeta. El sitio usa `/lodges/{slug}`. Vacío = enlace por defecto del sitio.',
+      hidden: true,
+      description: 'Deprecated — each lodge card uses its Lodge Page slug from Lodge KC.',
     }),
     defineField({
       name: 'lodgeCtaVisible',
-      title: 'Show lodge CTA',
+      title: 'Show lodge card CTAs',
       type: 'boolean',
       initialValue: true,
       group: 'lodge',
-      description: 'When off, hides the lodge card button on this landing.',
+      description: 'When off, hides “View lodge page” buttons on all lodge cards on this landing.',
     }),
     defineField({
       name: 'lodgeCtaLabel',
-      title: 'Lodge CTA label',
+      title: 'Default lodge CTA label',
       type: 'string',
       group: 'lodge',
       initialValue: 'View full lodge page',
       validation: (Rule) => Rule.max(80),
       hidden: ({parent}) => parent?.lodgeCtaVisible === false,
-      description: 'Button text only. Link always goes to the selected lodge page above.',
+      description:
+        'Fallback button label when a lodge row has no CTA label in Experience KC. Link is always `/lodges/{slug}` from each lodge’s published Lodge Page.',
     }),
     defineField({
       name: 'lodgeCtaSmartLink',

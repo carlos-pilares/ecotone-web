@@ -1,4 +1,5 @@
 import {defineField, defineType} from 'sanity'
+import {LodgePresentationHeroPreview} from '../../components/experiencePage/LodgePresentationHeroPreview'
 
 const imgHot = {hotspot: true}
 
@@ -133,6 +134,8 @@ export const experienceItineraryOvernight = defineType({
   ],
 })
 
+export {experienceSnapshotHighlight} from './experienceSnapshotHighlight'
+
 /** Per-lodge editorial modifiers on an experience (lodges tab). */
 export const experienceLodgePresentationRow = defineType({
   name: 'experienceLodgePresentationRow',
@@ -158,24 +161,45 @@ export const experienceLodgePresentationRow = defineType({
       title: 'Highlight label',
       type: 'string',
       validation: (Rule) => Rule.max(80),
+      description: 'Amber pill on the card (e.g. “Research station”). Not the hero pills below — those come from the Lodge Page.',
     }),
     defineField({
       name: 'highlights',
-      title: 'Extra highlights (bullets)',
+      title: 'Extra highlights (legacy)',
       type: 'array',
       of: [{type: 'string', validation: (Rule) => Rule.max(120)}],
       validation: (Rule) => Rule.max(12),
+      hidden: true,
+      description: 'Deprecated — card chips come from Lodge Page → Hero highlight pills.',
+    }),
+    defineField({
+      name: 'lodgePageHeroPreview',
+      title: 'Lodge Page hero copy (read only)',
+      type: 'string',
+      readOnly: true,
+      components: {input: LodgePresentationHeroPreview},
+      description: 'Short description and chips on the public card are edited on the linked Lodge Page.',
     }),
     defineField({
       name: 'ctaLabel',
       title: 'CTA label',
       type: 'string',
       validation: (Rule) => Rule.max(80),
+      description: 'Button text. Link is always the published Lodge Page URL.',
+    }),
+    defineField({
+      name: 'ctaVisible',
+      title: 'Show CTA on card',
+      type: 'boolean',
+      initialValue: true,
+      description: 'When off, hides the lodge card button for this row.',
     }),
     defineField({
       name: 'ctaSmartLink',
-      title: 'CTA link',
+      title: 'CTA link (legacy)',
       type: 'smartLink',
+      hidden: true,
+      description: 'Deprecated — link is always `/lodges/{slug}` from the Lodge Page.',
     }),
   ],
   preview: {

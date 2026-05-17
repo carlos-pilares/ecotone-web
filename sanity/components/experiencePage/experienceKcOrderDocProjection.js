@@ -1,6 +1,7 @@
 /** Shared GROQ projection for ExperienceKcOrderInput (stable `_key`s for pickers). */
 export const experienceKcOrderDocProjection = /* groq */ `{
   highlights,
+  snapshotHighlights[]{ _key, title, subtitle },
   "highlightsKeyed": highlights[] { "_key": _key, "text": @ },
   "includesKeyed": includes[] { "_key": _key, "text": @ },
   includes,
@@ -12,5 +13,10 @@ export const experienceKcOrderDocProjection = /* groq */ `{
   knowledgeResources[]{ _key, title },
   resources[]{ _key, title },
   termsPanels[]{ _key, title },
-  gallery[]{ _key, mediaType, title, caption, alt }
+  gallery[]{ _key, mediaType, title, caption, alt },
+  lodgePresentationRows[] {
+    _key,
+    nightsLabel,
+    "lodgeName": lodge->name
+  }
 }`

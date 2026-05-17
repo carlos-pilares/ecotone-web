@@ -70,10 +70,18 @@ export const experience = defineType({
   name: 'experience',
   title: 'Experiencia',
   type: 'document',
+  fieldsets: [
+    {
+      name: 'overviewHighlightsSource',
+      title: 'Overview highlights — source for Experience Pages',
+      options: {collapsible: false},
+    },
+  ],
   groups: [
     {name: 'identity', title: '① Identidad', default: true},
     {name: 'media', title: '② Media'},
     {name: 'content', title: '③ Overview · datos'},
+    {name: 'snapshotHighlights', title: 'Highlights'},
     {name: 'itinerary', title: '④ Itinerario'},
     {name: 'lodges', title: '⑤ Lodges'},
     {name: 'logistics', title: '⑥ Logística'},
@@ -250,16 +258,29 @@ export const experience = defineType({
       description: 'Deprecated.',
     }),
 
-    // --- Content (highlights) ---
+    // --- Content (highlights) — canonical list for Experience Page “Overview highlight lines” picker ---
     defineField({
       name: 'highlights',
-      title: 'Overview highlights / product facts',
+      title: 'Overview highlight lines',
       type: 'array',
       group: 'content',
+      fieldset: 'overviewHighlightsSource',
       of: [{type: 'string', validation: (Rule) => Rule.max(100)}],
       description:
-        'Short factual bullets only (no editorial overview body — that lives on Experience pages). Max 5 lines.',
+        'Plain-text bullets shown in the Overview section on Experience Pages (when selected there). One line per fact — e.g. programme inclusions, lodge type, research access. Not the editorial overview paragraph (that is edited on each Experience Page). Max 5 lines.',
       validation: (Rule) => Rule.max(5),
+    }),
+
+    // --- Snapshot bar (stats under hero on Experience Pages) ---
+    defineField({
+      name: 'snapshotHighlights',
+      title: 'Snapshot highlights (stats bar)',
+      type: 'array',
+      group: 'snapshotHighlights',
+      of: [{type: 'experienceSnapshotHighlight'}],
+      validation: (Rule) => Rule.max(8),
+      description:
+        'Title + subtitle pairs for the highlight bar under the hero on Experience Pages (e.g. “4D · 3N” / “Duration”). Each Experience Page picks up to 6. Not the Overview bullet list (tab Overview · datos).',
     }),
 
     // --- Itinerary ---
@@ -321,9 +342,10 @@ export const experience = defineType({
                     defineField({
                       name: 'time',
                       type: 'string',
-                      title: 'Hora',
-                      description: 'Ej: 4:30 AM. Máx 12 caracteres.',
-                      validation: (Rule) => Rule.max(12),
+                      title: 'Time',
+                      description:
+                        'Free text — clock time or descriptive timing (e.g. “Early morning”, “After breakfast”, “Approx. 45-minute walk”). Max 100 characters.',
+                      validation: (Rule) => Rule.max(100),
                     }),
                     defineField({
                       name: 'title',
@@ -379,7 +401,7 @@ export const experience = defineType({
       group: 'lodges',
       of: [{type: 'experienceLodgePresentationRow'}],
       description:
-        'One row per lodge guests stay at (typically matches itinerary overnight lodges). Sets nights label, bullets and CTA for **Your lodge** — name and description always come from Lodge KC.',
+        'One row per lodge on this programme. Configure nights label, amber highlight label, and CTA label only. Lodge name, short description, and chips come from each lodge’s **Lodge Page** hero.',
       validation: (Rule) => Rule.max(8),
     }),
 

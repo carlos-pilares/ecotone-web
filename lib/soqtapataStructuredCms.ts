@@ -12,6 +12,7 @@ import type {
   SoqtapataMediaThumb,
   SoqtapataPhase1BreadcrumbItem,
   SoqtapataPhase1GalleryCell,
+  SoqtapataLodgeCard,
   SoqtapataRelatedCardImage,
   SoqtapataRelatedCardTailor,
   SoqtapataResourceCard,
@@ -42,10 +43,7 @@ import {
   NOT_INCLUDE_LIST_KEY_PREFIX,
   resolvePlainStringKcList,
 } from '@/lib/experienceKcStringListKeys'
-import {
-  buildStatsBarFromPageCms,
-  type SnapshotStatSelectionRow,
-} from '@/lib/snapshotBarResolve'
+import { buildSnapshotHighlightsBarFromCms, type CmsSnapshotHighlightRow } from '@/lib/snapshotHighlightsResolve'
 
 /** CMS sometimes stores non-string rows in string-array fields; coerce to display lines. */
 function normalizeStringHighlightList(raw: unknown[] | null | undefined): string[] {
@@ -185,10 +183,13 @@ export type SoqtapataStructuredPageRow = {
   /** Landing: prioridad sobre `experience.resources` para tarjetas + preview map/brochure. */
   resources?: CmsExperiencePageResources | null
   internalNav?: CmsInternalNav | null
-  /** Stats bar under hero — slot picks from linked Experience (visible rows only). */
-  snapshotStatSelections?: SnapshotStatSelectionRow[] | null
+  /** Stats bar — curated KC snapshot highlight `_key` order (max 6 on site). */
+  snapshotHighlightOrderKeys?: string[] | null
+  /** @deprecated Legacy logistics slot picks — hidden in Studio */
+  snapshotStatSelections?: Array<{ slot?: string | null; visible?: boolean | null }> | null
   /** Curate Knowledge Center rows (Sanity `_key` order; omitted = hidden). */
   overviewHighlightKeys?: string[] | null
+  lodgesOrderKeys?: string[] | null
   wildlifeOrderKeys?: string[] | null
   includesOrderKeys?: string[] | null
   notIncludesOrderKeys?: string[] | null
@@ -394,6 +395,7 @@ type CmsExperience = {
   seasonLegend?: CmsSeasonLegend | null
   travelerGuideSections?: CmsTravelerGuideSection[] | null
   travelerGuideSubsections?: CmsTravelerGuideSubsection[] | null
+  snapshotHighlights?: CmsSnapshotHighlightRow[] | null
   lodgePresentationRows?: CmsLodgePresentationRow[] | null
   faqs?: { _key?: string | null; question?: string; answer?: string }[] | null
   seo?: { title?: string | null; description?: string | null } | null
@@ -525,15 +527,46 @@ type CmsLodge = {
   route?: string | null
   mainImageUrl?: string | null
   amenities?: string[] | null
+  pageSlug?: string | null
+  lodgePage?: CmsLodgePageHero | null
+}
+
+type CmsLodgePageHero = {
+  heroShortDescription?: string | null
+  heroHighlights?: Array<{ text?: string | null; key?: string | null }> | null
+  slug?: string | null
 }
 
 type CmsLodgePresentationRow = {
+  _key?: string | null
   lodge?: (CmsLodge & { _id?: string }) | null
   nightsLabel?: string | null
   highlightLabel?: string | null
+  /** @deprecated — card chips from Lodge Page hero pills */
   highlights?: string[] | null
   ctaLabel?: string | null
+  ctaVisible?: boolean | null
   ctaSmartLink?: SmartLinkGroq | null
+}
+
+function resolveLodgePageHeroShortDescription(
+  lodgePage: CmsLodgePageHero | null | undefined,
+  lodge: CmsLodge,
+): string {
+  return lodgePage?.heroShortDescription?.trim() || lodge.shortDescription?.trim() || ''
+}
+
+function resolveLodgePageHeroPillTexts(
+  lodgePage: CmsLodgePageHero | null | undefined,
+): string[] {
+  if (!lodgePage?.heroHighlights?.length) return []
+  const out: string[] = []
+  for (const h of lodgePage.heroHighlights) {
+    const t = h?.text?.trim()
+    if (t) out.push(t)
+    if (out.length >= 3) break
+  }
+  return out
 }
 
 type CmsGalleryItem = {
@@ -1099,7 +1132,8 @@ export function applyCmsExclusiveExperienceContent(
   const terms = applyTermsPageSettings(termsBase, row, local)
   const overview = buildOverviewFromCms(e, row, local)
   const wildlife = buildWildlifeFromCms(e, row, local)
-  const stats = buildStatsBarFromPageCms(e, row.snapshotStatSelections, local.stats)
+  const stats = buildSnapshotHighlightsBarFromCms(e.snapshotHighlights, row.snapshotHighlightOrderKeys)
+  const lodge = buildLodgesFromCms(e, row, local)
 
   return {
     ...experience,
@@ -1112,6 +1146,7 @@ export function applyCmsExclusiveExperienceContent(
     },
     stats,
     overview,
+    lodge,
     ...(wildlife ? { wildlife } : {}),
     also: {
       eyebrow: alsoBook.also.eyebrow,
@@ -1213,25 +1248,85 @@ const DAY_IDS = ['day1', 'day2', 'day3', 'day4', 'day5', 'day6', 'day7', 'day8',
 /** Segmento de ruta seguro para `/lodges/{slug}` (evita valores raros desde CMS). */
 const LODGE_PAGE_SLUG_SEGMENT = /^[a-z0-9][a-z0-9-]*$/i
 
-function applyExperiencePageLodgeLandingCta(
-  row: SoqtapataStructuredPageRow | null | undefined,
-  out: Partial<SoqtapataExperience>,
+function orderLodgePresentationRows(
+  rows: CmsLodgePresentationRow[] | null | undefined,
+  orderKeys: string[] | null | undefined,
+): CmsLodgePresentationRow[] {
+  const withLodges = (rows ?? []).filter((r) => r.lodge?.name?.trim())
+  if (!withLodges.length) return []
+  const keyed = withLodges.map((r, i) => ({
+    ...r,
+    _key: (r._key && String(r._key).trim()) || `lodge-${i}`,
+  }))
+  if (!orderKeys?.length) return keyed
+  return curateKeyedRowsStrict(keyed, orderKeys, 'lodges') ?? []
+}
+
+function buildLodgesFromCms(
+  e: CmsExperience,
+  row: NonNullable<SoqtapataStructuredPageRow>,
   local: SoqtapataExperience,
-): void {
-  if (!row) return
+): SoqtapataExperience['lodge'] {
+  const shell = local.lodge
+  const ordered = orderLodgePresentationRows(e.lodgePresentationRows, row.lodgesOrderKeys)
+  if (!ordered.length) {
+    return { ...shell, cards: [] }
+  }
+  const template = shell.cards[0] ?? {
+    imageSrc: '',
+    imageAlt: 'Lodge',
+    nightBadge: '',
+    name: '',
+    nameStyle: { marginTop: 8 },
+    pillText: '',
+    pillStyle: { fontSize: 11, flexShrink: 0, whiteSpace: 'nowrap' as const },
+    meta: '',
+    metaStyle: { marginTop: 6 },
+    chips: [],
+    chipsWrapperStyle: { marginBottom: 14 },
+    ctaHref: '',
+    ctaLabel: 'View full lodge page',
+  }
+  const hideCta = row.lodgeCtaVisible === false
+  const defaultCtaLabel = row.lodgeCtaLabel?.trim() || template.ctaLabel || 'View full lodge page'
 
-  const base = out.lodge ?? local.lodge
-  const hide = row.lodgeCtaVisible === false
-  const rawSlug = row.lodgePageSlug?.trim()
-  const slugOk = rawSlug && LODGE_PAGE_SLUG_SEGMENT.test(rawSlug) ? rawSlug : ''
-  const href = hide || !slugOk ? '' : `/lodges/${slugOk}`
-  const label = hide ? '' : row.lodgeCtaLabel?.trim() || base.card.ctaLabel
+  const cards: SoqtapataLodgeCard[] = []
+  for (const pres of ordered) {
+    const lod = pres.lodge!
+    const lodgePage = lod.lodgePage
+    const slugRaw = (lodgePage?.slug?.trim() || lod.pageSlug?.trim()) ?? ''
+    const slugOk = slugRaw && LODGE_PAGE_SLUG_SEGMENT.test(slugRaw) ? slugRaw : ''
+    const rowCtaVisible = pres.ctaVisible !== false
+    const showCta = !hideCta && rowCtaVisible && Boolean(slugOk)
+    const ctaHref = showCta ? `/lodges/${slugOk}` : ''
+    const ctaLabel = showCta ? pres.ctaLabel?.trim() || defaultCtaLabel : ''
+    const chips = resolveLodgePageHeroPillTexts(lodgePage)
+    const meta = resolveLodgePageHeroShortDescription(lodgePage, lod) || template.meta
 
-  out.lodge = {
-    ...base,
-    ctaHref: href,
-    ctaLabel: label,
-    card: { ...base.card, ctaHref: href, ctaLabel: label },
+    cards.push({
+      imageSrc: (lod.mainImageUrl && imgW(lod.mainImageUrl, 500)) || template.imageSrc,
+      imageAlt: (lod.name && lod.name.trim()) || template.imageAlt,
+      nightBadge: pres.nightsLabel?.trim() || template.nightBadge,
+      name: lod.name!.trim(),
+      nameStyle: template.nameStyle,
+      pillText: pres.highlightLabel?.trim() || template.pillText,
+      pillStyle: template.pillStyle,
+      meta,
+      metaStyle: template.metaStyle,
+      chips,
+      chipsWrapperStyle: template.chipsWrapperStyle,
+      ctaHref,
+      ctaLabel,
+    })
+  }
+
+  return {
+    eyebrow: shell.eyebrow,
+    h2: shell.h2,
+    h2Style: shell.h2Style,
+    intro: shell.intro,
+    introStyle: shell.introStyle,
+    cards,
   }
 }
 
@@ -1837,49 +1932,6 @@ export function soqtapataPartialFromStructuredRow(
     }
   }
 
-  const primaryLodge = resolvePrimaryLodgeForExperience(e)
-  if (primaryLodge?.name) {
-    const mod = lodgeModifiersFor(e, primaryLodge._id)
-    const ld = l.lodge
-    const smart = mod?.ctaSmartLink
-    const ctaResolved = resolveSmartLinkOrLegacy(smart, undefined, {
-      label: (mod?.ctaLabel && mod.ctaLabel.trim()) || ld.ctaLabel,
-      href: ld.ctaHref,
-      openInNewTab: false,
-    })
-    const chips =
-      mod?.highlights?.length && mod.highlights.some((x) => String(x).trim())
-        ? normalizeStringHighlightList(mod.highlights as unknown[])
-        : primaryLodge.amenities && primaryLodge.amenities.length > 0
-          ? normalizeStringHighlightList(primaryLodge.amenities as unknown[])
-          : ld.card.chips
-    out.lodge = {
-      ...ld,
-      intro:
-        (primaryLodge.shortDescription && primaryLodge.shortDescription.trim()) || ld.intro,
-      card: {
-        ...ld.card,
-        name: (primaryLodge.name && primaryLodge.name.trim()) || ld.card.name,
-        imageSrc: (primaryLodge.mainImageUrl && imgW(primaryLodge.mainImageUrl, 500)) || ld.card.imageSrc,
-        nightBadge:
-          (mod?.nightsLabel && mod.nightsLabel.trim()) ||
-          (e.lodgeNightLabel && e.lodgeNightLabel.trim()) ||
-          ld.card.nightBadge,
-        meta:
-          [
-            formatLodgeAltitudeForSubtitle(primaryLodge.altitude),
-            primaryLodge.route?.trim() ? resolveRouteLabel(primaryLodge.route) : null,
-            primaryLodge.shortDescription,
-          ]
-            .filter(Boolean)
-            .join(' · ') || ld.card.meta,
-        chips,
-      },
-      ctaHref: smartLinkIsDisabled(smart) ? ld.ctaHref : (ctaResolved?.href ?? ld.ctaHref),
-      ctaLabel: smartLinkIsDisabled(smart) ? ld.ctaLabel : (ctaResolved?.label ?? (mod?.ctaLabel && mod.ctaLabel.trim()) ?? ld.ctaLabel),
-    }
-  }
-
   if (e.wildlife && e.wildlife.length > 0) {
     let wRows = [...e.wildlife]
     if (row.wildlifeOrderKeys?.length) {
@@ -2027,8 +2079,6 @@ export function soqtapataPartialFromStructuredRow(
       out.terms = { ...out.terms, pdfHref: '#' }
     }
   }
-
-  applyExperiencePageLodgeLandingCta(row, out, l)
 
   return out
 }

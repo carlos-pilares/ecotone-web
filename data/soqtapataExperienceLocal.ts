@@ -322,30 +322,29 @@ export const soqtapataPhase2: { overview: SoqtapataOverview; itinerary: Soqtapat
 
 export type SoqtapataLodgeChip = string
 
+export type SoqtapataLodgeCard = {
+  imageSrc: string
+  imageAlt: string
+  nightBadge: string
+  name: string
+  nameStyle: { marginTop: number }
+  pillText: string
+  pillStyle: { fontSize: number; flexShrink: number; whiteSpace: 'nowrap' }
+  meta: string
+  metaStyle: { marginTop: number }
+  chips: SoqtapataLodgeChip[]
+  chipsWrapperStyle: { marginBottom: number }
+  ctaHref: string
+  ctaLabel: string
+}
+
 export type SoqtapataLodge = {
   eyebrow: string
   h2: string
   h2Style: { marginBottom: number }
   intro: string
   introStyle: { fontSize: number; fontWeight: number; color: string; lineHeight: number; marginBottom: number }
-  /** CTA resuelta (experiencePage → lodgePage o fallback local). */
-  ctaHref: string
-  ctaLabel: string
-  card: {
-    imageSrc: string
-    imageAlt: string
-    nightBadge: string
-    name: string
-    nameStyle: { marginTop: number }
-    pillText: string
-    pillStyle: { fontSize: number; flexShrink: number; whiteSpace: 'nowrap' }
-    meta: string
-    metaStyle: { marginTop: number }
-    chips: SoqtapataLodgeChip[]
-    chipsWrapperStyle: { marginBottom: number }
-    ctaHref: string
-    ctaLabel: string
-  }
+  cards: SoqtapataLodgeCard[]
 }
 
 export type SoqtapataWildlifeSpecies = {
@@ -388,29 +387,29 @@ export const soqtapataPhase3: { lodge: SoqtapataLodge; wildlife: SoqtapataWildli
     h2Style: { marginBottom: 6 },
     intro: 'This experience stays at Soqtapata Lodge for both nights — adjacent to the CIDS research centre.',
     introStyle: { fontSize: 14, fontWeight: 300, color: 'var(--n700)', lineHeight: 1.8, marginBottom: 20 },
-    card: {
-      imageSrc: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=500&q=80',
-      imageAlt: 'Soqtapata Lodge',
-      nightBadge: 'Nights 1 & 2',
-      name: 'Soqtapata Lodge',
-      nameStyle: { marginTop: 8 },
-      pillText: 'Research station',
-      pillStyle: { fontSize: 11, flexShrink: 0, whiteSpace: 'nowrap' },
-      meta: '1,200 m.a.s.l. · Camanti Route · Max 14 guests · B Corp certified · Adjacent to CIDS research centre',
-      metaStyle: { marginTop: 6 },
-      chips: [
-        'Private bungalow',
-        'Hot shower',
-        'All meals included',
-        'Nature library',
-        'Rubber boots provided',
-      ],
-      chipsWrapperStyle: { marginBottom: 14 },
-      ctaHref: '#',
-      ctaLabel: 'View full lodge page',
-    },
-    ctaHref: '#',
-    ctaLabel: 'View full lodge page',
+    cards: [
+      {
+        imageSrc: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=500&q=80',
+        imageAlt: 'Soqtapata Lodge',
+        nightBadge: 'Nights 1 & 2',
+        name: 'Soqtapata Lodge',
+        nameStyle: { marginTop: 8 },
+        pillText: 'Research station',
+        pillStyle: { fontSize: 11, flexShrink: 0, whiteSpace: 'nowrap' },
+        meta: '1,200 m.a.s.l. · Camanti Route · Max 14 guests · B Corp certified · Adjacent to CIDS research centre',
+        metaStyle: { marginTop: 6 },
+        chips: [
+          'Private bungalow',
+          'Hot shower',
+          'All meals included',
+          'Nature library',
+          'Rubber boots provided',
+        ],
+        chipsWrapperStyle: { marginBottom: 14 },
+        ctaHref: '#',
+        ctaLabel: 'View full lodge page',
+      },
+    ],
   },
   wildlife: {
     eyebrow: 'What you might encounter',

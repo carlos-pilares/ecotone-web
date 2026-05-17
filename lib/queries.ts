@@ -442,11 +442,13 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       sectionTitle,
       sectionText
     },
+    snapshotHighlightOrderKeys,
     snapshotStatSelections[] {
       slot,
       visible
     },
     overviewHighlightKeys,
+    lodgesOrderKeys,
     wildlifeOrderKeys,
     includesOrderKeys,
     notIncludesOrderKeys,
@@ -773,16 +775,24 @@ export const soqtapataStructuredPageBySlugQuery = groq`
           "imageUrl": image.asset->url
         }
       },
+      snapshotHighlights[] { _key, title, subtitle },
       lodgePresentationRows[] {
         _key,
         nightsLabel,
         highlightLabel,
         highlights,
         ctaLabel,
+        ctaVisible,
         ctaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
         "lodge": lodge-> {
           _id, name, shortDescription, ${GROQ_LODGE_ALTITUDE_AS_ALTITUDE}, route, amenities,
-          "mainImageUrl": mainImage.asset->url
+          "mainImageUrl": mainImage.asset->url,
+          "pageSlug": *[_type == "lodgePage" && lodge._ref == ^._id][0].slug.current,
+          "lodgePage": *[_type == "lodgePage" && lodge._ref == ^._id][0] {
+            heroShortDescription,
+            heroHighlights[]{ text, key },
+            "slug": slug.current
+          }
         }
       },
       faqs[] { _key, question, answer },

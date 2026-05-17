@@ -294,7 +294,7 @@ export async function seedCmsAll() {
     slug: { _type: 'slug' as const, current: 'soqtapata-lodge' },
     route: 'camanti',
     altitudeLegacy: '1,200 m',
-    shortDescription: soqtapataPhase3.lodge.card.meta,
+    shortDescription: soqtapataPhase3.lodge.cards[0]!.meta,
   }
 
   const h = soqtapataPhase1.hero

@@ -95,6 +95,27 @@ function buildOptions(source, doc) {
         return {key: notIncludeListKeyAt(idx), label}
       })
     }
+    case 'snapshotHighlights': {
+      const raw = doc.snapshotHighlights
+      if (!Array.isArray(raw)) return []
+      return raw.map((item, idx) => {
+        const title = (item?.title && String(item.title).trim()) || ''
+        const subtitle = (item?.subtitle && String(item.subtitle).trim()) || ''
+        const label = [title, subtitle].filter(Boolean).join(' · ') || `Highlight ${idx + 1}`
+        return {key: (item && item._key) || `snapshot-${idx}`, label}
+      })
+    }
+    case 'lodges': {
+      const raw = doc.lodgePresentationRows
+      if (!Array.isArray(raw)) return []
+      return raw.map((row, idx) => {
+        const key = (row && row._key) || `lodge-${idx}`
+        const label =
+          (row && row.lodgeName && String(row.lodgeName).trim()) ||
+          `Lodge ${idx + 1}`
+        return {key, label}
+      })
+    }
     case 'termsPanels': {
       const raw = doc.termsPanels
       if (!Array.isArray(raw)) return []
