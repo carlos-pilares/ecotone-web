@@ -6,6 +6,10 @@ import type { ReserveCtaCardProps } from '@/components/shared/ReserveCtaSection'
 import { aboutSeoFallback, aboutStatic } from '@/data/aboutStatic'
 import { homePageTextFields } from '@/data/cmsApproved/homePageFields'
 import type { AboutPageSanityDoc } from '@/lib/aboutPageQuery'
+import {
+  resolveAboutPageSectionVisibility,
+  type AboutPageSectionVisibility,
+} from '@/lib/aboutPageSectionVisibility'
 import type { PartnerDoc } from '@/lib/queries'
 import { filterPublishedPartnerDocs } from '@/lib/partnerDocs'
 import { getLowestActiveExperiencePrice, buildReserveRowsForHome, type ExperiencePriceInput } from '@/lib/reserveCtaPricing'
@@ -52,6 +56,7 @@ function mapTrustIcon(k: string | null | undefined): 'check' | 'shield' | 'heart
 }
 
 export type AboutPageResolved = {
+  sectionVisibility: AboutPageSectionVisibility
   seo: {
     title: string
     description: string
@@ -452,7 +457,10 @@ export function resolveAboutPageData(
     emptyMessage: (c?.partnersEmptyMessage ?? '').trim() || null,
   }
 
+  const sectionVisibility = resolveAboutPageSectionVisibility(c?.sectionModules ?? null)
+
   return {
+    sectionVisibility,
     seo,
     hero,
     who,

@@ -7,29 +7,30 @@ import { homePageTextFields } from '@/data/cmsApproved/homePageFields'
 import type { ReviewDoc } from '@/lib/queries'
 import { buildRotatingQuoteItemsFromReviews } from '@/lib/reviewQuoteItems'
 import { normalizeReviewsRatingSummary, type ReviewsRatingSummary } from '@/lib/reviewsRatingSummary'
-import { buildRouteFootPriceHtmlById } from '@/lib/routeCardFootPrice'
+import {
+  buildRouteFootPriceHtmlByRouteRef,
+  buildRouteFootPriceHtmlByStableId,
+  formatRouteCardFootPriceHtml,
+} from '@/lib/routeCardFootPrice'
+import {
+  resolveRoutesPageSectionVisibility,
+  type RoutesPageSectionVisibility,
+} from '@/lib/routesPageSectionVisibility'
 import { getLowestActiveExperiencePrice, buildReserveRowsForHome } from '@/lib/reserveCtaPricing'
 import { resolveReserveCtaCard } from '@/lib/resolveReserveCtaCard'
+import { resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
 import {
-  buildGenericExperienceEnquireWhatsappHref,
-  enrichSmartLinkWithLabelFallback,
-  resolveExperiencePublicHrefOrFallback,
-} from '@/lib/resolveExperiencePublicHref'
-import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
-import type {
-  RoutesPageSanityDoc,
-  RoutesPageSanityExpCard,
-  RoutesPageSanityExperienceRef,
-  RoutesPageSanityRouteCard,
-} from '@/lib/routesPageQuery'
+  buildRoutesExpCardsFromListedExperiencePages,
+  buildRoutesExpFiltersFromPublishedRoutes,
+  orderPublishedRoutes,
+} from '@/lib/routesPageExperiencesSection'
+import type { RoutesPageSanityDoc, RoutesPageSanityRouteCard } from '@/lib/routesPageQuery'
 import {
   routesCards as fallbackRoutesCards,
   routesCompareColumns as fallbackCompareColumns,
   routesCompareRows as fallbackCompareRows,
   routesCompareSection as fallbackCompareSection,
-  routesExpCards as fallbackExpCards,
   routesExperiencesSection as fallbackExperiencesSection,
-  routesExpFilters as fallbackExpFilters,
   routesFeaturedQuoteItems as fallbackFeaturedQuotes,
   routesFinalCta as fallbackFinalCta,
   routesHero as fallbackHero,
@@ -44,7 +45,6 @@ import {
   type RoutesCompareRow,
   type RoutesExpCardStatic,
   type RoutesExpFilterPill,
-  type RoutesExpRouteFilter,
   type RoutesHeroStatic,
   type RoutesSnapshotStat,
   type RoutesTerritoryStatic,
@@ -192,7 +192,8 @@ function isBadgeTone(s: string | null | undefined): s is RoutesCardBadge['tone']
 
 function mapRouteCards(
   cards: RoutesPageSanityRouteCard[] | null | undefined,
-  footPriceByRouteId: Map<string, string> | null,
+  footPriceByRouteRef: Map<string, string>,
+  footPriceByStableId: Map<string, string>,
 ): RoutesCardStatic[] | null {
   if (!Array.isArray(cards) || cards.length === 0) return null
   const out: RoutesCardStatic[] = []
@@ -224,6 +225,14 @@ function mapRouteCards(
       })
       .filter(Boolean) as RoutesCardBadge[]
     const btn = c.ctaButtonVariant === 'primary' ? 'primary' : 'secondary'
+    const routeRefId = c.routeRef?._id?.trim()
+    let footPriceHtml = ''
+    if (routeRefId) {
+      footPriceHtml =
+        footPriceByRouteRef.get(routeRefId) ?? formatRouteCardFootPriceHtml(0, null)
+    } else if (id) {
+      footPriceHtml = footPriceByStableId.get(id) ?? ''
+    }
     out.push({
       id,
       variant,
@@ -235,147 +244,9 @@ function mapRouteCards(
       name: c.name.trim(),
       description: c.description?.trim() ?? '',
       chips: (c.chips ?? []).map((x) => x.trim()).filter(Boolean),
-      footPriceHtml: (id && footPriceByRouteId?.get(id)) || c.footPriceHtml?.trim() || '',
+      footPriceHtml,
       cta: { label, href, buttonVariant: btn },
     })
-  }
-  return out.length ? out : null
-}
-
-function isRouteKey(s: string | null | undefined): s is Exclude<RoutesExpRouteFilter, 'all'> {
-  return s === 'camanti' || s === 'manu-road' || s === 'manu-core'
-}
-
-function isPriceKind(s: string | null | undefined): s is RoutesExpCardStatic['priceKind'] {
-  return s === 'amount' || s === 'enquire' || s === 'custom'
-}
-
-function routeFilterFromExperience(route: string | null | undefined): Exclude<RoutesExpRouteFilter, 'all'> | null {
-  const r = route?.trim().toLowerCase()
-  if (r === 'camanti') return 'camanti'
-  if (r === 'manu-road' || r === 'manuroad' || r === 'manu road') return 'manu-road'
-  if (r === 'manu-core' || r === 'manucore' || r === 'manu core') return 'manu-core'
-  return null
-}
-
-function routeLineLabel(route: Exclude<RoutesExpRouteFilter, 'all'>): string {
-  if (route === 'camanti') return 'Camanti Route'
-  if (route === 'manu-road') return 'Manu Road'
-  return 'Manu Core'
-}
-
-const PROGRAM_TYPE_PUBLIC_LABEL: Record<string, string> = {
-  'nature-core': 'Classic Nature',
-  'family-adventure': 'Signature Expeditions',
-  'experiential-learning': 'Experiential Learning',
-  'tailor-made': 'Tailor Made',
-}
-
-function typePillLabel(programType: string | null | undefined): string {
-  const p = programType?.trim().toLowerCase()
-  if (p && PROGRAM_TYPE_PUBLIC_LABEL[p]) return PROGRAM_TYPE_PUBLIC_LABEL[p]
-  if (p === 'signature') return 'Signature Expeditions'
-  if (p === 'custom') return 'Tailor Made'
-  return 'Classic Nature'
-}
-
-function mapExperienceRefsToCards(experiences: RoutesPageSanityExperienceRef[] | null | undefined): RoutesExpCardStatic[] | null {
-  if (!Array.isArray(experiences) || experiences.length === 0) return null
-  const out: RoutesExpCardStatic[] = []
-  for (const e of experiences) {
-    const documentSlug = e.slug?.trim()
-    const name = e.name?.trim()
-    const imageSrc = e.mainImageUrl?.trim()
-    const route = routeFilterFromExperience(e.route)
-    if (!name || !imageSrc || !route) continue
-    const priceLabel = e.priceLabel?.trim() ?? ''
-    const hasSellingPrice = typeof e.price === 'number' && e.price > 0
-    const priceLabelLooksPriced = /\d/.test(priceLabel)
-    const useExperienceHref = hasSellingPrice || priceLabelLooksPriced
-    const enquireLabel = priceLabel || (hasSellingPrice ? String(e.price) : 'Enquire')
-    const waFallback = buildGenericExperienceEnquireWhatsappHref(name)
-    const enquireSmart = enrichSmartLinkWithLabelFallback(e.lodgeEnquireSmartLink, enquireLabel)
-    const tourHref = resolveExperiencePublicHrefOrFallback({
-      experienceLandingSlug: e.experienceLandingSlug,
-      slug: documentSlug,
-    })
-    const enquireDisabled = smartLinkIsDisabled(e.lodgeEnquireSmartLink)
-    const href = useExperienceHref
-      ? tourHref
-      : enquireDisabled
-        ? tourHref
-        : enquireSmart
-          ? (resolveSmartLinkOrLegacy(enquireSmart, undefined, {
-              label: enquireLabel,
-              href: waFallback,
-              openInNewTab: true,
-            })?.href ?? waFallback)
-          : waFallback
-    const priceKind: RoutesExpCardStatic['priceKind'] = priceLabel ? 'custom' : hasSellingPrice ? 'amount' : 'enquire'
-    out.push({
-      href,
-      route,
-      imageSrc,
-      imageAlt: name,
-      typePill: typePillLabel(e.programType),
-      duration: e.duration?.trim() || '',
-      routeLine: routeLineLabel(route),
-      name,
-      description: e.shortDescription?.trim() || e.tagline?.trim() || '',
-      priceKind,
-      priceText: priceLabel || (hasSellingPrice ? String(e.price) : undefined),
-    })
-  }
-  return out.length ? out : null
-}
-
-function mapExpCards(cards: RoutesPageSanityExpCard[] | null | undefined): RoutesExpCardStatic[] | null {
-  if (!Array.isArray(cards) || cards.length === 0) return null
-  const out: RoutesExpCardStatic[] = []
-  for (const c of cards) {
-    const name = c.name?.trim()
-    const imageSrc = c.imageUrl?.trim()
-    if (!name || !imageSrc || !isRouteKey(c.routeKey)) continue
-    const staticCard = fallbackExpCards.find((x) => x.name === name && x.route === c.routeKey)
-    const legacyHref = c.href?.trim() ?? ''
-    const fbHref = staticCard?.href ?? legacyHref
-    const resolved = resolveSmartLinkOrLegacy(
-      c.hrefSmartLink,
-      { label: name, href: c.href, openInNewTab: false },
-      { label: name, href: fbHref, openInNewTab: false },
-    )
-    const href = resolved?.href?.trim()
-    if (!href) continue
-    const pk = isPriceKind(c.priceKind) ? c.priceKind : 'enquire'
-    out.push({
-      href,
-      route: c.routeKey,
-      imageSrc,
-      imageAlt: trimOr(name, c.imageAlt),
-      typePill: c.typePill?.trim() ?? '',
-      duration: c.duration?.trim() ?? '',
-      routeLine: c.routeLine?.trim() ?? '',
-      name,
-      description: c.description?.trim() ?? '',
-      priceKind: pk,
-      priceText: c.priceText?.trim() || undefined,
-    })
-  }
-  return out.length ? out : null
-}
-
-function isFilterId(s: string | null | undefined): s is RoutesExpRouteFilter {
-  return s === 'all' || s === 'camanti' || s === 'manu-road' || s === 'manu-core'
-}
-
-function mapExpFilters(rows: RoutesPageSanityDoc['experiencesFilters']): RoutesExpFilterPill[] | null {
-  if (!Array.isArray(rows) || rows.length === 0) return null
-  const out: RoutesExpFilterPill[] = []
-  for (const r of rows) {
-    const id = r.filterId?.trim()
-    const label = r.label?.trim()
-    if (!id || !label || !isFilterId(id)) continue
-    out.push({ id, label })
   }
   return out.length ? out : null
 }
@@ -395,6 +266,7 @@ function mapCompareColumns(
 }
 
 export type RoutesPageResolved = {
+  sectionVisibility: RoutesPageSectionVisibility
   seo: {
     title: string
     description: string
@@ -513,12 +385,12 @@ export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPa
     strip: stripFromCms.length ? stripFromCms : fallbackTerritory.strip,
   }
 
-  const footPriceByRouteId = buildRouteFootPriceHtmlById(cms?.publishedExperiencePages ?? null)
-  const routesCardsFromCms = mapRouteCards(cms?.routeCards ?? null, footPriceByRouteId)
-  const routesCards = (routesCardsFromCms ?? fallbackRoutesCards).map((card) => ({
-    ...card,
-    footPriceHtml: footPriceByRouteId.get(card.id) ?? card.footPriceHtml,
-  }))
+  const publishedForRouteCards = cms?.publishedExperiencePages ?? null
+  const footPriceByRouteRef = buildRouteFootPriceHtmlByRouteRef(publishedForRouteCards)
+  const footPriceByStableId = buildRouteFootPriceHtmlByStableId(publishedForRouteCards)
+  const routesCardsFromCms = mapRouteCards(cms?.routeCards ?? null, footPriceByRouteRef, footPriceByStableId)
+  const routesCards = routesCardsFromCms ?? fallbackRoutesCards
+  const sectionVisibility = resolveRoutesPageSectionVisibility(cms?.sectionModules ?? null)
 
   const compareSection = {
     sectionId: trimOr(fallbackCompareSection.sectionId, cms?.compareSectionId),
@@ -529,11 +401,17 @@ export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPa
   const compareColumns = mapCompareColumns(cms?.compareColumns ?? null) ?? fallbackCompareColumns
   const compareRows = mapCompareRowsFromCms(cms?.compareRows ?? null) ?? fallbackCompareRows
 
+  const cardCtaLabel =
+    cms?.experienceCardCtaLabel?.trim() ||
+    fallbackExperiencesSection.cardCtaLabel ||
+    'View program'
+
   const experiencesSection = {
     sectionId: trimOr(fallbackExperiencesSection.sectionId, cms?.experiencesSectionId),
     eyebrow: trimOr(fallbackExperiencesSection.eyebrow, cms?.experiencesEyebrow),
     h2: trimOr(fallbackExperiencesSection.h2, cms?.experiencesH2),
     intro: trimOr(fallbackExperiencesSection.intro, cms?.experiencesIntro),
+    cardCtaLabel,
     ...(() => {
       const resolved = resolveSmartLinkOrLegacy(
         cms?.experiencesAllSmartLink,
@@ -550,14 +428,11 @@ export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPa
       }
     })(),
   }
-  const expFilters = mapExpFilters(cms?.experiencesFilters) ?? fallbackExpFilters
-  const selectedExperienceCards = mapExperienceRefsToCards(cms?.selectedExperiences ?? null)
-  const allExperienceCards = mapExperienceRefsToCards(cms?.allExperiences ?? null)
-  const expCards =
-    selectedExperienceCards ??
-    (cms?.fallbackToAllExperiences !== false ? allExperienceCards : null) ??
-    mapExpCards(cms?.experienceCards ?? null) ??
-    fallbackExpCards
+  const orderedRoutes = orderPublishedRoutes(cms?.publishedRoutes ?? null, cms?.experiencesRouteOrder ?? null)
+  const expFilters = buildRoutesExpFiltersFromPublishedRoutes(orderedRoutes)
+  const expCards = buildRoutesExpCardsFromListedExperiencePages(cms?.listedExperiencePages ?? null, {
+    ctaLabel: cardCtaLabel,
+  })
 
   const fqFromCms = (cms?.reviewsFeaturedQuotes ?? [])
     .map((q) => {
@@ -621,7 +496,13 @@ export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPa
   )
 
   const hb = homePageTextFields
-  const lowestRoutesUsd = getLowestActiveExperiencePrice(cms?.allExperiences ?? [])
+  const lowestRoutesUsd = getLowestActiveExperiencePrice(
+    (cms?.listedExperiencePages ?? []).map((p) => ({
+      status: p.status,
+      price: p.price,
+      priceLabel: p.priceLabel,
+    })),
+  )
   const rs = cms?.reserveCtaSettings
   const reserveCard = resolveReserveCtaCard({
     settings: rs,
@@ -659,6 +540,7 @@ export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPa
   }
 
   return {
+    sectionVisibility,
     seo,
     hero,
     snapshotStats,

@@ -62,6 +62,30 @@ export const homePageTextFields = {
   explorerEyebrow: 'Find your journey',
   explorerHeadline: 'Choose how you want to go deep',
   explorerSubheadline: '4 ways to travel with purpose. All-inclusive from Cusco. Filter by experience type.',
+  explorerProgramGroups: [
+    { ...key('exg0'), _type: 'homeExperienceProgramGroup' as const, programType: 'all', label: 'All experiences' },
+    { ...key('exg1'), _type: 'homeExperienceProgramGroup' as const, programType: 'nature-core', label: '' },
+    {
+      ...key('exg2'),
+      _type: 'homeExperienceProgramGroup' as const,
+      programType: 'family-adventure',
+      label: '',
+    },
+    {
+      ...key('exg3'),
+      _type: 'homeExperienceProgramGroup' as const,
+      programType: 'experiential-learning',
+      label: '',
+    },
+    { ...key('exg4'), _type: 'homeExperienceProgramGroup' as const, programType: 'tailor-made', label: '' },
+  ],
+  explorerTailorBand: {
+    _type: 'tailorMadeBand' as const,
+    showTailorMade: true,
+    eyebrow: 'Tailor Made',
+    title: 'Design your own program',
+    subtitle: 'Any duration · Any group size · Fully custom itinerary · We build it around your goals',
+  },
   explorerFilterTabs: [
     { ...key('exf0'), _type: 'homeExplorerFilterTab' as const, filterKey: 'all', label: 'All' },
     { ...key('exf1'), _type: 'homeExplorerFilterTab' as const, filterKey: 'nature', label: 'Nature Core' },

@@ -1,4 +1,5 @@
 import {defineField, defineType} from 'sanity'
+import {PageSectionVisibilityInput} from '../../components/pageSection/PageSectionVisibilityInput'
 import {PageModuleInput} from '../../components/pageModule/PageModuleInput'
 import {MODULE_LIST, getListSubtitleLine} from '../../lib/pageModuleShared'
 
@@ -23,10 +24,10 @@ export const pageModule = defineType({
     }),
     defineField({
       name: 'visible',
-      title: 'Visible en la página',
+      title: 'Show this section on the website',
       type: 'boolean',
       initialValue: true,
-      description: 'Desactiva para ocultar el módulo sin borrarlo.',
+      components: {input: PageSectionVisibilityInput},
     }),
     defineField({
       name: 'anchorId',

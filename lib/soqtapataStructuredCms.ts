@@ -26,6 +26,7 @@ import type { ReviewDoc, TechnologyProductDoc } from '@/lib/queries'
 import type { CmsInternalNav } from '@/lib/soqtapataInternalNav'
 import type { SoqtapataPageModuleRow } from '@/lib/soqtapataSectionPresentation'
 import { urlFor } from '@/lib/sanity'
+import { resolveTailorMadeBand } from '@/lib/tailorMadeBand'
 import { formatLodgeAltitudeForSubtitle } from '@/lib/lodgeAltitudeDisplay'
 import { resolveRouteLabel } from '@/data/lodgeSoqtapataResolverDefaults'
 import { DEFAULT_EXPERIENCE_RESOURCE_DOWNLOAD_CTA_LABEL } from '@/lib/experienceResourceCmsDefaults'
@@ -35,6 +36,8 @@ import { buildBookingSummaryFromCmsExperience } from '@/lib/buildBookingSummaryF
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
 import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
 import { buildDefaultExperienceReserveRows, type ExperienceReserveFacts } from '@/lib/experienceReserveRows'
+import { toExperienceCardData } from '@/lib/experienceCardData'
+import { formatExperiencePriceLine, formatExperiencePriceParts } from '@/lib/formatExperiencePrice'
 import { isActiveExperienceStatus } from '@/lib/reserveCtaPricing'
 import { resolveReserveCtaCard } from '@/lib/resolveReserveCtaCard'
 import {
@@ -229,6 +232,8 @@ type CmsRelatedExperience = {
   tagline?: string | null
   programType?: string | null
   route?: string | null
+  routeSlug?: string | null
+  routeLabel?: string | null
   duration?: string | null
   price?: number | null
   priceLabel?: string | null
@@ -1126,8 +1131,10 @@ export function applyCmsExclusiveExperienceContent(
 
   const ph = row.pageHero
   const h1 = resolveExperiencePageTitle(ph, e, row.internalTitle)
-  const priceLine = resolveExperienceHeroPriceLine(e, ph)
-  const priceSub = resolveExperienceHeroPriceSub(ph)
+  const heroPrice = resolveExperienceHeroPriceParts(e, ph)
+  const priceFrom = heroPrice.from
+  const priceAmount = heroPrice.amount
+  const priceSub = heroPrice.suffix
   const breadcrumb = buildExperiencePageBreadcrumb(h1, resolveExperienceRouteLabel(e))
   const items = resolveExperienceGalleryItems(e, row, h1)
   const heroGallery = buildHeroGalleryFromItems(items)
@@ -1142,12 +1149,21 @@ export function applyCmsExclusiveExperienceContent(
 
   return {
     ...experience,
-    hero: { ...experience.hero, h1, gallery: heroGallery, price: priceLine, priceSub, breadcrumb },
+    hero: {
+      ...experience.hero,
+      h1,
+      gallery: heroGallery,
+      priceFrom,
+      priceAmount,
+      priceSub,
+      breadcrumb,
+    },
     pageNav: {
       ...experience.pageNav,
       leadName: h1,
-      fromNum: priceLine,
-      fromAriaLabel: `From ${priceLine} per person`,
+      fromNum: priceAmount,
+      fromSub: 'per person',
+      fromAriaLabel: `From ${priceAmount} per person`,
     },
     stats,
     overview,
@@ -1159,6 +1175,7 @@ export function applyCmsExclusiveExperienceContent(
       h2Style: alsoBook.also.h2Style,
       lead: alsoBook.also.lead,
       cards: alsoBook.also.cards,
+      ...(alsoBook.also.tailorBand ? { tailorBand: alsoBook.also.tailorBand } : {}),
     },
     media: media ?? emptyMediaShell(local.media, h1),
     ...(includes ? { includes } : {}),
@@ -1430,23 +1447,21 @@ function whenMonthFromCms(
 
 const DEFAULT_EXPERIENCE_PRICE_SUB = 'per person · all inclusive'
 
-/** KC price wins when `useProductPrice` is true; legacy `pageHero.priceLine` only when KC empty or override off. */
-function resolveExperienceHeroPriceLine(
+/** KC price wins when `useProductPrice` is true; legacy `pageHero` only when override off. */
+function resolveExperienceHeroPriceParts(
   e: Pick<CmsExperience, 'price' | 'priceLabel'>,
-  ph?: { priceLine?: string | null; useProductPrice?: boolean | null } | null,
-): string {
-  const kc =
-    e.priceLabel?.trim() ||
-    (e.price != null && e.price > 0 ? `USD ${e.price}` : '') ||
-    ''
+  ph?: { priceLine?: string | null; priceSub?: string | null; useProductPrice?: boolean | null } | null,
+): { from: string; amount: string; suffix: string } {
   if (ph?.useProductPrice === false) {
-    return ph.priceLine?.trim() || 'Enquire'
+    const raw = ph.priceLine?.trim() || 'Enquire'
+    const sub = ph.priceSub?.trim() || DEFAULT_EXPERIENCE_PRICE_SUB
+    if (raw.toLowerCase() === 'enquire') return { from: '', amount: 'Enquire', suffix: sub }
+    return { from: 'from', amount: raw.replace(/^\s*from\s+/i, '').trim(), suffix: sub }
   }
-  return kc || ph?.priceLine?.trim() || 'Enquire'
-}
-
-function resolveExperienceHeroPriceSub(ph?: { priceSub?: string | null } | null): string {
-  return ph?.priceSub?.trim() || DEFAULT_EXPERIENCE_PRICE_SUB
+  return formatExperiencePriceParts(
+    { price: e.price, priceLabel: e.priceLabel },
+    { inclusiveExtra: 'all inclusive' },
+  )
 }
 
 /** Plain-text breadcrumb trail (non-clickable), aligned with lodge pages. */
@@ -1830,8 +1845,10 @@ export function soqtapataPartialFromStructuredRow(
   const programBadge = (e.programType && PROGRAM[e.programType]) || 'Classic Nature'
   const routeSlug = experienceRouteSlug(e)
   const routeBadge = routeSlug ? resolveRouteLabel(routeSlug) : 'Camanti Route'
-  const priceLine = resolveExperienceHeroPriceLine(e, ph)
-  const priceSubline = resolveExperienceHeroPriceSub(ph)
+  const heroPrice = resolveExperienceHeroPriceParts(e, ph)
+  const priceFrom = heroPrice.from
+  const priceAmount = heroPrice.amount
+  const priceSubline = heroPrice.suffix
   const h1 = resolveExperiencePageTitle(ph, e, row.internalTitle)
   const tag = (ph?.headlineSub && ph.headlineSub.trim()) || e.tagline?.trim() || l.hero.tagline
   const badges =
@@ -1869,7 +1886,8 @@ export function soqtapataPartialFromStructuredRow(
       h1,
       tagline: tag,
       badges,
-      price: priceLine,
+      priceFrom,
+      priceAmount,
       priceSub: priceSubline,
       bookUrl,
       bookLabel,
@@ -1882,8 +1900,9 @@ export function soqtapataPartialFromStructuredRow(
       ...l.pageNav,
       leadName: h1,
       leadDays: (e.duration && e.duration.trim()) || l.pageNav.leadDays,
-      fromNum: priceLine,
-      fromAriaLabel: `From ${priceLine} per person`,
+      fromNum: priceAmount,
+      fromSub: 'per person',
+      fromAriaLabel: `From ${priceAmount} per person`,
       bookHref: bookUrl,
       bookLabel,
       ...(bookHidden ? { bookVisible: false } : {}),
@@ -2196,39 +2215,29 @@ function orderRelatedByRefs(
 }
 
 function relatedExperienceToCard(exp: CmsRelatedExperience): SoqtapataRelatedCardImage | null {
-  const name = (exp.name && exp.name.trim()) || ''
-  if (!name) return null
-  const imageSrc = exp.mainImageUrl?.trim() || ''
-
-  const programLabel = (exp.programType && PROGRAM[exp.programType]) || 'Experience'
-  const routeLabel = exp.route?.trim() ? resolveRouteLabel(exp.route) : ''
-  const pillLeft = programLabel
-  const pillRight = (exp.duration && exp.duration.trim()) || '—'
-  const typeLabel = programLabel
-  const firstLine =
-    (exp.shortDescription && exp.shortDescription.trim().split(/\n+/)[0]?.trim()) ||
-    (exp.tagline && exp.tagline.trim()) ||
-    [routeLabel].filter(Boolean).join(' · ') ||
-    '—'
-  const meta = firstLine.length > 160 ? `${firstLine.slice(0, 157)}…` : firstLine
-  let price = '—'
-  if (exp.price != null && exp.price > 0) price = `from $${exp.price}`
-  else if (exp.priceLabel && exp.priceLabel.trim()) price = exp.priceLabel.trim()
   const pageSlug = exp.slug?.trim()
-  const ctaHref = pageSlug ? `/experiences/${pageSlug}` : undefined
-  return {
-    kind: 'image',
-    imageSrc,
-    imageAlt: (exp.name && exp.name.trim()) || 'Experience',
-    pillLeft,
-    pillRight,
-    typeLabel,
-    name: (exp.name && exp.name.trim()) || 'Experience',
-    meta,
-    price,
-    footRight: 'View →',
-    ...(ctaHref ? { ctaHref } : {}),
-  }
+  const href = pageSlug ? `/experiences/${pageSlug}` : ''
+  if (!href) return null
+
+  const card =
+    toExperienceCardData(
+      {
+        name: exp.name,
+        mainImageUrl: exp.mainImageUrl,
+        programType: exp.programType,
+        route: exp.route,
+        routeSlug: exp.routeSlug,
+        routeLabel: exp.routeLabel,
+        shortDescription: exp.shortDescription,
+        price: exp.price,
+        priceLabel: exp.priceLabel,
+        experienceLandingSlug: pageSlug,
+      },
+      { href, ctaLabel: 'View' },
+    ) ?? null
+
+  if (!card) return null
+  return { kind: 'image', ...card }
 }
 
 /**
@@ -2278,44 +2287,29 @@ export function alsoBookFromStructuredRow(
     if (card) cards.push(card)
   }
 
-  if (row.showTailorMade) {
-    const legacyTailor = lAlso.cards.find((c): c is SoqtapataRelatedCardTailor => c.kind === 'tailor')
-    const priceLine = row.tailorMadeCtaLabel?.trim() || legacyTailor?.footLeft || 'Custom pricing'
-    const cta = resolveSmartLinkOrLegacy(
-      row.tailorMadeCtaSmartLink,
-      undefined,
-      {
-        label: legacyTailor?.footRight || 'Enquire →',
-        href: '#',
-        openInNewTab: false,
-      },
-      { pageBookingSummary: pageBookingSummary ?? null },
-    )
-    const tailorImageSrc =
-      row.tailorMadeImageUrl?.trim() ||
-      (row.tailorMadeImage ? assetToUrl(row.tailorMadeImage, 800, '') : '')
-    const tailorCard: SoqtapataRelatedCardTailor = {
-      kind: 'tailor',
-      typeLabel: row.tailorMadeEyebrow?.trim() || legacyTailor?.typeLabel || 'Tailor Made',
-      name: row.tailorMadeTitle?.trim() || legacyTailor?.name || '',
-      meta: row.tailorMadeBody?.trim() || legacyTailor?.meta || '',
-      footLeft: priceLine,
-      footRight: cta?.label?.trim() || legacyTailor?.footRight || 'Enquire →',
-      ...(tailorImageSrc ? { imageSrc: tailorImageSrc } : {}),
-      ...(row.tailorMadeAlt?.trim() || legacyTailor?.imageAlt
-        ? { imageAlt: row.tailorMadeAlt?.trim() || legacyTailor?.imageAlt }
-        : {}),
-    }
-    if (cta?.bookingModal) {
-      tailorCard.bookingModal = cta.bookingModal
-      if (cta.bookingSummary) tailorCard.bookingSummary = cta.bookingSummary
-    } else if (cta?.href?.trim() && cta.href !== '#') {
-      tailorCard.ctaHref = cta.href
-      tailorCard.ctaOpenInNewTab = cta.openInNewTab
-      tailorCard.ctaRel = cta.rel
-    }
-    cards.push(tailorCard)
-  }
+  const tailorBand = row.showTailorMade
+    ? resolveTailorMadeBand(
+        {
+          showTailorMade: true,
+          eyebrow: row.tailorMadeEyebrow,
+          title: row.tailorMadeTitle,
+          subtitle: row.tailorMadeBody,
+          ctaSmartLink: row.tailorMadeCtaSmartLink,
+        },
+        {
+          eyebrow: '',
+          title: '',
+          subtitle: '',
+          ctaLabel: '',
+          href: '#',
+        },
+        {
+          pageBookingSummary: pageBookingSummary ?? null,
+          strict: true,
+          ctaFallback: { ctaLabel: 'Enquire →', href: '#', openInNewTab: false },
+        },
+      )
+    : undefined
 
   const also: SoqtapataAlsoCamanti = {
     eyebrow: lAlso.eyebrow,
@@ -2323,6 +2317,7 @@ export function alsoBookFromStructuredRow(
     h2Style: lAlso.h2Style,
     lead: lAlso.lead,
     cards,
+    ...(tailorBand ? { tailorBand } : {}),
   }
 
   const rb = row.reserveBlock

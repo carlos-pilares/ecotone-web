@@ -1,25 +1,14 @@
-import Link from 'next/link'
-
 import type { LodgeExperiencesData } from '@/data/lodgeSoqtapataStatic'
 
+import { ExperienceCardsSection } from '@/components/experience/ExperienceCardsSection'
 import { LodgeSectionHeading } from '@/components/lodge/LodgeSectionHeading'
+import { buildLodgeExperienceSectionItems } from '@/lib/buildExperienceCardsSectionItems'
+import { tailorMadeBandFromResolved } from '@/lib/tailorMadeBand'
 
 type LodgeExperiencesProps = {
   data: LodgeExperiencesData
 }
 
-function ViewArrow() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <line x1="2" y1="6" x2="10" y2="6" />
-      <polyline points="7 3 10 6 7 9" />
-    </svg>
-  )
-}
-
-/**
- * Experiences grid — visual reference `ecotone-lodge_11.html` (`exp-card-v` + tailor band).
- */
 const experiencesBodyStyle = {
   fontSize: 14,
   fontWeight: 300,
@@ -29,6 +18,22 @@ const experiencesBodyStyle = {
 } as const
 
 export function LodgeExperiences({ data }: LodgeExperiencesProps) {
+  const ctaLabel = data.programCardCtaLabel.trim() || 'View'
+  const sectionCards = buildLodgeExperienceSectionItems([...data.cards], ctaLabel)
+  const tailor =
+    data.tailor &&
+    tailorMadeBandFromResolved({
+      eyebrow: data.tailor.kicker,
+      title: data.tailor.title,
+      subtitle: data.tailor.description,
+      ctaLabel: data.tailor.ctaLabel,
+      href: data.tailor.href,
+      openInNewTab: data.tailor.openInNewTab,
+      rel: data.tailor.rel,
+      bookingModal: data.tailor.bookingModal,
+      bookingSummary: data.tailor.bookingSummary,
+    })
+
   return (
     <section id="experiences" className="content-section">
       <div className="content-inner">
@@ -40,56 +45,16 @@ export function LodgeExperiences({ data }: LodgeExperiencesProps) {
           bodyStyle={experiencesBodyStyle}
         />
 
-        <div className="lodge-exp-cards-grid">
-          {data.cards.map((card, i) => (
-            <Link key={`${card.href}-${i}`} href={card.href} className="lodge-exp-card-v">
-              <div className="lodge-exp-card-v-img">
-                <img src={card.image} alt={card.imageAlt} width={600} height={400} loading="lazy" />
-                <div className="lodge-exp-card-v-overlay" aria-hidden />
-                <span className="lodge-exp-card-v-type">{card.typeLabel}</span>
-                <span className="lodge-exp-card-v-dur">{card.duration}</span>
-                <span className="lodge-exp-card-v-route">{card.route}</span>
-              </div>
-              <div className="lodge-exp-card-v-body">
-                <div className="lodge-exp-card-v-name">{card.name}</div>
-                <div className="lodge-exp-card-v-desc">{card.description}</div>
-                <div className="lodge-exp-card-v-foot">
-                  <div>
-                    <div className="lodge-exp-card-v-price">{card.footPrimary}</div>
-                    {card.footSecondary ? (
-                      <div style={{ fontSize: 11, fontWeight: 300, color: 'var(--n400)' }}>{card.footSecondary}</div>
-                    ) : null}
-                  </div>
-                  <div className="lodge-exp-card-v-cta">
-                    {data.programCardCtaLabel} <ViewArrow />
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
-
-          {data.cards.length === 0 && !data.tailor ? (
-            <p className="lodge-exp-empty">No experiences are listed for this lodge yet.</p>
-          ) : null}
-
-          {data.tailor ? (
-            <a
-              href={data.tailor.href}
-              className="lodge-exp-tailor"
-              target={data.tailor.openInNewTab ? '_blank' : undefined}
-              rel={data.tailor.openInNewTab ? data.tailor.rel || 'noopener noreferrer' : undefined}
-            >
-              <div>
-                <div className="lodge-exp-tailor-kicker">{data.tailor.kicker}</div>
-                <div className="lodge-exp-tailor-title">{data.tailor.title}</div>
-                <div className="lodge-exp-tailor-desc">{data.tailor.description}</div>
-              </div>
-              <div style={{ flexShrink: 0 }}>
-                <span className="lodge-exp-tailor-cta">{data.tailor.ctaLabel}</span>
-              </div>
-            </a>
-          ) : null}
-        </div>
+        <ExperienceCardsSection
+          cards={sectionCards}
+          cardCtaLabel={ctaLabel}
+          tailorMade={tailor}
+          emptyMessage={
+            sectionCards.length === 0 && !tailor ? (
+              <p className="lodge-exp-empty">No experiences are listed for this lodge yet.</p>
+            ) : null
+          }
+        />
       </div>
     </section>
   )

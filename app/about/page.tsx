@@ -36,20 +36,22 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function AboutPage() {
   const p = await getAboutPage()
+  const sec = p.sectionVisibility
 
   return (
     <EcotoneV2Client solidMainNav>
       <div className="about-page">
         <IsotipoDefs />
         <SiteHeader />
-        <AboutHero data={p.hero} />
-        <AboutWho data={p.who} />
-        <AboutWhy data={p.why} />
-        <AboutDifference data={p.difference} />
-        <AboutWay data={p.way} />
-        <AboutPeople data={p.people} />
-        <AboutProof data={p.proof} />
-        {p.partnersBand.partners.length > 0 || p.partnersBand.emptyMessage?.trim() ? (
+        {sec.hero ? <AboutHero data={p.hero} /> : null}
+        {sec.who ? <AboutWho data={p.who} /> : null}
+        {sec.why ? <AboutWhy data={p.why} /> : null}
+        {sec.different ? <AboutDifference data={p.difference} /> : null}
+        {sec.way ? <AboutWay data={p.way} /> : null}
+        {sec.people ? <AboutPeople data={p.people} /> : null}
+        {sec.proof ? <AboutProof data={p.proof} /> : null}
+        {sec.partners &&
+        (p.partnersBand.partners.length > 0 || p.partnersBand.emptyMessage?.trim()) ? (
           <PartnersBand
             eyebrow={p.partnersBand.eyebrow || null}
             title={p.partnersBand.title || null}
@@ -58,7 +60,7 @@ export default async function AboutPage() {
             emptyMessage={p.partnersBand.emptyMessage}
           />
         ) : null}
-        <AboutFinalCta data={p.finalCta} />
+        {sec.finalCta ? <AboutFinalCta data={p.finalCta} /> : null}
         <SiteFooter />
       </div>
     </EcotoneV2Client>

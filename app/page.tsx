@@ -132,16 +132,20 @@ body{overflow-x:clip;}
       <EcotoneV2Client featuredQuoteItems={featuredQuoteItems}>
         <IsotipoDefs />
         <SiteHeader mainNavSolid={false} />
-        <Hero heroData={homePage} />
+        {homePage.sectionVisibility.hero ? <Hero heroData={homePage} /> : null}
         <HomeStaticSections
           homeData={homePage}
+          sectionVisibility={homePage.sectionVisibility}
           experiences={experiences}
           techProducts={techProductsForHome}
           partners={partnersForHome}
           blogPosts={blogPostsForHome}
           betweenManifestoAndTech={
             <>
-              <ExperiencesExplorer experiences={experiences} explorer={homePage} />
+              {homePage.sectionVisibility.explorer ? (
+                <ExperiencesExplorer experiences={experiences} explorer={homePage} />
+              ) : null}
+              {homePage.sectionVisibility.reviews ? (
               <ReviewsSection
                 sectionClassName="sec bg-cream fade"
                 contentInnerClassName="sec-inner"
@@ -161,6 +165,7 @@ body{overflow-x:clip;}
                 reviewCards={reviewsForHome}
                 emptyMessage={homePage.reviewsEmptyMessage?.trim() || null}
               />
+              ) : null}
             </>
           }
         />

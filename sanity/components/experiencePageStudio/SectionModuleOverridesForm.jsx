@@ -1,7 +1,8 @@
 'use client'
 
 import {useCallback, useMemo} from 'react'
-import {Stack, Card, Text, TextInput, TextArea, Box, Checkbox} from '@sanity/ui'
+import {Stack, Card, Text, TextInput, TextArea, Box} from '@sanity/ui'
+import {PageSectionVisibilityInput} from '../pageSection/PageSectionVisibilityInput'
 import {PatchEvent, set, useFormCallbacks, useFormValue} from 'sanity'
 import {MODULE_LIST, getModuleKeyForPreviewSection} from '../../lib/pageModuleShared'
 
@@ -96,11 +97,7 @@ export function SectionModuleOverridesForm({previewSection, onRootPatch}) {
 
         <Card padding={3} border radius={1} tone="default">
           <Stack space={3}>
-            <Checkbox
-              checked={visible}
-              onChange={(e) => apply({visible: e.currentTarget.checked})}
-              label="Visible"
-            />
+            <PageSectionVisibilityInput value={visible} onChange={(v) => apply({visible: v})} />
             <Box>
               <Text size={1} weight="semibold" style={{marginBottom: 6}}>
                 Eyebrow

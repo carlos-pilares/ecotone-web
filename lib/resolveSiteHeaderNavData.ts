@@ -10,7 +10,8 @@ import {
 } from '@/data/cmsApproved/siteSettingsApprovedContent'
 import { canonicalizeLodgeRouteSlug } from '@/data/lodgeSoqtapataResolverDefaults'
 import { resolveRouteLabel } from '@/data/lodgeSoqtapataResolverDefaults'
-import { resolveExperiencePublicSlug } from '@/lib/resolveExperiencePublicHref'
+import { formatExperienceNavPriceMeta } from '@/lib/formatExperiencePrice'
+import { resolveExperiencePublicHref } from '@/lib/resolveExperiencePublicHref'
 import {
   resolveSmartLinkOrLegacy,
   smartLinkIsDisabled,
@@ -50,7 +51,9 @@ export type SiteHeaderNavExpItem = {
   name: string
   href: string
   routeLine: string
-  metaLine: string
+  /** @deprecated Use `priceMeta`; kept for legacy callers. */
+  metaLine?: string
+  priceMeta: import('@/lib/formatExperiencePrice').ExperienceNavPriceMeta
   thumbUrl: string | null
 }
 
@@ -215,19 +218,6 @@ function normalizeExpGroupKeyFromOverride(raw: string | null | undefined): ExpBu
   if (t === 'signature') return 'signature'
   if (t === 'learning') return 'learning'
   return null
-}
-
-function formatExpPriceLine(exp: NonNullable<SiteHeaderNavExperiencePageRow['experience']>): string {
-  const pl = exp.priceLabel?.trim() ?? ''
-  const hasPrice = typeof exp.price === 'number' && exp.price > 0
-  if (pl) {
-    const low = pl.toLowerCase()
-    if (low.includes('per person')) return pl
-    if (low.startsWith('from')) return `${pl} per person`
-    return `from ${pl} per person`
-  }
-  if (hasPrice) return `from USD ${exp.price} per person`
-  return 'Enquire'
 }
 
 function formatExpRouteLine(exp: NonNullable<SiteHeaderNavExperiencePageRow['experience']>): string {
@@ -842,7 +832,8 @@ export function resolveSiteHeaderNavData(
     if (!programType || programType === 'tailor-made') continue
     const io = expItemOv.get(pageId)
     if (io?.show === false) continue
-    const pathSeg = resolveExperiencePublicSlug({ slug }) ?? slug
+    const href = resolveExperiencePublicHref({ experienceLandingSlug: slug })
+    if (!href) continue
     const sk = (typeof io?.order === 'number' ? io.order : row.headerNavOrder) ?? 999
     const name = io?.label?.trim() || exp.name!.trim()
     const thumb =
@@ -850,9 +841,9 @@ export function resolveSiteHeaderNavData(
     const item: SiteHeaderNavExpItem = {
       id: pageId,
       name,
-      href: `/experiences/${pathSeg}`,
+      href,
       routeLine: formatExpRouteLine(exp),
-      metaLine: formatExpPriceLine(exp),
+      priceMeta: formatExperienceNavPriceMeta(exp),
       thumbUrl: thumb,
     }
     const list = byProgramType.get(programType) ?? []

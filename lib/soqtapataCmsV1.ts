@@ -23,6 +23,7 @@ import { buildRotatingQuoteItemsFromReviews } from '@/lib/reviewQuoteItems'
 import {
   applySoqtapataSectionPresentation,
   type SoqtapataPageModuleRow,
+  type SoqtapataSectionVisibility,
 } from '@/lib/soqtapataSectionPresentation'
 import {
   DEFAULT_REVIEWS_RATING_SUMMARY,
@@ -199,7 +200,10 @@ export type SoqtapataCmsPageDoc = {
   seo?: { title?: string | null; description?: string | null } | null
 } | null
 
-export type SoqtapataSectionVisibility = Record<SectionModuleKey, boolean>
+export type {
+  SoqtapataLayoutSectionKey,
+  SoqtapataSectionVisibility,
+} from '@/lib/soqtapataSectionPresentation'
 
 /**
  * When Sanity env vars are missing or the published `experiencePage` / `experience` ref is unavailable,
@@ -346,7 +350,17 @@ export const getSoqtapataPageCms = cache(async (slug: string): Promise<Soqtapata
   if (curatedReviews !== null) {
     experience = normalizeMergedExperience({ ...experience, reviews: curatedReviews })
   }
-  const pageNavFromCms = mergeInternalNavIntoPageNav(row.internalNav, experience.pageNav)
+  const presForNav = applySoqtapataSectionPresentation({
+    experience,
+    reviewsLayout: reviewsLayoutFromRow(row, soqtapataExperienceReviewsLayout),
+    sectionModules: row.sectionModules ?? null,
+    pageReviews: row.reviewsSection ?? null,
+  })
+  const pageNavFromCms = mergeInternalNavIntoPageNav(
+    row.internalNav,
+    experience.pageNav,
+    presForNav.sectionVisibility,
+  )
   if (pageNavFromCms) {
     experience = { ...experience, pageNav: pageNavFromCms }
   }

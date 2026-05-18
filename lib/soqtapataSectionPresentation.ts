@@ -3,6 +3,7 @@
  */
 import { SECTION_DEFAULTS } from '@/lib/sectionPresentationDefaults'
 import { resolveSectionPresentation } from '@/lib/sectionPresentation'
+import { isSectionVisibleInMap, visibilityMapFromSectionModules } from '@/lib/pageSectionVisibility'
 import type {
   ExperiencePresentationSlice,
   LandingSectionOverride,
@@ -29,6 +30,11 @@ export type SoqtapataPageModuleRow = {
 }
 
 /** Orden editorial alineado con `sanity/lib/pageModuleShared` MODULE_LIST. */
+export type SoqtapataLayoutSectionKey = 'hero' | 'highlights' | 'internalNav'
+
+export type SoqtapataSectionVisibility = Record<SectionModuleKey, boolean> &
+  Record<SoqtapataLayoutSectionKey, boolean>
+
 export const SOQTAPATA_SECTION_KEYS: SectionModuleKey[] = [
   'overview',
   'itinerary',
@@ -152,11 +158,12 @@ export function buildExperiencePresentationSlice(
   }
 }
 
-function emptyVisibility(): Record<SectionModuleKey, boolean> {
-  return Object.fromEntries(SOQTAPATA_SECTION_KEYS.map((k) => [k, true])) as Record<
+function emptyVisibility(): SoqtapataSectionVisibility {
+  const base = Object.fromEntries(SOQTAPATA_SECTION_KEYS.map((k) => [k, true])) as Record<
     SectionModuleKey,
     boolean
   >
+  return { ...base, hero: true, highlights: true, internalNav: true } as SoqtapataSectionVisibility
 }
 
 /**
@@ -168,7 +175,7 @@ export function applySoqtapataSectionPresentation(params: {
   sectionModules: SoqtapataPageModuleRow[] | null | undefined
   pageReviews?: { eyebrow?: string | null; title?: string | null; body?: string | null } | null
 }): {
-  sectionVisibility: Record<SectionModuleKey, boolean>
+  sectionVisibility: SoqtapataSectionVisibility
   reviewsSectionLead: string | undefined
 } {
   const { experience: ex, reviewsLayout: rl } = params
@@ -256,10 +263,14 @@ export function applySoqtapataSectionPresentation(params: {
   ex.book.eyebrow = bk.eyebrow
   ex.book.h2 = bk.title
 
-  const sectionVisibility = emptyVisibility()
+  const visMap = visibilityMapFromSectionModules(params.sectionModules)
+  const sectionVisibility: SoqtapataSectionVisibility = emptyVisibility()
   for (const key of SOQTAPATA_SECTION_KEYS) {
     sectionVisibility[key] = resolvedBySection[key]!.visible
   }
+  sectionVisibility.hero = isSectionVisibleInMap(visMap, 'hero')
+  sectionVisibility.highlights = isSectionVisibleInMap(visMap, 'highlights')
+  sectionVisibility.internalNav = isSectionVisibleInMap(visMap, 'internalNav')
 
   return {
     sectionVisibility,

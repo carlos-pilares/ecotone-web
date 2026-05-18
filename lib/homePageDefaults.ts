@@ -1,7 +1,14 @@
 import { homePageTextFields } from '@/data/cmsApproved/homePageFields'
 import type { HomePageDoc, ReviewDoc } from '@/lib/queries'
+import {
+  HOME_PAGE_SECTION_VISIBILITY_DEFAULT,
+  resolveHomePageSectionVisibility,
+  type HomePageSectionVisibility,
+} from '@/lib/homePageSectionVisibility'
 
-export type ResolvedHomePage = Exclude<HomePageDoc, null>
+export type ResolvedHomePage = Exclude<HomePageDoc, null> & {
+  sectionVisibility: HomePageSectionVisibility
+}
 
 const t = homePageTextFields
 
@@ -10,6 +17,7 @@ const t = homePageTextFields
  * (images null — from CMS or component defaults).
  */
 export const defaultHomePageDoc: ResolvedHomePage = {
+  sectionVisibility: { ...HOME_PAGE_SECTION_VISIBILITY_DEFAULT },
   seo: {
     title: t.seo.title,
     description: t.seo.description,
@@ -48,6 +56,8 @@ export const defaultHomePageDoc: ResolvedHomePage = {
   explorerEyebrow: t.explorerEyebrow,
   explorerHeadline: t.explorerHeadline,
   explorerSubheadline: t.explorerSubheadline,
+  explorerProgramGroups: t.explorerProgramGroups.map((x) => ({ ...x })),
+  explorerTailorBand: t.explorerTailorBand ? { ...t.explorerTailorBand } : null,
   explorerFilterTabs: t.explorerFilterTabs.map((x) => ({ ...x })),
   explorerPriceEnquireLabel: t.explorerPriceEnquireLabel,
   explorerPriceCustomLabel: t.explorerPriceCustomLabel,
@@ -191,6 +201,7 @@ const ARR_KEYS = [
   'missionItems',
   'bookingTrustItems',
   'bookingCardRows',
+  'explorerProgramGroups',
   'explorerFilterTabs',
   'explorerLearningBadgeLabels',
 ] as const satisfies ReadonlyArray<keyof ResolvedHomePage>
@@ -215,7 +226,10 @@ export function mergeHomePageWithDefaults(cms: HomePageDoc | null): ResolvedHome
   if (!cms) {
     return { ...def }
   }
-  const out: ResolvedHomePage = { ...def }
+  const out: ResolvedHomePage = {
+    ...def,
+    sectionVisibility: resolveHomePageSectionVisibility(cms.sectionModules),
+  }
 
   const o = out as unknown as Record<string, unknown>
   for (const k of STR_KEYS) {
@@ -253,6 +267,20 @@ export function mergeHomePageWithDefaults(cms: HomePageDoc | null): ResolvedHome
     !isNonEmptyString((out as ResolvedHomePage).partnersTitle)
   ) {
     ;(out as ResolvedHomePage).partnersTitle = cms.partnersLabel!.trim()
+  }
+
+  if (cms.explorerTailorBand && typeof cms.explorerTailorBand === 'object') {
+    const merged = {
+      ...(def.explorerTailorBand ?? {}),
+      ...cms.explorerTailorBand,
+    }
+    if (typeof cms.explorerTailorBand.showTailorMade === 'boolean') {
+      merged.showTailorMade = cms.explorerTailorBand.showTailorMade
+    }
+    if (typeof cms.explorerTailorBand.enabled === 'boolean') {
+      merged.enabled = cms.explorerTailorBand.enabled
+    }
+    out.explorerTailorBand = merged
   }
 
   const cmsSeo = cms.seo

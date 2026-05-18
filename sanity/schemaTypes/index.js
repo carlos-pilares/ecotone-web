@@ -62,6 +62,8 @@ import {
 } from './objects/lodgePageObjects'
 import {lodgePageBookingBlock} from './objects/lodgePageBookingBlock'
 import {lodgePageExperiencesTailorCta} from './objects/lodgePageExperiencesTailorCta'
+import {tailorMadeBand} from './objects/tailorMadeBand'
+import {homeExperienceProgramGroup} from './objects/homeExperienceProgramGroup'
 import {experiencePageSnapshotStatPick} from './objects/experiencePageSnapshotStatPick'
 import {experiencePageInternalNav} from './objects/experiencePageInternalNav'
 import {internalNavItem} from './objects/internalNavItem'
@@ -170,6 +172,8 @@ const objects = [
   lodgeScienceSpecialText,
   lodgePageFaqItem,
   lodgePageBookingBlock,
+  tailorMadeBand,
+  homeExperienceProgramGroup,
   lodgePageExperiencesTailorCta,
   routesPageStatLine,
   routesPageTerritoryStripChip,

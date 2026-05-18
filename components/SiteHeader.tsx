@@ -3,12 +3,14 @@ import '@/app/site-header-mega.css'
 import { getSiteHeaderNav } from '@/lib/getSiteHeaderNav'
 import { getSiteSettingsShell } from '@/lib/getSiteSettingsShell'
 import { resolveHeaderLogoDarkUrl } from '@/lib/headerLogoPublic'
+import type { ExperienceNavPriceMeta } from '@/lib/formatExperiencePrice'
 import type {
   ResolvedSiteHeaderNav,
   ResolvedSiteHeaderNavExperiences,
   ResolvedSiteHeaderNavLodges,
   ResolvedSiteHeaderNavTab,
   SiteHeaderNavCta,
+  SiteHeaderNavExpItem,
 } from '@/lib/resolveSiteHeaderNavData'
 
 import { SiteHeaderLogoCms } from '@/components/SiteHeaderLogoCms'
@@ -120,37 +122,23 @@ function navExpRouteLineOnly(routeLine: string): string {
   return first || routeLine.trim()
 }
 
-/** Desktop mega: duration + price (and similar), never repeating the route pill. */
-function navExpDurationPriceMeta(metaLine: string, routeOnly: string): string {
-  const r = routeOnly.trim().toLowerCase()
-  const parts = metaLine
-    .split(' · ')
-    .map((s) => s.trim())
-    .filter((s) => s && s.toLowerCase() !== r)
-  let out = parts.join(' · ')
-  out = out.replace(/\bfrom\s+usd\b/gi, 'USD')
-  out = out.replace(/\$(\d[\d,]*)\b/g, 'USD $1')
-  return out.trim()
+function NavExpPriceMeta({ meta }: { meta: ExperienceNavPriceMeta }) {
+  if (meta.kind === 'enquire') {
+    return <div className="dd-exp-meta">Enquire</div>
+  }
+  return (
+    <div className="dd-exp-meta dd-exp-meta--price">
+      <span className="dd-exp-meta-from">{meta.from} </span>
+      <span className="dd-exp-meta-amount">{meta.amount}</span>
+      <span className="dd-exp-meta-per"> {meta.perPerson}</span>
+    </div>
+  )
 }
 
-/** Mobile drawer: hide route/price/duration echo that duplicates title or booking (no $ in global menu). */
-function navExpMetaSansBooking(metaLine: string, routeOnly: string): string {
-  const r = routeOnly.trim().toLowerCase()
-  return metaLine
-    .split(' · ')
-    .map((s) => s.trim())
-    .filter((s) => {
-      if (!s) return false
-      if (s.toLowerCase() === r) return false
-      if (/^\d+[DdNn](\s*[·•]\s*\d+[DdNn])?$/.test(s)) return false
-      if (/^\d+[Dd]\s*[·•]\s*\d+[Nn]$/i.test(s)) return false
-      if (/^from\s+usd/i.test(s)) return false
-      if (/^\$\d/.test(s)) return false
-      if (/^usd\s*\d/i.test(s)) return false
-      if (/^\d{2,5}$/.test(s)) return false
-      return true
-    })
-    .join(' · ')
+/** Mobile drawer: price line only when “Enquire” (no $ amounts in global menu). */
+function navExpMetaSansBooking(it: SiteHeaderNavExpItem): string {
+  if (it.priceMeta.kind === 'enquire') return 'Enquire'
+  return ''
 }
 
 function ExperiencesMega({ tab }: { tab: ResolvedSiteHeaderNavTab }) {
@@ -216,7 +204,6 @@ function ExperiencesMega({ tab }: { tab: ResolvedSiteHeaderNavTab }) {
               ) : (
                 g.items.map((it) => {
                   const routeOnly = navExpRouteLineOnly(it.routeLine)
-                  const durationPrice = navExpDurationPriceMeta(it.metaLine, routeOnly)
                   return (
                     <a key={it.id} href={it.href} className="dd-exp-card">
                       <div className="dd-exp-thumb">{it.thumbUrl ? <img src={it.thumbUrl} alt="" width={160} height={112} /> : null}</div>
@@ -227,7 +214,7 @@ function ExperiencesMega({ tab }: { tab: ResolvedSiteHeaderNavTab }) {
                           </div>
                         ) : null}
                         <div className="dd-exp-title">{it.name}</div>
-                        {durationPrice ? <div className="dd-exp-meta">{durationPrice}</div> : null}
+                        <NavExpPriceMeta meta={it.priceMeta} />
                         <div className="dd-exp-view">
                           View experience
                           <ArrowSeeAll />
@@ -362,7 +349,7 @@ function MobileExperiencesPanel({ tab }: { tab: ResolvedSiteHeaderNavTab }) {
             <div className="mob-cat">{g.eyebrow}</div>
             {g.items.map((it) => {
               const routeOnly = navExpRouteLineOnly(it.routeLine)
-              const metaShown = navExpMetaSansBooking(it.metaLine, routeOnly)
+              const metaShown = navExpMetaSansBooking(it)
               return (
                 <a key={it.id} href={it.href} className="mob-item mob-item--exp">
                   <div className="mob-item-thumb">{it.thumbUrl ? <img src={it.thumbUrl} alt="" width={80} height={60} /> : null}</div>

@@ -1,4 +1,15 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
+import {PageSectionVisibleField} from '../components/pageSection/PageSectionVisibleField'
+
+const pageSectionVisibleUi = (sectionKey, group) =>
+  defineField({
+    name: `${sectionKey}SectionVisibilityUi`,
+    title: 'Section visibility',
+    type: 'string',
+    group,
+    components: {input: PageSectionVisibleField},
+    options: {sectionKey},
+  })
 
 /**
  * Singleton `/about` — all on-page copy & media (no separate knowledge base).
@@ -44,8 +55,17 @@ export const aboutPage = defineType({
       type: 'seo',
       group: 'general',
     }),
+    defineField({
+      name: 'sectionModules',
+      title: 'sectionModules (internal)',
+      type: 'array',
+      of: [{type: 'pageModule'}],
+      hidden: true,
+      group: 'general',
+    }),
 
     // --- Hero ---
+    pageSectionVisibleUi('hero', 'hero'),
     defineField({
       name: 'heroImage',
       title: 'Hero image',
@@ -96,6 +116,7 @@ export const aboutPage = defineType({
     }),
 
     // --- Who we are ---
+    pageSectionVisibleUi('who', 'who'),
     defineField({
       name: 'whoSectionId',
       title: 'Section HTML id',
@@ -130,6 +151,7 @@ export const aboutPage = defineType({
     }),
 
     // --- Why we exist ---
+    pageSectionVisibleUi('why', 'why'),
     defineField({
       name: 'whySectionId',
       title: 'Section HTML id',
@@ -149,6 +171,7 @@ export const aboutPage = defineType({
     defineField({name: 'whyBody', title: 'Body', type: 'text', rows: 5, group: 'why'}),
 
     // --- What makes us different ---
+    pageSectionVisibleUi('different', 'different'),
     defineField({
       name: 'diffSectionId',
       title: 'Section HTML id',
@@ -168,6 +191,7 @@ export const aboutPage = defineType({
     }),
 
     // --- Our way ---
+    pageSectionVisibleUi('way', 'way'),
     defineField({
       name: 'waySectionId',
       title: 'Section HTML id',
@@ -195,6 +219,7 @@ export const aboutPage = defineType({
     defineField({name: 'wayPullquote', title: 'Pull quote', type: 'text', rows: 2, group: 'way'}),
 
     // --- People ---
+    pageSectionVisibleUi('people', 'people'),
     defineField({
       name: 'peopleSectionId',
       title: 'Section HTML id',
@@ -215,6 +240,7 @@ export const aboutPage = defineType({
     }),
 
     // --- Proof ---
+    pageSectionVisibleUi('proof', 'proof'),
     defineField({
       name: 'proofSectionId',
       title: 'Section HTML id',
@@ -249,6 +275,7 @@ export const aboutPage = defineType({
     }),
 
     // --- Partners ---
+    pageSectionVisibleUi('partners', 'partners'),
     defineField({
       name: 'partnersEyebrow',
       title: 'Eyebrow (optional)',
@@ -302,6 +329,7 @@ export const aboutPage = defineType({
     }),
 
     // --- Final CTA ---
+    pageSectionVisibleUi('finalCta', 'finalCta'),
     defineField({
       name: 'finalSectionId',
       title: 'Section HTML id',

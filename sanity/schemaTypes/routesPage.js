@@ -1,4 +1,15 @@
 import {defineField, defineType} from 'sanity'
+import {PageSectionVisibleField} from '../components/pageSection/PageSectionVisibleField'
+
+const pageSectionVisibleUi = (sectionKey, group) =>
+  defineField({
+    name: `${sectionKey}SectionVisibilityUi`,
+    title: 'Section visibility',
+    type: 'string',
+    group,
+    components: {input: PageSectionVisibleField},
+    options: {sectionKey},
+  })
 
 /**
  * Single URL for `/routes` — all sections inline (no `route` document refs as source of truth).
@@ -40,8 +51,17 @@ export const routesPage = defineType({
       type: 'seo',
       group: 'general',
     }),
+    defineField({
+      name: 'sectionModules',
+      title: 'sectionModules (internal)',
+      type: 'array',
+      of: [{type: 'pageModule'}],
+      hidden: true,
+      group: 'general',
+    }),
 
     // --- Hero ---
+    pageSectionVisibleUi('hero', 'hero'),
     defineField({
       name: 'heroImage',
       title: 'Hero image',
@@ -86,6 +106,7 @@ export const routesPage = defineType({
     }),
 
     // --- Snapshot ---
+    pageSectionVisibleUi('snapshot', 'snapshot'),
     defineField({
       name: 'snapshotStats',
       title: 'Snapshot stats',
@@ -96,6 +117,7 @@ export const routesPage = defineType({
     }),
 
     // --- Territory ---
+    pageSectionVisibleUi('territory', 'territory'),
     defineField({name: 'territorySectionId', title: 'Section HTML id', type: 'string', group: 'territory', initialValue: 'territory'}),
     defineField({name: 'territoryEyebrow', title: 'Eyebrow', type: 'string', group: 'territory'}),
     defineField({name: 'territoryH2', title: 'Heading', type: 'string', group: 'territory'}),
@@ -110,6 +132,7 @@ export const routesPage = defineType({
     }),
 
     // --- Route cards ---
+    pageSectionVisibleUi('routes', 'routeCards'),
     defineField({
       name: 'routeCards',
       title: 'Route cards',
@@ -120,6 +143,7 @@ export const routesPage = defineType({
     }),
 
     // --- Compare ---
+    pageSectionVisibleUi('compare', 'compare'),
     defineField({name: 'compareSectionId', title: 'Section HTML id', type: 'string', group: 'compare', initialValue: 'compare'}),
     defineField({name: 'compareEyebrow', title: 'Eyebrow', type: 'string', group: 'compare'}),
     defineField({name: 'compareH2', title: 'Heading', type: 'string', group: 'compare'}),
@@ -147,10 +171,47 @@ export const routesPage = defineType({
     }),
 
     // --- Experiences ---
+    pageSectionVisibleUi('experiences', 'experiences'),
     defineField({name: 'experiencesSectionId', title: 'Section HTML id', type: 'string', group: 'experiences', initialValue: 'experiences'}),
-    defineField({name: 'experiencesEyebrow', title: 'Eyebrow', type: 'string', group: 'experiences'}),
-    defineField({name: 'experiencesH2', title: 'Heading', type: 'string', group: 'experiences'}),
-    defineField({name: 'experiencesIntro', title: 'Intro', type: 'text', rows: 3, group: 'experiences'}),
+    defineField({
+      name: 'experiencesEyebrow',
+      title: 'Eyebrow',
+      type: 'string',
+      group: 'experiences',
+      description: 'Section copy only. Experience tabs and cards are automatic from Route KC + published experience pages.',
+    }),
+    defineField({
+      name: 'experiencesH2',
+      title: 'Heading',
+      type: 'string',
+      group: 'experiences',
+      description: 'Section copy only. Tabs: “All routes” plus one per published Route KC.',
+    }),
+    defineField({
+      name: 'experiencesIntro',
+      title: 'Intro',
+      type: 'text',
+      rows: 3,
+      group: 'experiences',
+      description: 'Section intro only. Cards filter by each experience’s linked Route KC.',
+    }),
+    defineField({
+      name: 'experiencesRouteOrder',
+      title: 'Route tab order',
+      type: 'array',
+      group: 'experiences',
+      of: [{type: 'reference', to: [{type: 'route'}]}],
+      description:
+        'Order of route filter tabs (after “All routes”). Empty uses Route KC default order (menu order, then name).',
+    }),
+    defineField({
+      name: 'experienceCardCtaLabel',
+      title: 'Experience card CTA label',
+      type: 'string',
+      group: 'experiences',
+      initialValue: 'View program',
+      description: 'Label on every experience card in this section. Defaults to “View program” when empty.',
+    }),
     defineField({
       name: 'experiencesAllLabel',
       title: '“See all” link label (legacy)',
@@ -176,42 +237,41 @@ export const routesPage = defineType({
     }),
     defineField({
       name: 'selectedExperiences',
-      title: 'Selected experiences (ordered)',
+      title: 'Selected experiences (legacy)',
       type: 'array',
       group: 'experiences',
+      hidden: true,
       of: [{type: 'reference', to: [{type: 'experience'}]}],
-      validation: (Rule) => Rule.max(48),
-      description: 'Primary source for the cards. If empty and fallback is enabled, the page uses all published experiences.',
+      description: 'Deprecated — tabs and cards are built from Route KC + published experience pages.',
     }),
     defineField({
       name: 'fallbackToAllExperiences',
-      title: 'If no selected experiences, use all experiences',
+      title: 'Fallback to all experiences (legacy)',
       type: 'boolean',
       group: 'experiences',
-      initialValue: true,
+      hidden: true,
     }),
     defineField({
       name: 'experiencesFilters',
-      title: 'Filter pills (optional)',
-      description: 'If empty, the site uses default filters (All, Camanti, Manu Road, Manu Core).',
+      title: 'Filter pills (legacy)',
       type: 'array',
       group: 'experiences',
+      hidden: true,
       of: [{type: 'routesPageExpFilterPill'}],
-      validation: (Rule) => Rule.max(8),
+      description: 'Deprecated — tabs are generated from published Route KC documents.',
     }),
     defineField({
       name: 'experienceCards',
-      title: 'Experience cards (legacy fallback)',
+      title: 'Experience cards (legacy)',
       type: 'array',
       group: 'experiences',
       hidden: true,
       of: [{type: 'routesPageExpCard'}],
-      validation: (Rule) => Rule.max(24),
-      description:
-        'Legacy manual cards — hidden in Studio; data preserved for resolver. Used only if references are empty and no experiences can be resolved.',
+      description: 'Deprecated — cards come from published experience pages.',
     }),
 
     // --- Reviews ---
+    pageSectionVisibleUi('reviews', 'reviews'),
     defineField({
       name: 'reviewsSection',
       title: 'Reviews section',
@@ -264,6 +324,7 @@ export const routesPage = defineType({
     }),
 
     // --- Final CTA ---
+    pageSectionVisibleUi('finalCta', 'finalCta'),
     defineField({name: 'finalCtaSectionId', title: 'Section HTML id', type: 'string', group: 'finalCta', initialValue: 'contact'}),
     defineField({
       name: 'reserveCtaSettings',

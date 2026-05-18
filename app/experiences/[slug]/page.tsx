@@ -102,9 +102,13 @@ export default async function ExperienceLandingPage({ params }: PageProps) {
       <SiteHeader mainNavSolid />
       <SoqtapataPhotoLightbox />
       <div id="ecotone-experience-root">
-        <ExperienceHeroSoqtapata data={ex.hero} bookingSummary={bookingSummary} />
-        <ExperienceStatsBarSoqtapata items={ex.stats} />
-        <ExperiencePageNavSoqtapata data={ex.pageNav} bookingSummary={bookingSummary} />
+        {sec.hero !== false ? (
+          <ExperienceHeroSoqtapata data={ex.hero} bookingSummary={bookingSummary} />
+        ) : null}
+        {sec.highlights !== false ? <ExperienceStatsBarSoqtapata items={ex.stats} /> : null}
+        {sec.internalNav !== false ? (
+          <ExperiencePageNavSoqtapata data={ex.pageNav} bookingSummary={bookingSummary} />
+        ) : null}
         {sec.overview !== false ? <ExperienceOverviewSoqtapata data={ex.overview} /> : null}
         {sec.itinerary !== false ? <ExperienceItinerarySoqtapata data={ex.itinerary} /> : null}
         {sec.lodge !== false ? <ExperienceLodgeSoqtapata data={ex.lodge} /> : null}
@@ -129,7 +133,7 @@ export default async function ExperienceLandingPage({ params }: PageProps) {
         {sec.terms !== false ? <ExperienceTermsSoqtapata data={ex.terms} /> : null}
         {sec.resources !== false ? <ExperienceResourcesSoqtapata data={ex.resources} /> : null}
         {sec.faq !== false ? <ExperienceFaqSoqtapata data={ex.faq} /> : null}
-        {sec.related !== false && ex.also.cards.length > 0 ? (
+        {sec.related !== false && (ex.also.cards.length > 0 || ex.also.tailorBand) ? (
           <ExperienceAlsoCamantiSoqtapata data={ex.also} />
         ) : null}
         {sec.reserve !== false ? <ExperienceBookSoqtapata data={ex.book} bookingSummary={bookingSummary} /> : null}

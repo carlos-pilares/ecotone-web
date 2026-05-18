@@ -26,34 +26,39 @@ type LodgePageViewProps = {
 /** Shared lodge landing layout (CMS + static merge). */
 export function LodgePageView({ resolved }: LodgePageViewProps) {
   const lodgeFeaturedQuotes = [...resolved.featuredQuotes]
+  const sec = resolved.sectionVisibility
 
   return (
     <EcotoneV2Client solidMainNav featuredQuoteItems={lodgeFeaturedQuotes}>
       <IsotipoDefs />
       <SiteHeader mainNavSolid />
       <div className="lodge-page" id="ecotone-experience-root">
-        <LodgeHero data={resolved.hero} />
-        <SnapshotBar items={resolved.snapshot.map((s) => ({ value: s.snapN, label: s.snapL }))} />
-        <LodgeInPageNav nav={resolved.pageNav} />
-        <LodgeOverview data={resolved.overview} />
-        <LodgeRooms data={resolved.rooms} />
-        <LodgeFacilities data={resolved.facilities} />
-        <LodgeLocation data={resolved.location} />
-        <LodgeResearch data={resolved.research} />
-        <LodgeExperiences data={resolved.experiences} />
-        <ReviewsSection
-          sectionClassName="sec bg-cream fade"
-          contentInnerClassName="sec-inner"
-          eyebrow={resolved.reviewsSection.eyebrow}
-          title={resolved.reviewsSection.headline}
-          body={resolved.reviewsSection.sectionLead}
-          ratingSummary={resolved.reviewsRatingSummary}
-          rotatingQuoteItems={[...lodgeFeaturedQuotes]}
-          reviewCards={resolved.reviews}
-          emptyMessage={resolved.reviewsSection.emptyMessage}
-        />
-        <LodgeFaq data={resolved.faq as SoqtapataFaq} />
-        <LodgeBookCta data={resolved.book} />
+        {sec.hero ? <LodgeHero data={resolved.hero} /> : null}
+        {sec.highlights ? (
+          <SnapshotBar items={resolved.snapshot.map((s) => ({ value: s.snapN, label: s.snapL }))} />
+        ) : null}
+        {sec.navigation ? <LodgeInPageNav nav={resolved.pageNav} /> : null}
+        {sec.overview ? <LodgeOverview data={resolved.overview} /> : null}
+        {sec.accommodation ? <LodgeRooms data={resolved.rooms} /> : null}
+        {sec.facilities ? <LodgeFacilities data={resolved.facilities} /> : null}
+        {sec.location ? <LodgeLocation data={resolved.location} /> : null}
+        {sec.research ? <LodgeResearch data={resolved.research} /> : null}
+        {sec.experiences ? <LodgeExperiences data={resolved.experiences} /> : null}
+        {sec.reviews ? (
+          <ReviewsSection
+            sectionClassName="sec bg-cream fade"
+            contentInnerClassName="sec-inner"
+            eyebrow={resolved.reviewsSection.eyebrow}
+            title={resolved.reviewsSection.headline}
+            body={resolved.reviewsSection.sectionLead}
+            ratingSummary={resolved.reviewsRatingSummary}
+            rotatingQuoteItems={[...lodgeFeaturedQuotes]}
+            reviewCards={resolved.reviews}
+            emptyMessage={resolved.reviewsSection.emptyMessage}
+          />
+        ) : null}
+        {sec.faq ? <LodgeFaq data={resolved.faq as SoqtapataFaq} /> : null}
+        {sec.booking ? <LodgeBookCta data={resolved.book} /> : null}
       </div>
       <GalleryLightbox />
       <InPageNavDrawerClient />

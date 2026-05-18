@@ -95,8 +95,7 @@ export type FormatReservePriceInput = {
   priceLineStyle?: 'from' | 'exact'
 }
 
-const DEFAULT_SUFFIX = '/ person'
-const DEFAULT_PREFIX = 'from'
+const DEFAULT_SUFFIX = 'per person'
 
 /**
  * Main price line + small suffix for `ReserveCtaSection`.
@@ -115,16 +114,10 @@ export function formatReservePriceDisplay(input: FormatReservePriceInput): {
   }
   const n = input.lowestUsd
   if (n != null && n > 0) {
-    const style = input.priceLineStyle ?? 'from'
-    if (style === 'exact') {
-      return {
-        priceLine: `$${n}`,
-        priceSuffix: input.priceSuffixOverride?.trim() || DEFAULT_SUFFIX,
-      }
-    }
-    const prefix = (input.pricePrefixOverride?.trim() || DEFAULT_PREFIX).replace(/\s+$/, '')
+    const usd = `USD ${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+    const prefix = (input.pricePrefixOverride?.trim() || 'from').replace(/\s+$/, '')
     return {
-      priceLine: `${prefix} $${n}`,
+      priceLine: `${prefix} ${usd}`,
       priceSuffix: input.priceSuffixOverride?.trim() || DEFAULT_SUFFIX,
     }
   }

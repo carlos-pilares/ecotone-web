@@ -300,6 +300,15 @@
   line-height: 1.35;
   margin-bottom: 6px;
 }
+.dd-exp-meta--price .dd-exp-meta-from,
+.dd-exp-meta--price .dd-exp-meta-per {
+  font-weight: 300;
+  color: var(--n400);
+}
+.dd-exp-meta--price .dd-exp-meta-amount {
+  font-weight: 700;
+  color: var(--n800);
+}
 .dd-exp-view {
   font-size: 12px;
   font-weight: 600;

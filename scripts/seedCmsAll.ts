@@ -365,7 +365,7 @@ export async function seedCmsAll() {
       headline: h.h1,
       headlineSub: h.tagline,
       pills: h.badges,
-      priceLine: h.price,
+      priceLine: [h.priceFrom, h.priceAmount].filter(Boolean).join(' '),
       priceSub: h.priceSub,
       useProductPrice: true,
       bookCta: { _type: 'cta' as const, label: h.bookLabel, href: h.bookUrl, style: 'primary' },

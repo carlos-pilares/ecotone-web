@@ -1,5 +1,14 @@
 import { cache } from 'react'
 
+import {
+  LODGE_NAV_ID_TO_VISIBILITY_KEY,
+  LODGE_PAGE_SECTION_VISIBILITY_DEFAULT,
+  resolveLodgePageSectionVisibility,
+  type LodgePageSectionVisibility,
+} from '@/lib/lodgePageSectionVisibility'
+
+import { toExperienceCardData, type ExperienceCardData } from '@/lib/experienceCardData'
+import { resolveTailorMadeBand } from '@/lib/tailorMadeBand'
 import { DEFAULT_WHATSAPP_URL } from '@/data/cmsApproved/siteSettingsApprovedContent'
 import {
   formatLodgeBookGroupSizeValue,
@@ -360,33 +369,37 @@ function resolveExperiencesTailorCta(
   row: LodgeStructuredPageRow | null | undefined,
 ): LodgeExperiencesTailor | undefined {
   if (!row) return undefined
-  const b = row.experiencesTailorCta
-  if (!b) return undefined
-  const show = b.showTailorMade === true || b.enabled === true
-  if (!show) return undefined
   const fb = lodgeSoqtapataExperiences.tailor
-  const fallback = {
-    label: fb.ctaLabel,
-    href: lodgeSoqtapataBook.secondaryCta.href,
-    openInNewTab: true,
-  }
-  const raw = b.tailorMadeCta ?? b.ctaSmartLink
-  const hasSmart =
-    Boolean(raw?.linkType?.trim()) || Boolean(raw?.label?.trim()) || Boolean(raw?.externalUrl?.trim())
-  const smart = hasSmart && raw ? { ...raw, label: raw.label?.trim() || fb.ctaLabel } : null
-  const r = resolveSmartLinkOrLegacy(smart, undefined, fallback)
-  if (!r?.href?.trim()) return undefined
-  const kicker = sectionFieldTrim(b.tailorMadeEyebrow) ?? sectionFieldTrim(b.eyebrow) ?? fb.kicker
-  const title = sectionFieldTrim(b.tailorMadeTitle) ?? sectionFieldTrim(b.title) ?? fb.title
-  const description = sectionFieldTrim(b.tailorMadeBody) ?? sectionFieldTrim(b.description) ?? fb.description
+  const resolved = resolveTailorMadeBand(
+    row.experiencesTailorCta,
+    {
+      eyebrow: fb.kicker,
+      title: fb.title,
+      subtitle: fb.description,
+      ctaLabel: fb.ctaLabel,
+      href: lodgeSoqtapataBook.secondaryCta.href,
+      openInNewTab: true,
+    },
+    {
+      strict: true,
+      ctaFallback: {
+        ctaLabel: fb.ctaLabel,
+        href: lodgeSoqtapataBook.secondaryCta.href,
+        openInNewTab: true,
+      },
+    },
+  )
+  if (!resolved) return undefined
   return {
-    kicker,
-    title,
-    description,
-    ctaLabel: r.label || fb.ctaLabel,
-    href: r.href,
-    openInNewTab: r.openInNewTab === true,
-    rel: r.rel,
+    kicker: resolved.eyebrow,
+    title: resolved.title,
+    description: resolved.subtitle,
+    ctaLabel: resolved.ctaLabel,
+    href: resolved.href,
+    openInNewTab: resolved.openInNewTab,
+    rel: resolved.rel,
+    bookingModal: resolved.bookingModal,
+    bookingSummary: resolved.bookingSummary,
   }
 }
 
@@ -462,18 +475,14 @@ function resolveLodgeHeroBadgesFallback(lodge: LodgeDocumentRow): string[] {
   return out.slice(0, 3)
 }
 
-function mapExperienceToCard(e: LodgeCmsExperienceCardRow, lodge: LodgeDocumentRow): LodgeExperienceCard {
-  const pricePrefix =
-    sectionFieldTrim(lodge.experienceCardPricePrefix) ?? lodgeSoqtapataExperienceCardDefaults.priceCurrencyPrefix
-  const priceSuffix =
-    sectionFieldTrim(lodge.experienceCardPriceSuffix) ?? lodgeSoqtapataExperienceCardDefaults.perPersonLabel
+function mapExperienceToCard(
+  e: LodgeCmsExperienceCardRow,
+  lodge: LodgeDocumentRow,
+): LodgeExperienceCard | null {
   const hasSellingPrice = e.price != null && e.price > 0
-  const priceLabel = e.priceLabel?.trim() ?? ''
-  const priceLabelLooksPriced = /\d/.test(priceLabel)
+  const priceLabelRaw = e.priceLabel?.trim() ?? ''
+  const priceLabelLooksPriced = /\d/.test(priceLabelRaw)
   const useExperienceHref = hasSellingPrice || priceLabelLooksPriced
-  const footPrimary =
-    priceLabel ||
-    (hasSellingPrice ? `${pricePrefix}${e.price}` : lodgeSoqtapataExperienceCardDefaults.enquireLabel)
 
   const experienceHref =
     resolveExperiencePublicHref({
@@ -481,7 +490,8 @@ function mapExperienceToCard(e: LodgeCmsExperienceCardRow, lodge: LodgeDocumentR
       slug: e.slug,
     }) ?? lodgeSoqtapataExperienceCardDefaults.defaultExperienceHref
   const waFallback = buildLodgeExperienceEnquireFallbackHref(lodge, e.name || '')
-  const enquireSmart = enrichSmartLinkWithLabelFallback(e.lodgeEnquireSmartLink, footPrimary)
+  const enquireLabel = priceLabelRaw || (hasSellingPrice ? String(e.price) : 'Enquire')
+  const enquireSmart = enrichSmartLinkWithLabelFallback(e.lodgeEnquireSmartLink, enquireLabel)
   const enquireDisabled = smartLinkIsDisabled(e.lodgeEnquireSmartLink)
   const href = useExperienceHref
     ? experienceHref
@@ -489,24 +499,28 @@ function mapExperienceToCard(e: LodgeCmsExperienceCardRow, lodge: LodgeDocumentR
       ? experienceHref
       : enquireSmart
         ? (resolveSmartLinkOrLegacy(enquireSmart, undefined, {
-            label: footPrimary,
+            label: enquireLabel,
             href: waFallback,
             openInNewTab: true,
           })?.href ?? waFallback)
         : waFallback
 
-  return {
-    image: e.mainImageUrl || cdnImageUrl(e.mainImage, 600, ''),
-    imageAlt: e.name || '',
-    typeLabel: resolveProgramTypeLabel(e.programType),
-    duration: e.duration || '',
-    route: resolveRouteLabel(e.route),
-    name: e.name || '',
-    description: e.shortDescription || e.tagline || '',
-    footPrimary,
-    footSecondary: hasSellingPrice ? priceSuffix : undefined,
-    href,
-  }
+  return toExperienceCardData(
+    {
+      name: e.name,
+      mainImageUrl: e.mainImageUrl || cdnImageUrl(e.mainImage, 600, ''),
+      programType: e.programType,
+      route: e.route,
+      routeSlug: e.routeSlug,
+      routeLabel: e.routeLabel,
+      shortDescription: e.shortDescription,
+      price: e.price,
+      priceLabel: e.priceLabel,
+      experienceLandingSlug: e.experienceLandingSlug,
+      experienceSlug: e.slug,
+    },
+    { href },
+  )
 }
 
 /** Normaliza strings de Sanity (text/string) para overrides de sección. */
@@ -799,6 +813,19 @@ function mergeFacilitiesFromCms(
   }
 }
 
+function filterLodgePageNavByVisibility(
+  bundle: LodgeStaticBundle,
+  visibility: LodgePageSectionVisibility,
+): void {
+  bundle.pageNav = {
+    ...bundle.pageNav,
+    items: bundle.pageNav.items.filter((item) => {
+      const key = LODGE_NAV_ID_TO_VISIBILITY_KEY[item.id]
+      return !key || visibility[key]
+    }),
+  }
+}
+
 /** Bundle estático Soqtapata (fallback único por ahora). */
 export function buildLodgeStaticFallbackBundle(): LodgeStaticBundle {
   return {
@@ -829,9 +856,14 @@ export function mergeLodgePageWithFallback(
   cmsError: string | null,
 ): LodgePageResolvedPayload {
   const out = structuredClone(bundle) as LodgeStaticBundle
+  const sectionVisibility = row
+    ? resolveLodgePageSectionVisibility(row)
+    : LODGE_PAGE_SECTION_VISIBILITY_DEFAULT
 
   if (!row?.lodge) {
+    filterLodgePageNavByVisibility(out, sectionVisibility)
     return {
+      sectionVisibility,
       source: 'fallback',
       cmsError,
       pageSlug,
@@ -1076,7 +1108,9 @@ export function mergeLodgePageWithFallback(
     ...experiencesWithoutTailor,
     cards:
       resolvedExperienceRows.length > 0
-        ? resolvedExperienceRows.map((e) => mapExperienceToCard(e, lodge))
+        ? resolvedExperienceRows
+            .map((e) => mapExperienceToCard(e, lodge))
+            .filter((c): c is LodgeExperienceCard => c != null)
         : [],
   }
   const exCta = sectionFieldTrim(lodge.experienceCardCtaLabel)
@@ -1290,7 +1324,10 @@ export function mergeLodgePageWithFallback(
     row.reviewsPresentation ?? null,
   )
 
+  filterLodgePageNavByVisibility(out, sectionVisibility)
+
   return {
+    sectionVisibility,
     source: 'cms',
     cmsError,
     pageSlug,

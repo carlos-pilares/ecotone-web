@@ -4,6 +4,7 @@
  */
 
 import type { CSSProperties } from 'react'
+import type { ExperienceCardData } from '@/lib/experienceCardData'
 import type { ReviewDoc, TechnologyProductDoc } from '@/lib/queries'
 
 export type SoqtapataPhase1GalleryCell = {
@@ -33,7 +34,10 @@ export type SoqtapataPhase1Hero = {
   ratingReviews: string
   ratingDivider: boolean
   lodgeName: string
-  price: string
+  /** Light prefix, e.g. “from”. */
+  priceFrom: string
+  /** Strong amount only, e.g. “USD 1,220”. */
+  priceAmount: string
   priceSub: string
   bookUrl: string
   bookLabel: string
@@ -107,7 +111,8 @@ export const soqtapataPhase1: { hero: SoqtapataPhase1Hero; stats: SoqtapataPhase
     ratingReviews: '· 12 reviews',
     ratingDivider: true,
     lodgeName: 'Soqtapata Lodge',
-    price: '$986',
+    priceFrom: 'from',
+    priceAmount: 'USD 986',
     priceSub: 'per person · all inclusive',
     bookUrl: 'https://www.wetravel.com',
     bookLabel: 'Book now',
@@ -1033,18 +1038,7 @@ export type SoqtapataFaq = {
 
 export type SoqtapataRelatedCardImage = {
   kind: 'image'
-  imageSrc: string
-  imageAlt: string
-  pillLeft: string
-  pillRight: string
-  typeLabel: string
-  name: string
-  meta: string
-  price: string
-  footRight: string
-  /** Related experience page path (`/experiences/{slug}`). */
-  ctaHref?: string
-}
+} & ExperienceCardData
 
 export type SoqtapataRelatedCardTailor = {
   kind: 'tailor'
@@ -1069,6 +1063,8 @@ export type SoqtapataAlsoCamanti = {
   /** Intro opcional bajo el H2 (presentación CMS). */
   lead?: string
   cards: (SoqtapataRelatedCardImage | SoqtapataRelatedCardTailor)[]
+  /** Horizontal Tailor Made band (shared with Home / Lodge). */
+  tailorBand?: import('@/lib/tailorMadeBand').TailorMadeBandResolved
 }
 
 export type SoqtapataBook = {
@@ -1202,25 +1198,24 @@ export const soqtapataPhase6Also: SoqtapataAlsoCamanti = {
   cards: [
     {
       kind: 'image',
-      imageSrc: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=600&q=80',
+      imageUrl: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=600&q=80',
       imageAlt: 'Andean Cloud Forest',
-      pillLeft: 'Nature Core',
-      pillRight: '4D · 3N',
-      typeLabel: 'Nature Core',
-      name: 'Andean Cloud Forest',
-      meta: 'Extended trails · Night walks · Deeper forest access',
-      price: '$1,200+',
-      footRight: 'View →',
-    },
-    {
-      kind: 'tailor',
-      typeLabel: 'Tailor Made',
-      name: 'Designed around you',
-      meta: 'Any duration · Any group size · Fully custom',
-      footLeft: 'Custom pricing',
-      footRight: 'Enquire →',
+      routeLabel: 'Camanti Route',
+      programTypeLabel: 'Classic Nature',
+      title: 'Andean Cloud Forest',
+      description: 'Extended trails · Night walks · Deeper forest access',
+      priceLabel: 'USD 1,200',
+      href: '/experiences/andean-cloud-forest',
+      ctaLabel: 'View',
     },
   ],
+  tailorBand: {
+    eyebrow: 'Tailor Made',
+    title: 'Designed around you',
+    subtitle: 'Any duration · Any group size · Fully custom',
+    ctaLabel: 'Enquire →',
+    href: '#',
+  },
 }
 
 export const soqtapataPhase6Book: SoqtapataBook = {

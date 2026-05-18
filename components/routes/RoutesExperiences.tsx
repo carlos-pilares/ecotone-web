@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from 'react'
 
+import { ExperienceCardsSection } from '@/components/experience/ExperienceCardsSection'
+import { buildRoutesExperienceSectionItems } from '@/lib/buildExperienceCardsSectionItems'
 import type { RoutesExpCardStatic, RoutesExpFilterPill, RoutesExpRouteFilter } from '@/data/routesStatic'
 
 export function RoutesExperiences({
@@ -16,6 +18,7 @@ export function RoutesExperiences({
     intro: string
     allExperiencesHref: string
     allExperiencesLabel: string
+    cardCtaLabel: string
   }
   filters: RoutesExpFilterPill[]
   cards: RoutesExpCardStatic[]
@@ -24,8 +27,11 @@ export function RoutesExperiences({
 
   const visible = useMemo(() => {
     if (active === 'all') return cards
-    return cards.filter((c) => c.route === active)
+    return cards.filter((c) => c.route.trim() === active)
   }, [active, cards])
+
+  const ctaLabel = section.cardCtaLabel.trim() || 'View'
+  const sectionCards = buildRoutesExperienceSectionItems(visible, ctaLabel)
 
   return (
     <section className="content-section bg-warm fade" id={section.sectionId}>
@@ -50,47 +56,14 @@ export function RoutesExperiences({
           ))}
         </div>
 
-        <div className="routes-exp-grid">
-          {visible.map((c) => (
-            <article key={c.href} className="routes-exp-card" data-route={c.route}>
-              <a href={c.href} className="routes-exp-card-link">
-                <div className="routes-exp-card-img">
-                  <img src={c.imageSrc} alt={c.imageAlt} />
-                </div>
-                <div className="routes-exp-card-body">
-                  <div className="routes-exp-card-meta">
-                    <span className="pill pill-amber routes-pill-sm">{c.typePill}</span>
-                    <span className="routes-exp-duration">{c.duration}</span>
-                  </div>
-                  <div className="routes-exp-route-line">{c.routeLine}</div>
-                  <h3 className="routes-exp-card-name">{c.name}</h3>
-                  <p className="routes-exp-card-desc">{c.description}</p>
-                  <div className="routes-exp-card-foot">
-                    {c.priceKind === 'amount' && c.priceText ? (
-                      <span className="routes-exp-price">
-                        from <strong>{c.priceText}</strong>
-                      </span>
-                    ) : null}
-                    {c.priceKind === 'enquire' ? (
-                      <span className="routes-exp-price routes-exp-price-enquire">Enquire for pricing</span>
-                    ) : null}
-                    {c.priceKind === 'custom' ? (
-                      <span className="routes-exp-price routes-exp-price-custom">{c.priceText ?? 'Custom'}</span>
-                    ) : null}
-                    <span className="routes-exp-card-cta">View program →</span>
-                  </div>
-                </div>
-              </a>
-            </article>
-          ))}
-        </div>
+        <ExperienceCardsSection cards={sectionCards} cardCtaLabel={ctaLabel} />
 
-        {section.allExperiencesHref?.trim() && section.allExperiencesLabel?.trim() ? (
-          <div className="routes-exp-see-all">
+        {section.allExperiencesHref ? (
+          <p className="routes-exp-see-all">
             <a href={section.allExperiencesHref} className="routes-exp-see-all-link">
               {section.allExperiencesLabel}
             </a>
-          </div>
+          </p>
         ) : null}
       </div>
     </section>

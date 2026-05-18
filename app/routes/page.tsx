@@ -36,29 +36,36 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RoutesPage() {
   const p = await getRoutesPage()
   const snapshotItems = p.snapshotStats.map((s) => ({ value: s.value, label: s.label }))
+  const sec = p.sectionVisibility
 
   return (
     <EcotoneV2Client solidMainNav featuredQuoteItems={p.featuredQuotes}>
       <div className="routes-page">
         <IsotipoDefs />
         <SiteHeader />
-        <RoutesHero data={p.hero} />
-        <SnapshotBar items={snapshotItems} />
-        <RoutesTerritory data={p.territory} />
-        <RoutesList routes={p.routesCards} />
-        <RoutesCompare section={p.compareSection} columns={p.compareColumns} rows={p.compareRows} />
-        <RoutesExperiences section={p.experiencesSection} filters={p.expFilters} cards={p.expCards} />
-        <ReviewsSection
-          sectionClassName="sec bg-cream fade"
-          contentInnerClassName="sec-inner"
-          eyebrow={p.reviewsEyebrow}
-          title={p.reviewsHeadline}
-          body={p.reviewsSectionLead || null}
-          ratingSummary={p.reviewsRatingSummary}
-          rotatingQuoteItems={p.featuredQuotes}
-          reviewCards={p.reviews}
-        />
-        <RoutesFinalCta data={p.finalCta} />
+        {sec.hero ? <RoutesHero data={p.hero} /> : null}
+        {sec.snapshot ? <SnapshotBar items={snapshotItems} /> : null}
+        {sec.territory ? <RoutesTerritory data={p.territory} /> : null}
+        {sec.routes ? <RoutesList routes={p.routesCards} /> : null}
+        {sec.compare ? (
+          <RoutesCompare section={p.compareSection} columns={p.compareColumns} rows={p.compareRows} />
+        ) : null}
+        {sec.experiences ? (
+          <RoutesExperiences section={p.experiencesSection} filters={p.expFilters} cards={p.expCards} />
+        ) : null}
+        {sec.reviews ? (
+          <ReviewsSection
+            sectionClassName="sec bg-cream fade"
+            contentInnerClassName="sec-inner"
+            eyebrow={p.reviewsEyebrow}
+            title={p.reviewsHeadline}
+            body={p.reviewsSectionLead || null}
+            ratingSummary={p.reviewsRatingSummary}
+            rotatingQuoteItems={p.featuredQuotes}
+            reviewCards={p.reviews}
+          />
+        ) : null}
+        {sec.finalCta ? <RoutesFinalCta data={p.finalCta} /> : null}
         <SiteFooter />
       </div>
     </EcotoneV2Client>

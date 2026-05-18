@@ -1,7 +1,7 @@
 'use client'
 
 import {useCallback, useMemo} from 'react'
-import {Stack, Card, Text, TextInput, TextArea, Box} from '@sanity/ui'
+import {Stack, Card, Text, TextInput, TextArea, Box, Checkbox} from '@sanity/ui'
 import {PatchEvent, set, useFormCallbacks, useFormValue} from 'sanity'
 import {getLodgePageSectionsCopyKey} from '../../lib/lodgePageStudioSectionMap'
 
@@ -31,6 +31,7 @@ export function LodgePageSectionOverridesForm({previewSection}) {
     return null
   }
 
+  const visible = row?.visible !== false
   const eyebrow = row?.eyebrow ?? ''
   const title = row?.title ?? ''
   const body = row?.body ?? ''
@@ -50,6 +51,11 @@ export function LodgePageSectionOverridesForm({previewSection}) {
 
         <Card padding={3} border radius={1} tone="default">
           <Stack space={3}>
+            <Checkbox
+              checked={visible}
+              onChange={(e) => emitPatch('visible', e.currentTarget.checked)}
+              label="Show this section on the website"
+            />
             <Box>
               <Text size={1} weight="semibold" style={{marginBottom: 6}}>
                 Eyebrow

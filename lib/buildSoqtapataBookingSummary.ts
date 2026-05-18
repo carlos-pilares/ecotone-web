@@ -23,7 +23,7 @@ export function buildSoqtapataBookingSummary(hero: SoqtapataPhase1Hero, book: So
     route: route || rowValue(book.rows, 'Route'),
     duration: duration || rowValue(book.rows, 'Duration'),
     programType,
-    priceLine: hero.price.trim(),
+    priceLine: [hero.priceFrom, hero.priceAmount].filter(Boolean).join(' ').trim() || hero.priceAmount.trim(),
     priceSub: hero.priceSub.trim() || EXPERIENCE_BOOKING_PRICE_SUB,
   }
 }

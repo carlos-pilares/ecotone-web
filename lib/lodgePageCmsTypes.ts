@@ -17,6 +17,7 @@ import type {
   LodgeSnapshotItem,
 } from '@/data/lodgeSoqtapataStatic'
 import type { ReviewDoc } from '@/lib/queries'
+import type { LodgePageSectionVisibility } from '@/lib/lodgePageSectionVisibility'
 
 /** Slug por defecto de la landing Soqtapata en `/lodges/[slug]` (alineado a `lodgePage` en Sanity). */
 export const LODGE_SOQTAPATA_PAGE_SLUG = 'soqtapata-lodge' as const
@@ -34,12 +35,16 @@ export type LodgeLinkWithLabel = {
 }
 
 export type LodgePageSectionCopyRow = {
+  visible?: boolean | null
   eyebrow?: string | null
   title?: string | null
   body?: string | null
 }
 
 export type LodgePageSectionsRow = {
+  hero?: LodgePageSectionCopyRow | null
+  highlights?: LodgePageSectionCopyRow | null
+  navigation?: LodgePageSectionCopyRow | null
   overview?: LodgePageSectionCopyRow | null
   accommodation?: LodgePageSectionCopyRow | null
   facilities?: LodgePageSectionCopyRow | null
@@ -174,6 +179,8 @@ export type LodgeCmsExperienceCardRow = {
   tagline?: string | null
   programType?: string | null
   route?: string | null
+  routeSlug?: string | null
+  routeLabel?: string | null
   duration?: string | null
   price?: number | null
   priceLabel?: string | null
@@ -272,6 +279,7 @@ export type LodgePageExperiencesTailorCtaRow = {
   title?: string | null
   /** @deprecated use `tailorMadeBody` */
   description?: string | null
+  subtitle?: string | null
   tailorMadeEyebrow?: string | null
   tailorMadeTitle?: string | null
   tailorMadeBody?: string | null
@@ -307,6 +315,9 @@ export type LodgeStructuredPageRow = {
   facilitiesAmenitiesEyebrow?: string | null
   facilitiesGallerySelection?: LodgeFacilitiesGallerySelectionPickRow[] | null
   facilitiesAmenitiesSelection?: LodgeFacilitiesAmenitySelectionPickRow[] | null
+  heroSectionCopy?: LodgePageSectionCopyRow | null
+  highlightsSectionCopy?: LodgePageSectionCopyRow | null
+  navigationSectionCopy?: LodgePageSectionCopyRow | null
   overviewSectionCopy?: LodgePageSectionCopyRow | null
   accommodationSectionCopy?: LodgePageSectionCopyRow | null
   facilitiesSectionCopy?: LodgePageSectionCopyRow | null
@@ -318,6 +329,7 @@ export type LodgeStructuredPageRow = {
   researchSectionCopy?: LodgePageSectionCopyRow | null
   experiencesSectionCopy?: LodgePageSectionCopyRow | null
   faqSectionCopy?: LodgePageSectionCopyRow | null
+  bookingSectionCopy?: LodgePageSectionCopyRow | null
   scienceHighlights?: Array<{ title?: string | null; subtitle?: string | null } | null> | null
   scienceProjects?: Array<{ title?: string | null; subtitle?: string | null } | null> | null
   scienceSpecialText?: { iconKey?: string | null; text?: string | null } | null
@@ -390,6 +402,7 @@ export type LodgeReviewsSectionResolved = {
 
 /** Resultado fusionado listo para el front (próxima fase). */
 export type LodgePageResolvedPayload = {
+  sectionVisibility: LodgePageSectionVisibility
   source: 'cms' | 'fallback'
   cmsError: string | null
   pageSlug: string

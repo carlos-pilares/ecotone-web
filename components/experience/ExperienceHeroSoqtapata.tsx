@@ -128,7 +128,10 @@ export function ExperienceHeroSoqtapata({
           <div className="exp-price-block">
             <div className="exp-price-cta">
               <div className="exp-price-titles">
-                <div className="exp-price">{data.price}</div>
+                <div className="exp-price">{data.priceFrom ? (
+                    <span className="exp-price-from">{data.priceFrom} </span>
+                  ) : null}
+                  <span className="exp-price-amount">{data.priceAmount}</span></div>
                 <div className="exp-price-sub">{data.priceSub}</div>
               </div>
               {data.bookLabel.trim() ? (

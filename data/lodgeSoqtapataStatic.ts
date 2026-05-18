@@ -1,6 +1,7 @@
 /** Static copy for `/lodges/soqtapata-lodge` (Phase 1 — no CMS). */
 
 import type { SoqtapataFaq } from '@/data/soqtapataExperienceLocal'
+import type { ExperienceCardData } from '@/lib/experienceCardData'
 import type { ReviewDoc } from '@/lib/queries'
 
 export type LodgeBreadcrumbItem = { href: string; label: string }
@@ -635,18 +636,7 @@ export const lodgeSoqtapataFeaturedQuotes = [
   },
 ] as const satisfies readonly { text: string; attr: string }[]
 
-export type LodgeExperienceCard = {
-  image: string
-  imageAlt: string
-  typeLabel: string
-  duration: string
-  route: string
-  name: string
-  description: string
-  footPrimary: string
-  footSecondary?: string
-  href: string
-}
+export type LodgeExperienceCard = ExperienceCardData
 
 export type LodgeExperiencesTailor = {
   kicker: string
@@ -656,6 +646,8 @@ export type LodgeExperiencesTailor = {
   href: string
   openInNewTab?: boolean
   rel?: string
+  bookingModal?: 'plan' | 'experience'
+  bookingSummary?: import('@/components/booking/types').ExperienceBookingSummary
 }
 
 export type LodgeExperiencesData = LodgeSectionHeaderFields & {
@@ -674,40 +666,36 @@ export const lodgeSoqtapataExperiences = {
     'All experiences include transport from Cusco, full board, expert guide, and tech pack. Choose by duration and depth.',
   cards: [
     {
-      image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80',
+      imageUrl: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80',
       imageAlt: 'Soqtapata Pristine Immersion',
-      typeLabel: 'Nature Core',
-      duration: '3D · 2N',
-      route: 'Camanti Route',
-      name: 'Soqtapata Pristine Immersion',
+      routeLabel: 'Camanti Route',
+      programTypeLabel: 'Classic Nature',
+      title: 'Soqtapata Pristine Immersion',
       description: 'EcoDroneView® · ForestWhisper® · CIDS visit · Expert naturalist guide',
-      footPrimary: '$986',
-      footSecondary: 'per person',
+      price: 986,
       href: '/experiences/soqtapata-pristine-immersion',
+      ctaLabel: 'View',
     },
     {
-      image: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=600&q=80',
+      imageUrl: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=600&q=80',
       imageAlt: 'Andean Cloud Forest',
-      typeLabel: 'Nature Core',
-      duration: '4D · 3N',
-      route: 'Camanti Route',
-      name: 'Andean Cloud Forest',
+      routeLabel: 'Camanti Route',
+      programTypeLabel: 'Classic Nature',
+      title: 'Andean Cloud Forest',
       description: 'Extended trails · Night walks · Full reserve access · All 3 tech products',
-      footPrimary: '$1,200+',
-      footSecondary: 'per person',
+      priceLabel: 'USD 1,200',
       href: '/experiences/soqtapata-pristine-immersion',
+      ctaLabel: 'View',
     },
     {
-      image: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=600&q=80',
+      imageUrl: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=600&q=80',
       imageAlt: 'Schools & Universities',
-      typeLabel: 'Exp. Learning',
-      duration: '2–6 weeks',
-      route: 'Camanti Route',
-      name: 'Schools & Universities',
+      routeLabel: 'Camanti Route',
+      programTypeLabel: 'Experiential Learning',
+      title: 'Schools & Universities',
       description: 'Custom academic program · Research participation · Volunteer · Groups',
-      footPrimary: 'Enquire',
-      footSecondary: 'custom pricing',
       href: '/experiences/soqtapata-pristine-immersion',
+      ctaLabel: 'View',
     },
   ],
   tailor: {

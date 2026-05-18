@@ -4,6 +4,7 @@
  */
 
 import type { ReviewDoc } from '@/lib/queries'
+import type { ExperienceCardData } from '@/lib/experienceCardData'
 
 /** SEO por defecto (`generateMetadata` + seed `routesPage`). */
 export const routesSeoFallback = {
@@ -222,7 +223,8 @@ export const routesCompareRows: RoutesCompareRow[] = [
 
 /* ── Experiences grid + filtros (Fase 2) ── */
 
-export type RoutesExpRouteFilter = 'all' | 'camanti' | 'manu-road' | 'manu-core'
+/** `'all'` or a Route KC `slug.current`. */
+export type RoutesExpRouteFilter = 'all' | (string & {})
 
 export type RoutesExpFilterPill = { id: RoutesExpRouteFilter; label: string }
 
@@ -233,21 +235,13 @@ export const routesExperiencesSection = {
   intro: 'All experiences are all-inclusive from Cusco — transport, lodge, meals, guide, and tech pack included.',
   allExperiencesHref: '/experiences',
   allExperiencesLabel: 'See all ~10 experiences →',
+  cardCtaLabel: 'View program',
 }
 
-export type RoutesExpCardStatic = {
-  href: string
-  route: Exclude<RoutesExpRouteFilter, 'all'>
-  imageSrc: string
-  imageAlt: string
-  typePill: string
-  duration: string
-  routeLine: string
-  name: string
-  description: string
-  /** 'amount' muestra priceText como precio; 'enquire' | 'custom' estilos secundarios */
-  priceKind: 'amount' | 'enquire' | 'custom'
-  priceText?: string
+/** Experience card + route slug for `/routes` tab filtering. */
+export type RoutesExpCardStatic = ExperienceCardData & {
+  /** Route KC slug for tab filtering; empty = only visible on “All routes”. */
+  route: string
 }
 
 export const routesExpFilters: RoutesExpFilterPill[] = [
@@ -261,77 +255,76 @@ export const routesExpCards: RoutesExpCardStatic[] = [
   {
     href: '/experiences/soqtapata-pristine-immersion',
     route: 'camanti',
-    imageSrc: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=500&q=80',
+    routeSlug: 'camanti',
+    imageUrl: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=500&q=80',
     imageAlt: 'Soqtapata Pristine Immersion',
-    typePill: 'Nature Core',
-    duration: '3D · 2N',
-    routeLine: 'Camanti Route',
-    name: 'Soqtapata Pristine Immersion',
+    routeLabel: 'Camanti Route',
+    programTypeLabel: 'Classic Nature',
+    title: 'Soqtapata Pristine Immersion',
     description: 'EcoDroneView® · ForestWhisper® · CIDS visit · Expert naturalist guide',
-    priceKind: 'amount',
-    priceText: '$986',
+    price: 986,
+    ctaLabel: 'View',
   },
   {
     href: '/experiences/andean-cloud-forest',
     route: 'camanti',
-    imageSrc: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=500&q=80',
+    routeSlug: 'camanti',
+    imageUrl: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=500&q=80',
     imageAlt: 'Andean Cloud Forest',
-    typePill: 'Nature Core',
-    duration: '4D · 3N',
-    routeLine: 'Camanti Route',
-    name: 'Andean Cloud Forest',
+    routeLabel: 'Camanti Route',
+    programTypeLabel: 'Classic Nature',
+    title: 'Andean Cloud Forest',
     description: 'Extended trails · Night walks · Full reserve access · All tech products',
-    priceKind: 'amount',
-    priceText: '$1,200+',
+    priceLabel: 'USD 1,200',
+    ctaLabel: 'View',
   },
   {
     href: '/experiences/manu-gradient',
     route: 'manu-road',
-    imageSrc: 'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=500&q=80',
+    routeSlug: 'manu-road',
+    imageUrl: 'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=500&q=80',
     imageAlt: 'Manu Gradient',
-    typePill: 'Nature Core',
-    duration: '3D · 2N',
-    routeLine: 'Manu Road',
-    name: 'Manu Gradient',
+    routeLabel: 'Manu Road',
+    programTypeLabel: 'Classic Nature',
+    title: 'Manu Gradient',
     description: 'Cloud forest to Amazon transition · Wayqecha · Manu Bio-Lodge',
-    priceKind: 'enquire',
+    ctaLabel: 'View',
   },
   {
     href: '/experiences/manu-core-frontier',
     route: 'manu-core',
-    imageSrc: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=500&q=80',
+    routeSlug: 'manu-core',
+    imageUrl: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=500&q=80',
     imageAlt: 'Manu Core Frontier',
-    typePill: 'Signature',
-    duration: '6D · 5N',
-    routeLine: 'Manu Core',
-    name: 'Manu Core Frontier',
+    routeLabel: 'Manu Core',
+    programTypeLabel: 'Signature Expeditions',
+    title: 'Manu Core Frontier',
     description: 'Inside Manu National Park · Primary jungle · Romero Lodge',
-    priceKind: 'enquire',
+    ctaLabel: 'View',
   },
   {
     href: '/experiences/family-discovery',
     route: 'manu-core',
-    imageSrc: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=500&q=80',
+    routeSlug: 'manu-core',
+    imageUrl: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=500&q=80',
     imageAlt: 'Family Discovery Quest',
-    typePill: 'Signature',
-    duration: '5D · 4N',
-    routeLine: 'Manu Core',
-    name: 'Family Discovery Quest',
+    routeLabel: 'Manu Core',
+    programTypeLabel: 'Signature Expeditions',
+    title: 'Family Discovery Quest',
     description: 'Designed for families · Active but accessible · Romero Lodge',
-    priceKind: 'enquire',
+    ctaLabel: 'View',
   },
   {
     href: '/experiences/schools',
     route: 'camanti',
-    imageSrc: 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=500&q=80',
+    routeSlug: 'camanti',
+    imageUrl: 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=500&q=80',
     imageAlt: 'Schools & Universities',
-    typePill: 'Exp. Learning',
-    duration: '2–6 weeks',
-    routeLine: 'Camanti Route',
-    name: 'Schools & Universities',
+    routeLabel: 'Camanti Route',
+    programTypeLabel: 'Experiential Learning',
+    title: 'Schools & Universities',
     description: 'Custom academic curriculum · Research participation · Groups',
-    priceKind: 'custom',
-    priceText: 'Custom',
+    ctaLabel: 'View',
   },
 ]
 

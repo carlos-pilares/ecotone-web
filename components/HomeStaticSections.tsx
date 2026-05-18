@@ -7,6 +7,7 @@ import { TechProductsSection } from '@/components/TechProductsSection'
 import { homePageTextFields } from '@/data/cmsApproved/homePageFields'
 import { HOME_BLOG_CARD_IMAGE_FALLBACKS } from '@/lib/homeBlogDefaults'
 import type { ResolvedHomePage } from '@/lib/homePageDefaults'
+import type { HomePageSectionVisibility } from '@/lib/homePageSectionVisibility'
 import {
   HOME_MANIFESTO_IMAGE_FALLBACK_URL,
   HOME_MISSION_PHOTO_FALLBACK_URLS,
@@ -46,6 +47,7 @@ function blogPostHref(p: BlogPostDoc, fallbackHref: string): string {
 
 type Props = {
   homeData: ResolvedHomePage
+  sectionVisibility: HomePageSectionVisibility
   /** For derived “from $X / person” from active experience documents. */
   experiences: ExperienceFromSanity[]
   techProducts: TechnologyProductDoc[] | null
@@ -56,6 +58,7 @@ type Props = {
 
 export function HomeStaticSections({
   homeData,
+  sectionVisibility: sec,
   experiences,
   techProducts,
   partners,
@@ -106,6 +109,7 @@ export function HomeStaticSections({
 
   return (
     <>
+      {sec.stats ? (
       <div className="stats-band">
         <div className="stats-inner">
           {stats.map((s, i) => (
@@ -116,7 +120,9 @@ export function HomeStaticSections({
           ))}
         </div>
       </div>
+      ) : null}
 
+      {sec.manifesto ? (
       <section className="sec bg-warm" id="about">
         <div className="sec-inner">
           <div className="manifesto-grid fade">
@@ -159,11 +165,13 @@ export function HomeStaticSections({
           </div>
         </div>
       </section>
+      ) : null}
 
       {betweenManifestoAndTech}
 
-      <TechProductsSection homeData={h} products={techProducts} />
+      {sec.tech ? <TechProductsSection homeData={h} products={techProducts} /> : null}
 
+      {sec.mission ? (
       <section className="sec" id="mission">
         <div className="sec-inner fade">
           <div className="mission-grid">
@@ -209,8 +217,9 @@ export function HomeStaticSections({
           </div>
         </div>
       </section>
+      ) : null}
 
-      {showPartnersBand ? (
+      {sec.partners && showPartnersBand ? (
         <PartnersBand
           eyebrow={partnersEyebrow}
           title={partnersTitle || null}
@@ -220,6 +229,7 @@ export function HomeStaticSections({
         />
       ) : null}
 
+      {sec.blog ? (
       <section className="sec bg-warm" id="blog">
         <div className="sec-inner fade">
           <div
@@ -305,7 +315,9 @@ export function HomeStaticSections({
           </div>
         </div>
       </section>
+      ) : null}
 
+      {sec.booking ? (
       <ReserveCtaSection
         id="book"
         sectionClassName="sec bg-warm"
@@ -316,6 +328,7 @@ export function HomeStaticSections({
         body={reserveSettings?.body?.trim() || h.bookingBody || ''}
         card={reserveCard}
       />
+      ) : null}
     </>
   )
 }

@@ -3,6 +3,9 @@
  * No afecta al front: solo aproximación editorial para títulos por defecto de cada bloque.
  */
 export const MODULE_LIST = [
+  {value: 'hero', title: 'Hero'},
+  {value: 'highlights', title: 'Highlights (stats bar)'},
+  {value: 'internalNav', title: 'Internal navigation'},
   {value: 'overview', title: 'Overview (sobre el programa)'},
   {value: 'itinerary', title: 'Itinerary (día a día)'},
   {value: 'lodge', title: 'Lodge / alojamiento'},
@@ -122,7 +125,9 @@ export const PREVIEW_SECTION_TO_MODULE_KEY = {
   reserve: 'reserve',
   structure: null,
   general: null,
-  hero: null,
+  hero: 'hero',
+  highlights: 'highlights',
+  internalNav: 'internalNav',
 }
 
 export function getModuleKeyForPreviewSection(section) {

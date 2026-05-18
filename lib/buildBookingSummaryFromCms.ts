@@ -1,4 +1,5 @@
 import type { ExperienceBookingSummary } from '@/components/booking/types'
+import { formatExperiencePriceParts } from '@/lib/formatExperiencePrice'
 
 /** Matches hero / reserve pricing line on experience landings. */
 export const EXPERIENCE_BOOKING_PRICE_SUB = 'per person · all inclusive'
@@ -32,9 +33,10 @@ export function buildBookingSummaryFromCmsExperience(
   const programType = (exp.programType && PROGRAM[exp.programType]) || exp.programType?.trim() || 'Nature program'
   const route = exp.route?.trim() || ''
   const duration = exp.duration?.trim() || ''
-  let priceLine = 'Enquire'
-  if (exp.price != null && exp.price > 0) priceLine = `from $${exp.price}`
-  else if (exp.priceLabel?.trim()) priceLine = exp.priceLabel.trim()
+  const priceParts = formatExperiencePriceParts(
+    { price: exp.price, priceLabel: exp.priceLabel },
+    { inclusiveExtra: 'all inclusive' },
+  )
 
   return {
     experienceName: name,
@@ -43,7 +45,7 @@ export function buildBookingSummaryFromCmsExperience(
     route,
     duration,
     programType,
-    priceLine,
-    priceSub: EXPERIENCE_BOOKING_PRICE_SUB,
+    priceLine: [priceParts.from, priceParts.amount].filter(Boolean).join(' ').trim() || priceParts.amount,
+    priceSub: priceParts.suffix,
   }
 }

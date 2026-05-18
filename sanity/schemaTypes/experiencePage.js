@@ -101,6 +101,13 @@ export const experiencePage = defineType({
     }),
 
     // --- Internal menu ---
+    previewField(
+      'stPrevInternalNav',
+      'Section presentation',
+      'internalNav',
+      'internalNav',
+      {hidePreview: true},
+    ),
     defineField({
       name: 'internalNav',
       title: 'Internal navigation (sticky)',
@@ -110,6 +117,7 @@ export const experiencePage = defineType({
     }),
 
     // --- Hero ---
+    previewField('stPrevHero', 'Section presentation', 'hero', 'hero', {hidePreview: true}),
     defineField({
       name: 'pageHero',
       title: 'Hero — copy & CTAs (this page)',
@@ -536,11 +544,11 @@ export const experiencePage = defineType({
     }),
     defineField({
       name: 'showTailorMade',
-      title: 'Show Tailor Made card',
+      title: 'Show Tailor Made band',
       type: 'boolean',
       initialValue: false,
       group: 'related',
-      description: 'When off, the Tailor Made promo card is hidden in the Also like grid.',
+      description: 'When off, the Tailor Made band is hidden below the related experience cards.',
     }),
     defineField({
       name: 'tailorMadeEyebrow',
@@ -560,7 +568,7 @@ export const experiencePage = defineType({
     }),
     defineField({
       name: 'tailorMadeBody',
-      title: 'Tailor Made — body',
+      title: 'Tailor Made — subtitle',
       type: 'text',
       rows: 3,
       group: 'related',
@@ -569,35 +577,34 @@ export const experiencePage = defineType({
     }),
     defineField({
       name: 'tailorMadeImage',
-      title: 'Tailor Made — image',
+      title: 'Tailor Made — image (legacy)',
       type: 'image',
       group: 'related',
       options: {hotspot: true},
-      hidden: ({parent}) => parent?.showTailorMade !== true,
-      description: 'Optional card image. When empty, the site shows a neutral placeholder.',
+      hidden: true,
     }),
     defineField({
       name: 'tailorMadeAlt',
-      title: 'Tailor Made — image alt',
+      title: 'Tailor Made — image alt (legacy)',
       type: 'string',
       group: 'related',
       validation: (Rule) => Rule.max(160),
-      hidden: ({parent}) => parent?.showTailorMade !== true,
+      hidden: true,
     }),
     defineField({
       name: 'tailorMadeCtaLabel',
-      title: 'Tailor Made — price / meta line',
+      title: 'Tailor Made — price line (legacy)',
       type: 'string',
       group: 'related',
       validation: (Rule) => Rule.max(80),
-      description: 'Shown as the pricing line above the CTA (e.g. “Custom pricing”). The button label comes from the Smart Link.',
-      hidden: ({parent}) => parent?.showTailorMade !== true,
+      hidden: true,
     }),
     defineField({
       name: 'tailorMadeCtaSmartLink',
-      title: 'Tailor Made — CTA link',
+      title: 'Tailor Made — CTA (smart link)',
       type: 'smartLink',
       group: 'related',
+      description: 'Button label comes from the smart link. Hidden or off = no button.',
       hidden: ({parent}) => parent?.showTailorMade !== true,
     }),
     defineField({

@@ -1,6 +1,11 @@
 import { groq } from 'next-sanity'
 
 import type { RouteCardExperienceRow } from '@/lib/routeCardFootPrice'
+import type { PageSectionModuleRow } from '@/lib/pageSectionVisibility'
+import type {
+  RoutesPageListedExperiencePageRow,
+  RoutesPagePublishedRouteRow,
+} from '@/lib/routesPageExperiencesSection'
 import type { ReviewDoc } from '@/lib/queries'
 import type { ReserveCtaSettingsGroq } from '@/lib/reserveCtaGroq'
 import { GROQ_RESERVE_CTA_SETTINGS_FIELDS } from '@/lib/reserveCtaGroq'
@@ -58,11 +63,10 @@ export type RoutesPageSanityDoc = {
   experiencesAllLabel?: string | null
   experiencesAllHref?: string | null
   experiencesAllSmartLink?: SmartLinkGroq | null
-  selectedExperiences?: RoutesPageSanityExperienceRef[] | null
-  fallbackToAllExperiences?: boolean | null
-  allExperiences?: RoutesPageSanityExperienceRef[] | null
-  experiencesFilters?: Array<{ filterId?: string | null; label?: string | null }> | null
-  experienceCards?: RoutesPageSanityExpCard[] | null
+  experiencesRouteOrder?: Array<{ _ref?: string | null }> | null
+  experienceCardCtaLabel?: string | null
+  publishedRoutes?: RoutesPagePublishedRouteRow[] | null
+  listedExperiencePages?: RoutesPageListedExperiencePageRow[] | null
   reviewsFeaturedQuotes?: Array<{ quoteHtml?: string | null; attribution?: string | null }> | null
   reviewsSection?: {
     eyebrow?: string | null
@@ -98,10 +102,12 @@ export type RoutesPageSanityDoc = {
   finalCtaSecondarySmartLink?: SmartLinkGroq | null
   finalCtaTrustItems?: Array<{ icon?: string | null; label?: string | null }> | null
   reserveCtaSettings?: ReserveCtaSettingsGroq
+  sectionModules?: PageSectionModuleRow[] | null
 }
 
 export type RoutesPageSanityRouteCard = {
   stableId?: string | null
+  routeRef?: { _id?: string | null; slug?: string | null; name?: string | null } | null
   variant?: string | null
   imageUrl?: string | null
   imageAlt?: string | null
@@ -222,8 +228,10 @@ export const routesPageQuery = groq`
     territoryH2,
     territoryBody,
     territoryStrip[]{ id, name, meta, variant },
+    sectionModules[]{ key, visible, anchorId, eyebrow, sectionTitle, sectionText },
     routeCards[]{
       stableId,
+      routeRef->{ _id, "slug": slug.current, name },
       variant,
       "imageUrl": image.asset->url,
       imageAlt,
@@ -233,7 +241,6 @@ export const routesPageQuery = groq`
       name,
       description,
       chips,
-      footPriceHtml,
       ctaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
       cta,
       ctaButtonVariant
@@ -267,53 +274,33 @@ export const routesPageQuery = groq`
     experiencesAllLabel,
     experiencesAllHref,
     experiencesAllSmartLink { ${GROQ_SMART_LINK_FIELDS} },
-    selectedExperiences[]->{
+    experiencesRouteOrder[]{ _ref },
+    experienceCardCtaLabel,
+    "publishedRoutes": *[_type == "route" && defined(slug.current)] | order(coalesce(menuOrder, 999) asc, lower(coalesce(shortLabel, name)) asc) {
       _id,
       name,
-      "slug": slug.current,
-      "experienceLandingSlug": *[_type == "experiencePage" && experience._ref == ^._id][0].slug.current,
-      route,
-      duration,
-      programType,
-      shortDescription,
-      tagline,
-      price,
-      priceLabel,
-      status,
-      "mainImageUrl": mainImage.asset->url,
-      lodgeEnquireSmartLink { ${GROQ_SMART_LINK_FIELDS} }
+      shortLabel,
+      "slug": slug.current
     },
-    fallbackToAllExperiences,
-    "allExperiences": *[_type == "experience"] | order(_createdAt desc){
-      _id,
-      name,
-      "slug": slug.current,
-      "experienceLandingSlug": *[_type == "experiencePage" && experience._ref == ^._id][0].slug.current,
-      route,
-      duration,
-      programType,
-      shortDescription,
-      tagline,
-      price,
-      priceLabel,
-      status,
-      "mainImageUrl": mainImage.asset->url,
-      lodgeEnquireSmartLink { ${GROQ_SMART_LINK_FIELDS} }
-    },
-    experiencesFilters[]{ filterId, label },
-    experienceCards[]{
-      routeKey,
-      hrefSmartLink { ${GROQ_SMART_LINK_FIELDS} },
-      href,
-      "imageUrl": image.asset->url,
-      imageAlt,
-      typePill,
-      duration,
-      routeLine,
-      name,
-      description,
-      priceKind,
-      priceText
+    "listedExperiencePages": *[_type == "experiencePage" && defined(slug.current) && defined(experience._ref)] | order(lower(experience->name) asc) {
+      "landingSlug": slug.current,
+      "routeRefId": coalesce(
+        experience->routeRef._ref,
+        *[_type == "route" && slug.current == experience->route][0]._id
+      ),
+      "routeSlug": coalesce(experience->routeRef->slug.current, experience->route),
+      "routeLabel": coalesce(experience->routeRef->shortLabel, experience->routeRef->name),
+      "name": experience->name,
+      "experienceSlug": experience->slug.current,
+      "duration": experience->duration,
+      "programType": experience->programType,
+      "shortDescription": experience->shortDescription,
+      "tagline": experience->tagline,
+      "price": experience->price,
+      "priceLabel": experience->priceLabel,
+      "status": experience->status,
+      "mainImageUrl": experience->mainImage.asset->url,
+      "lodgeEnquireSmartLink": experience->lodgeEnquireSmartLink { ${GROQ_SMART_LINK_FIELDS} },
     },
     reviewsFeaturedQuotes[]{ quoteHtml, attribution },
     "reviewsSettings": *[_type == "reviewsSettings"][0] {
@@ -409,6 +396,10 @@ export const routesPageQuery = groq`
       ${GROQ_RESERVE_CTA_SETTINGS_FIELDS}
     },
     "publishedExperiencePages": *[_type == "experiencePage" && defined(slug.current) && defined(experience)]{
+      "routeRefId": coalesce(
+        experience->routeRef._ref,
+        *[_type == "route" && slug.current == experience->route][0]._id
+      ),
       "route": experience->route,
       "price": experience->price,
       "priceLabel": experience->priceLabel,

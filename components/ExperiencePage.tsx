@@ -16,6 +16,9 @@ import type {
 import { cdnImageUrl } from '@/lib/sanity'
 import { formatLodgeAltitudeForSubtitle } from '@/lib/lodgeAltitudeDisplay'
 import { DEFAULT_REVIEWS_RATING_SUMMARY } from '@/lib/reviewsRatingSummary'
+import { ExperienceCardsSection } from '@/components/experience/ExperienceCardsSection'
+import { toExperienceCardData } from '@/lib/experienceCardData'
+import { formatExperiencePriceParts } from '@/lib/formatExperiencePrice'
 
 const U_FALL =
   'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80'
@@ -66,19 +69,21 @@ const NAV: { id: string; label: string }[] = [
   { id: 'book', label: 'Book →' },
 ]
 
-function formatUsd(n: number) {
-  return `USD ${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-}
-
 function priceLabel(
-  e: Pick<ExperienceDoc, 'status' | 'price' | 'programType'>,
+  e: Pick<ExperienceDoc, 'status' | 'price' | 'priceLabel' | 'programType'>,
 ): { text: string; sub?: string } {
   if (e.status === 'coming-soon') return { text: 'Enquire' }
   if (e.programType === 'experiential-learning' && (e.price == null || e.price === 0)) {
     return { text: 'Custom pricing' }
   }
-  if (e.price != null && e.price > 0) return { text: formatUsd(e.price), sub: 'per person · all inclusive' }
-  return { text: 'Enquire', sub: 'per person' }
+  const parts = formatExperiencePriceParts(
+    { price: e.price, priceLabel: e.priceLabel },
+    { inclusiveExtra: 'all inclusive' },
+  )
+  return {
+    text: [parts.from, parts.amount].filter(Boolean).join(' '),
+    sub: parts.suffix,
+  }
 }
 
 export type ExperiencePageProps = {
@@ -977,34 +982,34 @@ export function ExperiencePage({ experience, reviewsFiltered, featuredQuoteItems
             <h2 className="h2" id="related-heading" style={{ marginBottom: 16 }}>
               Related experiences
             </h2>
-            <div className="related-grid">
-              {related
+            <ExperienceCardsSection
+              cards={related
                 .filter((x) => x.slug?.current !== slug)
-                .map((r) => (
-                  <Link
-                    key={r._id}
-                    href={`/experiences/${r.slug?.current}`}
-                    className="related-card"
-                  >
-                    <div className="related-img">
-                      <img src={cdnImageUrl(r.mainImage ?? null, 800, U_FALL)} alt={r.name ?? ''} />
-                      <div className="related-img-overlay" />
-                    </div>
-                    <div className="related-body">
-                      <div className="related-type">
-                        {r.programType ? PROGRAM_BADGE[r.programType] ?? 'Ecotone' : 'Ecotone'}
-                      </div>
-                      <h3 className="related-name">{r.name}</h3>
-                      <div className="related-meta">{r.duration || '·'} · {r.route ? ROUTE_LABEL[r.route] : ''}</div>
-                      <div className="related-foot">
-                        <span className="related-price">
-                          {r.price != null && r.price > 0 ? formatUsd(r.price) : 'Enquire'}
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-            </div>
+                .map((r) => {
+                  const card = toExperienceCardData(
+                        {
+                          name: r.name,
+                          mainImageUrl: cdnImageUrl(r.mainImage ?? null, 800, U_FALL),
+                          programType: r.programType,
+                          route: r.route,
+                          shortDescription: r.shortDescription,
+                          price: r.price,
+                          priceLabel: r.priceLabel,
+                          experienceLandingSlug: r.slug?.current,
+                        },
+                        {
+                          href: `/experiences/${r.slug?.current}`,
+                          ctaLabel: 'View',
+                        },
+                  )
+                  return card ? { key: r._id, card } : null
+                })
+                .filter(
+                  (item): item is { key: string; card: NonNullable<typeof item>['card'] } =>
+                    item != null,
+                )}
+              cardCtaLabel="View"
+            />
           </div>
         </section>
       ) : null}

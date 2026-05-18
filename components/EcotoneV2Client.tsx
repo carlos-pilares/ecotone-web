@@ -127,9 +127,10 @@ export function EcotoneV2Client(props: FullHtmlProps | SplitBodyProps | ReactShe
         const filter = (tab as HTMLElement).dataset.filter ?? 'all'
         cards.forEach((card) => {
           const el = card as HTMLElement
-          const isTailor = el.classList.contains('exp-card-tailor')
-          const match = filter === 'all' || el.dataset.type === filter
-          el.style.display = match || isTailor ? '' : 'none'
+          const type = el.dataset.type ?? ''
+          const match =
+            filter === 'all' ? type !== 'tailor' && type !== '' : type === filter
+          el.style.display = match ? '' : 'none'
         })
       }
       tab.addEventListener('click', handler)

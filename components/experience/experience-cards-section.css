@@ -1,0 +1,46 @@
+/* Shared 3 / 2 / 1 experience cards grid (Home, Lodge, Routes, Experience related). */
+.experience-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .experience-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .experience-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.experience-cards-grid .experience-cards-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.experience-cards-grid .experience-cards-empty .lodge-exp-empty {
+  margin: 0;
+  padding: 20px 16px;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--n500);
+  text-align: center;
+}
+
+.experience-cards-grid .experience-cards-tailor-band,
+.experience-cards-grid .lodge-exp-tailor {
+  grid-column: 1 / -1;
+}
+
+/* Home filter tabs: slot wrapper does not affect grid layout. */
+.experience-cards-grid .experience-card-filter-slot {
+  display: contents;
+}
+
+.experience-cards-grid .experience-card-filter-slot > .experience-card {
+  height: 100%;
+}

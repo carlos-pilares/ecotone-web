@@ -1,5 +1,16 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
+import {PageSectionVisibleField} from '../components/pageSection/PageSectionVisibleField'
 import {HomeSourceListReadout} from '../components/homePage/HomeSourceListReadout'
+
+const pageSectionVisibleUi = (sectionKey, group) =>
+  defineField({
+    name: `${sectionKey}SectionVisibilityUi`,
+    title: 'Section visibility',
+    type: 'string',
+    group,
+    components: {input: PageSectionVisibleField},
+    options: {sectionKey},
+  })
 
 const heroCardRow = {
   type: 'object',
@@ -149,7 +160,7 @@ export const homePage = defineType({
     {name: 'hero', title: 'Hero', default: true},
     {name: 'stats', title: 'Stats'},
     {name: 'manifesto', title: 'Manifesto'},
-    {name: 'explorer', title: 'Explorer (experiences section)'},
+    {name: 'explorer', title: 'Experiences'},
     {name: 'reviews', title: 'Reviews'},
     {name: 'tech', title: 'Tech'},
     {name: 'mission', title: 'Mission'},
@@ -164,6 +175,14 @@ export const homePage = defineType({
       type: 'seo',
       group: 'meta',
     }),
+    defineField({
+      name: 'sectionModules',
+      title: 'sectionModules (internal)',
+      type: 'array',
+      of: [{type: 'pageModule'}],
+      hidden: true,
+    }),
+    pageSectionVisibleUi('hero', 'hero'),
     defineField({
       name: 'heroImage',
       title: 'Hero image',
@@ -282,6 +301,7 @@ export const homePage = defineType({
       group: 'hero',
     }),
 
+    pageSectionVisibleUi('stats', 'stats'),
     defineField({
       name: 'stats',
       title: 'Stats (4 items)',
@@ -291,6 +311,7 @@ export const homePage = defineType({
       group: 'stats',
     }),
 
+    pageSectionVisibleUi('manifesto', 'manifesto'),
     defineField({name: 'manifestoEyebrow', title: 'Eyebrow', type: 'string', group: 'manifesto'}),
     defineField({name: 'manifestoHeadline', title: 'Headline', type: 'string', group: 'manifesto'}),
     defineField({name: 'manifestoBody1', title: 'Body 1', type: 'text', group: 'manifesto', rows: 4}),
@@ -348,48 +369,83 @@ export const homePage = defineType({
       group: 'manifesto',
     }),
 
+    pageSectionVisibleUi('explorer', 'explorer'),
     defineField({name: 'explorerEyebrow', title: 'Eyebrow', type: 'string', group: 'explorer'}),
-    defineField({name: 'explorerHeadline', title: 'Headline', type: 'string', group: 'explorer'}),
-    defineField({name: 'explorerSubheadline', title: 'Subheadline', type: 'text', group: 'explorer', rows: 3}),
+    defineField({name: 'explorerHeadline', title: 'Title', type: 'string', group: 'explorer'}),
+    defineField({
+      name: 'explorerSubheadline',
+      title: 'Body text',
+      type: 'text',
+      group: 'explorer',
+      rows: 3,
+    }),
+    defineField({
+      name: 'explorerProgramGroups',
+      title: 'Program types to show',
+      type: 'array',
+      of: [{type: 'homeExperienceProgramGroup'}],
+      group: 'explorer',
+      description:
+        'Choose which experience program types appear as filter tabs and in what order. Cards load from published experiences in the CMS.',
+    }),
+    defineField({
+      name: 'explorerTailorBand',
+      title: 'Tailor Made band',
+      type: 'tailorMadeBand',
+      group: 'explorer',
+      description:
+        'Shown on the site only when “Tailor Made” is included in program types above. Toggle “Show Tailor Made band”, then set eyebrow, title, subtitle, and CTA smart link.',
+    }),
     defineField({
       name: 'explorerFilterTabs',
-      title: 'Filter tabs (labels)',
+      title: 'Filter tabs (legacy)',
       type: 'array',
       of: [explorerFilterTab],
       group: 'explorer',
-      description: 'Order matches display. Keys must align with experience program types (data-type on cards).',
+      hidden: true,
     }),
     defineField({
       name: 'explorerPriceEnquireLabel',
-      title: 'Price label — enquire / coming soon',
+      title: 'Price label — enquire (legacy)',
       type: 'string',
       group: 'explorer',
+      hidden: true,
     }),
     defineField({
       name: 'explorerPriceCustomLabel',
-      title: 'Price label — custom programs',
+      title: 'Price label — custom (legacy)',
       type: 'string',
       group: 'explorer',
+      hidden: true,
     }),
-    defineField({name: 'explorerCardCtaViewLabel', title: 'Card CTA — view program', type: 'string', group: 'explorer'}),
+    defineField({
+      name: 'explorerCardCtaViewLabel',
+      title: 'Card CTA — view (legacy)',
+      type: 'string',
+      group: 'explorer',
+      hidden: true,
+    }),
     defineField({
       name: 'explorerCardCtaEnquireLabel',
-      title: 'Card CTA — enquire',
+      title: 'Card CTA — enquire (legacy)',
       type: 'string',
       group: 'explorer',
+      hidden: true,
     }),
     defineField({
       name: 'explorerTailorRouteDurationLabel',
-      title: 'Tailor card — route/duration badge',
+      title: 'Tailor card — route badge (legacy)',
       type: 'string',
       group: 'explorer',
+      hidden: true,
     }),
     defineField({
       name: 'explorerTailorDescriptionFallback',
-      title: 'Tailor card — description fallback',
+      title: 'Tailor card — description (legacy)',
       type: 'text',
       rows: 2,
       group: 'explorer',
+      hidden: true,
     }),
     defineField({
       name: 'explorerTailorCtaText',
@@ -397,7 +453,6 @@ export const homePage = defineType({
       type: 'string',
       group: 'explorer',
       hidden: true,
-      description: 'Legacy fallback — hidden from normal editing.',
     }),
     defineField({
       name: 'explorerTailorWhatsappUrl',
@@ -405,29 +460,29 @@ export const homePage = defineType({
       type: 'url',
       group: 'explorer',
       hidden: true,
-      description: 'Legacy fallback — hidden from normal editing.',
     }),
     defineField({
       name: 'explorerTailorWhatsappSmartLink',
-      title: 'Tailor card — WhatsApp',
+      title: 'Tailor card — WhatsApp (legacy)',
       type: 'smartLink',
       group: 'explorer',
-      description: 'Primary editor control for the Tailor Made WhatsApp CTA.',
+      hidden: true,
     }),
     defineField({
       name: 'explorerLearningBadgeLabels',
-      title: 'Exp. learning — duration badges (3)',
+      title: 'Exp. learning badges (legacy)',
       type: 'array',
       of: [{type: 'string'}],
-      validation: (Rule) => Rule.max(3),
       group: 'explorer',
+      hidden: true,
     }),
     defineField({
       name: 'explorerEmptyGridMessage',
-      title: 'Empty grid — message (no experiences loaded)',
+      title: 'Empty grid — message (legacy)',
       type: 'text',
       rows: 3,
       group: 'explorer',
+      hidden: true,
     }),
     defineField({
       name: 'explorerEmptyGridLinkLabel',
@@ -435,7 +490,6 @@ export const homePage = defineType({
       type: 'string',
       group: 'explorer',
       hidden: true,
-      description: 'Legacy fallback — hidden from normal editing.',
     }),
     defineField({
       name: 'explorerEmptyGridLinkHref',
@@ -443,21 +497,20 @@ export const homePage = defineType({
       type: 'string',
       group: 'explorer',
       hidden: true,
-      description: 'Legacy fallback — hidden from normal editing.',
     }),
     defineField({
       name: 'explorerEmptyGridSmartLink',
-      title: 'Empty grid — link',
+      title: 'Empty grid — link (legacy)',
       type: 'smartLink',
       group: 'explorer',
-      description: 'Shown when the explorer grid has no experiences.',
+      hidden: true,
     }),
     defineField({
       name: 'explorerCardImageFallbackUrl',
-      title: 'Card image fallback URL',
+      title: 'Card image fallback URL (legacy)',
       type: 'url',
       group: 'explorer',
-      description: 'When an experience has no main image. Leave empty to use the built-in technical placeholder.',
+      hidden: true,
     }),
     defineField({
       name: 'explorerCatalogReadout',
@@ -466,10 +519,12 @@ export const homePage = defineType({
       rows: 1,
       group: 'explorer',
       readOnly: true,
+      hidden: true,
       components: {input: HomeSourceListReadout},
       options: {catalog: 'experiences'},
     }),
 
+    pageSectionVisibleUi('reviews', 'reviews'),
     defineField({
       name: 'reviewsSection',
       title: 'Reviews section',
@@ -526,6 +581,7 @@ export const homePage = defineType({
       validation: (Rule) => Rule.unique(),
     }),
 
+    pageSectionVisibleUi('tech', 'tech'),
     defineField({name: 'techEyebrow', title: 'Eyebrow', type: 'string', group: 'tech'}),
     defineField({name: 'techHeadline', title: 'Headline', type: 'string', group: 'tech'}),
     defineField({name: 'techBody', title: 'Body', type: 'text', group: 'tech', rows: 4}),
@@ -556,6 +612,7 @@ export const homePage = defineType({
       validation: (Rule) => Rule.unique(),
     }),
 
+    pageSectionVisibleUi('mission', 'mission'),
     defineField({name: 'missionEyebrow', title: 'Eyebrow', type: 'string', group: 'mission'}),
     defineField({name: 'missionHeadline', title: 'Headline', type: 'string', group: 'mission'}),
     defineField({name: 'missionBody', title: 'Body', type: 'text', group: 'mission', rows: 4}),
@@ -586,6 +643,7 @@ export const homePage = defineType({
     defineField({name: 'missionPhoto2', title: 'Photo 2', type: 'image', group: 'mission', options: {hotspot: true}}),
     defineField({name: 'missionPhoto3', title: 'Photo 3', type: 'image', group: 'mission', options: {hotspot: true}}),
 
+    pageSectionVisibleUi('partners', 'partners'),
     defineField({
       name: 'partnersEyebrow',
       title: 'Eyebrow (optional)',
@@ -640,6 +698,7 @@ export const homePage = defineType({
         }),
     }),
 
+    pageSectionVisibleUi('blog', 'blog'),
     defineField({name: 'blogEyebrow', title: 'Eyebrow', type: 'string', group: 'blog'}),
     defineField({name: 'blogHeadline', title: 'Headline', type: 'string', group: 'blog'}),
     defineField({
@@ -732,6 +791,7 @@ export const homePage = defineType({
       validation: (Rule) => Rule.unique(),
     }),
 
+    pageSectionVisibleUi('booking', 'booking'),
     defineField({
       name: 'reserveCtaSettings',
       title: 'Reserve CTA (#book)',

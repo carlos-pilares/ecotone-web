@@ -105,6 +105,7 @@ export const lodgePage = defineType({
     }),
     lodgeLegacyPreviewField('lpStudioGeneral', 'general', 'general'),
 
+    lodgeSectionCopyField('heroSectionCopy', 'hero'),
     defineField({
       name: 'heroTitle',
       title: 'Hero title',
@@ -181,6 +182,7 @@ export const lodgePage = defineType({
     }),
     lodgeLegacyPreviewField('lpStudioHero', 'hero', 'hero'),
 
+    lodgeSectionCopyField('highlightsSectionCopy', 'highlights'),
     defineField({
       name: 'highlightLines',
       title: 'Highlight items (up to 6)',
@@ -201,6 +203,7 @@ export const lodgePage = defineType({
     }),
     lodgeLegacyPreviewField('lpStudioHighlights', 'highlights', 'highlights'),
 
+    lodgeSectionCopyField('navigationSectionCopy', 'navigation'),
     defineField({
       name: 'menuCtaLabel',
       title: 'Mega menu — CTA label (legacy)',
@@ -387,7 +390,7 @@ export const lodgePage = defineType({
     defineField({
       name: 'experiencesTailorCta',
       title: 'Tailor Made (optional band)',
-      type: 'lodgePageExperiencesTailorCta',
+      type: 'tailorMadeBand',
       group: 'experiences',
       description: 'Shown only when “Show Tailor Made band” is on. Uses CMS copy and smart-link CTA.',
     }),
@@ -437,6 +440,7 @@ export const lodgePage = defineType({
     }),
     lodgeLegacyPreviewField('lpStudioFaq', 'faq', 'faq'),
 
+    lodgeSectionCopyField('bookingSectionCopy', 'booking'),
     defineField({
       name: 'reserveCtaSettings',
       title: 'Reserve CTA (#book)',
@@ -458,6 +462,9 @@ export const lodgePage = defineType({
       type: 'object',
       hidden: true,
       fields: [
+        defineField({name: 'hero', title: 'Hero', type: 'lodgePageSectionCopy'}),
+        defineField({name: 'highlights', title: 'Highlights', type: 'lodgePageSectionCopy'}),
+        defineField({name: 'navigation', title: 'Navigation', type: 'lodgePageSectionCopy'}),
         defineField({name: 'overview', title: 'Overview', type: 'lodgePageSectionCopy'}),
         defineField({name: 'accommodation', title: 'Accommodation', type: 'lodgePageSectionCopy'}),
         defineField({name: 'facilities', title: 'Facilities', type: 'lodgePageSectionCopy'}),

@@ -4,6 +4,7 @@ import type { PartnerDoc } from '@/lib/queries'
 import type { ReserveCtaSettingsGroq } from '@/lib/reserveCtaGroq'
 import { GROQ_PARTNER_DOC_FIELDS } from '@/lib/partnerGroq'
 import { GROQ_RESERVE_CTA_SETTINGS_FIELDS } from '@/lib/reserveCtaGroq'
+import type { PageSectionModuleRow } from '@/lib/pageSectionVisibility'
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
 import { GROQ_SMART_LINK_FIELDS } from '@/lib/smartLinkGroq'
 
@@ -98,6 +99,7 @@ export type AboutPageSanityDoc = {
     text?: string | null
   }> | null
   reserveCtaSettings?: ReserveCtaSettingsGroq
+  sectionModules?: PageSectionModuleRow[] | null
 }
 
 export const aboutPageQuery = groq`
@@ -120,6 +122,7 @@ export const aboutPageQuery = groq`
     heroSecondaryCta,
     heroPrimarySmartLink { ${GROQ_SMART_LINK_FIELDS} },
     heroSecondarySmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    sectionModules[]{ key, visible, anchorId, eyebrow, sectionTitle, sectionText },
     whoSectionId,
     "whoImageUrl": whoImage.asset->url,
     whoImageAlt,

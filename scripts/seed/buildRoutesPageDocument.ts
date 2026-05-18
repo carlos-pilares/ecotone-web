@@ -154,7 +154,7 @@ export async function buildRoutesPageDocument(client: SanityClient, imageCache?:
   )
 
   const expCardImages = await Promise.all(
-    routesExpCards.map((c, i) => cache.get(c.imageSrc, `routes-exp-${i + 1}.jpg`)),
+    routesExpCards.map((c, i) => cache.get(c.imageUrl, `routes-exp-${i + 1}.jpg`)),
   )
 
   const routeCards = routesCards.map((c, i) => ({
@@ -198,7 +198,7 @@ export async function buildRoutesPageDocument(client: SanityClient, imageCache?:
     routeKey: c.route,
     hrefSmartLink: {
       _type: 'smartLink' as const,
-      label: c.name,
+      label: c.title,
       linkType: 'externalUrl' as const,
       externalUrl: absUrlForSmartSeed(c.href),
       openInNewTab: false,
@@ -206,13 +206,13 @@ export async function buildRoutesPageDocument(client: SanityClient, imageCache?:
     href: c.href,
     image: expCardImages[i],
     imageAlt: c.imageAlt,
-    typePill: c.typePill,
-    duration: c.duration,
-    routeLine: c.routeLine,
-    name: c.name,
+    typePill: c.programTypeLabel,
+    duration: '',
+    routeLine: c.routeLabel,
+    name: c.title,
     description: c.description,
-    priceKind: c.priceKind,
-    priceText: c.priceText,
+    priceKind: !c.price && !c.priceLabel ? ('enquire' as const) : ('custom' as const),
+    priceText: c.priceLabel ?? (c.price ? String(c.price) : undefined),
   }))
 
   const compareColumns = routesCompareColumns.map((col, i) => ({

@@ -17,9 +17,11 @@ function waDigitsFromDefaultSiteWhatsapp(): string {
 
 /** Segmento de URL público para `/experiences/[slug]` (prioriza landing `experiencePage`). */
 export function resolveExperiencePublicSlug(input: ExperiencePublicHrefInput): string | null {
-  const raw = input.experienceLandingSlug?.trim() || input.slug?.trim() || ''
-  if (!raw) return null
-  return EXPERIENCE_DOCUMENT_SLUG_TO_PUBLIC_SLUG[raw] ?? raw
+  const landing = input.experienceLandingSlug?.trim()
+  if (landing) return landing
+  const kcSlug = input.slug?.trim() || ''
+  if (!kcSlug) return null
+  return EXPERIENCE_DOCUMENT_SLUG_TO_PUBLIC_SLUG[kcSlug] ?? kcSlug
 }
 
 export function resolveExperiencePublicHref(input: ExperiencePublicHrefInput): string | null {
@@ -29,6 +31,19 @@ export function resolveExperiencePublicHref(input: ExperiencePublicHrefInput): s
 
 export function resolveExperiencePublicHrefOrFallback(input: ExperiencePublicHrefInput): string {
   return resolveExperiencePublicHref(input) ?? lodgeSoqtapataExperienceCardDefaults.defaultExperienceHref
+}
+
+/** Public `/experiences/{slug}` for cards; prefers linked `experiencePage` slug. */
+export function resolveExperienceCardHref(input: {
+  experienceLandingSlug?: string | null
+  experienceSlug?: string | null
+  slug?: { current?: string | null } | null
+}): string {
+  const href = resolveExperiencePublicHref({
+    experienceLandingSlug: input.experienceLandingSlug,
+    slug: input.experienceSlug?.trim() || input.slug?.current?.trim() || null,
+  })
+  return href ?? '#'
 }
 
 /** Igual que en lodge cards: smartLink de enquire solo si hay `linkType`. */

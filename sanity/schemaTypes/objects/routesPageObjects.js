@@ -97,6 +97,15 @@ export const routesPageRouteCard = defineType({
       of: [{type: 'routesPageRouteBadge'}],
       validation: (Rule) => Rule.max(8),
     }),
+    defineField({
+      name: 'routeRef',
+      title: 'Route (knowledge center)',
+      type: 'reference',
+      to: [{type: 'route'}],
+      description:
+        'Required. Footer line (experience count and lowest price) is computed from published experience pages linked to this route.',
+      validation: (Rule) => Rule.required(),
+    }),
     defineField({name: 'name', title: 'Route name', type: 'string', validation: (Rule) => Rule.required()}),
     defineField({name: 'description', title: 'Description', type: 'text', rows: 5}),
     defineField({name: 'chips', title: 'Chips (tags)', type: 'array', of: [{type: 'string'}], validation: (Rule) => Rule.max(12)}),
@@ -105,7 +114,8 @@ export const routesPageRouteCard = defineType({
       title: 'Footer price line (HTML)',
       type: 'text',
       rows: 2,
-      description: 'Small HTML allowed (e.g. <strong>, <span class="routes-price-enquire">).',
+      hidden: true,
+      description: 'Deprecated — computed from experiences on the live site.',
     }),
     defineField({
       name: 'ctaSmartLink',
@@ -142,8 +152,11 @@ export const routesPageRouteCard = defineType({
       return 'Add CTA smart link (recommended) or legacy button label + URL'
     }),
   preview: {
-    select: {name: 'name', variant: 'variant'},
-    prepare: ({name, variant}) => ({title: name || 'Route', subtitle: variant}),
+    select: {name: 'name', variant: 'variant', routeName: 'routeRef.name'},
+    prepare: ({name, variant, routeName}) => ({
+      title: name || 'Route',
+      subtitle: [routeName, variant].filter(Boolean).join(' · '),
+    }),
   },
 })
 

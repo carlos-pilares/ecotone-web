@@ -182,7 +182,9 @@ button { font-family: var(--f); cursor: pointer; }
   .exp-price-cta { flex-direction: row; align-items: center; justify-content: space-between; width: 100%; gap: 12px; }
   .exp-price-titles { text-align: left; }
 }
-.exp-price { font-size: 32px; font-weight: 700; color: var(--cream); letter-spacing: -.04em; line-height: 1; }
+.exp-price { font-size: 32px; line-height: 1; letter-spacing: -.04em; }
+.exp-price-from { font-size: 12px; font-weight: 300; color: rgba(236,229,213,.45); letter-spacing: 0.03em; }
+.exp-price-amount { font-size: 32px; font-weight: 700; color: var(--cream); letter-spacing: -.04em; }
 .exp-price-sub { font-size: 12px; font-weight: 300; color: rgba(236,229,213,.45); letter-spacing: 0.03em; }
 
 /* Snapshot bar */
@@ -255,7 +257,7 @@ body:has(#ecotone-experience-root).ecotone-exp-past-hero .pnav-scroll-shim {
 .pnav-item { font-size: 13px; font-weight: 400; color: var(--n600, #5c5042); }
 .pnav-cta { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 .pnav-from-price { text-align: right; line-height: 1.15; }
-.pnav-from-label { font-size: 10px; font-weight: 500; color: var(--n400); text-transform: uppercase; letter-spacing: .06em; display: block; margin-bottom: 1px; }
+.pnav-from-label { font-size: 10px; font-weight: 500; color: var(--n400); letter-spacing: .02em; display: block; margin-bottom: 1px; }
 .pnav-from-num { font-size: 18px; font-weight: 700; color: var(--n900); letter-spacing: -.03em; }
 .pnav-from-sub { font-size: 10px; font-weight: 300; color: var(--n400); display: block; margin-top: 1px; }
 a.pnav-book-btn, button.pnav-book-btn { padding: 8px 18px; font-size: 12px; font-weight: 700; text-decoration: none; }
@@ -791,6 +793,7 @@ body.ecotone-pnav-stuck .top-nav a.nav-book.desk {
 
 /* ── RELATED EXPERIENCES ── */
 .related-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.related-tailor-band { grid-column: 1 / -1; }
 @media(max-width: 480px) { .related-grid { grid-template-columns: 1fr; } }
 .related-card { border: 1px solid var(--n200); border-radius: var(--r); overflow: hidden; background: var(--w); cursor: pointer; transition: border-color .18s, box-shadow .18s; }
 .related-card:hover { border-color: var(--b200); box-shadow: 0 4px 18px rgba(144,103,48,.1); }

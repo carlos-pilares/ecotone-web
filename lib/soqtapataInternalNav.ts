@@ -3,6 +3,7 @@
  * `targetSection` coincide con valores de `sanity/lib/pageModuleShared` (`MODULE_LIST`).
  */
 import type { SoqtapataPhase1NavLink, SoqtapataPhase1PageNav } from '@/data/soqtapataExperienceLocal'
+import { isPageSectionVisible } from '@/lib/pageSectionVisibility'
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
 import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
 
@@ -46,7 +47,10 @@ const INTERNAL_NAV_TARGET_META: Record<string, { href: string; dataActiveWhen?: 
   reserve: { href: '#book', dataActiveWhen: 'also-camanti,book' },
 }
 
-function hasAnyValidVisibleItem(nav: CmsInternalNav | null | undefined): boolean {
+function hasAnyValidVisibleItem(
+  nav: CmsInternalNav | null | undefined,
+  sectionVisibility?: Record<string, boolean | undefined> | null,
+): boolean {
   if (!nav?.items?.length) return false
   return nav.items.some((i) => {
     if (i == null || typeof i !== 'object') return false
@@ -54,7 +58,11 @@ function hasAnyValidVisibleItem(nav: CmsInternalNav | null | undefined): boolean
     const label = String(i.label ?? '').trim()
     if (!label) return false
     const key = i.targetSection
-    return Boolean(key && INTERNAL_NAV_TARGET_META[key])
+    if (!key || !INTERNAL_NAV_TARGET_META[key]) return false
+    if (sectionVisibility && Object.prototype.hasOwnProperty.call(sectionVisibility, key)) {
+      return isPageSectionVisible(sectionVisibility[key])
+    }
+    return true
   })
 }
 
@@ -64,8 +72,9 @@ function hasAnyValidVisibleItem(nav: CmsInternalNav | null | undefined): boolean
 export function mergeInternalNavIntoPageNav(
   nav: CmsInternalNav | null | undefined,
   base: SoqtapataPhase1PageNav,
+  sectionVisibility?: Record<string, boolean | undefined> | null,
 ): SoqtapataPhase1PageNav | null {
-  if (!hasAnyValidVisibleItem(nav)) return null
+  if (!hasAnyValidVisibleItem(nav, sectionVisibility)) return null
   const doc = nav!
 
   const rows = (doc.items ?? [])
@@ -74,7 +83,11 @@ export function mergeInternalNavIntoPageNav(
     .filter(({ item }) => item.visible !== false && String(item.label ?? '').trim())
     .filter(({ item }) => {
       const key = item.targetSection
-      return Boolean(key && INTERNAL_NAV_TARGET_META[key])
+      if (!key || !INTERNAL_NAV_TARGET_META[key]) return false
+      if (sectionVisibility && Object.prototype.hasOwnProperty.call(sectionVisibility, key)) {
+        return isPageSectionVisible(sectionVisibility[key])
+      }
+      return true
     })
 
   rows.sort((a, b) => {

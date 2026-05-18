@@ -7,12 +7,17 @@ import type { ReserveCtaSettingsGroq } from '@/lib/reserveCtaGroq'
 import { GROQ_RESERVE_CTA_SETTINGS_FIELDS } from '@/lib/reserveCtaGroq'
 import { GROQ_PARTNER_DOC_FIELDS } from '@/lib/partnerGroq'
 import { GROQ_LODGE_ALTITUDE_AS_ALTITUDE } from '@/lib/lodgeAltitudeGroq'
+import { GROQ_EXPERIENCE_KC_CARD_FIELDS } from '@/lib/experienceCardGroq'
 
 /** Experience card row (homepage + listados). */
 export type ExperienceFromSanity = {
   _id: string
   name: string
   slug: { current: string } | null
+  experienceSlug?: string | null
+  experienceLandingSlug?: string | null
+  routeSlug?: string | null
+  routeLabel?: string | null
   price: number | null
   priceLabel?: string | null
   duration?: string | null
@@ -29,17 +34,11 @@ export type ExperienceFromSanity = {
 export const experiencesQuery = groq`
   *[_type == "experience"] | order(price asc) {
     _id,
-    name,
+    ${GROQ_EXPERIENCE_KC_CARD_FIELDS},
     slug,
-    price,
-    priceLabel,
     duration,
-    programType,
-    route,
-    status,
-    shortDescription,
     mainImage,
-    "mainImageUrl": mainImage.asset->url
+    "experienceLandingSlug": *[_type == "experiencePage" && experience._ref == ^._id][0].slug.current
   }
 `
 
@@ -71,6 +70,7 @@ export type ReviewDoc = {
 
 export type HomePageDoc = {
   seo?: HomePageSeoDoc | null
+  sectionModules?: Array<{ key?: string | null; visible?: boolean | null }> | null
   heroEyebrow?: string | null
   heroHeadline?: string | null
   heroHeadlineLight?: string | null
@@ -106,6 +106,12 @@ export type HomePageDoc = {
   explorerEyebrow?: string | null
   explorerHeadline?: string | null
   explorerSubheadline?: string | null
+  explorerProgramGroups?: Array<{
+    _key?: string
+    programType?: string | null
+    label?: string | null
+  }> | null
+  explorerTailorBand?: import('@/lib/tailorMadeBand').TailorMadeBandCmsRow
   explorerFilterTabs?: Array<{ _key?: string; filterKey?: string; label?: string }> | null
   explorerPriceEnquireLabel?: string | null
   explorerPriceCustomLabel?: string | null
@@ -223,6 +229,7 @@ export const homePageQuery = groq`
       noIndex,
       "ogImageUrl": ogImage.asset->url
     },
+    sectionModules[] { key, visible },
     heroHeadline, heroHeadlineLight, heroSubheadline,
     heroPills, heroCta1Text, heroCta1Link, heroCta2Text, heroCta2Link,
     heroCardPrice, heroCardPriceSuffix, heroCardSubprice, heroCardRows, heroCardCtaText, heroCardCtaLink,
@@ -235,6 +242,19 @@ export const homePageQuery = groq`
     manifestoImage, manifestoImageCaption,
     manifestoCta1Text, manifestoCta1Link, manifestoCta2Text, manifestoCta2Link,
     explorerEyebrow, explorerHeadline, explorerSubheadline,
+    explorerProgramGroups[] { programType, label },
+    explorerTailorBand {
+      showTailorMade,
+      enabled,
+      eyebrow,
+      title,
+      subtitle,
+      tailorMadeEyebrow,
+      tailorMadeTitle,
+      tailorMadeBody,
+      ctaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
+      tailorMadeCta { ${GROQ_SMART_LINK_FIELDS} }
+    },
     explorerFilterTabs,
     explorerPriceEnquireLabel,
     explorerPriceCustomLabel,
@@ -587,30 +607,18 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       "experience": select(
         _type == "experiencePage" => experience-> {
           _id,
-          name,
+          ${GROQ_EXPERIENCE_KC_CARD_FIELDS},
           tagline,
-          programType,
-          route,
           duration,
-          price,
-          priceLabel,
-          shortDescription,
           mainImage,
-          "mainImageUrl": mainImage.asset->url,
           "slug": slug.current
         },
         {
           _id,
-          name,
+          ${GROQ_EXPERIENCE_KC_CARD_FIELDS},
           tagline,
-          programType,
-          route,
           duration,
-          price,
-          priceLabel,
-          shortDescription,
           mainImage,
-          "mainImageUrl": mainImage.asset->url,
           "slug": slug.current
         }
       )
@@ -818,17 +826,10 @@ export const soqtapataStructuredPageBySlugQuery = groq`
 /** Experience rows linked to a lodge landing via KC → Lodges → `lodgePresentationRows[].lodge` only. */
 const GROQ_LODGE_PAGE_LINKED_EXPERIENCE_FIELDS = `
   _id,
-  name,
+  ${GROQ_EXPERIENCE_KC_CARD_FIELDS},
   tagline,
-  programType,
-  route,
   duration,
-  price,
-  priceLabel,
-  status,
-  shortDescription,
   mainImage,
-  "mainImageUrl": mainImage.asset->url,
   "slug": slug.current,
   "experienceLandingSlug": *[_type == "experiencePage" && experience._ref == ^._id][0].slug.current,
   lodgeEnquireSmartLink { ${GROQ_SMART_LINK_FIELDS} }
@@ -868,31 +869,38 @@ export const lodgeStructuredPageBySlugQuery = groq`
     facilitiesAmenitiesEyebrow,
     facilitiesGallerySelection[]{ galleryRowKey, galleryStableKey },
     facilitiesAmenitiesSelection[]{ amenityRowKey, amenityIcon },
-    overviewSectionCopy { eyebrow, title, body },
-    accommodationSectionCopy { eyebrow, title, body },
-    facilitiesSectionCopy { eyebrow, title, body },
-    locationSectionCopy { eyebrow, title, body },
+    heroSectionCopy { visible, eyebrow, title, body },
+    highlightsSectionCopy { visible, eyebrow, title, body },
+    navigationSectionCopy { visible, eyebrow, title, body },
+    overviewSectionCopy { visible, eyebrow, title, body },
+    accommodationSectionCopy { visible, eyebrow, title, body },
+    facilitiesSectionCopy { visible, eyebrow, title, body },
+    locationSectionCopy { visible, eyebrow, title, body },
     gettingHereImage,
     "gettingHereImageUrl": gettingHereImage.asset->url,
     gettingHereImageAlt,
     gettingHereIndications[]{ _key, title, text },
-    researchSectionCopy { eyebrow, title, body },
-    experiencesSectionCopy { eyebrow, title, body },
-    faqSectionCopy { eyebrow, title, body },
+    researchSectionCopy { visible, eyebrow, title, body },
+    experiencesSectionCopy { visible, eyebrow, title, body },
+    faqSectionCopy { visible, eyebrow, title, body },
+    bookingSectionCopy { visible, eyebrow, title, body },
     scienceHighlights[]{ title, subtitle },
     scienceProjects[]{ title, subtitle },
     scienceSpecialText { iconKey, text },
     faqItems[]{ title, text },
     sections {
-      overview { eyebrow, title, body },
-      accommodation { eyebrow, title, body },
-      facilities { eyebrow, title, body },
-      location { eyebrow, title, body },
-      research { eyebrow, title, body },
-      experiences { eyebrow, title, body },
-      reviews { eyebrow, title, body },
-      faq { eyebrow, title, body },
-      booking { eyebrow, title, body },
+      hero { visible, eyebrow, title, body },
+      highlights { visible, eyebrow, title, body },
+      navigation { visible, eyebrow, title, body },
+      overview { visible, eyebrow, title, body },
+      accommodation { visible, eyebrow, title, body },
+      facilities { visible, eyebrow, title, body },
+      location { visible, eyebrow, title, body },
+      research { visible, eyebrow, title, body },
+      experiences { visible, eyebrow, title, body },
+      reviews { visible, eyebrow, title, body },
+      faq { visible, eyebrow, title, body },
+      booking { visible, eyebrow, title, body },
     },
     featuredRoomStableId,
     "lodgeRef": lodge._ref,
@@ -909,15 +917,16 @@ export const lodgeStructuredPageBySlugQuery = groq`
       showTailorMade,
       eyebrow,
       title,
+      subtitle,
       description,
       tailorMadeEyebrow,
       tailorMadeTitle,
       tailorMadeBody,
+      ctaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
       tailorMadeCta { ${GROQ_SMART_LINK_FIELDS} },
       image,
       "imageUrl": image.asset->url,
-      imageAlt,
-      ctaSmartLink { ${GROQ_SMART_LINK_FIELDS} }
+      imageAlt
     },
     "reviewsSettings": *[_type == "reviewsSettings"][0] {
       ratingValue,
@@ -1058,17 +1067,10 @@ export const lodgeStructuredPageBySlugQuery = groq`
       experiences[]-> {
         _id,
         "linkedLodgeId": coalesce(lodge->_id, lodge._ref),
-        name,
+        ${GROQ_EXPERIENCE_KC_CARD_FIELDS},
         tagline,
-        programType,
-        route,
         duration,
-        price,
-        priceLabel,
-        status,
-        shortDescription,
         mainImage,
-        "mainImageUrl": mainImage.asset->url,
         "slug": slug.current,
         "experienceLandingSlug": *[_type == "experiencePage" && experience._ref == ^._id][0].slug.current,
         lodgeEnquireSmartLink { ${GROQ_SMART_LINK_FIELDS} }

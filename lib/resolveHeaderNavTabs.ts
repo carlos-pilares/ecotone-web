@@ -7,7 +7,8 @@ import {
   lodgeSoqtapataRouteLabels,
   normalizeLodgeRouteKey,
 } from '@/data/lodgeSoqtapataResolverDefaults'
-import { resolveExperiencePublicSlug } from '@/lib/resolveExperiencePublicHref'
+import { formatExperienceNavPriceMeta } from '@/lib/formatExperiencePrice'
+import { resolveExperiencePublicHref } from '@/lib/resolveExperiencePublicHref'
 import type { HeaderNavTabRow } from '@/lib/headerNavTabsAdapter'
 import { resolveHeaderNavTabRows } from '@/lib/headerNavTabsAdapter'
 import type { HeaderSettingsDocumentRow } from '@/lib/mergeHeaderSettings'
@@ -115,18 +116,6 @@ function resolveTabSeeAll(tab: HeaderNavTabRow): SiteHeaderNavCta | null {
   return { ...ctaFromResolved(r), label }
 }
 
-function formatExpPriceLine(exp: NonNullable<SiteHeaderNavExperiencePageRow['experience']>): string {
-  const pl = exp.priceLabel?.trim() ?? ''
-  const hasPrice = typeof exp.price === 'number' && exp.price > 0
-  if (pl) {
-    const low = pl.toLowerCase()
-    if (low.includes('per person')) return pl
-    if (low.startsWith('from')) return `${pl} per person`
-    return `from ${pl} per person`
-  }
-  if (hasPrice) return `from USD ${exp.price} per person`
-  return 'Enquire'
-}
 
 function buildRouteLabelBySlug(routeNavDocs: SiteHeaderNavRouteNavRow[] | null | undefined): Map<string, string> {
   const map = new Map<string, string>()
@@ -257,15 +246,16 @@ function buildExperiencesDropdown(
     if (!slug || !exp?.name?.trim() || !pageId) continue
     const programType = exp.programType?.trim().toLowerCase() ?? ''
     if (!programType || programType === 'tailor-made') continue
-    const pathSeg = resolveExperiencePublicSlug({ slug }) ?? slug
+    const href = resolveExperiencePublicHref({ experienceLandingSlug: slug })
+    if (!href) continue
     const sk = row.headerNavOrder ?? 999
     const name = exp.name!.trim()
     const item: SiteHeaderNavExpItem = {
       id: pageId,
       name,
-      href: `/experiences/${pathSeg}`,
+      href,
       routeLine: resolveHeaderExperienceRoutePill(exp, routeBySlug),
-      metaLine: formatExpPriceLine(exp),
+      priceMeta: formatExperienceNavPriceMeta(exp),
       thumbUrl: exp.navImageUrl?.trim() || exp.mainImageUrl?.trim() || null,
     }
     const list = byProgramType.get(programType) ?? []

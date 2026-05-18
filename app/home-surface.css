@@ -153,7 +153,10 @@ button{font-family:var(--f);cursor:pointer}
 .filter-tab.tailor.active{background:var(--brown-dk);border-color:var(--brown-dk);color:var(--b100)}
 
 .exp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.exp-grid .exp-tailor-band{grid-column:1 / -1}
 @media(min-width:700px){.exp-grid{grid-template-columns:repeat(3,1fr)}}
+.exp-grid .exp-card-slot{display:contents}
+.exp-grid .exp-card-slot > .experience-card{height:100%}
 
 .exp-card{border:1px solid var(--n200);border-radius:var(--r);overflow:hidden;background:var(--w);transition:border-color .2s,box-shadow .2s;cursor:pointer}
 .exp-card:hover{border-color:var(--b200);box-shadow:0 8px 32px rgba(144,103,48,.12);transform:translateY(-2px);transition:all .25s}
