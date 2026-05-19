@@ -113,6 +113,14 @@ import {route} from './route'
 import {siteSettings} from './siteSettings'
 import {headerSettings} from './headerSettings'
 import {footerSettings} from './footerSettings'
+import {
+  footerLinkItem,
+  footerLinksColumn,
+  footerBrandColumn,
+  footerCredentialItem,
+  footerBottomBar,
+  footerSocialItem,
+} from './objects/footerSettingsObjects'
 import {reviewsSettings} from './reviewsSettings'
 import {bookingModalSettings} from './bookingModalSettings'
 import {technologyProduct} from './technologyProduct'
@@ -121,6 +129,12 @@ const objects = [
   seo,
   linkWithLabel,
   smartLink,
+  footerLinkItem,
+  footerLinksColumn,
+  footerBrandColumn,
+  footerCredentialItem,
+  footerBottomBar,
+  footerSocialItem,
   headerNavProgramGroup,
   headerNavProgramTypeGroup,
   headerNavRouteGroupOverride,

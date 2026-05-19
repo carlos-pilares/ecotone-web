@@ -1,8 +1,6 @@
 'use client'
 
-import type { KeyboardEvent } from 'react'
-
-import { useBookingModal } from '@/components/booking/BookingModalContext'
+import { SmartLinkCtaAction } from '@/components/shared/SmartLinkCtaAction'
 import type { TailorMadeBandComponentProps, TailorMadeBandResolved } from '@/lib/tailorMadeBand'
 import { tailorMadeBandHasCta } from '@/lib/tailorMadeBand'
 
@@ -62,25 +60,6 @@ export function TailorMadeBand(props: TailorMadeBandProps) {
   const showCta = tailorMadeBandHasCta(band)
   const outerClass = ['lodge-exp-tailor', className].filter(Boolean).join(' ')
 
-  const { openPlanJourney, openExperienceBooking } = useBookingModal()
-
-  const onBooking = () => {
-    if (bookingModal === 'plan') {
-      openPlanJourney()
-      return
-    }
-    if (bookingModal === 'experience' && bookingSummary) {
-      openExperienceBooking(bookingSummary)
-    }
-  }
-
-  const onKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      onBooking()
-    }
-  }
-
   const inner = (
     <BandCopy
       eyebrow={eyebrow}
@@ -90,39 +69,19 @@ export function TailorMadeBand(props: TailorMadeBandProps) {
     />
   )
 
-  if (bookingModal && showCta) {
-    return (
-      <div
-        role="button"
-        tabIndex={0}
-        className={outerClass}
-        data-type={dataType}
-        onClick={onBooking}
-        onKeyDown={onKeyDown}
-      >
-        {inner}
-      </div>
-    )
-  }
-
-  if (showCta && href?.trim()) {
-    return (
-      <a
-        href={href}
-        className={outerClass}
-        data-type={dataType}
-        target={openInNewTab ? '_blank' : undefined}
-        rel={openInNewTab ? rel || 'noopener noreferrer' : undefined}
-      >
-        {inner}
-      </a>
-    )
-  }
-
   return (
-    <div className={outerClass} data-type={dataType}>
+    <SmartLinkCtaAction
+      label={showCta ? ctaLabel ?? '' : ''}
+      href={href ?? ''}
+      openInNewTab={openInNewTab}
+      rel={rel}
+      bookingModal={bookingModal}
+      bookingSummary={bookingSummary}
+      className={outerClass}
+      dataType={dataType}
+    >
       {inner}
-    </div>
+    </SmartLinkCtaAction>
   )
 }
 

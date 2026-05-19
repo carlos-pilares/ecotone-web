@@ -1,26 +1,22 @@
 import { cache } from 'react'
 import type { SanityImageSource } from '@sanity/image-url'
 
-import {
-  FOOTER,
-  FOOTER_CONTACT_LINKS,
-  FOOTER_EXPLORE_LINKS,
-  HEADER,
-  HEADER_MAIN_NAV,
-  SOCIAL,
-  type SiteSettingsApprovedLink,
-} from '@/data/cmsApproved/siteSettingsApprovedContent'
-import {
-  mergeFooterLogoFields,
-  mergeFooterShellFields,
-  type FooterSettingsDocumentRow,
-} from '@/lib/mergeFooterSettings'
+import { HEADER, HEADER_MAIN_NAV, type SiteSettingsApprovedLink } from '@/data/cmsApproved/siteSettingsApprovedContent'
 import {
   hasHeaderSettingsDoc,
   mergeHeaderShellFields,
   type HeaderSettingsDocumentRow,
   type LegacySiteSettingsHeaderRow,
 } from '@/lib/mergeHeaderSettings'
+import {
+  hasFooterSettingsDocument,
+  mergeFooterLogoFromResolved,
+  mergeFooterWhatsappAndSocial,
+  resolveFooterShell,
+  type FooterSettingsDocumentRow,
+  type LegacySiteSettingsFooterRow,
+  type ResolvedFooterShell,
+} from '@/lib/resolveFooterShell'
 import { siteSettingsShellQuery } from '@/lib/queries'
 import { resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
 import { clientServer, urlFor } from '@/lib/sanity'
@@ -42,17 +38,7 @@ export type GlobalSiteSettingsShell = {
   mainNav: ShellNavLink[]
   primaryCta: ShellNavLink
   mobileMenuAriaLabel: string
-  footer: {
-    showBrandDeco: boolean
-    tagline: string
-    descriptionLines: string[]
-    exploreTitle: string
-    exploreLinks: ShellNavLink[]
-    contactTitle: string
-    contactLinks: ShellNavLink[]
-  }
-  copyright: string
-  footerCertText: string[]
+  footer: ResolvedFooterShell
 }
 
 type SiteSettingsShellBundleRow = {
@@ -64,7 +50,7 @@ type SiteSettingsShellBundleRow = {
     copyright?: string | null
     socialLinks?: Array<{ label?: string; href?: string; openInNewTab?: boolean }> | null
     header?: LegacySiteSettingsHeaderRow
-    footer?: NonNullable<FooterSettingsDocumentRow>['footer']
+    footer?: NonNullable<LegacySiteSettingsFooterRow>['footer']
   } | null
 } | null
 
@@ -72,6 +58,15 @@ function toUrl(source: SanityImageSource | null | undefined): string | null {
   if (!source) return null
   try {
     return urlFor(source).width(720).quality(90).url() || null
+  } catch {
+    return null
+  }
+}
+
+function toFooterImageUrl(source: unknown): string | null {
+  if (!source) return null
+  try {
+    return urlFor(source as SanityImageSource).width(96).height(96).quality(90).url() || null
   } catch {
     return null
   }
@@ -156,24 +151,9 @@ function pickBookNowPrimaryCta(
   return pickPrimaryCta(shell.primaryCta)
 }
 
-function pickStringLines(
-  raw: string[] | null | undefined,
-  fallback: readonly string[] | string[],
-): string[] {
-  if (!raw?.length) return [...fallback]
-  const lines = raw.map((s) => (typeof s === 'string' ? s.trim() : '')).filter(Boolean)
-  return lines.length ? lines : [...fallback]
-}
-
-function pickCertText(raw: string[] | null | undefined): string[] {
-  if (!raw?.length) return [...FOOTER.footerCertText]
-  const lines = raw.map((s) => (typeof s === 'string' ? s.trim() : '')).filter(Boolean)
-  return lines.length ? lines : [...FOOTER.footerCertText]
-}
-
 /**
  * Logos + header CTA from `headerSettings` (fallback: legacy `siteSettings.header`).
- * Footer + social from `footerSettings` (fallback: legacy `siteSettings`).
+ * Footer from `footerSettings` when the document exists; else legacy `siteSettings.footer`.
  */
 export const getSiteSettingsShell = cache(async (): Promise<GlobalSiteSettingsShell> => {
   const empty: GlobalSiteSettingsShell = {
@@ -190,17 +170,7 @@ export const getSiteSettingsShell = cache(async (): Promise<GlobalSiteSettingsSh
       openInNewTab: HEADER.primaryCta.openInNewTab,
     },
     mobileMenuAriaLabel: HEADER.mobileMenuAriaLabel,
-    footer: {
-      showBrandDeco: FOOTER.showBrandDeco,
-      tagline: FOOTER.tagline,
-      descriptionLines: [...FOOTER.descriptionLines],
-      exploreTitle: FOOTER.exploreTitle,
-      exploreLinks: FOOTER_EXPLORE_LINKS.map((x) => ({ label: x.label, href: x.href, openInNewTab: x.openInNewTab })),
-      contactTitle: FOOTER.contactTitle,
-      contactLinks: FOOTER_CONTACT_LINKS.map((x) => ({ label: x.label, href: x.href, openInNewTab: x.openInNewTab })),
-    },
-    copyright: SOCIAL.copyright,
-    footerCertText: [...FOOTER.footerCertText],
+    footer: resolveFooterShell(null, null, toFooterImageUrl),
   }
 
   if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || !process.env.NEXT_PUBLIC_SANITY_DATASET) {
@@ -224,20 +194,29 @@ export const getSiteSettingsShell = cache(async (): Promise<GlobalSiteSettingsSh
     headerDoc,
     headerFound ? null : (legacy?.header ?? null),
   )
-  const footerMerged = mergeFooterShellFields(bundle.footerSettings ?? null, {
-    footer: legacy?.footer,
-    socialLinks: legacy?.socialLinks,
-    copyright: legacy?.copyright,
-    defaultWhatsappUrl: legacy?.defaultWhatsappUrl,
-  })
-  const footerLogo = mergeFooterLogoFields(
-    bundle.footerSettings ?? null,
-    { footer: legacy?.footer },
+
+  const footerDoc = bundle.footerSettings ?? null
+  const footerResolved = resolveFooterShell(
+    footerDoc,
+    hasFooterSettingsDocument(footerDoc)
+      ? null
+      : {
+          footer: legacy?.footer,
+          copyright: legacy?.copyright,
+          defaultWhatsappUrl: legacy?.defaultWhatsappUrl,
+        },
+    toFooterImageUrl,
+  )
+  const footerSocial = mergeFooterWhatsappAndSocial(
+    footerDoc,
+    hasFooterSettingsDocument(footerDoc) ? null : legacy,
+  )
+  const footerLogo = mergeFooterLogoFromResolved(
+    footerResolved.brand,
     headerShell.headerLogoLight,
   )
 
-  const ft = footerMerged.footer
-  const defaultWa = footerMerged.defaultWhatsappUrl?.trim() || legacy?.defaultWhatsappUrl?.trim() || null
+  const defaultWa = footerSocial.defaultWhatsappUrl?.trim() || legacy?.defaultWhatsappUrl?.trim() || null
 
   return {
     defaultWhatsappUrl: defaultWa,
@@ -249,16 +228,6 @@ export const getSiteSettingsShell = cache(async (): Promise<GlobalSiteSettingsSh
     mainNav: mapLinkList(legacy?.header?.mainNav ?? null, HEADER_MAIN_NAV),
     primaryCta: pickBookNowPrimaryCta(headerShell, headerFound),
     mobileMenuAriaLabel: headerShell.mobileMenuAriaLabel?.trim() || HEADER.mobileMenuAriaLabel,
-    footer: {
-      showBrandDeco: ft?.showBrandDeco !== false,
-      tagline: ft?.tagline?.trim() || FOOTER.tagline,
-      descriptionLines: pickStringLines(ft?.descriptionLines ?? null, FOOTER.descriptionLines),
-      exploreTitle: ft?.exploreTitle?.trim() || FOOTER.exploreTitle,
-      exploreLinks: mapLinkList(ft?.exploreLinks, FOOTER_EXPLORE_LINKS),
-      contactTitle: ft?.contactTitle?.trim() || FOOTER.contactTitle,
-      contactLinks: mapLinkList(ft?.contactLinks, FOOTER_CONTACT_LINKS),
-    },
-    copyright: footerMerged.copyright?.trim() || SOCIAL.copyright,
-    footerCertText: pickCertText(ft?.footerCertText ?? null),
+    footer: footerResolved,
   }
 })

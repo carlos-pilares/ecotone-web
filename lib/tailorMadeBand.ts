@@ -45,7 +45,7 @@ export type ResolveTailorMadeBandOptions = {
   pageBookingSummary?: ExperienceBookingSummary | null
   /** CMS-only eyebrow/title/subtitle — no marketing copy fallbacks. */
   strict?: boolean
-  /** Fallback used only to resolve the CTA smart link (href / label / booking modal). */
+  /** Fallback used only to resolve the CTA smart link when CMS link is incomplete. */
   ctaFallback?: Pick<TailorMadeBandFallback, 'ctaLabel' | 'href' | 'openInNewTab'>
 }
 
@@ -65,10 +65,19 @@ function trimField(v: string | null | undefined): string | undefined {
 function smartLinkUsable(raw: SmartLinkGroq | null | undefined): boolean {
   if (!raw) return false
   if (raw.enabled === false) return false
-  return Boolean(raw.linkType?.trim()) || Boolean(raw.label?.trim()) || Boolean(raw.externalUrl?.trim())
+  const lt = raw.linkType?.trim()
+  if (lt === 'book' || lt === 'booking') return true
+  return Boolean(lt) || Boolean(raw.label?.trim()) || Boolean(raw.externalUrl?.trim())
 }
 
-/** Resolve CMS Tailor Made band; returns undefined when hidden or incomplete. */
+function emptyCtaFields(): Pick<
+  TailorMadeBandResolved,
+  'ctaLabel' | 'href' | 'bookingModal' | 'bookingSummary'
+> {
+  return { ctaLabel: '', href: '', bookingModal: undefined, bookingSummary: undefined }
+}
+
+/** Resolve CMS Tailor Made band; returns undefined when hidden. */
 export function resolveTailorMadeBand(
   row: TailorMadeBandCmsRow,
   fallback: TailorMadeBandFallback,
@@ -92,12 +101,18 @@ export function resolveTailorMadeBand(
 
   const rawLink = row.ctaSmartLink ?? row.tailorMadeCta
   if (smartLinkIsDisabled(rawLink)) {
-    return { eyebrow, title, subtitle, ctaLabel: '', href: '' }
+    return { eyebrow, title, subtitle, ...emptyCtaFields() }
   }
 
   const hasSmart = smartLinkUsable(rawLink)
+  if (options?.strict && !hasSmart) {
+    return { eyebrow, title, subtitle, ...emptyCtaFields() }
+  }
+
   const smart =
-    hasSmart && rawLink ? { ...rawLink, label: rawLink.label?.trim() || ctaFb.ctaLabel } : null
+    hasSmart && rawLink
+      ? { ...rawLink, label: rawLink.label?.trim() || ctaFb.ctaLabel }
+      : null
   const resolved = resolveSmartLinkOrLegacy(
     smart,
     undefined,
@@ -109,26 +124,48 @@ export function resolveTailorMadeBand(
     options,
   )
 
-  if (!resolved?.href?.trim() || resolved.href === '#') {
-    return { eyebrow, title, subtitle, ctaLabel: '', href: '' }
+  if (!resolved) {
+    return { eyebrow, title, subtitle, ...emptyCtaFields() }
+  }
+
+  const ctaLabel = resolved.label?.trim() || ''
+
+  if (resolved.bookingModal) {
+    return {
+      eyebrow,
+      title,
+      subtitle,
+      ctaLabel,
+      href: resolved.href || '#',
+      openInNewTab: false,
+      rel: '',
+      bookingModal: resolved.bookingModal,
+      bookingSummary: resolved.bookingSummary,
+    }
+  }
+
+  if (!ctaLabel || !resolved.href?.trim() || resolved.href === '#') {
+    return { eyebrow, title, subtitle, ...emptyCtaFields() }
   }
 
   return {
     eyebrow,
     title,
     subtitle,
-    ctaLabel: resolved.label?.trim() || ctaFb.ctaLabel,
+    ctaLabel,
     href: resolved.href,
     openInNewTab: resolved.openInNewTab === true,
     rel: resolved.rel,
-    bookingModal: resolved.bookingModal,
-    bookingSummary: resolved.bookingSummary,
   }
 }
 
+/** True when the band should render an interactive CTA (booking modal or navigable link). */
 export function tailorMadeBandHasCta(band: TailorMadeBandResolved | undefined): boolean {
   if (!band) return false
-  return Boolean(band.ctaLabel.trim() && band.href.trim() && band.href !== '#')
+  if (!band.ctaLabel.trim()) return false
+  if (band.bookingModal === 'plan') return true
+  if (band.bookingModal === 'experience' && band.bookingSummary) return true
+  return Boolean(band.href.trim() && band.href !== '#')
 }
 
 export type TailorMadeBandComponentProps = {

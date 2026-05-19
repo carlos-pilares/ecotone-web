@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, type ReactNode } from 'react'
+import { isHomeExperienceFilterItemVisible } from '@/lib/homeExperienceFilterVisibility'
 
 function applyTopNavFromSolid(solid: boolean) {
   if (typeof document === 'undefined') return
@@ -119,23 +120,31 @@ export function EcotoneV2Client(props: FullHtmlProps | SplitBodyProps | ReactShe
     })
 
     const tabs = root.querySelectorAll('.filter-tab')
-    const cards = root.querySelectorAll('[data-type]')
+    const filterItems = root.querySelectorAll('#expGrid [data-type]')
+
+    const applyExperienceFilter = (activeFilter: string) => {
+      filterItems.forEach((node) => {
+        const el = node as HTMLElement
+        const type = el.dataset.type ?? ''
+        const visible = isHomeExperienceFilterItemVisible(type, activeFilter)
+        el.style.display = visible ? '' : 'none'
+      })
+    }
+
     tabs.forEach((tab) => {
       const handler = () => {
         tabs.forEach((t) => t.classList.remove('active'))
         tab.classList.add('active')
-        const filter = (tab as HTMLElement).dataset.filter ?? 'all'
-        cards.forEach((card) => {
-          const el = card as HTMLElement
-          const type = el.dataset.type ?? ''
-          const match =
-            filter === 'all' ? type !== 'tailor' && type !== '' : type === filter
-          el.style.display = match ? '' : 'none'
-        })
+        applyExperienceFilter((tab as HTMLElement).dataset.filter ?? 'all')
       }
       tab.addEventListener('click', handler)
       cleanups.push(() => tab.removeEventListener('click', handler))
     })
+
+    const activeTab = root.querySelector('.filter-tab.active') as HTMLElement | null
+    if (activeTab) {
+      applyExperienceFilter(activeTab.dataset.filter ?? 'all')
+    }
 
     const qText = document.getElementById('quoteText')
     const qAttr = document.getElementById('quoteAttr')

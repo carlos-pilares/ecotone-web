@@ -1693,7 +1693,47 @@ export const siteSettingsShellQuery = groq`{
   "footerSettings": *[_id == "footerSettings"][0]{
     defaultWhatsappUrl,
     copyright,
-    socialLinks,
+    socialMedia[] {
+      icon,
+      alt,
+      smartLink { ${GROQ_SMART_LINK_FIELDS} }
+    },
+    column1 {
+      footerLogo,
+      footerLogoFullHorizontal,
+      showBrandDeco,
+      tagline,
+      descriptionLine1,
+      descriptionLine2
+    },
+    column2 {
+      title,
+      links[] {
+        label,
+        smartLink { ${GROQ_SMART_LINK_FIELDS} }
+      }
+    },
+    column3 {
+      title,
+      links[] {
+        label,
+        smartLink { ${GROQ_SMART_LINK_FIELDS} }
+      }
+    },
+    column4 {
+      title,
+      links[] {
+        label,
+        smartLink { ${GROQ_SMART_LINK_FIELDS} }
+      }
+    },
+    bottomBar {
+      leftText,
+      credentials[] {
+        label,
+        smartLink { ${GROQ_SMART_LINK_FIELDS} }
+      }
+    },
     footer {
       footerLogo,
       footerLogoFullHorizontal,

@@ -138,7 +138,7 @@ video {
  * Do NOT use :where() inside :not() here — it drops the class specificity to zero, so
  * a later `img{width:100%}` (e.g. from injected home CSS) can tie-break and win.
  */
-img:not(.nav-logo-full, .footer-brand-deco-cms, .partner-logo-img) {
+img:not(.nav-logo-full, .footer-brand-deco-cms, .partner-logo-img, .foot-social-icon, .foot-social-link img, .foot-social-item img) {
   display: block;
   width: 100%;
   object-fit: cover;

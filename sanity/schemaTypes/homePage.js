@@ -1,6 +1,7 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
 import {PageSectionVisibleField} from '../components/pageSection/PageSectionVisibleField'
 import {HomeSourceListReadout} from '../components/homePage/HomeSourceListReadout'
+import {HomeExplorerProgramGroupsInput} from '../components/homePage/HomeExplorerProgramGroupsInput'
 
 const pageSectionVisibleUi = (sectionKey, group) =>
   defineField({
@@ -385,8 +386,9 @@ export const homePage = defineType({
       type: 'array',
       of: [{type: 'homeExperienceProgramGroup'}],
       group: 'explorer',
+      components: {input: HomeExplorerProgramGroupsInput},
       description:
-        'Choose which experience program types appear as filter tabs and in what order. Cards load from published experiences in the CMS.',
+        'Choose which program types appear as filter tabs and in what order. Cards load from published experiences in the CMS.',
     }),
     defineField({
       name: 'explorerTailorBand',
