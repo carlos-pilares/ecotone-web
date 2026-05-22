@@ -428,6 +428,35 @@ export const experiencePageSlugsQuery = groq`
   *[_type == "experiencePage" && defined(slug.current)].slug.current
 `
 
+/** Singleton — central Terms & Conditions Knowledge Center. */
+/** Singleton — central FAQs Knowledge Center. */
+export const faqsSettingsQuery = groq`*[_id == "faqsSettings"][0]{
+  faqItems[]{
+    _key,
+    title,
+    body,
+    appliesToAll,
+    "experienceIds": experiences[]._ref
+  }
+}`
+
+export const termsConditionsSettingsQuery = groq`*[_id == "termsConditionsSettings"][0]{
+  termsItems[]{
+    _key,
+    title,
+    text,
+    appliesToAll,
+    "experienceIds": experiences[]._ref
+  },
+  termsDocuments[]{
+    _key,
+    title,
+    appliesToAll,
+    "pdfUrl": pdfFile.asset->url,
+    "experienceIds": experiences[]._ref
+  }
+}`
+
 /** Soqtapata landing: full `experiencePage` + dereferenced `experience`, lodge, route, reviews, tech. No `payloadV1`. */
 export const soqtapataStructuredPageBySlugQuery = groq`
   *[_type == "experiencePage" && slug.current == $slug][0] {
@@ -770,6 +799,7 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       },
       knowledgeResources[] {
         _key,
+        resourceType,
         title,
         text,
         showCta,
@@ -1589,6 +1619,7 @@ export const experienceBySlugQuery = groq`
     },
     knowledgeResources[] {
       _key,
+      resourceType,
       title,
       text,
       showCta,

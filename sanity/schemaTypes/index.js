@@ -121,6 +121,13 @@ import {
   footerBottomBar,
   footerSocialItem,
 } from './objects/footerSettingsObjects'
+import {
+  termsConditionsItem,
+  termsConditionsDocument,
+} from './objects/termsConditionsObjects'
+import {termsConditionsSettings} from './termsConditionsSettings'
+import {faqItem} from './objects/faqsObjects'
+import {faqsSettings} from './faqsSettings'
 import {reviewsSettings} from './reviewsSettings'
 import {bookingModalSettings} from './bookingModalSettings'
 import {technologyProduct} from './technologyProduct'
@@ -135,6 +142,9 @@ const objects = [
   footerCredentialItem,
   footerBottomBar,
   footerSocialItem,
+  termsConditionsItem,
+  termsConditionsDocument,
+  faqItem,
   headerNavProgramGroup,
   headerNavProgramTypeGroup,
   headerNavRouteGroupOverride,
@@ -226,6 +236,8 @@ const documents = [
   siteSettings,
   headerSettings,
   footerSettings,
+  termsConditionsSettings,
+  faqsSettings,
   bookingModalSettings,
   reviewsSettings,
   lodge,

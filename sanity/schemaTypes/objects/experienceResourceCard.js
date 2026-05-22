@@ -3,7 +3,9 @@ import {defineField, defineType} from 'sanity'
 const RESOURCE_TYPES = [
   {title: 'Mapa', value: 'map'},
   {title: 'Brochure', value: 'brochure'},
-  {title: 'Términos / PDF legal', value: 'terms'},
+  {title: 'Terms & Conditions (central CK)', value: 'termsConditions'},
+  {title: 'Terms PDF (central CK, legacy value)', value: 'termsPdf'},
+  {title: 'Términos / PDF legal (legacy)', value: 'terms'},
   {title: 'Personalizado', value: 'custom'},
 ]
 
@@ -41,6 +43,8 @@ export const experienceResourceCard = defineType({
       options: {list: RESOURCE_TYPES, layout: 'radio'},
       initialValue: 'custom',
       validation: (Rule) => Rule.required(),
+      description:
+        '“Terms & Conditions (central CK)” uses the applicable PDF from Content Library → Terms & Conditions (no upload here).',
     }),
     defineField({
       name: 'visualPreset',
@@ -61,6 +65,8 @@ export const experienceResourceCard = defineType({
       title: 'URL del archivo (enlace externo)',
       type: 'url',
       description: 'Drive, Dropbox, PDF público, etc. Usar si no subes PDF a Sanity.',
+      hidden: ({parent}) =>
+        parent?.resourceType === 'termsPdf' || parent?.resourceType === 'termsConditions',
     }),
     defineField({
       name: 'file',
@@ -68,6 +74,8 @@ export const experienceResourceCard = defineType({
       type: 'file',
       options: {accept: 'application/pdf'},
       description: 'Prioridad sobre la URL si ambos existen.',
+      hidden: ({parent}) =>
+        parent?.resourceType === 'termsPdf' || parent?.resourceType === 'termsConditions',
     }),
     defineField({
       name: 'ctaLabel',

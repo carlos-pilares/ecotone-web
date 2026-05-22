@@ -255,6 +255,26 @@ export const structure = (S) =>
                 .icon(ImageIcon)
                 .id('partners')
                 .child(S.documentTypeList('partner').title('Partners & certifications')),
+              S.listItem()
+                .title('Terms & Conditions')
+                .icon(DocumentTextIcon)
+                .id('termsConditionsSettingsItem')
+                .child(
+                  S.document()
+                    .schemaType('termsConditionsSettings')
+                    .documentId('termsConditionsSettings')
+                    .title('Terms & Conditions'),
+                ),
+              S.listItem()
+                .title('FAQs')
+                .icon(DocumentTextIcon)
+                .id('faqsSettingsItem')
+                .child(
+                  S.document()
+                    .schemaType('faqsSettings')
+                    .documentId('faqsSettings')
+                    .title('FAQs'),
+                ),
             ]),
         ),
     ])

@@ -704,20 +704,23 @@ export const experience = defineType({
     // --- Terms ---
     defineField({
       name: 'termsPanels',
-      title: 'Terms sections',
+      title: 'Terms sections (legacy)',
       type: 'array',
       group: 'terms',
       of: [{type: 'experienceTermsPanel'}],
-      validation: (Rule) => Rule.max(10),
-      description: 'Up to 10 titled sections. Shown as accordion cards on the experience page.',
+      hidden: () => true,
+      description:
+        'Legacy — terms sections now live in Content Library → Terms & Conditions. Kept for migration only.',
     }),
     defineField({
       name: 'fullTermsPdf',
-      title: 'Full terms PDF',
+      title: 'Full terms PDF (legacy)',
       type: 'file',
       group: 'terms',
       options: {accept: 'application/pdf'},
-      description: 'Download for “full terms” — surfaced via existing Terms PDF control.',
+      hidden: () => true,
+      description:
+        'Legacy — Terms PDFs now live in Content Library → Terms & Conditions → Documents.',
     }),
     defineField({
       name: 'cancellationPolicy',
@@ -818,9 +821,10 @@ export const experience = defineType({
     // --- FAQ ---
     defineField({
       name: 'faqs',
-      title: 'FAQs',
+      title: 'FAQs (legacy)',
       type: 'array',
       group: 'faq',
+      hidden: () => true,
       of: [
         {
           type: 'object',
@@ -841,7 +845,8 @@ export const experience = defineType({
           ],
         },
       ],
-      description: 'Máx 10.',
+      description:
+        'Legacy — FAQs now live in Content Library → FAQs. Kept for migration only; used when central FAQs CK has no matching items.',
       validation: (Rule) => Rule.max(10),
     }),
 

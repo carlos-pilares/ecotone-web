@@ -57,8 +57,15 @@ export function ExperienceTermsSoqtapata({ data }: { data: SoqtapataTerms }) {
             </div>
           ))}
         </div>
+        {data.pdfHref && data.pdfHref !== '#' ? (
         <div className="terms-pdf-cta">
-          <a href={data.pdfHref} className="download-btn" data-terms-pdf download>
+          <a
+            href={data.pdfHref}
+            className="download-btn"
+            data-terms-pdf
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--brown)" strokeWidth={2}>
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="7 10 12 15 17 10" />
@@ -67,6 +74,7 @@ export function ExperienceTermsSoqtapata({ data }: { data: SoqtapataTerms }) {
             {data.pdfDownloadLabel}
           </a>
         </div>
+        ) : null}
       </div>
     </section>
   )

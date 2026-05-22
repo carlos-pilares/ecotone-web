@@ -414,15 +414,15 @@ export const experiencePage = defineType({
     ),
     defineField({
       name: 'termsOrderKeys',
-      title: 'Terms sections — select & order (from Experience)',
+      title: 'Terms sections — select & order',
       type: 'array',
       of: [{type: 'string'}],
       group: 'terms',
       components: {input: ExperienceKcOrderInput},
       options: {kcSource: 'termsPanels'},
-      validation: (Rule) => Rule.max(10),
+      validation: (Rule) => Rule.max(24),
       description:
-        'Pick accordion sections from the linked Experience **Terms sections** list. Empty = show all in Knowledge Center order.',
+        'Pick accordion sections from the central **Terms & Conditions** Knowledge Center (global + sections assigned to this Experience). Empty = show all applicable sections in CK order.',
     }),
     defineField({
       name: 'termsImportantNotesKeys',
@@ -511,7 +511,8 @@ export const experiencePage = defineType({
       components: {input: ExperienceKcOrderInput},
       options: {kcSource: 'faq'},
       validation: (Rule) => Rule.max(15),
-      description: 'From the linked Experience FAQ list. Empty = show all in Knowledge Center order.',
+      description:
+        'From Content Library → FAQs (global + FAQs assigned to the linked Experience KC). Empty = show all applicable FAQs in CK order. Legacy Experience KC FAQs used only when central FAQs CK has no matches.',
     }),
     defineField({
       name: 'faqDisplayOrder',

@@ -4,7 +4,13 @@ import {
   soqtapataExperienceReviewsLayout,
 } from '@/data/soqtapataExperienceLocal'
 import type { ReviewDoc, TechnologyProductDoc } from '@/lib/queries'
-import { soqtapataStructuredPageBySlugQuery } from '@/lib/queries'
+import {
+  faqsSettingsQuery,
+  soqtapataStructuredPageBySlugQuery,
+  termsConditionsSettingsQuery,
+} from '@/lib/queries'
+import type { FaqsSettingsRow } from '@/lib/faqsCms'
+import type { TermsConditionsSettingsRow } from '@/lib/termsConditionsCms'
 import { clientServer } from '@/lib/sanity'
 import {
   alsoBookFromStructuredRow,
@@ -305,9 +311,20 @@ export const getSoqtapataPageCms = cache(async (slug: string): Promise<Soqtapata
   let row: SoqtapataStructuredPageRow | null = null
   let cmsError: string | null = null
   try {
-    row = await clientServer.fetch<SoqtapataStructuredPageRow | null>(soqtapataStructuredPageBySlugQuery, {
-      slug: normalized,
-    })
+    const [pageRow, termsConditions, faqsSettings] = await Promise.all([
+      clientServer.fetch<SoqtapataStructuredPageRow | null>(soqtapataStructuredPageBySlugQuery, {
+        slug: normalized,
+      }),
+      clientServer.fetch<TermsConditionsSettingsRow>(termsConditionsSettingsQuery),
+      clientServer.fetch<FaqsSettingsRow>(faqsSettingsQuery),
+    ])
+    row = pageRow
+      ? {
+          ...pageRow,
+          termsConditions: termsConditions ?? null,
+          faqsSettings: faqsSettings ?? null,
+        }
+      : null
   } catch (e) {
     cmsError = e instanceof Error ? e.message : 'Sanity fetch failed'
     return payloadFromLocalFallback(cmsError)

@@ -567,16 +567,37 @@ export const experienceTermsPanel = defineType({
   ],
 })
 
+const isTermsConditions = ({parent}) => parent?.resourceType === 'termsConditions'
+
 export const experienceKnowledgeResource = defineType({
   name: 'experienceKnowledgeResource',
   title: 'Resource',
   type: 'object',
   fields: [
     defineField({
+      name: 'resourceType',
+      title: 'Resource type',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'Map', value: 'map'},
+          {title: 'Brochure', value: 'brochure'},
+          {title: 'Terms & Conditions', value: 'termsConditions'},
+          {title: 'Custom', value: 'custom'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'custom',
+      validation: (Rule) => Rule.required(),
+      description:
+        '“Terms & Conditions” opens the applicable PDF from Content Library → Terms & Conditions (no manual PDF here).',
+    }),
+    defineField({
       name: 'image',
       title: 'Image',
       type: 'imageWithAlt',
       description: 'Optional preview image.',
+      hidden: isTermsConditions,
     }),
     defineField({
       name: 'title',
@@ -589,7 +610,14 @@ export const experienceKnowledgeResource = defineType({
       title: 'Text',
       type: 'text',
       rows: 4,
-      validation: (Rule) => Rule.max(400),
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          if (context.parent?.resourceType === 'termsConditions') return true
+          if (value && String(value).length > 400) {
+            return 'Maximum 400 characters for non–Terms & Conditions resources.'
+          }
+          return true
+        }),
     }),
     defineField({
       name: 'showCta',
@@ -608,13 +636,17 @@ export const experienceKnowledgeResource = defineType({
       name: 'ctaSmartLink',
       title: 'CTA link',
       type: 'smartLink',
-      hidden: ({parent}) => parent?.showCta === false,
+      hidden: ({parent}) => parent?.showCta === false || parent?.resourceType === 'termsConditions',
     }),
   ],
   preview: {
-    select: {title: 'title', media: 'image.image'},
-    prepare: ({title, media}) => ({
+    select: {title: 'title', resourceType: 'resourceType', media: 'image.image'},
+    prepare: ({title, resourceType, media}) => ({
       title: title || 'Resource',
+      subtitle:
+        resourceType === 'termsConditions'
+          ? 'Terms & Conditions (central PDF)'
+          : resourceType || 'custom',
       media,
     }),
   },

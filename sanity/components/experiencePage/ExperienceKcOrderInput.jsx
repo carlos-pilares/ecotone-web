@@ -63,8 +63,27 @@ function resourceMeta(item, idx) {
   return {key, label: t}
 }
 
-function buildOptions(source, doc) {
-  if (!doc) return []
+function normalizeExpId(id) {
+  return (id || '').replace(/^drafts\./, '')
+}
+
+function termAppliesToExperience(item, experienceId) {
+  if (!item || !experienceId) return false
+  if (item.appliesToAll === true) return true
+  const exp = normalizeExpId(experienceId)
+  const ids = Array.isArray(item.experienceIds) ? item.experienceIds : []
+  return ids.some((ref) => normalizeExpId(ref) === exp)
+}
+
+function faqMetaCentral(item, idx) {
+  const key = item?._key || `faq-${idx}`
+  const t = (item?.title && String(item.title).trim()) || `FAQ ${idx + 1}`
+  const label = t.length > 72 ? `${t.slice(0, 69)}…` : t
+  return {key, label}
+}
+
+function buildOptions(source, doc, experienceId, termsConditions, faqsSettings) {
+  if (!doc && source !== 'termsPanels' && source !== 'faq') return []
   switch (source) {
     case 'overviewHighlights': {
       const raw = doc.highlights
@@ -117,12 +136,25 @@ function buildOptions(source, doc) {
       })
     }
     case 'termsPanels': {
-      const raw = doc.termsPanels
+      const central = termsConditions?.termsItems
+      if (Array.isArray(central) && central.length && experienceId) {
+        const applicable = central.filter((item) => termAppliesToExperience(item, experienceId))
+        if (applicable.length) {
+          return applicable.map((item, idx) => {
+            const key = item?._key || `terms-${idx}`
+            const t = (item?.title && String(item.title).trim()) || `Terms section ${idx + 1}`
+            const scope = item?.appliesToAll ? ' (all experiences)' : ''
+            const label = `${t.length > 60 ? `${t.slice(0, 57)}…` : t}${scope}`
+            return {key, label}
+          })
+        }
+      }
+      const raw = doc?.termsPanels
       if (!Array.isArray(raw)) return []
       return raw.map((item, idx) => {
         const key = item?._key || `terms-${idx}`
         const t = (item?.title && String(item.title).trim()) || `Terms section ${idx + 1}`
-        const label = t.length > 72 ? `${t.slice(0, 69)}…` : t
+        const label = `${t.length > 69 ? `${t.slice(0, 66)}…` : t} (legacy KC)`
         return {key, label}
       })
     }
@@ -140,9 +172,23 @@ function buildOptions(source, doc) {
       return raw.map(stringRowMeta)
     }
     case 'faq': {
-      const raw = doc.faqs
+      const central = faqsSettings?.faqItems
+      if (Array.isArray(central) && central.length && experienceId) {
+        const applicable = central.filter((item) => termAppliesToExperience(item, experienceId))
+        if (applicable.length) {
+          return applicable.map((item, idx) => {
+            const {key, label: base} = faqMetaCentral(item, idx)
+            const scope = item?.appliesToAll ? ' (all experiences)' : ''
+            return {key, label: `${base}${scope}`}
+          })
+        }
+      }
+      const raw = doc?.faqs
       if (!Array.isArray(raw)) return []
-      return raw.map(faqMeta)
+      return raw.map((item, idx) => {
+        const {key, label} = faqMeta(item, idx)
+        return {key, label: `${label} (legacy KC)`}
+      })
     }
     case 'resources': {
       const raw =
@@ -176,6 +222,8 @@ export function ExperienceKcOrderInput(props) {
   const source = schemaType?.options?.kcSource
 
   const [doc, setDoc] = useState(null)
+  const [termsConditions, setTermsConditions] = useState(null)
+  const [faqsSettings, setFaqsSettings] = useState(null)
   const [loadErr, setLoadErr] = useState(null)
 
   const id = normalizeRefId(experienceRef)
@@ -185,6 +233,8 @@ export function ExperienceKcOrderInput(props) {
     async function run() {
       if (!id) {
         setDoc(null)
+        setTermsConditions(null)
+        setFaqsSettings(null)
         setLoadErr(null)
         return
       }
@@ -192,12 +242,36 @@ export function ExperienceKcOrderInput(props) {
       const candidates = [pub, `drafts.${pub}`]
       setLoadErr(null)
       try {
-        const q = `*[_id in $ids] | order(_updatedAt desc)[0] ${experienceKcOrderDocProjection}`
+        const q = `{
+          "experience": *[_id in $ids] | order(_updatedAt desc)[0] ${experienceKcOrderDocProjection},
+          "termsConditions": *[_id == "termsConditionsSettings"][0]{
+            termsItems[]{
+              _key,
+              title,
+              appliesToAll,
+              "experienceIds": experiences[]._ref
+            }
+          },
+          "faqsSettings": *[_id == "faqsSettings"][0]{
+            faqItems[]{
+              _key,
+              title,
+              appliesToAll,
+              "experienceIds": experiences[]._ref
+            }
+          }
+        }`
         const res = await client.fetch(q, {ids: candidates})
-        if (!cancelled) setDoc(res || null)
+        if (!cancelled) {
+          setDoc(res?.experience || null)
+          setTermsConditions(res?.termsConditions || null)
+          setFaqsSettings(res?.faqsSettings || null)
+        }
       } catch (e) {
         if (!cancelled) {
           setDoc(null)
+          setTermsConditions(null)
+          setFaqsSettings(null)
           setLoadErr(e?.message || 'Could not load experience')
         }
       }
@@ -208,7 +282,10 @@ export function ExperienceKcOrderInput(props) {
     }
   }, [client, id])
 
-  const options = useMemo(() => buildOptions(source, doc), [doc, source])
+  const options = useMemo(
+    () => buildOptions(source, doc, id, termsConditions, faqsSettings),
+    [doc, source, id, termsConditions, faqsSettings],
+  )
   const optionMap = useMemo(() => new Map(options.map((o) => [o.key, o])), [options])
 
   const selectedKeys = Array.isArray(value) ? value.filter(Boolean) : []

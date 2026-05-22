@@ -30,6 +30,12 @@ import { resolveTailorMadeBand } from '@/lib/tailorMadeBand'
 import { formatLodgeAltitudeForSubtitle } from '@/lib/lodgeAltitudeDisplay'
 import { resolveRouteLabel } from '@/data/lodgeSoqtapataResolverDefaults'
 import { DEFAULT_EXPERIENCE_RESOURCE_DOWNLOAD_CTA_LABEL } from '@/lib/experienceResourceCmsDefaults'
+import { mergeFaqsSource, type FaqsSettingsRow } from '@/lib/faqsCms'
+import {
+  mergeTermsPanelsSource,
+  resolveTermsPdfUrlForExperience,
+  type TermsConditionsSettingsRow,
+} from '@/lib/termsConditionsCms'
 import type { ReserveCtaSettingsGroq } from '@/lib/reserveCtaGroq'
 import type { ExperienceBookingSummary } from '@/components/booking/types'
 import { buildBookingSummaryFromCmsExperience } from '@/lib/buildBookingSummaryFromCms'
@@ -216,6 +222,10 @@ export type SoqtapataStructuredPageRow = {
   lodgeCtaVisible?: boolean | null
   lodgeCtaLabel?: string | null
   lodgeCtaSmartLink?: SmartLinkGroq | null
+  /** Central Terms & Conditions CK (fetched alongside page row). */
+  termsConditions?: TermsConditionsSettingsRow
+  /** Central FAQs CK (fetched alongside page row). */
+  faqsSettings?: FaqsSettingsRow
   experience?: CmsExperience | null
 } | null
 
@@ -416,6 +426,7 @@ type CmsExperience = {
 
 type CmsKnowledgeResourceRow = {
   _key?: string
+  resourceType?: string | null
   title?: string | null
   text?: string | null
   showCta?: boolean | null
@@ -1073,13 +1084,24 @@ function buildTermsFromCms(
   row: NonNullable<SoqtapataStructuredPageRow>,
   local: SoqtapataExperience,
 ): SoqtapataExperience['terms'] | null {
-  if (e.termsPanels?.length) {
-    let panels = [...e.termsPanels]
+  const experienceId = e._id
+  const panelSource = mergeTermsPanelsSource(
+    row.termsConditions,
+    experienceId,
+    e.termsPanels,
+  )
+
+  if (panelSource.length) {
+    let panels = [...panelSource]
     if (row.termsOrderKeys?.length) {
       panels = curateKeyedRowsStrict(panels, row.termsOrderKeys, 'terms panels') ?? []
     }
     const tc = local.terms
-    const pdf = e.fullTermsPdfUrl?.trim()
+    const pdf = resolveTermsPdfUrlForExperience(
+      row.termsConditions,
+      experienceId,
+      e.fullTermsPdfUrl,
+    )
     return {
       ...tc,
       ...(pdf ? { pdfHref: pdf } : {}),
@@ -1115,7 +1137,11 @@ function buildTermsFromCms(
     }
     return c
   })
-  const pdf = e.fullTermsPdfUrl?.trim()
+  const pdf = resolveTermsPdfUrlForExperience(
+    row.termsConditions,
+    e._id,
+    e.fullTermsPdfUrl,
+  )
   return { ...tc, ...(pdf ? { pdfHref: pdf } : {}), cards }
 }
 
@@ -1727,6 +1753,7 @@ function applySeasonLegendToWhen(
 
 function mapKnowledgeResourcesRows(
   rows: CmsKnowledgeResourceRow[] | null | undefined,
+  termsPdfUrl: string | null | undefined,
 ): SoqtapataResourceCard[] | null {
   if (!rows?.length) return null
   const cards: SoqtapataResourceCard[] = []
@@ -1734,6 +1761,27 @@ function mapKnowledgeResourcesRows(
   for (const r of rows) {
     const title = (r.title && r.title.trim()) || ''
     if (!title) continue
+    const resourceType = r.resourceType?.trim()
+    if (resourceType === 'termsConditions') {
+      const centralPdf = termsPdfUrl?.trim()
+      if (!centralPdf) continue
+      const show = r.showCta !== false
+      const label = show
+        ? (r.ctaLabel && r.ctaLabel.trim()) || DEFAULT_EXPERIENCE_RESOURCE_DOWNLOAD_CTA_LABEL
+        : ''
+      cards.push({
+        id: r._key || `kr-${idx}`,
+        kind: 'termsPdf',
+        previewKind: 'termsPdf',
+        title,
+        meta: (r.text && r.text.trim()) || '',
+        downloadHref: centralPdf,
+        downloadLabel: label,
+        openInNewTab: true,
+      })
+      idx += 1
+      continue
+    }
     const imgUrl = r.image?.imageUrl?.trim()
     const imgAlt = (r.image?.alt && r.image.alt.trim()) || title
     const show = r.showCta !== false
@@ -1749,10 +1797,11 @@ function mapKnowledgeResourcesRows(
     const href = show ? (resolved?.href?.trim() || '#') : '#'
     const label = show ? (resolved?.label?.trim() || r.ctaLabel?.trim() || DEFAULT_EXPERIENCE_RESOURCE_DOWNLOAD_CTA_LABEL) : ''
     const openInNewTab = show && resolved?.openInNewTab === true
+    const kind = cmsResourceKind(resourceType)
     cards.push({
       id: r._key || `kr-${idx}`,
-      kind: 'custom',
-      previewKind: 'custom',
+      kind,
+      previewKind: kind,
       title,
       meta: (r.text && r.text.trim()) || '',
       downloadHref: href,
@@ -1768,7 +1817,9 @@ function mapKnowledgeResourcesRows(
 function cmsResourceKind(resourceType: string | null | undefined): SoqtapataResourceCard['kind'] {
   if (resourceType === 'map') return 'map'
   if (resourceType === 'brochure') return 'brochure'
-  if (resourceType === 'terms') return 'termsPdf'
+  if (resourceType === 'termsConditions' || resourceType === 'termsPdf' || resourceType === 'terms') {
+    return 'termsPdf'
+  }
   return 'custom'
 }
 
@@ -1788,6 +1839,7 @@ function normalizePreviewKind(
 
 function mapExperienceResourcesFromCms(
   rows: CmsExperienceResourceRow[] | null | undefined,
+  termsPdfUrl: string | null | undefined,
 ): SoqtapataResourceCard[] | null {
   if (!rows || rows.length === 0) return null
   const indexed = rows.map((r, idx) => ({ r, idx }))
@@ -1805,15 +1857,21 @@ function mapExperienceResourcesFromCms(
     if (!title) continue
     const kind = cmsResourceKind(r.resourceType)
     const previewKind = normalizePreviewKind(r.visualPreset, kind)
+    if (kind === 'termsPdf' && (r.resourceType === 'termsConditions' || r.resourceType === 'termsPdf')) {
+      const centralPdf = termsPdfUrl?.trim()
+      if (!centralPdf) continue
+    }
     const href =
-      (r.fileAssetUrl && String(r.fileAssetUrl).trim()) ||
-      (r.fileUrl && String(r.fileUrl).trim()) ||
-      '#'
+      kind === 'termsPdf'
+        ? (termsPdfUrl?.trim() || '#')
+        : (r.fileAssetUrl && String(r.fileAssetUrl).trim()) ||
+          (r.fileUrl && String(r.fileUrl).trim()) ||
+          '#'
     const label = (r.ctaLabel && r.ctaLabel.trim()) || DEFAULT_EXPERIENCE_RESOURCE_DOWNLOAD_CTA_LABEL
     const meta = (r.subtitle && r.subtitle.trim()) || ''
     const imgUrl = r.previewImage?.imageUrl?.trim()
     const imgAlt = (r.previewImage?.alt && r.previewImage.alt.trim()) || title
-    const openInNewTab = /^https?:/i.test(href)
+    const openInNewTab = kind === 'termsPdf' || /^https?:/i.test(href)
     cards.push({
       id: r._key || `resource-${idx}`,
       kind,
@@ -2051,9 +2109,14 @@ export function soqtapataPartialFromStructuredRow(
     const p = pickByIndices(expRes as unknown[], row.resourcesFromExperienceOrder)
     if (p?.length) expRes = p as typeof expRes
   }
+  const termsPdfUrl = resolveTermsPdfUrlForExperience(
+    row.termsConditions,
+    e._id,
+    e.fullTermsPdfUrl,
+  )
   const expCards = useKnowledgeResources
-    ? mapKnowledgeResourcesRows(expRes as CmsKnowledgeResourceRow[])
-    : mapExperienceResourcesFromCms(expRes as CmsExperienceResourceRow[])
+    ? mapKnowledgeResourcesRows(expRes as CmsKnowledgeResourceRow[], termsPdfUrl)
+    : mapExperienceResourcesFromCms(expRes as CmsExperienceResourceRow[], termsPdfUrl)
   const previewBase = {
     mapPreviewTitle: l.resources.mapPreviewTitle,
     mapPreviewSubtitle: l.resources.mapPreviewSubtitle,
@@ -2076,19 +2139,20 @@ export function soqtapataPartialFromStructuredRow(
     out.resources = { ...res, ...previewBase, cards }
   }
 
-  if (e.faqs && e.faqs.length > 0) {
-    let faqList = [...e.faqs]
+  const mergedFaqs = mergeFaqsSource(row.faqsSettings, e._id, e.faqs)
+  if (mergedFaqs.length > 0) {
+    let faqList = [...mergedFaqs]
     if (row.faqOrderKeys?.length) {
       faqList = (curateKeyedRowsStrict(faqList as { _key?: string | null }[], row.faqOrderKeys, 'faq') ??
         []) as typeof faqList
     } else if (row.faqDisplayOrder?.length) {
       const p = pickByIndices(faqList, row.faqDisplayOrder)
-      if (p?.length) faqList = p
+      if (p?.length) faqList = p as typeof faqList
     }
     out.faq = {
       ...l.faq,
       items: faqList.map((f, i) => ({
-        id: `faq${i + 1}`,
+        id: f._key || `faq${i + 1}`,
         question: f.question || '',
         answer: f.answer || '',
       })),
