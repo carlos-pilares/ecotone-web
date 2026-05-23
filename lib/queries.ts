@@ -430,6 +430,26 @@ export const experiencePageSlugsQuery = groq`
 
 /** Singleton — central Terms & Conditions Knowledge Center. */
 /** Singleton — central FAQs Knowledge Center. */
+/** Singleton — central Traveller Guide / Before You Go Knowledge Center. */
+export const travellerGuideSettingsQuery = groq`*[_id == "travellerGuideSettings"][0]{
+  travellerGuideSections[]{
+    _key,
+    title,
+    cardHeaderIcon,
+    rowLayout,
+    rows[]{
+      _type,
+      _key,
+      iconKey,
+      title,
+      body,
+      label,
+      appliesToAll,
+      "experienceIds": experiences[]._ref
+    }
+  }
+}`
+
 export const faqsSettingsQuery = groq`*[_id == "faqsSettings"][0]{
   faqItems[]{
     _key,
@@ -502,6 +522,7 @@ export const soqtapataStructuredPageBySlugQuery = groq`
     includesOrderKeys,
     notIncludesOrderKeys,
     faqOrderKeys,
+    travellerGuideOrderKeys,
     resourcesFromExperienceKeys,
     overviewHighlightOrder,
     wildlifeDisplayOrder,
@@ -616,6 +637,7 @@ export const soqtapataStructuredPageBySlugQuery = groq`
     "lodgePageSlug": lodgePageLink->slug.current,
     lodgeCtaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
     termsOrderKeys,
+    travellerGuideOrderKeys,
     galleryOrderKeys,
     relatedSectionEyebrow,
     relatedSectionTitle,

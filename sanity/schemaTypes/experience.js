@@ -617,12 +617,13 @@ export const experience = defineType({
     // --- Practical ---
     defineField({
       name: 'travelerGuideSubsections',
-      title: 'Traveller guide',
+      title: 'Traveller guide (legacy)',
       type: 'array',
       group: 'practical',
+      hidden: () => true,
       of: [{type: 'experienceTravelerGuideSubsection'}],
       description:
-        'Any number of accordion cards: header icon, title, and Q&A rows each. Prefer this over legacy bucket sections.',
+        'Legacy — Traveller Guide now lives in Content Library → Traveller Guide. Kept for migration only; used when central CK has no matching sections for this experience.',
       validation: (Rule) => Rule.max(24),
     }),
     defineField({
@@ -632,7 +633,8 @@ export const experience = defineType({
       group: 'practical',
       hidden: true,
       of: [{type: 'experienceTravelerGuideSection'}],
-      description: 'Deprecated — use **Traveller guide**. Kept for existing documents; resolver fallback.',
+      description:
+        'Legacy — use Content Library → Traveller Guide. Kept for migration only; resolver fallback.',
       validation: (Rule) => Rule.max(24),
     }),
     defineField({

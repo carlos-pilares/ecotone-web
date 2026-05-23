@@ -82,8 +82,13 @@ function faqMetaCentral(item, idx) {
   return {key, label}
 }
 
-function buildOptions(source, doc, experienceId, termsConditions, faqsSettings) {
-  if (!doc && source !== 'termsPanels' && source !== 'faq') return []
+function sectionHasApplicableRow(section, experienceId) {
+  if (!section?.rows?.length || !experienceId) return false
+  return section.rows.some((row) => termAppliesToExperience(row, experienceId))
+}
+
+function buildOptions(source, doc, experienceId, termsConditions, faqsSettings, travellerGuideSettings) {
+  if (!doc && source !== 'termsPanels' && source !== 'faq' && source !== 'travellerGuide') return []
   switch (source) {
     case 'overviewHighlights': {
       const raw = doc.highlights
@@ -171,6 +176,35 @@ function buildOptions(source, doc, experienceId, termsConditions, faqsSettings) 
       if (!Array.isArray(raw)) return []
       return raw.map(stringRowMeta)
     }
+    case 'travellerGuide': {
+      const central = travellerGuideSettings?.travellerGuideSections
+      if (Array.isArray(central) && central.length && experienceId) {
+        const applicable = central.filter((section) => sectionHasApplicableRow(section, experienceId))
+        if (applicable.length) {
+          return applicable.map((section, idx) => {
+            const key = section?._key || `tg-${idx}`
+            const t = (section?.title && String(section.title).trim()) || `Section ${idx + 1}`
+            const layout = section?.rowLayout === 'checklist' ? 'Checklist' : 'Q&A'
+            const rows = Array.isArray(section?.rows) ? section.rows : []
+            const global = rows.filter((r) => r?.appliesToAll === true).length
+            const label = `${t.length > 48 ? `${t.slice(0, 45)}…` : t} · ${layout} · ${rows.length} rows (${global} global)`
+            return {key, label}
+          })
+        }
+      }
+      const raw = doc?.travelerGuideSubsections
+      if (!Array.isArray(raw)) return []
+      return raw.map((item, idx) => {
+        const key = item?._key || `legacy-tg-${idx}`
+        const t = (item?.title && String(item.title).trim()) || `Section ${idx + 1}`
+        const layout = item?.displayType === 'checklist' ? 'Checklist' : 'Q&A'
+        const n = Array.isArray(item?.rows) ? item.rows.length : 0
+        return {
+          key,
+          label: `${t} · ${layout} · ${n} rows (legacy KC)`,
+        }
+      })
+    }
     case 'faq': {
       const central = faqsSettings?.faqItems
       if (Array.isArray(central) && central.length && experienceId) {
@@ -224,6 +258,7 @@ export function ExperienceKcOrderInput(props) {
   const [doc, setDoc] = useState(null)
   const [termsConditions, setTermsConditions] = useState(null)
   const [faqsSettings, setFaqsSettings] = useState(null)
+  const [travellerGuideSettings, setTravellerGuideSettings] = useState(null)
   const [loadErr, setLoadErr] = useState(null)
 
   const id = normalizeRefId(experienceRef)
@@ -235,6 +270,7 @@ export function ExperienceKcOrderInput(props) {
         setDoc(null)
         setTermsConditions(null)
         setFaqsSettings(null)
+        setTravellerGuideSettings(null)
         setLoadErr(null)
         return
       }
@@ -259,6 +295,18 @@ export function ExperienceKcOrderInput(props) {
               appliesToAll,
               "experienceIds": experiences[]._ref
             }
+          },
+          "travellerGuideSettings": *[_id == "travellerGuideSettings"][0]{
+            travellerGuideSections[]{
+              _key,
+              title,
+              rowLayout,
+              rows[]{
+                _key,
+                appliesToAll,
+                "experienceIds": experiences[]._ref
+              }
+            }
           }
         }`
         const res = await client.fetch(q, {ids: candidates})
@@ -266,12 +314,14 @@ export function ExperienceKcOrderInput(props) {
           setDoc(res?.experience || null)
           setTermsConditions(res?.termsConditions || null)
           setFaqsSettings(res?.faqsSettings || null)
+          setTravellerGuideSettings(res?.travellerGuideSettings || null)
         }
       } catch (e) {
         if (!cancelled) {
           setDoc(null)
           setTermsConditions(null)
           setFaqsSettings(null)
+          setTravellerGuideSettings(null)
           setLoadErr(e?.message || 'Could not load experience')
         }
       }
@@ -283,8 +333,8 @@ export function ExperienceKcOrderInput(props) {
   }, [client, id])
 
   const options = useMemo(
-    () => buildOptions(source, doc, id, termsConditions, faqsSettings),
-    [doc, source, id, termsConditions, faqsSettings],
+    () => buildOptions(source, doc, id, termsConditions, faqsSettings, travellerGuideSettings),
+    [doc, source, id, termsConditions, faqsSettings, travellerGuideSettings],
   )
   const optionMap = useMemo(() => new Map(options.map((o) => [o.key, o])), [options])
 

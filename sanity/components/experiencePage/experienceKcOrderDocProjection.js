@@ -10,6 +10,7 @@ export const experienceKcOrderDocProjection = /* groq */ `{
   "importantNotesKeyed": importantNotes[] { "_key": _key, "text": @ },
   wildlife[]{ _key, name, description, iconType, badge },
   faqs[]{ _key, question },
+  travelerGuideSubsections[]{ _key, title, displayType, "rowCount": count(rows) },
   knowledgeResources[]{ _key, title },
   resources[]{ _key, title },
   termsPanels[]{ _key, title },

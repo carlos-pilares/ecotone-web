@@ -128,6 +128,12 @@ import {
 import {termsConditionsSettings} from './termsConditionsSettings'
 import {faqItem} from './objects/faqsObjects'
 import {faqsSettings} from './faqsSettings'
+import {
+  travellerGuideQaRow,
+  travellerGuideChecklistRow,
+  travellerGuideSection,
+} from './objects/travellerGuideObjects'
+import {travellerGuideSettings} from './travellerGuideSettings'
 import {reviewsSettings} from './reviewsSettings'
 import {bookingModalSettings} from './bookingModalSettings'
 import {technologyProduct} from './technologyProduct'
@@ -145,6 +151,9 @@ const objects = [
   termsConditionsItem,
   termsConditionsDocument,
   faqItem,
+  travellerGuideQaRow,
+  travellerGuideChecklistRow,
+  travellerGuideSection,
   headerNavProgramGroup,
   headerNavProgramTypeGroup,
   headerNavRouteGroupOverride,
@@ -238,6 +247,7 @@ const documents = [
   footerSettings,
   termsConditionsSettings,
   faqsSettings,
+  travellerGuideSettings,
   bookingModalSettings,
   reviewsSettings,
   lodge,

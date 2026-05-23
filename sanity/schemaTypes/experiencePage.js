@@ -376,6 +376,18 @@ export const experiencePage = defineType({
       'beforeYou',
       'beforeYou',
     ),
+    defineField({
+      name: 'travellerGuideOrderKeys',
+      title: 'Traveller Guide — select & order sections',
+      type: 'array',
+      of: [{type: 'string'}],
+      group: 'beforeYou',
+      components: {input: ExperienceKcOrderInput},
+      options: {kcSource: 'travellerGuide'},
+      validation: (Rule) => Rule.max(24),
+      description:
+        'From Content Library → Traveller Guide (sections with at least one row applicable to the linked Experience KC). Empty = show all applicable sections in CK order. Rows inside each section are filtered automatically. Legacy Experience KC guide used only when central CK has no matches.',
+    }),
     previewField(
       'stPrevReviews',
       'Section presentation',

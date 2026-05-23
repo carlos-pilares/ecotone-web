@@ -8,9 +8,11 @@ import {
   faqsSettingsQuery,
   soqtapataStructuredPageBySlugQuery,
   termsConditionsSettingsQuery,
+  travellerGuideSettingsQuery,
 } from '@/lib/queries'
 import type { FaqsSettingsRow } from '@/lib/faqsCms'
 import type { TermsConditionsSettingsRow } from '@/lib/termsConditionsCms'
+import type { TravellerGuideSettingsRow } from '@/lib/travellerGuideCms'
 import { clientServer } from '@/lib/sanity'
 import {
   alsoBookFromStructuredRow,
@@ -311,18 +313,20 @@ export const getSoqtapataPageCms = cache(async (slug: string): Promise<Soqtapata
   let row: SoqtapataStructuredPageRow | null = null
   let cmsError: string | null = null
   try {
-    const [pageRow, termsConditions, faqsSettings] = await Promise.all([
+    const [pageRow, termsConditions, faqsSettings, travellerGuideSettings] = await Promise.all([
       clientServer.fetch<SoqtapataStructuredPageRow | null>(soqtapataStructuredPageBySlugQuery, {
         slug: normalized,
       }),
       clientServer.fetch<TermsConditionsSettingsRow>(termsConditionsSettingsQuery),
       clientServer.fetch<FaqsSettingsRow>(faqsSettingsQuery),
+      clientServer.fetch<TravellerGuideSettingsRow>(travellerGuideSettingsQuery),
     ])
     row = pageRow
       ? {
           ...pageRow,
           termsConditions: termsConditions ?? null,
           faqsSettings: faqsSettings ?? null,
+          travellerGuideSettings: travellerGuideSettings ?? null,
         }
       : null
   } catch (e) {

@@ -32,6 +32,11 @@ import { resolveRouteLabel } from '@/data/lodgeSoqtapataResolverDefaults'
 import { DEFAULT_EXPERIENCE_RESOURCE_DOWNLOAD_CTA_LABEL } from '@/lib/experienceResourceCmsDefaults'
 import { mergeFaqsSource, type FaqsSettingsRow } from '@/lib/faqsCms'
 import {
+  mergeTravellerGuideSubsectionsSource,
+  type TravellerGuideSettingsRow,
+  type TravellerGuideSubsectionResolved,
+} from '@/lib/travellerGuideCms'
+import {
   mergeTermsPanelsSource,
   resolveTermsPdfUrlForExperience,
   type TermsConditionsSettingsRow,
@@ -203,6 +208,7 @@ export type SoqtapataStructuredPageRow = {
   includesOrderKeys?: string[] | null
   notIncludesOrderKeys?: string[] | null
   faqOrderKeys?: string[] | null
+  travellerGuideOrderKeys?: string[] | null
   resourcesFromExperienceKeys?: string[] | null
   termsOrderKeys?: string[] | null
   termsImportantNotesKeys?: string[] | null
@@ -226,6 +232,8 @@ export type SoqtapataStructuredPageRow = {
   termsConditions?: TermsConditionsSettingsRow
   /** Central FAQs CK (fetched alongside page row). */
   faqsSettings?: FaqsSettingsRow
+  /** Central Traveller Guide CK (fetched alongside page row). */
+  travellerGuideSettings?: TravellerGuideSettingsRow
   experience?: CmsExperience | null
 } | null
 
@@ -420,7 +428,7 @@ type CmsExperience = {
     slug?: string | null | { current?: string | null }
     shortLabel?: string | null
     tagline?: string | null
-  } | null
+} | null
   status?: string | null
 }
 
@@ -528,11 +536,8 @@ type CmsTravelerGuideSubsection = {
 }
 
 function isTravelerGuideChecklistRow(r: unknown): r is CmsTravelerGuideChecklistRowCms {
-  return Boolean(
-    r &&
-      typeof r === 'object' &&
-      (r as {_type?: string | null})._type === 'experienceTravelerGuideChecklistRow',
-  )
+  const t = r && typeof r === 'object' ? (r as {_type?: string | null})._type : null
+  return t === 'experienceTravelerGuideChecklistRow' || t === 'travellerGuideChecklistRow'
 }
 
 type CmsLodge = {
@@ -1558,8 +1563,9 @@ function lodgeModifiersFor(e: CmsExperience, lodgeId: string | undefined | null)
   return e.lodgePresentationRows.find((r) => r.lodge?._id === lodgeId) ?? null
 }
 
-function buildFlexibleTravelerGuideCards(e: CmsExperience): BfygCard[] | null {
-  const subs = e.travelerGuideSubsections
+function buildFlexibleTravelerGuideCardsFromSubsections(
+  subs: TravellerGuideSubsectionResolved[] | CmsTravelerGuideSubsection[] | null | undefined,
+): BfygCard[] | null {
   if (!subs?.length) return null
   const cards: BfygCard[] = []
   for (let i = 0; i < subs.length; i++) {
@@ -1865,8 +1871,8 @@ function mapExperienceResourcesFromCms(
       kind === 'termsPdf'
         ? (termsPdfUrl?.trim() || '#')
         : (r.fileAssetUrl && String(r.fileAssetUrl).trim()) ||
-          (r.fileUrl && String(r.fileUrl).trim()) ||
-          '#'
+      (r.fileUrl && String(r.fileUrl).trim()) ||
+      '#'
     const label = (r.ctaLabel && r.ctaLabel.trim()) || DEFAULT_EXPERIENCE_RESOURCE_DOWNLOAD_CTA_LABEL
     const meta = (r.subtitle && r.subtitle.trim()) || ''
     const imgUrl = r.previewImage?.imageUrl?.trim()
@@ -2034,13 +2040,13 @@ export function soqtapataPartialFromStructuredRow(
           name: s.name || fallback?.name || '',
           sub: s.description || fallback?.sub || '',
           iconId: (s.iconType && W_ICON[s.iconType] !== undefined ? W_ICON[s.iconType]! : fallback?.iconId ?? 6) as
-            | 0
-            | 1
-            | 2
-            | 3
-            | 4
-            | 5
-            | 6,
+          | 0
+          | 1
+          | 2
+          | 3
+          | 4
+          | 5
+          | 6,
         }
         const photo =
           cmsImg != null
@@ -2070,7 +2076,19 @@ export function soqtapataPartialFromStructuredRow(
     out.when = e.seasonLegend ? applySeasonLegendToWhen(mergedWhen, e.seasonLegend, l.when) : mergedWhen
   }
 
-  const flexCards = buildFlexibleTravelerGuideCards(e)
+  let guideSubs = mergeTravellerGuideSubsectionsSource(
+    row.travellerGuideSettings,
+    e._id,
+    e.travelerGuideSubsections,
+  )
+  if (row.travellerGuideOrderKeys?.length && guideSubs.length > 0) {
+    guideSubs = (curateKeyedRowsStrict(
+      guideSubs as { _key?: string | null }[],
+      row.travellerGuideOrderKeys,
+      'travellerGuide',
+    ) ?? []) as TravellerGuideSubsectionResolved[]
+  }
+  const flexCards = buildFlexibleTravelerGuideCardsFromSubsections(guideSubs)
   if (flexCards) {
     out.beforeYouGo = { ...l.beforeYouGo, cards: flexCards }
   } else if (e.travelerGuideSections?.length) {
@@ -2439,11 +2457,11 @@ export function alsoBookFromStructuredRow(
       ? exp.price
       : null
   const expReserveFacts: ExperienceReserveFacts = {
-    route: exp?.route,
-    duration: exp?.duration,
-    groupSizeMin: exp?.groupSizeMin,
-    groupSizeMax: exp?.groupSizeMax,
-    includes: exp?.includes ?? null,
+      route: exp?.route,
+      duration: exp?.duration,
+      groupSizeMin: exp?.groupSizeMin,
+      groupSizeMax: exp?.groupSizeMax,
+      includes: exp?.includes ?? null,
     programType: exp?.programType,
     distanceFromCusco: exp?.distanceFromCusco,
     gettingHereInfo: exp?.gettingHereInfo ?? null,

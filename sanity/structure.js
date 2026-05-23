@@ -275,6 +275,16 @@ export const structure = (S) =>
                     .documentId('faqsSettings')
                     .title('FAQs'),
                 ),
+              S.listItem()
+                .title('Traveller Guide')
+                .icon(DocumentTextIcon)
+                .id('travellerGuideSettingsItem')
+                .child(
+                  S.document()
+                    .schemaType('travellerGuideSettings')
+                    .documentId('travellerGuideSettings')
+                    .title('Traveller Guide'),
+                ),
             ]),
         ),
     ])
