@@ -360,7 +360,7 @@ export const experiencePage = defineType({
       group: 'gallery',
       components: {input: ExperienceKcOrderInput},
       options: {kcSource: 'gallery'},
-      validation: (Rule) => Rule.max(20),
+      validation: (Rule) => Rule.max(30),
       description:
         'Pick and order photos from the linked Experience Knowledge Center gallery. Only selected images appear on this URL. Empty = show all KC gallery images in KC order.',
     }),

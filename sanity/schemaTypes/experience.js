@@ -231,7 +231,7 @@ export const experience = defineType({
       of: [{type: 'experienceGalleryItem'}],
       description:
         'Photos and videos for this experience. Each landing page picks and orders items from this list.',
-      validation: (Rule) => Rule.max(20),
+      validation: (Rule) => Rule.max(30),
     }),
     defineField({
       name: 'videoUrl',

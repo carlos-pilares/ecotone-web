@@ -207,6 +207,15 @@ export const structure = (S) =>
                     .title('Nombres, textos, imágenes de producto'),
                 ),
               S.listItem()
+                .title('Photo Library')
+                .icon(ImageIcon)
+                .id('photoLibrary')
+                .child(
+                  S.documentTypeList('photoCollection')
+                    .id('photoCollectionList')
+                    .title('Photo Library'),
+                ),
+              S.listItem()
                 .title('Reviews')
                 .icon(StarIcon)
                 .id('reviews')

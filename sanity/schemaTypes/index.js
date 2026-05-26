@@ -137,6 +137,8 @@ import {travellerGuideSettings} from './travellerGuideSettings'
 import {reviewsSettings} from './reviewsSettings'
 import {bookingModalSettings} from './bookingModalSettings'
 import {technologyProduct} from './technologyProduct'
+import {photoCollection} from './photoCollection'
+import {photoLibraryItem} from './objects/photoLibraryObjects'
 
 const objects = [
   seo,
@@ -239,6 +241,7 @@ const objects = [
   journalBlockDivider,
   journalBlockCta,
   journalBlockRelatedExperience,
+  photoLibraryItem,
 ]
 
 const documents = [
@@ -263,6 +266,7 @@ const documents = [
   homePage,
   routesPage,
   aboutPage,
+  photoCollection,
 ]
 
 export const schema = {
