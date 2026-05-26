@@ -117,38 +117,22 @@ export function SiteHeaderTailorMobileRow({ tailor }: { tailor: SiteHeaderNavTai
   const cta = tailor.cta
   const { openPlanJourney, openExperienceBooking } = useBookingModal()
 
-  const thumb = tailor.imageUrl ? (
-    <div className="mob-item-thumb mob-tailor-thumb">
-      <img src={tailor.imageUrl} alt={tailor.imageAlt || ''} width={80} height={60} decoding="async" />
-    </div>
-  ) : (
-    <div className="mob-item-thumb mob-item-thumb--icon mob-tailor-row__icon" aria-hidden>
-      <svg width="16" height="15" viewBox="0 0 105 101" fill="none">
-        <path
-          d="M103.703 59.25C102.343 49.75 97.3635 41.34 89.6735 35.59C89.3235 35.33 88.9635 35.07 88.6035 34.82C88.0135 15.52 72.1235 0 52.6835 0C33.6535 0 18.0434 14.86 16.8234 33.58C11.1834 37.11 6.62343 42.15 3.64343 48.28C-0.556567 56.91 -1.14654 66.66 1.98346 75.74C5.11346 84.81 11.5934 92.13 20.2234 96.33C25.2034 98.75 30.5535 99.98 35.9235 99.98C39.8735 99.98 43.8335 99.32 47.6735 98C49.0635 97.52 50.4034 96.96 51.7134 96.33L51.9534 96.46C56.9534 98.99 62.4335 100.31 68.0535 100.31C69.7735 100.31 71.5035 100.19 73.2335 99.94C82.7335 98.58 91.1434 93.6 96.8934 85.91C102.643 78.22 105.063 68.75 103.703 59.25Z"
-          fill="#ECE5D5"
-        />
-      </svg>
-    </div>
-  )
-
   const text = (
-    <div className="mob-item-text">
-      {tailor.eyebrow ? <div className="mob-item-route">{tailor.eyebrow}</div> : null}
-      {tailor.title ? <div className="mob-item-name">{tailor.title}</div> : null}
-      {tailor.subtitle ? <div className="mob-item-meta">{tailor.subtitle}</div> : null}
+    <div className="mob-tailor-mobile-copy">
+      {tailor.eyebrow ? <div className="mob-tailor-mobile-eyebrow">{tailor.eyebrow}</div> : null}
+      {tailor.title ? <div className="mob-tailor-mobile-title">{tailor.title}</div> : null}
+      {tailor.subtitle ? <div className="mob-tailor-mobile-subtitle">{tailor.subtitle}</div> : null}
     </div>
   )
 
   const arrow = cta ? (
-    <span className="mob-item-arrow" aria-hidden>
+    <span className="mob-tailor-mobile-arrow" aria-hidden>
       →
     </span>
   ) : null
 
   const inner = (
     <>
-      {thumb}
       {text}
       {arrow}
     </>
@@ -156,7 +140,7 @@ export function SiteHeaderTailorMobileRow({ tailor }: { tailor: SiteHeaderNavTai
 
   if (cta?.bookingModal === 'plan') {
     return (
-      <button type="button" className="mob-item mob-item--tailor mob-tailor-row" onClick={() => openPlanJourney()}>
+      <button type="button" className="mob-tailor-mobile-row" onClick={() => openPlanJourney()}>
         {inner}
       </button>
     )
@@ -165,7 +149,7 @@ export function SiteHeaderTailorMobileRow({ tailor }: { tailor: SiteHeaderNavTai
     return (
       <button
         type="button"
-        className="mob-item mob-item--tailor mob-tailor-row"
+        className="mob-tailor-mobile-row"
         onClick={() => openExperienceBooking(cta.bookingSummary!)}
       >
         {inner}
@@ -176,7 +160,7 @@ export function SiteHeaderTailorMobileRow({ tailor }: { tailor: SiteHeaderNavTai
     return (
       <a
         href={cta.href}
-        className="mob-item mob-item--tailor mob-tailor-row"
+        className="mob-tailor-mobile-row"
         {...(cta.openInNewTab ? { target: '_blank', rel: cta.rel } : {})}
       >
         {inner}
@@ -184,5 +168,5 @@ export function SiteHeaderTailorMobileRow({ tailor }: { tailor: SiteHeaderNavTai
     )
   }
 
-  return <div className="mob-item mob-item--tailor mob-tailor-row">{inner}</div>
+  return <div className="mob-tailor-mobile-row">{inner}</div>
 }

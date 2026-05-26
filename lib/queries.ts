@@ -8,6 +8,7 @@ import { GROQ_RESERVE_CTA_SETTINGS_FIELDS } from '@/lib/reserveCtaGroq'
 import { GROQ_PARTNER_DOC_FIELDS } from '@/lib/partnerGroq'
 import { GROQ_LODGE_ALTITUDE_AS_ALTITUDE } from '@/lib/lodgeAltitudeGroq'
 import { GROQ_EXPERIENCE_KC_CARD_FIELDS } from '@/lib/experienceCardGroq'
+import { GROQ_EXPERIENCE_LODGE_CARD_LODGE_FIELDS } from '@/lib/lodgeIdentityGroq'
 
 /** Experience card row (homepage + listados). */
 export type ExperienceFromSanity = {
@@ -845,14 +846,7 @@ export const soqtapataStructuredPageBySlugQuery = groq`
         ctaVisible,
         ctaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
         "lodge": lodge-> {
-          _id, name, shortDescription, ${GROQ_LODGE_ALTITUDE_AS_ALTITUDE}, route, amenities,
-          "mainImageUrl": mainImage.asset->url,
-          "pageSlug": *[_type == "lodgePage" && lodge._ref == ^._id][0].slug.current,
-          "lodgePage": *[_type == "lodgePage" && lodge._ref == ^._id][0] {
-            heroShortDescription,
-            heroHighlights[]{ text, key },
-            "slug": slug.current
-          }
+          ${GROQ_EXPERIENCE_LODGE_CARD_LODGE_FIELDS}
         }
       },
       faqs[] { _key, question, answer },
@@ -1541,12 +1535,7 @@ export const experienceBySlugQuery = groq`
       ctaLabel,
       ctaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
       "lodge": lodge-> {
-        _id, name, slug,
-        ${GROQ_LODGE_ALTITUDE_AS_ALTITUDE}, distanceFromCusco, capacity,
-        ecosystem, shortDescription, researchStation,
-        mainImage,
-        "mainImageUrl": mainImage.asset->url,
-        amenities[], roomTypes
+        ${GROQ_EXPERIENCE_LODGE_CARD_LODGE_FIELDS}
       }
     },
     "lodge": lodge-> {

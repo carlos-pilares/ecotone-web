@@ -403,7 +403,7 @@ export const experience = defineType({
       group: 'lodges',
       of: [{type: 'experienceLodgePresentationRow'}],
       description:
-        'One row per lodge on this programme. Configure nights label, amber highlight label, and CTA label only. Lodge name, short description, and chips come from each lodge’s **Lodge Page** hero.',
+        'One row per lodge on this programme. Configure nights label, amber highlight label, and CTA label only. Lodge name, short description, chips, and **card image** come from each lodge’s **Lodge Page** (hero image → menu thumbnail → gallery → lodge main image).',
       validation: (Rule) => Rule.max(8),
     }),
 

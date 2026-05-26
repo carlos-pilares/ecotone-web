@@ -1,8 +1,11 @@
+import type { SanityImageSource } from '@sanity/image-url'
 import { groq } from 'next-sanity'
 
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
+import { GROQ_HEADER_NAV_EXPERIENCE_FIELDS } from '@/lib/experienceHeroImageGroq'
 import { GROQ_LODGE_ALTITUDE_AS_ALTITUDE } from '@/lib/lodgeAltitudeGroq'
 import { GROQ_SMART_LINK_FIELDS } from '@/lib/smartLinkGroq'
+import type { ExperienceGalleryLikeRow, PhotoCollectionDoc } from '@/lib/photoLibraryResolve'
 
 export type HeaderNavProgramGroupRow = {
   label?: string | null
@@ -136,6 +139,7 @@ export type SiteHeaderNavExperiencePageRow = {
   _id: string
   pageSlug?: string | null
   headerNavOrder?: number | null
+  galleryOrderKeys?: string[] | null
   experience: {
     _id: string
     name?: string | null
@@ -145,8 +149,10 @@ export type SiteHeaderNavExperiencePageRow = {
     duration?: string | null
     price?: number | null
     priceLabel?: string | null
+    mainImage?: SanityImageSource | null
     mainImageUrl?: string | null
-    navImageUrl?: string | null
+    gallery?: ExperienceGalleryLikeRow[] | null
+    photoCollection?: PhotoCollectionDoc
   } | null
 }
 
@@ -304,25 +310,9 @@ export const siteHeaderNavBundleQuery = groq`{
     _id,
     "pageSlug": slug.current,
     headerNavOrder,
+    galleryOrderKeys,
     "experience": experience-> {
-      _id,
-      name,
-      programType,
-      route,
-      routeRef->{
-        "slug": slug.current,
-        shortLabel,
-        name
-      },
-      duration,
-      price,
-      priceLabel,
-      "mainImageUrl": mainImage.asset->url,
-      "navImageUrl": coalesce(
-        gallery[(photoCategory == "hero" || usageSection == "hero") && defined(image.asset)][0].image.asset->url,
-        gallery[defined(image.asset)][0].image.asset->url,
-        mainImage.asset->url
-      )
+      ${GROQ_HEADER_NAV_EXPERIENCE_FIELDS}
     }
   },
   "lodgePages": *[_type == "lodgePage" && defined(slug.current) && defined(lodge)]

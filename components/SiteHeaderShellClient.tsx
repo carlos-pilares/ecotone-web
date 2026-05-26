@@ -138,7 +138,7 @@ export function SiteHeaderShellClient() {
 
     const onDrawerLink = (e: MouseEvent) => {
       const el = e.target as HTMLElement | null
-      if (el?.closest('a')) closeDrawer()
+      if (el?.closest('a') || el?.closest('button.mob-tailor-mobile-row')) closeDrawer()
     }
     drawer?.addEventListener('click', onDrawerLink)
     cleanups.push(() => drawer?.removeEventListener('click', onDrawerLink))

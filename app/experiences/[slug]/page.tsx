@@ -100,7 +100,7 @@ export default async function ExperienceLandingPage({ params }: PageProps) {
     <EcotoneV2Client solidMainNav featuredQuoteItems={rotatingQuoteItems}>
       <IsotipoDefs />
       <SiteHeader mainNavSolid />
-      <SoqtapataPhotoLightbox />
+      <SoqtapataPhotoLightbox items={ex.media.lightboxItems} />
       <div id="ecotone-experience-root">
         {sec.hero !== false ? (
           <ExperienceHeroSoqtapata data={ex.hero} bookingSummary={bookingSummary} />

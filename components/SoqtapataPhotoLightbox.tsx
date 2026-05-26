@@ -31,14 +31,14 @@ function readGalleryItems(): GalleryItem[] {
 /**
  * Experience media grid: `[data-exp-lb]` opens shared `GalleryLightbox` at that index.
  */
-export function SoqtapataPhotoLightbox() {
+export function SoqtapataPhotoLightbox({ items }: { items?: GalleryItem[] }) {
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const t = (e.target as HTMLElement).closest<HTMLElement>('[data-exp-lb]')
       if (!t) return
       e.preventDefault()
       e.stopPropagation()
-      const list = readGalleryItems()
+      const list = items?.length ? items : readGalleryItems()
       if (list.length === 0) return
       const raw = t.getAttribute('data-exp-lb') || '0'
       const i = Math.max(0, Math.min(parseInt(raw, 10) || 0, list.length - 1))
@@ -46,7 +46,7 @@ export function SoqtapataPhotoLightbox() {
     }
     document.addEventListener('click', onClick, true)
     return () => document.removeEventListener('click', onClick, true)
-  }, [])
+  }, [items])
 
   return <GalleryLightbox />
 }

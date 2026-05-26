@@ -45,42 +45,50 @@ export function ExperienceMediaSoqtapata({ data }: { data: SoqtapataMedia }) {
             {data.lead}
           </p>
         ) : null}
-        <div
-          className="video-hero"
-          data-exp-lb="0"
-          role="button"
-          tabIndex={0}
-          aria-label={data.video.imageAlt}
-        >
-          <img src={data.video.imageSrc} alt={data.video.imageAlt} />
-          {data.video.isVideo ? (
-            <div className="video-overlay">
-              <div className="play-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--brown)">
-                  <polygon points="5 3 19 12 5 21 5 3" />
-                </svg>
-              </div>
-            </div>
-          ) : null}
-          <div className="video-meta">
-            <span className="video-meta-pill video-meta-pill--film">{data.video.filmPill}</span>
-            <span className="video-meta-pill video-meta-pill--accent">{data.video.officialPill}</span>
-          </div>
-        </div>
         <div className="media-grid" id="soqtapata-media-grid">
+          <div
+            className="video-hero"
+            data-exp-lb={data.video.dataExpLb ?? '0'}
+            role="button"
+            tabIndex={0}
+            aria-label={data.video.imageAlt}
+          >
+            <img src={data.video.imageSrc} alt={data.video.imageAlt} />
+            {data.video.isVideo ? (
+              <div className="video-overlay">
+                <div className="play-btn">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--brown)">
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
+                </div>
+              </div>
+            ) : (
+              <div className="media-overlay" />
+            )}
+            <div className="video-meta">
+              <span className="video-meta-pill video-meta-pill--film">{data.video.filmPill}</span>
+              <span className="video-meta-pill video-meta-pill--accent">{data.video.officialPill}</span>
+            </div>
+          </div>
           {data.thumbs.map((t, i) => (
             <MediaThumb key={`${i}-${t.imageAlt}`} t={t} />
           ))}
           {data.moreCount ? (
             <div
-              className="media-count"
+              className={['media-count', data.moreCount.imageSrc ? 'media-count--image' : ''].filter(Boolean).join(' ')}
               data-exp-lb={data.moreCount.dataExpLb}
               role="button"
               tabIndex={0}
               aria-label={data.moreCount.ariaLabel}
             >
-              <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--n900)' }}>{data.moreCount.countLabel}</span>
-              <span style={{ fontSize: 12, fontWeight: 300, color: 'var(--n400)' }}>{data.moreCount.subLabel}</span>
+              {data.moreCount.imageSrc ? (
+                <>
+                  <img src={data.moreCount.imageSrc} alt={data.moreCount.imageAlt || ''} />
+                  <span className="media-count-mask" aria-hidden />
+                </>
+              ) : null}
+              <span className="media-count-label">{data.moreCount.countLabel}</span>
+              <span className="media-count-sub">{data.moreCount.subLabel}</span>
             </div>
           ) : null}
         </div>

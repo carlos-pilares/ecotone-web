@@ -13,6 +13,7 @@ import { formatEnquiryEmailBody, parseEnquiryPayload, type EnquiryPayload } from
 export const runtime = 'nodejs'
 
 const LOG = '[api/enquiry]'
+const DEFAULT_NOTIFICATION_EMAIL = 'ecotone.experience@gmail.com'
 
 function serializeSettledReason(reason: unknown): string {
   if (reason instanceof Error) {
@@ -57,6 +58,10 @@ function getPrivateKey(): string {
   return k.replace(/\\n/g, '\n')
 }
 
+function resolveNotificationRecipient(): string {
+  return (process.env.NOTIFICATION_EMAIL?.trim() || DEFAULT_NOTIFICATION_EMAIL).toLowerCase()
+}
+
 async function appendEnquiryToSheet(payload: EnquiryPayload): Promise<void> {
   const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL
   const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID
@@ -90,9 +95,11 @@ async function appendEnquiryToSheet(payload: EnquiryPayload): Promise<void> {
 
 async function sendEnquiryNotification(payload: EnquiryPayload): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY
-  const to = process.env.NOTIFICATION_EMAIL
+  const to = resolveNotificationRecipient()
   if (!apiKey) throw new Error('Missing RESEND_API_KEY')
-  if (!to) throw new Error('Missing NOTIFICATION_EMAIL')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[ENQUIRY RECIPIENT]', to)
+  }
 
   const resend = new Resend(apiKey)
   const from = process.env.RESEND_FROM_EMAIL ?? 'Ecotone <onboarding@resend.dev>'

@@ -5,26 +5,32 @@ import {
   toExperienceCardDataFromSanity,
   type ExperienceCardData,
 } from '@/lib/experienceCardData'
+import { resolveExperienceHeroImageUrl } from '@/lib/experienceHeroImage'
+import type { ExperienceGalleryLikeRow, PhotoCollectionDoc } from '@/lib/photoLibraryResolve'
 import type { ExperienceFromSanity } from '@/lib/queries'
-import { urlFor } from '@/lib/sanity'
 
 function dataTypeFromProgram(programType: string | null | undefined): string {
   if (!programType) return 'nature'
   return HOME_EXPERIENCE_PROGRAM_TO_FILTER[programType] ?? programType
 }
 
-export function experienceCardImageUrl(
-  doc: ExperienceFromSanity,
-  fallback: string,
-): string {
-  const direct = doc.mainImageUrl?.trim()
-  if (direct) return direct
-  if (!doc.mainImage) return fallback
-  try {
-    return String(urlFor(doc.mainImage).width(900).quality(85).url())
-  } catch {
-    return fallback
-  }
+export type ExperienceCardImageSource = ExperienceFromSanity & {
+  gallery?: ExperienceGalleryLikeRow[] | null
+  galleryOrderKeys?: string[] | null
+  photoCollection?: PhotoCollectionDoc
+}
+
+export function experienceCardImageUrl(doc: ExperienceCardImageSource, fallback?: string): string {
+  const resolved = resolveExperienceHeroImageUrl({
+    gallery: doc.gallery,
+    galleryOrderKeys: doc.galleryOrderKeys,
+    photoCollection: doc.photoCollection,
+    mainImage: doc.mainImage,
+    mainImageUrl: doc.mainImageUrl,
+    width: 900,
+  })
+  if (resolved) return resolved
+  return fallback?.trim() || ''
 }
 
 export function buildHomeExplorerSectionItems(

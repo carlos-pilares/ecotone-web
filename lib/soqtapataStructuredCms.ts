@@ -25,6 +25,9 @@ type SoqtapataExperience = typeof soqtapataExperience
 import type { ReviewDoc, TechnologyProductDoc } from '@/lib/queries'
 import type { CmsInternalNav } from '@/lib/soqtapataInternalNav'
 import type { SoqtapataPageModuleRow } from '@/lib/soqtapataSectionPresentation'
+import { resolveLodgeIdentityImageUrl } from '@/lib/lodgeGalleryResolve'
+import type { LodgeGalleryItemRow } from '@/lib/lodgePageCmsTypes'
+import { mergeLodgeGalleryWithPhotoLibrary, type PhotoCollectionDoc } from '@/lib/photoLibraryResolve'
 import { urlFor } from '@/lib/sanity'
 import { resolveTailorMadeBand } from '@/lib/tailorMadeBand'
 import { formatLodgeAltitudeForSubtitle } from '@/lib/lodgeAltitudeDisplay'
@@ -124,6 +127,25 @@ function pickByKeys<T extends { _key?: string | null }>(
     }
   }
   return out.length ? out : null
+}
+
+function orderKeyedRowsSelectedFirst<T extends { _key?: string | null }>(
+  source: T[] | null | undefined,
+  orderKeys: string[] | null | undefined,
+): T[] {
+  const rows = [...(source ?? [])]
+  if (!rows.length || !orderKeys?.length) return rows
+  const picked = pickByKeys(rows, orderKeys)
+  if (!picked?.length) return rows
+
+  const pickedRefs = new Set(picked)
+  const pickedKeys = new Set(picked.map((item) => item._key?.trim()).filter((key): key is string => Boolean(key)))
+  const rest = rows.filter((item) => {
+    if (pickedRefs.has(item)) return false
+    const key = item._key?.trim()
+    return !key || !pickedKeys.has(key)
+  })
+  return [...picked, ...rest]
 }
 
 /** Order / filter string lines from Knowledge Center using Sanity `_key`s, with legacy index fallback. */
@@ -546,7 +568,10 @@ type CmsLodge = {
   shortDescription?: string | null
   altitude?: string | null
   route?: string | null
+  mainImage?: SanityImageSource | null
   mainImageUrl?: string | null
+  gallery?: LodgeGalleryItemRow[] | null
+  photoCollection?: PhotoCollectionDoc
   amenities?: string[] | null
   pageSlug?: string | null
   lodgePage?: CmsLodgePageHero | null
@@ -555,6 +580,8 @@ type CmsLodge = {
 type CmsLodgePageHero = {
   heroShortDescription?: string | null
   heroHighlights?: Array<{ text?: string | null; key?: string | null }> | null
+  heroGalleryOrderKeys?: string[] | null
+  menuThumbnailImage?: string | null
   slug?: string | null
 }
 
@@ -615,7 +642,6 @@ export type ResolvedExperienceMediaItem = {
 }
 
 const MEDIA_VISIBLE_MAX = 6
-const MEDIA_SECONDARY_MAX = 5
 
 function galleryPhotoUrl(g: CmsGalleryItem, width: number): string | null {
   const direct = g.imageUrl?.trim()
@@ -684,11 +710,7 @@ function resolveExperienceGalleryItems(
   row: NonNullable<SoqtapataStructuredPageRow>,
   h1: string,
 ): ResolvedExperienceMediaItem[] {
-  let items = [...(e.gallery ?? [])]
-  if (row.galleryOrderKeys?.length) {
-    const picked = pickByKeys(items, row.galleryOrderKeys)
-    if (picked?.length) items = picked
-  }
+  const items = orderKeyedRowsSelectedFirst(e.gallery, row.galleryOrderKeys)
 
   let resolved = items
     .map((g, i) => normalizeCmsGalleryItem(g, i))
@@ -717,6 +739,19 @@ function resolveExperienceGalleryItems(
   return resolved
 }
 
+function lightboxItemsFromResolvedMedia(
+  items: ResolvedExperienceMediaItem[],
+): NonNullable<SoqtapataMedia['lightboxItems']> {
+  return items
+    .filter((item) => item.imageSrc?.trim())
+    .map((item) => ({
+      src: item.imageSrc,
+      alt: item.alt,
+      title: (item.title || item.alt).trim() || undefined,
+      description: item.caption?.trim() || undefined,
+    }))
+}
+
 function pickMainMediaItem(items: ResolvedExperienceMediaItem[]): ResolvedExperienceMediaItem | null {
   if (!items.length) return null
   return items.find((i) => i.kind === 'video') ?? items[0]!
@@ -725,6 +760,7 @@ function pickMainMediaItem(items: ResolvedExperienceMediaItem[]): ResolvedExperi
 function layoutMediaTiles(items: ResolvedExperienceMediaItem[]): {
   main: ResolvedExperienceMediaItem | null
   secondary: ResolvedExperienceMediaItem[]
+  moreItem?: ResolvedExperienceMediaItem
   moreCount?: SoqtapataMedia['moreCount']
 } {
   const n = items.length
@@ -738,14 +774,15 @@ function layoutMediaTiles(items: ResolvedExperienceMediaItem[]): {
     return { main, secondary: rest }
   }
 
-  const hidden = n - MEDIA_VISIBLE_MAX
-  if (hidden === 1) {
-    return { main, secondary: rest }
-  }
+  const normalVisibleCount = MEDIA_VISIBLE_MAX - 1
+  const hidden = n - normalVisibleCount
+  const secondary = rest.slice(0, normalVisibleCount - 1)
+  const moreItem = rest[normalVisibleCount - 1]
 
   return {
     main,
-    secondary: rest.slice(0, MEDIA_SECONDARY_MAX),
+    secondary,
+    moreItem,
     moreCount: {
       dataExpLb: '0',
       countLabel: `+${hidden}`,
@@ -786,45 +823,53 @@ function mediaThumbFromItem(item: ResolvedExperienceMediaItem, dataExpLb: string
 }
 
 export function buildHeroGalleryFromItems(items: ResolvedExperienceMediaItem[]): SoqtapataPhase1GalleryCell[] {
-  const photos = items.filter((i) => i.kind === 'photo')
+  const photos = items
+    .map((item, index) => ({ item, index }))
+    .filter((entry) => entry.item.kind === 'photo')
   if (!photos.length) return []
 
+  const first = photos[0]!
   const cells: SoqtapataPhase1GalleryCell[] = [
     {
       kind: 'main',
-      dataExpLb: '0',
+      dataExpLb: String(first.index),
       ariaLabel: 'Open photo gallery, image 1',
-      imageSrc: photos[0]!.imageSrc,
-      imageAlt: photos[0]!.alt,
+      imageSrc: first.item.imageSrc,
+      imageAlt: first.item.alt,
     },
   ]
 
   if (photos.length > 1) {
+    const second = photos[1]!
     cells.push({
       kind: 'thumb',
-      dataExpLb: '1',
+      dataExpLb: String(second.index),
       ariaLabel: 'Open photo gallery, image 2',
-      imageSrc: photos[1]!.imageSrc,
-      imageAlt: photos[1]!.alt,
-      galleryLabel: (photos[1]!.caption || photos[1]!.title || photos[1]!.alt).slice(0, 40),
+      imageSrc: second.item.imageSrc,
+      imageAlt: second.item.alt,
+      galleryLabel: (second.item.caption || second.item.title || second.item.alt).slice(0, 40),
     })
   }
 
-  if (photos.length > 2) {
-    const hiddenPhotos = photos.length - 2
+  const visiblePhotoEntries = photos.slice(2, 5)
+  for (let i = 0; i < visiblePhotoEntries.length; i++) {
+    const entry = visiblePhotoEntries[i]!
+    const photoNumber = i + 3
+    const isLastVisible = i === visiblePhotoEntries.length - 1
+    const hiddenPhotos = Math.max(0, photos.length - photoNumber)
     cells.push({
       kind: 'thumb',
-      dataExpLb: '2',
-      ariaLabel: 'Open photo gallery, image 3',
-      imageSrc: photos[2]!.imageSrc,
-      imageAlt: photos[2]!.alt,
+      dataExpLb: String(entry.index),
+      ariaLabel: `Open photo gallery, image ${photoNumber}`,
+      imageSrc: entry.item.imageSrc,
+      imageAlt: entry.item.alt,
       stylePositionRelative: true,
-      galleryLabel: mediaThumbDisplayTitle(photos[2]!),
-      ...(hiddenPhotos > 1
+      galleryLabel: mediaThumbDisplayTitle(entry.item),
+      ...(isLastVisible && hiddenPhotos > 0
         ? {
             moreBadge: {
               text: `+${hiddenPhotos} more`,
-              dataExpLb: '0',
+              dataExpLb: String(first.index),
               ariaLabel: 'Open full photo gallery',
             },
           }
@@ -840,11 +885,13 @@ export function buildMediaFromGalleryItems(
   lMedia: SoqtapataMedia,
   h1: string,
 ): SoqtapataMedia | null {
-  const { main, secondary, moreCount } = layoutMediaTiles(items)
+  const { main, secondary, moreCount, moreItem } = layoutMediaTiles(items)
   if (!main) return null
 
-  const thumbs = secondary.map((item, i) => mediaThumbFromItem(item, String(i + 1)))
+  const mainIndex = Math.max(0, items.indexOf(main))
+  const thumbs = secondary.map((item) => mediaThumbFromItem(item, String(Math.max(0, items.indexOf(item)))))
   const filmPill = main.title || main.caption || h1
+  const lightboxItems = lightboxItemsFromResolvedMedia(items)
 
   return {
     eyebrow: lMedia.eyebrow,
@@ -858,9 +905,19 @@ export function buildMediaFromGalleryItems(
       officialPill: lMedia.video.officialPill,
       isVideo: main.kind === 'video',
       videoUrl: main.videoUrl,
+      dataExpLb: String(mainIndex),
     },
     thumbs,
-    ...(moreCount ? { moreCount } : {}),
+    ...(moreCount
+      ? {
+          moreCount: {
+            ...moreCount,
+            dataExpLb: moreItem ? String(Math.max(0, items.indexOf(moreItem))) : String(mainIndex),
+            ...(moreItem ? { imageSrc: moreItem.imageSrc, imageAlt: moreItem.alt } : {}),
+          },
+        }
+      : {}),
+    lightboxItems,
   }
 }
 
@@ -878,6 +935,7 @@ function emptyMediaShell(lMedia: SoqtapataMedia, h1: string): SoqtapataMedia {
       isVideo: false,
     },
     thumbs: [],
+    lightboxItems: [],
   }
 }
 
@@ -1355,10 +1413,19 @@ function buildLodgesFromCms(
     const ctaLabel = showCta ? pres.ctaLabel?.trim() || defaultCtaLabel : ''
     const chips = resolveLodgePageHeroPillTexts(lodgePage)
     const meta = resolveLodgePageHeroShortDescription(lodgePage, lod) || template.meta
+    const mergedGallery = mergeLodgeGalleryWithPhotoLibrary(lod.photoCollection ?? null, lod.gallery)
+    const imageSrc = resolveLodgeIdentityImageUrl({
+      gallery: mergedGallery,
+      heroGalleryOrderKeys: lodgePage?.heroGalleryOrderKeys,
+      menuThumbnailKey: lodgePage?.menuThumbnailImage,
+      mainImage: lod.mainImage,
+      mainImageUrl: lod.mainImageUrl,
+      width: 800,
+    })
 
     cards.push({
-      imageSrc: (lod.mainImageUrl && imgW(lod.mainImageUrl, 500)) || template.imageSrc,
-      imageAlt: (lod.name && lod.name.trim()) || template.imageAlt,
+      imageSrc,
+      imageAlt: (lod.name && lod.name.trim()) || 'Lodge',
       nightBadge: pres.nightsLabel?.trim() || template.nightBadge,
       name: lod.name!.trim(),
       nameStyle: template.nameStyle,
@@ -1556,6 +1623,16 @@ function resolvePrimaryLodgeForExperience(e: CmsExperience): CmsLodge | null {
     if (ld?.name) return ld
   }
   return null
+}
+
+function resolveHeroLodgeNamesForExperience(e: CmsExperience): string {
+  const rowNames = (e.lodgePresentationRows ?? [])
+    .map((r) => r.lodge?.name?.trim())
+    .filter((name): name is string => Boolean(name))
+  const uniqueRowNames = Array.from(new Set(rowNames))
+  if (uniqueRowNames.length > 0) return uniqueRowNames.join(' · ')
+
+  return resolvePrimaryLodgeForExperience(e)?.name?.trim() || ''
 }
 
 function lodgeModifiersFor(e: CmsExperience, lodgeId: string | undefined | null): CmsLodgePresentationRow | null {
@@ -1956,7 +2033,7 @@ export function soqtapataPartialFromStructuredRow(
       bookUrl,
       bookLabel,
       breadcrumb,
-      lodgeName: resolvePrimaryLodgeForExperience(e)?.name?.trim() || l.hero.lodgeName,
+      lodgeName: resolveHeroLodgeNamesForExperience(e),
       ratingScore,
       ratingReviews,
     },

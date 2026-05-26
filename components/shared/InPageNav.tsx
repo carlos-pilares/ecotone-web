@@ -17,6 +17,8 @@ export type InPageNavProps = {
   cta?: { href: string; label: string }
   /** When set, replaces the default single CTA anchor (e.g. Experience: price + Book). */
   ctaSlot?: ReactNode
+  /** Optional mobile-only text appended to the subtitle, e.g. Experience price. */
+  mobileMetaSlot?: ReactNode
   mode: 'lodge' | 'experience'
   /** Extra classes on `<nav>` (e.g. scrolled toggled by parent). */
   navClassName?: string
@@ -34,6 +36,7 @@ export function InPageNav({
   onLinkClick,
   cta,
   ctaSlot,
+  mobileMetaSlot,
   mode,
   navClassName,
 }: InPageNavProps) {
@@ -59,7 +62,17 @@ export function InPageNav({
         <div className="page-nav-inner">
           <div className="page-nav-left">
             <div className="page-nav-title">{title}</div>
-            <div className="page-nav-sub">{subtitle}</div>
+            <div className="page-nav-sub">
+              <span className="page-nav-sub-text">{subtitle}</span>
+              {mobileMetaSlot ? (
+                <>
+                  <span className="page-nav-mobile-meta-sep" aria-hidden="true">
+                    |
+                  </span>
+                  <span className="page-nav-mobile-meta">{mobileMetaSlot}</span>
+                </>
+              ) : null}
+            </div>
           </div>
           <button
             type="button"

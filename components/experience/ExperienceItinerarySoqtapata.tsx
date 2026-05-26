@@ -78,11 +78,6 @@ function ItineraryDayCard({
   return (
     <div className={'day-card' + (open ? ' open' : '')} id={day.id}>
       <div className="day-header" onClick={() => onToggle(day.id)}>
-        <div className="day-photo-strip">
-          <img src={day.photoSrc} alt={day.photoAlt} decoding="async" />
-          <div className="day-photo-overlay" />
-          <span className="day-photo-caption">{day.caption}</span>
-        </div>
         <div className="day-header-row">
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div className="day-num">{day.dayNum}</div>
@@ -95,23 +90,32 @@ function ItineraryDayCard({
         </div>
       </div>
       <div className="day-body">
-        <div className="day-body-inner">
-          {day.timeline.map((t) => (
-            <div className="timeline-item" key={`${t.time}-${t.title}`}>
-              <div className="timeline-time">{t.time}</div>
-              <div>
-                <div className="timeline-title">{t.title}</div>
-                <div className="timeline-desc">{t.desc}</div>
-              </div>
+        <div className="day-open-content">
+          <div className="day-open-text">
+            <div className="day-body-inner">
+              {day.timeline.map((t) => (
+                <div className="timeline-item" key={`${t.time}-${t.title}`}>
+                  <div className="timeline-time">{t.time}</div>
+                  <div>
+                    <div className="timeline-title">{t.title}</div>
+                    <div className="timeline-desc">{t.desc}</div>
+                  </div>
+                </div>
+              ))}
+              {day.lodgeBadge ? (
+                <div className="day-lodge-badge">
+                  {LODGE_SVG}
+                  <span className="day-lodge-name">{day.lodgeBadge.name}</span>
+                  <span className="day-lodge-sub">{day.lodgeBadge.sub}</span>
+                </div>
+              ) : null}
             </div>
-          ))}
-          {day.lodgeBadge ? (
-            <div className="day-lodge-badge">
-              {LODGE_SVG}
-              <span className="day-lodge-name">{day.lodgeBadge.name}</span>
-              <span className="day-lodge-sub">{day.lodgeBadge.sub}</span>
-            </div>
-          ) : null}
+          </div>
+          <figure className="day-image">
+            <img src={day.photoSrc} alt={day.photoAlt} decoding="async" />
+            <div className="day-photo-overlay" />
+            {day.caption ? <figcaption className="day-photo-caption">{day.caption}</figcaption> : null}
+          </figure>
         </div>
       </div>
     </div>

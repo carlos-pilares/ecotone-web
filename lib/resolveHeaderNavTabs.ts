@@ -8,6 +8,7 @@ import {
   normalizeLodgeRouteKey,
 } from '@/data/lodgeSoqtapataResolverDefaults'
 import { formatExperienceNavPriceMeta } from '@/lib/formatExperiencePrice'
+import { resolveExperienceHeroImageUrl } from '@/lib/experienceHeroImage'
 import { resolveExperiencePublicHref } from '@/lib/resolveExperiencePublicHref'
 import type { HeaderNavTabRow } from '@/lib/headerNavTabsAdapter'
 import { resolveHeaderNavTabRows } from '@/lib/headerNavTabsAdapter'
@@ -256,7 +257,15 @@ function buildExperiencesDropdown(
       href,
       routeLine: resolveHeaderExperienceRoutePill(exp, routeBySlug),
       priceMeta: formatExperienceNavPriceMeta(exp),
-      thumbUrl: exp.navImageUrl?.trim() || exp.mainImageUrl?.trim() || null,
+      thumbUrl:
+        resolveExperienceHeroImageUrl({
+          gallery: exp.gallery,
+          galleryOrderKeys: row.galleryOrderKeys,
+          photoCollection: exp.photoCollection,
+          mainImage: exp.mainImage,
+          mainImageUrl: exp.mainImageUrl,
+          width: 600,
+        }) || null,
     }
     const list = byProgramType.get(programType) ?? []
     list.push({ it: item, sk, sn: name.toLowerCase() })

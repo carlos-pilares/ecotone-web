@@ -577,10 +577,20 @@ export type SoqtapataMedia = {
     /** Main tile is a KC video item (show play chrome). */
     isVideo?: boolean
     videoUrl?: string
+    dataExpLb?: string
   }
   thumbs: SoqtapataMediaThumb[]
   /** Omitted when every gallery image is already visible in the thumb grid. */
-  moreCount?: { dataExpLb: string; countLabel: string; subLabel: string; ariaLabel: string }
+  moreCount?: {
+    dataExpLb: string
+    countLabel: string
+    subLabel: string
+    ariaLabel: string
+    imageSrc?: string
+    imageAlt?: string
+  }
+  /** Full resolved media list for the shared lightbox; visible tiles may be a subset. */
+  lightboxItems?: Array<{ src: string; alt: string; title?: string; description?: string }>
 }
 
 export const soqtapataPhase4Media: SoqtapataMedia = {

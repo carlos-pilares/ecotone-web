@@ -178,7 +178,8 @@ export const experienceLodgePresentationRow = defineType({
       type: 'string',
       readOnly: true,
       components: {input: LodgePresentationHeroPreview},
-      description: 'Short description and chips on the public card are edited on the linked Lodge Page.',
+      description:
+        'Short description, chips, and card image on the public Experience page are edited on the linked **Lodge Page** (Hero → photos / menu thumbnail).',
     }),
     defineField({
       name: 'ctaLabel',

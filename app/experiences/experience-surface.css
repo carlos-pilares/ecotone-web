@@ -139,6 +139,65 @@ button { font-family: var(--f); cursor: pointer; }
 .gallery-see-all { position: absolute; bottom: 10px; right: 10px; z-index: 2; font-size: 12px; font-weight: 600; background: rgba(0,0,0,.65); color: #fff; padding: 5px 13px; border-radius: 100px; border: 1px solid rgba(255,255,255,.2); cursor: pointer; }
 .gallery-label { position: absolute; bottom: 8px; left: 10px; font-size: 11px; font-weight: 600; color: rgba(236,229,213,.85); }
 
+/* Experience hero media: keep 3:2-ish containers on wide screens instead of shallow strips. */
+#ecotone-experience-root .exp-hero .gallery-grid {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  grid-auto-flow: row;
+  height: clamp(360px, 42vw, 620px);
+}
+#ecotone-experience-root .exp-hero .gallery-main {
+  grid-column: 1;
+  grid-row: 1 / 3;
+}
+#ecotone-experience-root .exp-hero .gallery-main,
+#ecotone-experience-root .exp-hero .gallery-thumb {
+  height: auto;
+  min-height: 0;
+}
+#ecotone-experience-root .exp-hero .gallery-thumb:nth-of-type(n+4) {
+  display: none;
+}
+#ecotone-experience-root .exp-hero .gallery-main img,
+#ecotone-experience-root .exp-hero .gallery-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+@media (min-width: 1280px) {
+  #ecotone-experience-root .exp-hero .gallery-grid {
+    grid-template-columns: minmax(0, 1.55fr) repeat(2, minmax(0, 0.78fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    height: clamp(480px, 39vw, 660px);
+  }
+  #ecotone-experience-root .exp-hero .gallery-thumb:nth-of-type(n+4) {
+    display: block;
+  }
+}
+@media (max-width: 600px) {
+  #ecotone-experience-root .exp-hero .gallery-grid {
+    height: auto;
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+  }
+  #ecotone-experience-root .exp-hero .gallery-main,
+  #ecotone-experience-root .exp-hero .gallery-thumb {
+    aspect-ratio: 3 / 2;
+    height: auto;
+  }
+  #ecotone-experience-root .exp-hero .gallery-main {
+    grid-column: auto;
+    grid-row: auto;
+  }
+  #ecotone-experience-root .exp-hero .gallery-thumb {
+    display: none !important;
+  }
+}
+
 /* Identity block — below gallery on dark bg */
 .exp-identity { background: var(--n900); padding: 20px var(--g) 24px; }
 .exp-identity-inner { max-width: var(--max); margin: 0 auto; display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: start; }
@@ -195,6 +254,11 @@ button { font-family: var(--f); cursor: pointer; }
 .snap-item:last-child { border-right: none; }
 .snap-n { font-size: 17px; font-weight: 700; color: var(--n900); line-height: 1; letter-spacing: -.02em; }
 .snap-l { font-size: 11px; font-weight: 300; color: var(--n400); margin-top: 4px; letter-spacing: .03em; }
+@media (max-width: 719px) {
+  #ecotone-experience-root .snap-item { padding: 10px 8px; }
+  #ecotone-experience-root .snap-n { font-size: 15px; line-height: .95; }
+  #ecotone-experience-root .snap-l { font-size: 10px; line-height: 1.15; margin-top: 3px; letter-spacing: .02em; }
+}
 
 /* ── INTERNAL PAGE NAV — one row: package + days | section links | From + price + Book ── */
 /* Con hero aún visible: sticky bajo el #topNav. Tras el hero: solo esta barra queda fija arriba; el header principal se oculta (véase body.ecotone-exp-past-hero #topNav). */
@@ -261,6 +325,8 @@ body:has(#ecotone-experience-root).ecotone-exp-past-hero .pnav-scroll-shim {
 .pnav-from-num { font-size: 18px; font-weight: 700; color: var(--n900); letter-spacing: -.03em; }
 .pnav-from-sub { font-size: 10px; font-weight: 300; color: var(--n400); display: block; margin-top: 1px; }
 a.pnav-book-btn, button.pnav-book-btn { padding: 8px 18px; font-size: 12px; font-weight: 700; text-decoration: none; }
+.page-nav-mobile-meta-sep,
+.page-nav-mobile-meta { display: none; }
 /* Mobile expand: minimal chevron (no “button” chrome); visual order = title → chevron → price → CTA via grid */
 .pnav-mobile-toggle {
   display: none;
@@ -292,56 +358,60 @@ a.pnav-book-btn, button.pnav-book-btn { padding: 8px 18px; font-size: 12px; font
   }
 }
 @media (max-width: 719px) {
-  .ipnav--mobile-drawer.lodge-page-nav.page-nav .page-nav-inner {
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer.lodge-page-nav.page-nav .page-nav-inner {
     display: grid;
-    /* Lead uses remaining width; toggle + price/CTA stay content-sized */
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) 30px auto;
     align-items: center;
-    padding: 10px var(--g);
-    gap: 8px 12px;
+    padding: 9px var(--g);
+    gap: 2px 8px;
     grid-template-areas:
-      "lead toggle cta"
+      "lead toggle book"
       "links links links";
     overflow-x: visible;
+    overflow-y: visible;
   }
-  .ipnav--mobile-drawer .page-nav-left {
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer .page-nav-left {
     grid-area: lead;
-    min-width: 0;
-    padding: 0 12px 0 0;
-  }
-  .ipnav--mobile-drawer .pnav-mobile-toggle {
-    display: flex !important;
-    grid-area: toggle;
-  }
-  .ipnav--mobile-drawer .page-nav-cols {
-    grid-area: links;
-  }
-  .ipnav--mobile-drawer .pnav-cta {
-    grid-area: cta;
-  }
-  .ipnav--mobile-drawer .page-nav-left,
-  .ipnav--mobile-drawer .pnav-mobile-toggle,
-  .ipnav--mobile-drawer .pnav-cta {
-    align-self: center;
-  }
-  .ipnav--mobile-drawer .page-nav-left {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 0;
+    min-width: 0;
+    padding: 0;
   }
-  .ipnav--mobile-drawer .page-nav-title {
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer .pnav-mobile-toggle {
+    display: flex !important;
+    grid-area: toggle;
+    width: 32px;
+    height: 36px;
+    justify-self: center;
+  }
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer .page-nav-cols {
+    grid-area: links;
+  }
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer .pnav-cta {
+    grid-area: book;
+  }
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer .page-nav-left,
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer .pnav-mobile-toggle {
+    align-self: center;
+  }
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer .page-nav-title {
+    min-width: 0;
     white-space: normal;
     line-height: 1.3;
   }
-  .ipnav--mobile-drawer .page-nav-sub {
-    white-space: normal;
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer .page-nav-sub {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     line-height: 1.2;
-    margin-top: 1px;
+    margin-top: 0;
   }
-  .ipnav--mobile-drawer .pnav-cta {
-    gap: 8px;
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer .pnav-cta {
+    display: flex;
     align-items: center;
+    justify-content: flex-end;
     padding-left: 0;
   }
   /* Scrim: dim + strong backdrop blur. `#pageNav` / dropdown stay above (z-index 199–290). Body class from `InPageNavDrawerClient` for a11y + fallback blur on page root. */
@@ -359,30 +429,62 @@ a.pnav-book-btn, button.pnav-book-btn { padding: 8px 18px; font-size: 12px; font
     visibility: hidden;
     transition: opacity 0.32s ease, visibility 0.32s ease, backdrop-filter 0.32s ease, -webkit-backdrop-filter 0.32s ease;
   }
-  #pageNav.pnav-mobile-open ~ .pnav-mobile-scrim {
+  body:has(#ecotone-experience-root) #pageNav.pnav-mobile-open ~ .pnav-mobile-scrim {
     pointer-events: auto !important;
     opacity: 1;
     visibility: visible;
     will-change: backdrop-filter;
   }
-  /* Extra frosted read: blur in-page content under the scrim (nav + scrim excluded). Keeps `#pageNav` sharp. */
-  body.pnav-mobile-drawer-open #ecotone-experience-root > *:not(#pageNav):not(#pnavScrollShim):not(#pnavMobileScrim) {
+  body.pnav-mobile-drawer-open:has(#ecotone-experience-root) #ecotone-experience-root > *:not(#pageNav):not(#pnavScrollShim):not(#pnavMobileScrim) {
     filter: blur(10px);
     -webkit-filter: blur(10px);
     transition: filter 0.28s ease, -webkit-filter 0.28s ease;
   }
-  .ipnav--mobile-drawer .page-nav-title {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer .page-nav-title {
+    display: block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     overflow: hidden;
     font-size: 12px;
   }
-  .pnav-from-label, .pnav-from-sub { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; white-space: nowrap; }
-  .pnav-from-price { position: relative; text-align: right; }
-  .pnav-from-num { font-size: 15px; }
-  .ipnav--mobile-drawer .pnav-cta a.btn-primary { padding: 8px 14px; font-size: 11px; }
-  .ipnav--mobile-drawer .page-nav-cols {
+  #ecotone-experience-root .exp-soqtapata-pnav .page-nav-sub-text,
+  #ecotone-experience-root .exp-soqtapata-pnav .page-nav-mobile-meta-sep,
+  #ecotone-experience-root .exp-soqtapata-pnav .page-nav-mobile-meta {
+    display: inline;
+    vertical-align: baseline;
+  }
+  #ecotone-experience-root .exp-soqtapata-pnav .page-nav-mobile-meta-sep {
+    margin: 0 5px;
+    color: var(--n300);
+  }
+  #ecotone-experience-root .exp-soqtapata-pnav .page-nav-mobile-meta {
+    font-weight: 650;
+    color: var(--n650, #4d4034);
+    letter-spacing: -.015em;
+  }
+  #ecotone-experience-root .exp-soqtapata-pnav .pnav-from-label,
+  #ecotone-experience-root .exp-soqtapata-pnav .pnav-from-sub { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; white-space: nowrap; }
+  #ecotone-experience-root .exp-soqtapata-pnav .pnav-from-price {
+    display: none;
+  }
+  #ecotone-experience-root .exp-soqtapata-pnav .pnav-from-num {
+    font-size: 11px;
+    font-weight: 650;
+    line-height: 1.15;
+    letter-spacing: -.015em;
+    color: var(--n600, #5c5042);
+    white-space: nowrap;
+  }
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer .pnav-cta a.btn-primary,
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer .pnav-cta button.btn-primary {
+    align-self: center;
+    justify-self: end;
+    padding: 7px 12px !important;
+    font-size: 11px !important;
+  }
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer .page-nav-cols {
+    display: flex;
+    width: 100%;
     flex-direction: column;
     align-items: stretch;
     gap: 0;
@@ -400,8 +502,8 @@ a.pnav-book-btn, button.pnav-book-btn { padding: 8px 18px; font-size: 12px; font
     overscroll-behavior-y: contain;
     transition: max-height 0.32s ease, opacity 0.25s ease, transform 0.25s ease, border-color 0.2s ease, padding 0.2s ease;
   }
-  .ipnav--mobile-drawer.pnav-mobile-open .page-nav-cols {
-    max-height: min(52vh, 400px);
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer.pnav-mobile-open .page-nav-cols {
+    max-height: min(52vh, 420px);
     overflow-x: hidden;
     overflow-y: auto;
     text-align: left;
@@ -410,16 +512,16 @@ a.pnav-book-btn, button.pnav-book-btn { padding: 8px 18px; font-size: 12px; font
     transform: none;
     pointer-events: auto;
     border-top-color: var(--n200);
-    margin: 0;
-    padding: 4px 0 10px;
+    margin: 8px 0 0;
+    padding: 8px 0 6px;
   }
-  .ipnav--mobile-drawer.pnav-mobile-open .ipnav-link {
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer.pnav-mobile-open .ipnav-link {
     display: block;
     text-align: left;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
-    padding: 15px 0 16px 12px;
+    padding: 13px 10px;
     margin: 0;
     white-space: normal;
     line-height: 1.4;
@@ -427,15 +529,25 @@ a.pnav-book-btn, button.pnav-book-btn { padding: 8px 18px; font-size: 12px; font
     border-left: none;
     font-weight: 400;
   }
-  .ipnav--mobile-drawer.pnav-mobile-open .page-nav-links a:last-child {
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer.pnav-mobile-open .page-nav-links a:last-child {
     border-bottom: none;
   }
-  .ipnav--mobile-drawer.pnav-mobile-open .ipnav-link.ipnav-link--active {
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer.pnav-mobile-open .ipnav-link.ipnav-link--active {
     font-weight: 700;
     color: var(--brown);
-    background: transparent;
-    border-left: none;
+    background: var(--b50);
+    border-left: 2px solid var(--brown);
     border-bottom-color: var(--n200);
+  }
+}
+@media (max-width: 390px) {
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer.lodge-page-nav.page-nav .page-nav-inner {
+    grid-template-columns: minmax(0, 1fr) 26px auto;
+    gap: 2px 6px;
+  }
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer .pnav-cta a.btn-primary,
+  #ecotone-experience-root .exp-soqtapata-pnav.ipnav--mobile-drawer .pnav-cta button.btn-primary {
+    padding: 7px 10px !important;
   }
 }
 @media (max-width: 719px) and (prefers-reduced-motion: reduce) {
@@ -487,14 +599,20 @@ body.ecotone-pnav-stuck .top-nav a.nav-book.desk {
 
 /* ── ITINERARY ── */
 .itinerary { display: flex; flex-direction: column; gap: 8px; }
-.day-card { border: 1px solid var(--n200); border-radius: var(--rl); overflow: hidden; }
+.day-card { border: 1px solid var(--n200); border-radius: var(--rl); overflow: hidden; background: var(--w); }
 .day-card.open .day-header { background: var(--b50); border-bottom-color: var(--n200); }
 .day-header { padding: 0; cursor: pointer; display: flex; flex-direction: column; border-bottom: 1px solid transparent; transition: background .18s; }
 .day-header:hover { background: var(--b50); }
-/* Photo strip — always visible even when collapsed */
+/* Legacy strip class kept inert; open-state photos now live inside `.day-image`. */
 .day-photo-strip { position: relative; height: 64px; overflow: hidden; transition: height .35s ease; }
 .day-card.open .day-photo-strip { height: 180px; }
 .day-photo-strip img { width: 100%; height: 100%; object-fit: cover; }
+#ecotone-experience-root #itinerary .day-photo-strip img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
 .day-photo-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.4) 0%, transparent 35%, transparent 55%, rgba(0,0,0,.6) 100%); }
 .day-photo-caption { position: absolute; bottom: 8px; left: 14px; right: 14px; font-size: 12px; font-weight: 400; color: rgba(236,229,213,.9); opacity: 0; transition: opacity .3s .1s; }
 .day-card.open .day-photo-caption { opacity: 1; }
@@ -509,6 +627,53 @@ body.ecotone-pnav-stuck .top-nav a.nav-book.desk {
 .day-body { max-height: 0; overflow: hidden; transition: max-height .4s ease; }
 .day-card.open .day-body { max-height: 600px; }
 .day-body-inner { padding: 14px 16px 16px; border-top: 1px solid var(--n200); display: flex; flex-direction: column; gap: 10px; }
+#ecotone-experience-root #itinerary .day-body {
+  display: none;
+  max-height: none;
+  overflow: visible;
+  transition: none;
+}
+#ecotone-experience-root #itinerary .day-card.open .day-body {
+  display: block;
+  max-height: none;
+}
+#ecotone-experience-root #itinerary .day-open-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: 28px;
+  align-items: start;
+  padding: 18px;
+  border-top: 1px solid var(--n200);
+}
+#ecotone-experience-root #itinerary .day-body-inner {
+  padding: 0;
+  border-top: 0;
+}
+#ecotone-experience-root #itinerary .day-image {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  width: 100%;
+  margin: 0;
+  overflow: hidden;
+  border-radius: var(--r);
+  background: var(--n100);
+}
+#ecotone-experience-root #itinerary .day-image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center center;
+}
+@media (max-width: 768px) {
+  #ecotone-experience-root #itinerary .day-open-content {
+    display: block;
+    padding: 16px;
+  }
+  #ecotone-experience-root #itinerary .day-image {
+    margin-top: 18px;
+  }
+}
 .timeline-item { display: flex; gap: 12px; align-items: flex-start; }
 .timeline-time { font-size: 12px; font-weight: 600; color: var(--brown); width: 58px; flex-shrink: 0; padding-top: 1px; }
 .timeline-title { font-size: 13px; font-weight: 600; color: var(--n900); margin-bottom: 2px; }
@@ -573,6 +738,75 @@ body.ecotone-pnav-stuck .top-nav a.nav-book.desk {
 .media-play-btn { width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,.88); display: flex; align-items: center; justify-content: center; }
 .media-label { position: absolute; bottom: 6px; left: 7px; font-size: 10px; font-weight: 600; line-height: 1.2; color: #fff; padding: 3px 8px; border-radius: 100px; white-space: nowrap; max-width: calc(100% - 14px); overflow: hidden; text-overflow: ellipsis; }
 .media-count { display: flex; align-items: center; justify-content: center; height: 90px; background: var(--n100); border-radius: var(--r); border: 1px solid var(--n200); flex-direction: column; gap: 2px; cursor: pointer; }
+#ecotone-experience-root #media .video-hero,
+#ecotone-experience-root #media .media-thumb,
+#ecotone-experience-root #media .media-count {
+  aspect-ratio: 3 / 2;
+}
+#ecotone-experience-root #media .media-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+}
+#ecotone-experience-root #media .video-hero {
+  margin: 0;
+}
+#ecotone-experience-root #media .video-hero img,
+#ecotone-experience-root #media .media-thumb img,
+#ecotone-experience-root #media .media-count img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+#ecotone-experience-root #media .video-hero img {
+  display: block;
+}
+#ecotone-experience-root #media .media-thumb img,
+#ecotone-experience-root #media .media-count {
+  height: auto;
+}
+#ecotone-experience-root #media .media-count {
+  position: relative;
+  overflow: hidden;
+  color: var(--n900);
+}
+#ecotone-experience-root #media .media-count img {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+#ecotone-experience-root #media .media-count-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.48);
+}
+#ecotone-experience-root #media .media-count-label,
+#ecotone-experience-root #media .media-count-sub {
+  position: relative;
+  z-index: 1;
+}
+#ecotone-experience-root #media .media-count-label {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--n900);
+}
+#ecotone-experience-root #media .media-count-sub {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--n400);
+}
+#ecotone-experience-root #media .media-count--image .media-count-label,
+#ecotone-experience-root #media .media-count--image .media-count-sub {
+  color: #fff;
+}
+#ecotone-experience-root #media .media-count--image .media-count-sub {
+  color: rgba(255, 255, 255, 0.78);
+}
+@media (max-width: 600px) {
+  #ecotone-experience-root #media .media-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 
 /* ── BEST TIME — per-month wildlife highlights ── */
 .months-grid {

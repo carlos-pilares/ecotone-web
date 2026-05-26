@@ -1,3 +1,5 @@
+import type { SanityImageSource } from '@sanity/image-url'
+
 import type { LodgeGalleryItemRow } from '@/lib/lodgePageCmsTypes'
 import { cdnImageUrl } from '@/lib/sanity'
 
@@ -63,6 +65,44 @@ export function resolveHeroGalleryRows(
  * 3. first KC gallery image
  * 4. null (frontend placeholder UI)
  */
+/**
+ * Canonical lodge identity image for cards (Experience → Lodges section, etc.).
+ * 1. Lodge Page hero main (`heroGalleryOrderKeys[0]` or first hero gallery row)
+ * 2. Lodge Page menu/thumbnail pick
+ * 3. First gallery image (library + legacy)
+ * 4. Lodge `mainImage`
+ */
+export function resolveLodgeIdentityImageUrl(opts: {
+  gallery: LodgeGalleryItemRow[] | null | undefined
+  heroGalleryOrderKeys?: string[] | null
+  menuThumbnailKey?: string | null
+  mainImage?: SanityImageSource | null
+  mainImageUrl?: string | null
+  width?: number
+}): string {
+  const width = opts.width ?? 800
+  const gallery = opts.gallery ?? []
+
+  const heroRows = resolveHeroGalleryRows(gallery, opts.heroGalleryOrderKeys)
+  const heroMain = heroRows[0] ? galleryRowImageUrl(heroRows[0], width) : ''
+  if (heroMain) return heroMain
+
+  const menuKey = opts.menuThumbnailKey?.trim()
+  if (menuKey) {
+    const menuRow = findGalleryRowByKey(gallery, menuKey)
+    const menuUrl = menuRow ? galleryRowImageUrl(menuRow, width) : ''
+    if (menuUrl) return menuUrl
+  }
+
+  const firstGallery = defaultHeroGalleryRows(gallery)[0]
+  if (firstGallery) {
+    const galleryUrl = galleryRowImageUrl(firstGallery, width)
+    if (galleryUrl) return galleryUrl
+  }
+
+  return opts.mainImageUrl?.trim() || cdnImageUrl(opts.mainImage, width, '') || ''
+}
+
 export function resolveMenuThumbnailUrl(
   menuThumbnailKey: string | null | undefined,
   gallery: LodgeGalleryItemRow[] | null | undefined,

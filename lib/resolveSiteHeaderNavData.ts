@@ -11,6 +11,7 @@ import {
 import { canonicalizeLodgeRouteSlug } from '@/data/lodgeSoqtapataResolverDefaults'
 import { resolveRouteLabel } from '@/data/lodgeSoqtapataResolverDefaults'
 import { formatExperienceNavPriceMeta } from '@/lib/formatExperiencePrice'
+import { resolveExperienceHeroImageUrl } from '@/lib/experienceHeroImage'
 import { resolveExperiencePublicHref } from '@/lib/resolveExperiencePublicHref'
 import {
   resolveSmartLinkOrLegacy,
@@ -837,7 +838,14 @@ export function resolveSiteHeaderNavData(
     const sk = (typeof io?.order === 'number' ? io.order : row.headerNavOrder) ?? 999
     const name = io?.label?.trim() || exp.name!.trim()
     const thumb =
-      exp.navImageUrl?.trim() || exp.mainImageUrl?.trim() || null
+      resolveExperienceHeroImageUrl({
+        gallery: exp.gallery,
+        galleryOrderKeys: row.galleryOrderKeys,
+        photoCollection: exp.photoCollection,
+        mainImage: exp.mainImage,
+        mainImageUrl: exp.mainImageUrl,
+        width: 600,
+      }) || null
     const item: SiteHeaderNavExpItem = {
       id: pageId,
       name,

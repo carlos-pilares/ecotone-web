@@ -143,6 +143,7 @@ export function ExperiencePageNavSoqtapata({
       mode="experience"
       title={data.leadName}
       subtitle={data.leadDays}
+      mobileMetaSlot={data.fromNum}
       links={scrollLinks}
       activeHref={activeHref}
       onLinkClick={(href) => {
