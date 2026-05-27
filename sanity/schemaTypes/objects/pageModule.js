@@ -1,9 +1,12 @@
 import {defineField, defineType} from 'sanity'
 import {PageSectionVisibilityInput} from '../../components/pageSection/PageSectionVisibilityInput'
 import {PageModuleInput} from '../../components/pageModule/PageModuleInput'
-import {MODULE_LIST, getListSubtitleLine} from '../../lib/pageModuleShared'
-
-const DROPDOWN = MODULE_LIST.map((m) => ({title: `${m.title}`, value: m.value}))
+import {
+  PAGE_MODULE_KEY_DROPDOWN,
+  getPageModuleKeyLabel,
+  isKnownPageModuleKey,
+} from '../../lib/pageModuleKeyOptions'
+import {getListSubtitleLine} from '../../lib/pageModuleShared'
 
 export const pageModule = defineType({
   name: 'pageModule',
@@ -17,8 +20,14 @@ export const pageModule = defineType({
       name: 'key',
       title: 'Bloque',
       type: 'string',
-      options: {list: DROPDOWN, layout: 'dropdown'},
-      validation: (Rule) => Rule.required(),
+      options: {list: PAGE_MODULE_KEY_DROPDOWN, layout: 'dropdown'},
+      validation: (Rule) =>
+        Rule.required().custom((key) => {
+          if (!key) return true
+          if (isKnownPageModuleKey(key)) return true
+          // Preserve legacy rows until migrated — do not block saves on unknown keys.
+          return true
+        }),
       description:
         'Cada bloque toma su contenido principal de la fuente de verdad indicada en el subtítulo (preview al guardar).',
     }),
@@ -70,8 +79,7 @@ export const pageModule = defineType({
       sectionText: 'sectionText',
     },
     prepare: ({key, visible, sectionTitle, eyebrow, sectionText}) => {
-      const m = MODULE_LIST.find((k) => k.value === key)
-      const label = m?.title || key || 'Sección'
+      const label = getPageModuleKeyLabel(key) || key || 'Sección'
       const src = getListSubtitleLine(key)
       const sub = [
         visible === false ? 'Oculta' : 'Visible',

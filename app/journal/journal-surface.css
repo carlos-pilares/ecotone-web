@@ -411,3 +411,65 @@
   margin-top: 6px;
   margin-bottom: 12px;
 }
+
+/* Mobile: horizontal gutters (listing + article). Desktop unchanged. */
+@media (max-width: 768px) {
+  .journal-page {
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  /* Hero is outside .content-section — needs its own inset */
+  .journal-index-hero {
+    padding-left: 20px;
+    padding-right: 20px;
+    box-sizing: border-box;
+  }
+
+  .journal-index-hero .content-inner {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .journal-page > .content-section {
+    padding-left: 20px;
+    padding-right: 20px;
+    box-sizing: border-box;
+  }
+
+  .journal-page > .content-section .content-inner {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .journal-tag-row {
+    gap: 8px;
+    row-gap: 10px;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .journal-article-hero-inner {
+    padding-left: 20px;
+    padding-right: 20px;
+    box-sizing: border-box;
+  }
+
+  .journal-article-hero-inner .content-inner {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .journal-article-body {
+    padding-left: 20px;
+    padding-right: 20px;
+    box-sizing: border-box;
+  }
+
+  .journal-article-prose {
+    max-width: 100%;
+  }
+}
