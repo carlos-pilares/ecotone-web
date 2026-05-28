@@ -377,11 +377,14 @@ export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPa
       return { id, name, meta: ch.meta?.trim() ?? '', variant }
     })
     .filter(Boolean) as RoutesTerritoryStatic['strip']
+  const territoryImageUrl = cms?.territoryImageUrl?.trim() || null
   const territory: RoutesTerritoryStatic = {
     sectionId: trimOr(fallbackTerritory.sectionId, cms?.territorySectionId),
     eyebrow: trimOr(fallbackTerritory.eyebrow, cms?.territoryEyebrow),
     h2: trimOr(fallbackTerritory.h2, cms?.territoryH2),
     body: trimOr(fallbackTerritory.body, cms?.territoryBody),
+    imageSrc: territoryImageUrl,
+    imageAlt: trimOr(fallbackTerritory.imageAlt, cms?.territoryImageAlt),
     strip: stripFromCms.length ? stripFromCms : fallbackTerritory.strip,
   }
 

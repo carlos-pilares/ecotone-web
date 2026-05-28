@@ -39,6 +39,9 @@ export type RoutesTerritoryStatic = {
   eyebrow: string
   h2: string
   body: string
+  /** CMS territory diagram; when empty the frontend uses the built-in SVG map. */
+  imageSrc: string | null
+  imageAlt: string
   strip: RoutesTerritoryStripChip[]
 }
 
@@ -90,6 +93,8 @@ export const routesTerritory: RoutesTerritoryStatic = {
   h2: 'Andes to Amazon from Cusco',
   body:
     'Three corridors departing from Cusco into the most biodiverse zones on Earth. The altitude gradient defines the ecosystem — and the experience. The further you go, the deeper the jungle.',
+  imageSrc: null,
+  imageAlt: 'Routes from Cusco into the Manu Biosphere Reserve',
   strip: [
     { id: 'camanti', name: '① Camanti', meta: '~2.5h from Cusco', variant: 'active' },
     { id: 'manu-road', name: '② Manu Road', meta: '~5h from Cusco', variant: 'neutral' },

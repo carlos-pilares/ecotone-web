@@ -123,6 +123,22 @@ export const routesPage = defineType({
     defineField({name: 'territoryH2', title: 'Heading', type: 'string', group: 'territory'}),
     defineField({name: 'territoryBody', title: 'Body', type: 'text', rows: 4, group: 'territory'}),
     defineField({
+      name: 'territoryImage',
+      title: 'Territory diagram image',
+      type: 'image',
+      options: {hotspot: true},
+      group: 'territory',
+      description:
+        'Optional. Replaces the default SVG territory map when set. Wide image recommended (~4:1).',
+    }),
+    defineField({
+      name: 'territoryImageAlt',
+      title: 'Territory image alt text',
+      type: 'string',
+      group: 'territory',
+      validation: (Rule) => Rule.max(160),
+    }),
+    defineField({
       name: 'territoryStrip',
       title: 'Strip chips',
       type: 'array',

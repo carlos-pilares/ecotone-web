@@ -1,5 +1,7 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
 
+const footerLinkTypeIs = (t) => (parent) => (parent?.linkType ?? 'smartLink') === t
+
 export const footerLinkItem = defineType({
   name: 'footerLinkItem',
   title: 'Footer link',
@@ -12,15 +14,52 @@ export const footerLinkItem = defineType({
       validation: (Rule) => Rule.required().max(80),
     }),
     defineField({
+      name: 'linkType',
+      title: 'Link type',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'Smart link', value: 'smartLink'},
+          {title: 'Document / PDF', value: 'document'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'smartLink',
+      description: 'Existing links without a type keep using Smart link.',
+    }),
+    defineField({
       name: 'smartLink',
-      title: 'Link',
+      title: 'Smart link',
       type: 'smartLink',
-      description: 'Destination for this footer link (internal page, URL, WhatsApp, etc.).',
+      description: 'Internal page, URL, WhatsApp, file via smart link, etc.',
+      hidden: ({parent}) => footerLinkTypeIs('document')(parent),
+    }),
+    defineField({
+      name: 'document',
+      title: 'Document',
+      type: 'file',
+      description: 'PDF or other file. Label still shows if no file is uploaded.',
+      hidden: ({parent}) => !footerLinkTypeIs('document')(parent),
+      options: {
+        accept: '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,application/pdf',
+      },
+    }),
+    defineField({
+      name: 'openInNewTab',
+      title: 'Open in new tab',
+      type: 'boolean',
+      initialValue: true,
+      hidden: ({parent}) => !footerLinkTypeIs('document')(parent),
+      description: 'Recommended for PDFs and downloads.',
     }),
   ],
   preview: {
-    select: {label: 'label', sl: 'smartLink.label'},
-    prepare: ({label, sl}) => ({title: label || 'Link', subtitle: sl || 'No link set'}),
+    select: {label: 'label', linkType: 'linkType', sl: 'smartLink.label'},
+    prepare: ({label, linkType, sl}) => {
+      const typeLabel = linkType === 'document' ? 'Document' : 'Smart link'
+      const dest = linkType === 'document' ? 'Uploaded file' : sl || 'No link set'
+      return {title: label || 'Link', subtitle: `${typeLabel} · ${dest}`}
+    },
   },
 })
 

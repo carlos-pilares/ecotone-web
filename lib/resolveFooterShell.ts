@@ -71,9 +71,11 @@ export type FooterImageUrlFn = (source: unknown) => string | null
 
 export type FooterLinkItemRow = {
   label?: string | null
+  linkType?: 'smartLink' | 'document' | string | null
   smartLink?: SmartLinkGroq | null
-  href?: string | null
+  documentUrl?: string | null
   openInNewTab?: boolean | null
+  href?: string | null
 }
 
 export type FooterLinksColumnRow = {
@@ -165,6 +167,23 @@ function mapApprovedLinks(fallback: SiteSettingsApprovedLink[]): FooterShellLink
 function resolveFooterLinkItem(item: FooterLinkItemRow): FooterShellLink | null {
   const label = item?.label?.trim() ?? ''
   if (!label) return null
+
+  const linkType = item?.linkType?.trim() || 'smartLink'
+
+  if (linkType === 'document') {
+    const href = item?.documentUrl?.trim() || null
+    if (!href) {
+      return {label, href: null, openInNewTab: false, rel: ''}
+    }
+    const openInNewTab = item?.openInNewTab !== false
+    return {
+      label,
+      href,
+      openInNewTab,
+      rel: openInNewTab ? 'noopener noreferrer' : '',
+    }
+  }
+
   if (smartLinkIsDisabled(item?.smartLink)) return null
 
   const legacyHref = item?.href?.trim() ?? ''

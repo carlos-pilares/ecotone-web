@@ -1752,21 +1752,30 @@ export const siteSettingsShellQuery = groq`{
       title,
       links[] {
         label,
-        smartLink { ${GROQ_SMART_LINK_FIELDS} }
+        linkType,
+        smartLink { ${GROQ_SMART_LINK_FIELDS} },
+        "documentUrl": document.asset->url,
+        openInNewTab
       }
     },
     column3 {
       title,
       links[] {
         label,
-        smartLink { ${GROQ_SMART_LINK_FIELDS} }
+        linkType,
+        smartLink { ${GROQ_SMART_LINK_FIELDS} },
+        "documentUrl": document.asset->url,
+        openInNewTab
       }
     },
     column4 {
       title,
       links[] {
         label,
-        smartLink { ${GROQ_SMART_LINK_FIELDS} }
+        linkType,
+        smartLink { ${GROQ_SMART_LINK_FIELDS} },
+        "documentUrl": document.asset->url,
+        openInNewTab
       }
     },
     bottomBar {

@@ -41,6 +41,8 @@ export type RoutesPageSanityDoc = {
   territoryEyebrow?: string | null
   territoryH2?: string | null
   territoryBody?: string | null
+  territoryImageUrl?: string | null
+  territoryImageAlt?: string | null
   territoryStrip?: Array<{
     id?: string | null
     name?: string | null
@@ -227,6 +229,8 @@ export const routesPageQuery = groq`
     territoryEyebrow,
     territoryH2,
     territoryBody,
+    "territoryImageUrl": territoryImage.asset->url,
+    territoryImageAlt,
     territoryStrip[]{ id, name, meta, variant },
     sectionModules[]{ key, visible, anchorId, eyebrow, sectionTitle, sectionText },
     routeCards[]{

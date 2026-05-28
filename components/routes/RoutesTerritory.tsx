@@ -10,7 +10,16 @@ export function RoutesTerritory({ data }: { data: RoutesTerritoryStatic }) {
         <p className="body routes-territory-lead">{data.body}</p>
 
         <div className="territory-map">
-          <RoutesTerritoryMap />
+          {data.imageSrc ? (
+            <img
+              src={data.imageSrc}
+              alt={data.imageAlt}
+              className="routes-territory-img"
+              decoding="async"
+            />
+          ) : (
+            <RoutesTerritoryMap />
+          )}
         </div>
 
         <div className="route-strip" role="list" aria-label="Routes overview">

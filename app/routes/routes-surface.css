@@ -88,9 +88,16 @@
   margin-bottom: 24px;
   max-width: 640px;
 }
-.routes-territory-svg {
+.routes-territory-svg,
+.routes-territory-img {
   display: block;
+  width: 100%;
   background: linear-gradient(155deg, #dde8c5 0%, #c5d89a 35%, #a8c468 60%, #8aaa42 80%, #6c8e28 100%);
+}
+.routes-territory-img {
+  height: auto;
+  object-fit: contain;
+  object-position: center;
 }
 .routes-page .territory-map {
   border: 1px solid var(--n200);
@@ -106,9 +113,11 @@
     aspect-ratio: 960 / 480;
   }
 
-  .routes-page .routes-territory-section .routes-territory-svg {
+  .routes-page .routes-territory-section .routes-territory-svg,
+  .routes-page .routes-territory-section .routes-territory-img {
     width: 100%;
     height: 100%;
+    object-fit: contain;
   }
 }
 .routes-page .route-strip {
