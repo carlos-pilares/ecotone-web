@@ -13,6 +13,14 @@ const pageSectionVisibleUi = (sectionKey, group) =>
     options: {sectionKey},
   })
 
+const heroMediaModeIs = (mode) => (parent) => (parent?.heroMediaMode ?? 'image') === mode
+
+const HERO_VIDEO_HELP =
+  'Recommended: 8–15 seconds, MP4 H.264, 16:9, 1920×1080 or 1600×900, ideally under 12MB (max practical ~20MB). Muted, no audio required.'
+
+const MOBILE_HERO_VIDEO_HELP =
+  'Optional mobile override. Recommended: 9:16 or 4:5, 1080×1920 or 1080×1350, 8–15 seconds, MP4 H.264, muted/no audio, ideally under 12MB.'
+
 const heroCardRow = {
   type: 'object',
   name: 'heroCardRow',
@@ -185,11 +193,113 @@ export const homePage = defineType({
     }),
     pageSectionVisibleUi('hero', 'hero'),
     defineField({
+      name: 'heroMediaMode',
+      title: 'Hero media mode',
+      type: 'string',
+      group: 'hero',
+      options: {
+        list: [
+          {title: 'Single image', value: 'image'},
+          {title: 'Slideshow', value: 'slideshow'},
+          {title: 'Background video', value: 'video'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'image',
+      description: 'Controls the hero background only. Copy and card layout are unchanged.',
+    }),
+    defineField({
       name: 'heroImage',
       title: 'Hero image',
       type: 'image',
       group: 'hero',
       options: {hotspot: true},
+      hidden: ({parent}) => heroMediaModeIs('video')(parent),
+      description: 'Single-image mode, or slideshow fallback when no slides are set.',
+    }),
+    defineField({
+      name: 'heroImages',
+      title: 'Slideshow images',
+      type: 'array',
+      group: 'hero',
+      of: [
+        defineArrayMember({
+          type: 'image',
+          options: {hotspot: true},
+        }),
+      ],
+      hidden: ({parent}) => !heroMediaModeIs('slideshow')(parent),
+      validation: (Rule) => Rule.max(12),
+      description: 'Order in the list is the slide order. At least one image recommended.',
+    }),
+    defineField({
+      name: 'heroVideoFile',
+      title: 'Hero video (MP4)',
+      type: 'file',
+      group: 'hero',
+      hidden: ({parent}) => !heroMediaModeIs('video')(parent),
+      options: {
+        accept: 'video/mp4,.mp4',
+      },
+      description: HERO_VIDEO_HELP,
+    }),
+    defineField({
+      name: 'heroVideoPoster',
+      title: 'Video poster image (desktop)',
+      type: 'image',
+      group: 'hero',
+      options: {hotspot: true},
+      hidden: ({parent}) => !heroMediaModeIs('video')(parent),
+      description: 'Desktop: shown before the video loads and if the desktop video file is missing.',
+    }),
+    defineField({
+      name: 'mobileHeroVideoFile',
+      title: 'Mobile hero video (MP4)',
+      type: 'file',
+      group: 'hero',
+      hidden: ({parent}) => !heroMediaModeIs('video')(parent),
+      options: {
+        accept: 'video/mp4,.mp4',
+      },
+      description: MOBILE_HERO_VIDEO_HELP,
+    }),
+    defineField({
+      name: 'mobileHeroPosterImage',
+      title: 'Mobile video poster image',
+      type: 'image',
+      group: 'hero',
+      options: {hotspot: true},
+      hidden: ({parent}) => !heroMediaModeIs('video')(parent),
+      description:
+        'Portrait poster for mobile (9:16 or 4:5). Used when no mobile video is set, before mobile video loads, or as a still fallback.',
+    }),
+    defineField({
+      name: 'mobileHeroImageFallback',
+      title: 'Mobile hero image fallback',
+      type: 'image',
+      group: 'hero',
+      options: {hotspot: true},
+      hidden: ({parent}) => !heroMediaModeIs('video')(parent),
+      description:
+        'Optional still background on mobile instead of cropping the desktop 16:9 video. Takes priority over the mobile poster when no mobile video is set.',
+    }),
+    defineField({
+      name: 'slideshowAutoplay',
+      title: 'Slideshow autoplay',
+      type: 'boolean',
+      group: 'hero',
+      initialValue: true,
+      hidden: ({parent}) => !heroMediaModeIs('slideshow')(parent),
+    }),
+    defineField({
+      name: 'slideshowIntervalMs',
+      title: 'Slideshow interval (ms)',
+      type: 'number',
+      group: 'hero',
+      initialValue: 5000,
+      hidden: ({parent}) => !heroMediaModeIs('slideshow')(parent),
+      validation: (Rule) => Rule.min(2000).max(30000).integer(),
+      description: 'Time each slide is shown when autoplay is on. Default 5000 (5s).',
     }),
     defineField({
       name: 'heroEyebrow',

@@ -41,7 +41,16 @@ export const defaultHomePageDoc: ResolvedHomePage = {
   heroCardCtaLink: t.heroCardCtaLink,
   heroScrollLabel: t.heroScrollLabel,
   heroImageFallbackUrl: t.heroImageFallbackUrl,
+  heroMediaMode: 'image',
   heroImage: null,
+  heroImages: null,
+  heroVideoUrl: null,
+  heroVideoPoster: null,
+  mobileHeroVideoUrl: null,
+  mobileHeroPosterImage: null,
+  mobileHeroImageFallback: null,
+  slideshowAutoplay: true,
+  slideshowIntervalMs: 5000,
   stats: t.stats.map((s) => ({ ...s })),
   manifestoEyebrow: t.manifestoEyebrow,
   manifestoHeadline: t.manifestoHeadline,
@@ -210,6 +219,9 @@ const NUM_KEYS = ['blogFallbackReadingMinutes'] as const satisfies ReadonlyArray
 
 const IMG_KEYS = [
   'heroImage',
+  'heroVideoPoster',
+  'mobileHeroPosterImage',
+  'mobileHeroImageFallback',
   'manifestoImage',
   'missionPhoto1',
   'missionPhoto2',
@@ -358,6 +370,32 @@ export function mergeHomePageWithDefaults(cms: HomePageDoc | null): ResolvedHome
   }
   if (cms.reviewsSection != null && typeof cms.reviewsSection === 'object') {
     ;(out as ResolvedHomePage).reviewsSection = cms.reviewsSection
+  }
+
+  if (cms.heroMediaMode?.trim()) {
+    const mode = cms.heroMediaMode.trim()
+    if (mode === 'image' || mode === 'slideshow' || mode === 'video') {
+      ;(out as ResolvedHomePage).heroMediaMode = mode
+    }
+  }
+  if (Array.isArray(cms.heroImages) && cms.heroImages.length > 0) {
+    ;(out as ResolvedHomePage).heroImages = cms.heroImages
+  }
+  if (isNonEmptyString(cms.heroVideoUrl)) {
+    ;(out as ResolvedHomePage).heroVideoUrl = cms.heroVideoUrl.trim()
+  }
+  if (isNonEmptyString(cms.mobileHeroVideoUrl)) {
+    ;(out as ResolvedHomePage).mobileHeroVideoUrl = cms.mobileHeroVideoUrl.trim()
+  }
+  if (typeof cms.slideshowAutoplay === 'boolean') {
+    ;(out as ResolvedHomePage).slideshowAutoplay = cms.slideshowAutoplay
+  }
+  if (
+    typeof cms.slideshowIntervalMs === 'number' &&
+    Number.isFinite(cms.slideshowIntervalMs) &&
+    cms.slideshowIntervalMs >= 2000
+  ) {
+    ;(out as ResolvedHomePage).slideshowIntervalMs = cms.slideshowIntervalMs
   }
 
   return out

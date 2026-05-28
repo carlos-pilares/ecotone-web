@@ -1,6 +1,7 @@
+import { HeroMedia } from '@/components/HeroMedia'
 import type { ResolvedHomePage } from '@/lib/homePageDefaults'
+import { resolveHomeHeroMedia } from '@/lib/homeHeroMedia'
 import { HOME_HERO_BACKGROUND_FALLBACK_URL } from '@/lib/homePageImageFallbacks'
-import { cdnImageUrl } from '@/lib/sanity'
 
 const PILL_ICONS = [
   <svg key="0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
@@ -22,19 +23,14 @@ const PILL_ICONS = [
 export function Hero({ heroData }: { heroData: ResolvedHomePage }) {
   const h = heroData
   const bgFallback = h.heroImageFallbackUrl?.trim() || HOME_HERO_BACKGROUND_FALLBACK_URL
-  const bgUrl = cdnImageUrl(h.heroImage ?? null, 1800, bgFallback)
+  const heroMedia = resolveHomeHeroMedia(h, bgFallback)
   const rows = (h.heroCardRows ?? [])
     .map((r) => ({ label: (r?.label ?? '').trim(), value: (r?.value ?? '').trim() }))
     .filter((r) => r.label && r.value)
 
   return (
     <section className="hero" id="top">
-      <div
-        className="hero-bg"
-        style={{
-          background: `linear-gradient(110deg,rgba(0,0,0,.65) 0%,rgba(0,0,0,.15) 52%,rgba(0,0,0,.55) 100%), url('${bgUrl}') center/cover no-repeat`,
-        }}
-      />
+      <HeroMedia {...heroMedia} />
       <div className="hero-brand-mark" aria-hidden>
         <svg viewBox="0 0 105 101" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
           <use href="#isotipo" style={{ color: 'white' }} />

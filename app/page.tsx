@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Metadata } from 'next'
 import './experiences/experience-surface.css'
+import './home-surface.css'
 import { EcotoneV2Client } from '@/components/EcotoneV2Client'
 import { ExperiencesExplorer } from '@/components/ExperiencesExplorer'
 import { Hero } from '@/components/Hero'
@@ -120,6 +121,9 @@ body{overflow-x:clip;}
 #reviews .reviews-header>div:first-child{min-width:0;}
 #reviews .quote-text{max-width:100%;overflow-wrap:break-word;}
 .filter-tabs,.blog-scroll,.rev-scroll,.hscroll{max-width:100%;box-sizing:border-box;overscroll-behavior-x:contain;}
+#ecotone-home-root .hero-bg.hero-bg--video,
+#ecotone-home-root .hero-bg.hero-bg--slideshow{background-image:none!important;background-color:var(--brown-xdk)!important;}
+#ecotone-home-root .hero-bg.hero-bg--video .hero-bg-video{display:block;min-width:100%;min-height:100%;}
 `
   const homeInjectCss = `${homeInjectBaseCss}\n/* shell-nav-logo.css (after ecotone img{...}) */\n${shellNavLogoCss}\n/* shell-logo-tokens.css (must be last in this <style>) */\n${shellLogoTokensCss}\n${viewportOverflowCss}\n`
 

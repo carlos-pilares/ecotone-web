@@ -92,7 +92,16 @@ export type HomePageDoc = {
   heroScrollLabel?: string | null
   /** Technical fallback when `heroImage` is unset. */
   heroImageFallbackUrl?: string | null
+  heroMediaMode?: 'image' | 'slideshow' | 'video' | string | null
   heroImage?: SanityImageSource | null
+  heroImages?: SanityImageSource[] | null
+  heroVideoUrl?: string | null
+  heroVideoPoster?: SanityImageSource | null
+  mobileHeroVideoUrl?: string | null
+  mobileHeroPosterImage?: SanityImageSource | null
+  mobileHeroImageFallback?: SanityImageSource | null
+  slideshowAutoplay?: boolean | null
+  slideshowIntervalMs?: number | null
   stats?: Array<{ _key?: string; _type?: string; number?: string; label?: string }> | null
   manifestoEyebrow?: string | null
   manifestoHeadline?: string | null
@@ -237,7 +246,16 @@ export const homePageQuery = groq`
     heroScrollLabel,
     heroImageFallbackUrl,
     heroEyebrow,
+    heroMediaMode,
     heroImage,
+    heroImages,
+    "heroVideoUrl": heroVideoFile.asset->url,
+    heroVideoPoster,
+    "mobileHeroVideoUrl": mobileHeroVideoFile.asset->url,
+    mobileHeroPosterImage,
+    mobileHeroImageFallback,
+    slideshowAutoplay,
+    slideshowIntervalMs,
     stats,
     manifestoEyebrow, manifestoHeadline, manifestoBody1, manifestoBody2,
     manifestoImage, manifestoImageCaption,

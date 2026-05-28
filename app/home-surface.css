@@ -74,8 +74,27 @@ button{font-family:var(--f);cursor:pointer}
    HERO
 ══════════════════════════════════════ */
 .hero{position:relative;height:100svh;min-height:640px;overflow:hidden;background:var(--brown-xdk);display:grid;grid-template-rows:1fr auto}
-.hero-bg{position:absolute;inset:0;background:linear-gradient(110deg,rgba(0,0,0,.65) 0%,rgba(0,0,0,.15) 52%,rgba(0,0,0,.55) 100%),url('https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=1800&q=85') center/cover no-repeat;transform:scale(1.06);animation:hz 28s ease-in-out infinite alternate}
-.hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.32) 0%,transparent 20%,transparent 48%,rgba(0,0,0,.72) 100%)}
+.hero-bg{position:absolute;inset:0;transform:scale(1.06);animation:hz 28s ease-in-out infinite alternate;background:var(--brown-xdk)}
+.hero-bg::after{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.32) 0%,transparent 20%,transparent 48%,rgba(0,0,0,.72) 100%)}
+.hero-bg-layer{position:absolute;inset:0;background-position:center;background-size:cover;background-repeat:no-repeat;opacity:0;transition:opacity 1s ease;z-index:0}
+.hero-bg-layer.is-active{opacity:1}
+.hero-bg-layer--shade{background-size:cover;background-repeat:no-repeat;pointer-events:none;z-index:1}
+.hero-bg.hero-bg--video,
+.hero-bg.hero-bg--slideshow{background-image:none;background-color:var(--brown-xdk)}
+.hero-bg--video{overflow:hidden;inset:0}
+.hero-bg-video{position:absolute;inset:0;display:block;width:100%;height:100%;min-width:100%;min-height:100%;object-fit:cover;object-position:center center;z-index:0;pointer-events:none;vertical-align:top}
+.hero-bg-layer{background-position:center center}
+.hero-bg-layer--shade{z-index:2}
+.hero-bg--video .hero-bg-layer:not(.hero-bg-layer--shade){z-index:1}
+.hero-slideshow-ui{position:absolute;left:var(--g);right:var(--g);bottom:88px;z-index:4;display:flex;align-items:center;justify-content:center;gap:12px;pointer-events:none}
+.hero-slideshow-btn{pointer-events:auto;width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.28);color:#fff;font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s,border-color .2s}
+.hero-slideshow-btn:hover{background:rgba(0,0,0,.45);border-color:rgba(255,255,255,.55)}
+.hero-slideshow-dots{display:flex;align-items:center;gap:8px;pointer-events:auto}
+.hero-slideshow-dot{width:8px;height:8px;border-radius:50%;border:none;padding:0;background:rgba(255,255,255,.35);cursor:pointer;transition:transform .2s,background .2s}
+.hero-slideshow-dot.is-active{background:#fff;transform:scale(1.15)}
+@media(max-width:720px){
+  .hero-slideshow-ui{bottom:72px}
+}
 @keyframes hz{0%{transform:scale(1.06)}100%{transform:scale(1.12)}}
 
 /* Brand mark decorative — subtle on hero */

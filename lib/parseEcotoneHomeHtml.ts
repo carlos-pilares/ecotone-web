@@ -19,5 +19,20 @@ export function parseEcotoneHomeHtml(raw: string) {
     throw new Error('ecotone-home-final.html: missing experiences inject marker')
   }
   const [beforeExperiences, afterExperiences] = bodyWithScript.split(EXP_MARKER, 2)
-  return { css: styleMatch[1], beforeExperiences, afterExperiences }
+  return {
+    css: stripLegacyHeroBgFromHomeCss(styleMatch[1]),
+    beforeExperiences,
+    afterExperiences,
+  }
+}
+
+/**
+ * Legacy `ecotone-home-final.html` baked a static Unsplash URL into `.hero-bg`.
+ * React `HeroMedia` owns the background; keep layout/animation only.
+ */
+export function stripLegacyHeroBgFromHomeCss(css: string): string {
+  return css.replace(
+    /\.hero-bg\{[^}]*\}/,
+    '.hero-bg{position:absolute;inset:0;transform:scale(1.06);animation:hz 28s ease-in-out infinite alternate;background:var(--brown-xdk)}',
+  )
 }
