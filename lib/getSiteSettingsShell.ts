@@ -17,6 +17,7 @@ import {
   type LegacySiteSettingsFooterRow,
   type ResolvedFooterShell,
 } from '@/lib/resolveFooterShell'
+import { resolveFloatingWhatsappFromCms, type ResolvedFloatingWhatsapp } from '@/lib/floatingWhatsapp'
 import { siteSettingsShellQuery } from '@/lib/queries'
 import { resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
 import { clientServer, urlFor } from '@/lib/sanity'
@@ -39,11 +40,21 @@ export type GlobalSiteSettingsShell = {
   primaryCta: ShellNavLink
   mobileMenuAriaLabel: string
   footer: ResolvedFooterShell
+  floatingWhatsapp: ResolvedFloatingWhatsapp
 }
 
 type SiteSettingsShellBundleRow = {
   headerSettings?: HeaderSettingsDocumentRow
   footerSettings?: FooterSettingsDocumentRow
+  siteSettingsDoc?: {
+    whatsappFloatingEnabled?: boolean | null
+    whatsappNumber?: string | null
+    whatsappDefaultMessage?: string | null
+    whatsappDesktopLabel?: string | null
+    whatsappMobileLabel?: string | null
+    whatsappFloatingHideOnMobile?: boolean | null
+    whatsappFloatingHideOnPages?: string[] | null
+  } | null
   legacySiteSettings?: {
     defaultWhatsappUrl?: string | null
     brandIsotipo?: SanityImageSource | null
@@ -171,6 +182,7 @@ export const getSiteSettingsShell = cache(async (): Promise<GlobalSiteSettingsSh
     },
     mobileMenuAriaLabel: HEADER.mobileMenuAriaLabel,
     footer: resolveFooterShell(null, null, toFooterImageUrl),
+    floatingWhatsapp: resolveFloatingWhatsappFromCms(null, null),
   }
 
   if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || !process.env.NEXT_PUBLIC_SANITY_DATASET) {
@@ -217,6 +229,7 @@ export const getSiteSettingsShell = cache(async (): Promise<GlobalSiteSettingsSh
   )
 
   const defaultWa = footerSocial.defaultWhatsappUrl?.trim() || legacy?.defaultWhatsappUrl?.trim() || null
+  const floatingWhatsapp = resolveFloatingWhatsappFromCms(bundle.siteSettingsDoc, defaultWa)
 
   return {
     defaultWhatsappUrl: defaultWa,
@@ -229,5 +242,6 @@ export const getSiteSettingsShell = cache(async (): Promise<GlobalSiteSettingsSh
     primaryCta: pickBookNowPrimaryCta(headerShell, headerFound),
     mobileMenuAriaLabel: headerShell.mobileMenuAriaLabel?.trim() || HEADER.mobileMenuAriaLabel,
     footer: footerResolved,
+    floatingWhatsapp,
   }
 })

@@ -1,4 +1,14 @@
-import {defineField, defineType} from 'sanity'
+import {defineArrayMember, defineField, defineType} from 'sanity'
+
+const WHATSAPP_FLOAT_HIDE_PAGE_OPTIONS = [
+  {title: 'Home', value: 'home'},
+  {title: 'Experiences (all)', value: 'experiencesIndex'},
+  {title: 'Routes', value: 'routes'},
+  {title: 'Lodges (all)', value: 'lodgesIndex'},
+  {title: 'About', value: 'about'},
+  {title: 'Journal (all)', value: 'journal'},
+  {title: 'Sanity Studio', value: 'studio'},
+]
 
 const headerBlock = [
   defineField({
@@ -270,6 +280,7 @@ export const siteSettings = defineType({
   type: 'document',
   groups: [
     {name: 'brand', title: 'Brand & defaults', default: true},
+    {name: 'whatsapp', title: 'Floating WhatsApp'},
     {name: 'library', title: 'Brand assets (optional)'},
     {name: 'header', title: 'Header (legacy)', hidden: true},
     {name: 'footer', title: 'Footer (legacy)', hidden: true},
@@ -288,6 +299,72 @@ export const siteSettings = defineType({
       title: 'Default SEO (site-wide fallback)',
       type: 'seo',
       group: 'brand',
+    }),
+    defineField({
+      name: 'whatsappFloatingEnabled',
+      title: 'Show floating WhatsApp button',
+      type: 'boolean',
+      group: 'whatsapp',
+      initialValue: false,
+      description: 'Global contact shortcut (separate from Book CTAs). Requires a WhatsApp number.',
+    }),
+    defineField({
+      name: 'whatsappNumber',
+      title: 'WhatsApp number',
+      type: 'string',
+      group: 'whatsapp',
+      description: 'Country code + number, digits only (e.g. 51974781094).',
+      validation: (Rule) =>
+        Rule.custom((v) => {
+          if (!v) return true
+          const digits = String(v).replace(/\D/g, '')
+          if (digits.length >= 6 && digits.length <= 15) return true
+          return 'Use 6–15 digits (country code + number)'
+        }),
+    }),
+    defineField({
+      name: 'whatsappDefaultMessage',
+      title: 'Default pre-filled message',
+      type: 'text',
+      rows: 2,
+      group: 'whatsapp',
+      validation: (Rule) => Rule.max(500),
+    }),
+    defineField({
+      name: 'whatsappDesktopLabel',
+      title: 'Desktop button label',
+      type: 'string',
+      group: 'whatsapp',
+      initialValue: 'WhatsApp',
+      validation: (Rule) => Rule.max(40),
+    }),
+    defineField({
+      name: 'whatsappMobileLabel',
+      title: 'Mobile button label',
+      type: 'string',
+      group: 'whatsapp',
+      initialValue: 'Chat with us',
+      validation: (Rule) => Rule.max(40),
+    }),
+    defineField({
+      name: 'whatsappFloatingHideOnMobile',
+      title: 'Hide on mobile',
+      type: 'boolean',
+      group: 'whatsapp',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'whatsappFloatingHideOnPages',
+      title: 'Hide on pages',
+      type: 'array',
+      group: 'whatsapp',
+      of: [
+        defineArrayMember({
+          type: 'string',
+          options: {list: WHATSAPP_FLOAT_HIDE_PAGE_OPTIONS},
+        }),
+      ],
+      description: 'Optional. Hide the floating button on selected site areas.',
     }),
     defineField({
       name: 'brandIsotipo',

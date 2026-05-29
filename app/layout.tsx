@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 
 import { BookingModalProvider } from '@/components/booking/BookingModalContext'
+import { FloatingWhatsappButton } from '@/components/FloatingWhatsappButton'
 import { getBookingModalSettings } from '@/lib/getBookingModalSettings'
 import { getSiteSettingsShell } from '@/lib/getSiteSettingsShell'
 
@@ -32,6 +33,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body>
         <BookingModalProvider defaultWhatsappUrl={shell.defaultWhatsappUrl} copy={bookingModalCopy}>
           {children}
+          <FloatingWhatsappButton config={shell.floatingWhatsapp} />
         </BookingModalProvider>
         <Analytics />
       </body>

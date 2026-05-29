@@ -1818,6 +1818,15 @@ export const siteSettingsShellQuery = groq`{
       footerCertPartners
     }
   },
+  "siteSettingsDoc": *[_id == "siteSettings"][0]{
+    whatsappFloatingEnabled,
+    whatsappNumber,
+    whatsappDefaultMessage,
+    whatsappDesktopLabel,
+    whatsappMobileLabel,
+    whatsappFloatingHideOnMobile,
+    whatsappFloatingHideOnPages
+  },
   "legacySiteSettings": *[_id == "siteSettings"][0]{
     defaultWhatsappUrl,
     brandIsotipo,
