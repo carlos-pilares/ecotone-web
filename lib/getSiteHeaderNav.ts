@@ -1,5 +1,6 @@
 import { cache } from 'react'
 
+import { getActivePromotions } from '@/lib/getPromotions'
 import {
   hasHeaderSettingsDoc,
   mergeHeaderNavSettings,
@@ -21,7 +22,10 @@ export const getSiteHeaderNav = cache(async () => {
     return resolveSiteHeaderNavData(null, [], [], [])
   }
   try {
-    const row = await clientServer.fetch<SiteHeaderNavBundleRow>(siteHeaderNavBundleQuery)
+    const [row, promotions] = await Promise.all([
+      clientServer.fetch<SiteHeaderNavBundleRow>(siteHeaderNavBundleQuery),
+      getActivePromotions(),
+    ])
     const headerDoc = (row?.headerSettings ?? null) as HeaderSettingsDocumentRow
     const headerFound = hasHeaderSettingsDoc(headerDoc)
     const navTabsRaw = headerDoc?.navTabs
@@ -61,6 +65,7 @@ export const getSiteHeaderNav = cache(async () => {
           row?.experiencePages ?? [],
           row?.lodgePages ?? [],
           row?.routeNavDocs ?? [],
+          promotions,
         )
       : resolveSiteHeaderNavData(
           mergeHeaderNavSettings(
@@ -70,6 +75,7 @@ export const getSiteHeaderNav = cache(async () => {
           row?.experiencePages ?? [],
           row?.lodgePages ?? [],
           row?.routeNavDocs ?? [],
+          promotions,
         )
 
     if (process.env.NODE_ENV === 'development') {

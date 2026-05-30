@@ -5,8 +5,11 @@ import { LodgeSectionHeading } from '@/components/lodge/LodgeSectionHeading'
 import { buildLodgeExperienceSectionItems } from '@/lib/buildExperienceCardsSectionItems'
 import { tailorMadeBandFromResolved } from '@/lib/tailorMadeBand'
 
+import type { PromotionDoc } from '@/lib/promotionTypes'
+
 type LodgeExperiencesProps = {
   data: LodgeExperiencesData
+  promotions?: PromotionDoc[] | null
 }
 
 const experiencesBodyStyle = {
@@ -17,7 +20,7 @@ const experiencesBodyStyle = {
   marginBottom: 20,
 } as const
 
-export function LodgeExperiences({ data }: LodgeExperiencesProps) {
+export function LodgeExperiences({ data, promotions }: LodgeExperiencesProps) {
   const ctaLabel = data.programCardCtaLabel.trim() || 'View'
   const sectionCards = buildLodgeExperienceSectionItems([...data.cards], ctaLabel)
   const tailor =
@@ -49,6 +52,7 @@ export function LodgeExperiences({ data }: LodgeExperiencesProps) {
           cards={sectionCards}
           cardCtaLabel={ctaLabel}
           tailorMade={tailor}
+          promotions={promotions}
           emptyMessage={
             sectionCards.length === 0 && !tailor ? (
               <p className="lodge-exp-empty">No experiences are listed for this lodge yet.</p>

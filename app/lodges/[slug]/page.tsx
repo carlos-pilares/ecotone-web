@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { LodgePageView } from '@/app/lodges/LodgePageView'
+import { getActivePromotions } from '@/lib/getPromotions'
 import { getLodgePageCms, getLodgePageSlugsForStaticParams } from '@/lib/lodgePageCms'
 import { lodgeSoqtapataSeoDefault } from '@/lib/lodgePageCmsTypes'
 
@@ -30,9 +31,9 @@ export async function generateMetadata({
 
 export default async function LodgePageBySlug({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const resolved = await getLodgePageCms(slug)
+  const [resolved, promotions] = await Promise.all([getLodgePageCms(slug), getActivePromotions()])
   if (resolved.source !== 'cms' || !resolved.doc?.lodgePageId) {
     notFound()
   }
-  return <LodgePageView resolved={resolved} />
+  return <LodgePageView resolved={resolved} promotions={promotions} />
 }

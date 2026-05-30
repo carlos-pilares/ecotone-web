@@ -10,7 +10,8 @@ import {
 } from '@/data/cmsApproved/siteSettingsApprovedContent'
 import { canonicalizeLodgeRouteSlug } from '@/data/lodgeSoqtapataResolverDefaults'
 import { resolveRouteLabel } from '@/data/lodgeSoqtapataResolverDefaults'
-import { formatExperienceNavPriceMeta } from '@/lib/formatExperiencePrice'
+import { formatExperienceNavPriceMetaWithPromotions } from '@/lib/formatExperiencePrice'
+import type { PromotionDoc } from '@/lib/promotionTypes'
 import { resolveExperienceHeroImageUrl } from '@/lib/experienceHeroImage'
 import { resolveExperiencePublicHref } from '@/lib/resolveExperiencePublicHref'
 import {
@@ -777,11 +778,28 @@ function resolveTailorGroup(
   }
 }
 
+function headerNavPriceMetaForExperience(
+  exp: NonNullable<SiteHeaderNavExperiencePageRow['experience']>,
+  promotions?: PromotionDoc[] | null,
+) {
+  return formatExperienceNavPriceMetaWithPromotions(
+    {
+      experienceId: exp._id,
+      routeRefId: exp.routeRef?._id,
+      programType: exp.programType,
+      price: exp.price,
+      priceLabel: exp.priceLabel,
+    },
+    promotions,
+  )
+}
+
 export function resolveSiteHeaderNavData(
   settings: SiteHeaderNavSettingsRow | null | undefined,
   experiencePages: SiteHeaderNavExperiencePageRow[] | null | undefined,
   lodgePages: SiteHeaderNavLodgePageRow[] | null | undefined,
   routeNavDocs: SiteHeaderNavRouteNavRow[] | null | undefined,
+  promotions?: PromotionDoc[] | null,
 ): ResolvedSiteHeaderNav {
   const base = emptyNav()
   const pages = Array.isArray(experiencePages) ? experiencePages : []
@@ -851,7 +869,7 @@ export function resolveSiteHeaderNavData(
       name,
       href,
       routeLine: formatExpRouteLine(exp),
-      priceMeta: formatExperienceNavPriceMeta(exp),
+      priceMeta: headerNavPriceMetaForExperience(exp, promotions),
       thumbUrl: thumb,
     }
     const list = byProgramType.get(programType) ?? []

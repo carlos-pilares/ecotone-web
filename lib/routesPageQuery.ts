@@ -288,6 +288,7 @@ export const routesPageQuery = groq`
     },
     "listedExperiencePages": *[_type == "experiencePage" && defined(slug.current) && defined(experience._ref)] | order(lower(experience->name) asc) {
       "landingSlug": slug.current,
+      "experienceId": experience._ref,
       "routeRefId": coalesce(
         experience->routeRef._ref,
         *[_type == "route" && slug.current == experience->route][0]._id
@@ -400,6 +401,8 @@ export const routesPageQuery = groq`
       ${GROQ_RESERVE_CTA_SETTINGS_FIELDS}
     },
     "publishedExperiencePages": *[_type == "experiencePage" && defined(slug.current) && defined(experience)]{
+      "experienceId": experience._ref,
+      "programType": experience->programType,
       "routeRefId": coalesce(
         experience->routeRef._ref,
         *[_type == "route" && slug.current == experience->route][0]._id

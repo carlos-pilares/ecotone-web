@@ -34,9 +34,11 @@ function ExperiencesFallback({ explorer }: { explorer: HomePageDoc | null | unde
 export function ExperiencesExplorer({
   experiences,
   explorer,
+  promotions,
 }: {
   experiences?: ExperienceFromSanity[] | null
   explorer?: HomePageDoc | null
+  promotions?: import('@/lib/promotionTypes').PromotionDoc[] | null
 }) {
   const e = explorer
   const filterTabs = resolveHomeExplorerFilterTabs(e)
@@ -92,6 +94,7 @@ export function ExperiencesExplorer({
         <ExperienceCardsSection
           cards={sectionCards}
           cardCtaLabel={cardCtaView}
+          promotions={promotions}
           tailorMade={tailorProps}
           gridClassName="experience-cards-grid fade fade-d2"
           gridId="expGrid"

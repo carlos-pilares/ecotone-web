@@ -19,6 +19,7 @@ export type ExperienceFromSanity = {
   experienceLandingSlug?: string | null
   routeSlug?: string | null
   routeLabel?: string | null
+  routeRefId?: string | null
   price: number | null
   priceLabel?: string | null
   duration?: string | null

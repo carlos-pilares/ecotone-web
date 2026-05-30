@@ -14,7 +14,7 @@
 
 /* ── HERO ── */
 .routes-hero {
-  padding-top: var(--nav-h);
+  padding-top: 0;
   position: relative;
 }
 .routes-hero-img {

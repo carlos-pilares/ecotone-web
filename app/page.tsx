@@ -14,6 +14,7 @@ import { SiteHeader } from '@/components/SiteHeader'
 import { buildRotatingQuoteItemsFromReviews } from '@/lib/reviewQuoteItems'
 import { normalizeReviewsRatingSummary } from '@/lib/reviewsRatingSummary'
 import { parseEcotoneHomeHtml } from '@/lib/parseEcotoneHomeHtml'
+import { getActivePromotions } from '@/lib/getPromotions'
 import { getHomePage, type ResolvedHomePage } from '@/lib/getHomePage'
 import { defaultHomePageDoc } from '@/lib/homePageDefaults'
 import {
@@ -56,6 +57,7 @@ export default async function Home() {
   let techProducts: TechnologyProductDoc[] = []
   let blogPosts: BlogPostDoc[] = []
   let experiences: ExperienceFromSanity[] = []
+  let promotions: Awaited<ReturnType<typeof getActivePromotions>> = []
 
   const canFetch = Boolean(
     process.env.NEXT_PUBLIC_SANITY_PROJECT_ID && process.env.NEXT_PUBLIC_SANITY_DATASET,
@@ -63,18 +65,20 @@ export default async function Home() {
 
   if (canFetch) {
     try {
-      const [hp, r, t, b, e] = await Promise.all([
+      const [hp, r, t, b, e, promoRows] = await Promise.all([
         getHomePage(),
         client.fetch<ReviewDoc[]>(reviewsQuery),
         client.fetch<TechnologyProductDoc[]>(technologyProductsQuery),
         client.fetch<BlogPostDoc[]>(blogPostsQuery),
         client.fetch<ExperienceFromSanity[]>(experiencesQuery),
+        getActivePromotions(),
       ])
       homePage = hp
       reviews = Array.isArray(r) ? r : []
       techProducts = Array.isArray(t) ? t : []
       blogPosts = Array.isArray(b) ? b : []
       experiences = Array.isArray(e) ? e : []
+      promotions = promoRows
     } catch {
       // Other lists empty; `homePage` is always resolvable (approved defaults, never null).
       homePage = await getHomePage()
@@ -135,7 +139,7 @@ body{overflow-x:clip;}
       />
       <EcotoneV2Client featuredQuoteItems={featuredQuoteItems}>
         <IsotipoDefs />
-        <SiteHeader mainNavSolid={false} />
+        <SiteHeader mainNavSolid={false} overlayOnHero />
         {homePage.sectionVisibility.hero ? <Hero heroData={homePage} /> : null}
         <HomeStaticSections
           homeData={homePage}
@@ -147,7 +151,7 @@ body{overflow-x:clip;}
           betweenManifestoAndTech={
             <>
               {homePage.sectionVisibility.explorer ? (
-                <ExperiencesExplorer experiences={experiences} explorer={homePage} />
+                <ExperiencesExplorer experiences={experiences} explorer={homePage} promotions={promotions} />
               ) : null}
               {homePage.sectionVisibility.reviews ? (
               <ReviewsSection

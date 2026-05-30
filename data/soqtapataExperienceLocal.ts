@@ -38,6 +38,10 @@ export type SoqtapataPhase1Hero = {
   priceFrom: string
   /** Strong amount only, e.g. “USD 1,220”. */
   priceAmount: string
+  /** Struck-through original when a discount applies. */
+  priceOriginalAmount?: string
+  promoLabel?: string
+  promoMicrocopy?: string
   priceSub: string
   bookUrl: string
   bookLabel: string
@@ -58,6 +62,8 @@ export type SoqtapataPhase1PageNav = {
   fromAriaLabel: string
   fromLabel: string
   fromNum: string
+  fromOriginalNum?: string
+  promoLabel?: string
   fromSub: string
   bookHref: string
   bookLabel: string

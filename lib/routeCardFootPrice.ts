@@ -1,9 +1,15 @@
 import { formatRouteCardFootPriceHtml } from '@/lib/formatExperiencePrice'
-import { getLowestListedExperienceUsd, type ExperiencePriceInput } from '@/lib/reserveCtaPricing'
+import { lowestPromotionalUsdForRows } from '@/lib/promotionPricing'
+import type { PromotionDoc } from '@/lib/promotionTypes'
+import { getLowestListedExperienceUsd } from '@/lib/reserveCtaPricing'
 
 export { formatRouteCardFootPriceHtml }
 
-export type RouteCardExperienceRow = ExperiencePriceInput & {
+export type RouteCardExperienceRow = {
+  experienceId?: string | null
+  programType?: string | null
+  price?: number | null
+  priceLabel?: string | null
   /** Route KC document `_id` from `experience.routeRef`. */
   routeRefId?: string | null
   /** @deprecated legacy `experience.route` slug — used only when `routeRefId` is missing in GROQ. */
@@ -20,11 +26,23 @@ function normalizeRouteKey(route: string | null | undefined): (typeof LEGACY_STA
   return null
 }
 
+function lowestUsdForRows(
+  rows: RouteCardExperienceRow[],
+  promotions?: PromotionDoc[] | null,
+): number | null {
+  if (promotions?.length) {
+    const promoLow = lowestPromotionalUsdForRows(rows, promotions)
+    if (promoLow != null) return promoLow
+  }
+  return getLowestListedExperienceUsd(rows)
+}
+
 /**
  * Route card foot stats keyed by Route KC `_id` (published experience pages + linked Experience KC).
  */
 export function buildRouteFootPriceHtmlByRouteRef(
   experiences: RouteCardExperienceRow[] | null | undefined,
+  promotions?: PromotionDoc[] | null,
 ): Map<string, string> {
   const byRef = new Map<string, RouteCardExperienceRow[]>()
   for (const row of experiences ?? []) {
@@ -37,7 +55,7 @@ export function buildRouteFootPriceHtmlByRouteRef(
 
   const out = new Map<string, string>()
   for (const [refId, rows] of byRef) {
-    const lowest = getLowestListedExperienceUsd(rows)
+    const lowest = lowestUsdForRows(rows, promotions)
     out.set(refId, formatRouteCardFootPriceHtml(rows.length, lowest))
   }
   return out
@@ -48,6 +66,7 @@ export function buildRouteFootPriceHtmlByRouteRef(
  */
 export function buildRouteFootPriceHtmlByStableId(
   experiences: RouteCardExperienceRow[] | null | undefined,
+  promotions?: PromotionDoc[] | null,
 ): Map<string, string> {
   const byRoute = new Map<(typeof LEGACY_STABLE_ROUTE_IDS)[number], RouteCardExperienceRow[]>()
   for (const id of LEGACY_STABLE_ROUTE_IDS) byRoute.set(id, [])
@@ -61,7 +80,7 @@ export function buildRouteFootPriceHtmlByStableId(
   const out = new Map<string, string>()
   for (const id of LEGACY_STABLE_ROUTE_IDS) {
     const rows = byRoute.get(id) ?? []
-    const lowest = getLowestListedExperienceUsd(rows)
+    const lowest = lowestUsdForRows(rows, promotions)
     out.set(id, formatRouteCardFootPriceHtml(rows.length, lowest))
   }
   return out

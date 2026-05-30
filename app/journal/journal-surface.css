@@ -5,7 +5,7 @@
 }
 
 .journal-index-hero {
-  padding-top: calc(var(--nav-h) + 40px);
+  padding-top: 40px;
   padding-bottom: 48px;
   background: linear-gradient(180deg, var(--n50) 0%, var(--w) 100%);
   border-bottom: 1px solid var(--n200);
@@ -194,7 +194,7 @@
 
 /* Article */
 .journal-article-hero {
-  padding-top: var(--nav-h);
+  padding-top: 0;
   position: relative;
 }
 .journal-article-hero-img {

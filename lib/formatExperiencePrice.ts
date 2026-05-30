@@ -15,8 +15,13 @@ function formatUsdAmount(n: number): string {
   return `USD ${rounded.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
 }
 
+/** @internal Shared with promotion pricing */
+export function formatUsdAmountPublic(n: number): string {
+  return formatUsdAmount(n)
+}
+
 /** First plausible USD integer in a marketing label (e.g. "$986", "USD 1,220+"). */
-function parseUsdAmountFromLabel(label: string): number | null {
+export function parseUsdAmountFromLabel(label: string): number | null {
   const normalized = label.replace(/,/g, '')
   const matches = [...normalized.matchAll(/\$?\s*(\d{2,6})(?:\.\d+)?/g)]
   let best: number | null = null
@@ -131,31 +136,6 @@ export function formatExperiencePriceParts(
   return { from: structured.from, amount: structured.amount, suffix }
 }
 
-export type ExperienceCardPriceDisplay =
-  | { kind: 'enquire' }
-  | { kind: 'priced'; from: string; amount: string; perPerson: string }
-
-/** Structured price for experience cards (“from” / amount / “per person”). */
-export function formatExperienceCardPriceDisplay(exp: ExperiencePriceFields): ExperienceCardPriceDisplay {
-  const structured = formatExperiencePriceStructured(exp)
-  if (structured.kind === 'enquire') return { kind: 'enquire' }
-  return {
-    kind: 'priced',
-    from: structured.from,
-    amount: structured.amount,
-    perPerson: structured.perPerson,
-  }
-}
-
-export type ExperienceNavPriceMeta =
-  | { kind: 'enquire' }
-  | { kind: 'priced'; from: string; amount: string; perPerson: string }
-
-/** Header mega menu / mobile drawer price row. */
-export function formatExperienceNavPriceMeta(exp: ExperiencePriceFields): ExperienceNavPriceMeta {
-  return formatExperiencePriceStructured(exp)
-}
-
 /** Route card footer HTML: count + price line with per person. */
 export function formatRouteCardFootPriceHtml(count: number, lowestUsd: number | null): string {
   const countLabel = count === 1 ? '1 experience' : `${count} experiences`
@@ -168,3 +148,12 @@ export function formatRouteCardFootPriceHtml(count: number, lowestUsd: number | 
   }
   return `${countLabel} · <span class="routes-price-enquire">Enquire</span>`
 }
+
+export type { ExperienceCardPriceDisplay, ExperienceNavPriceMeta } from '@/lib/formatExperiencePricePromo'
+export {
+  formatExperienceCardPriceDisplay,
+  formatExperienceCardPriceDisplayWithPromotions,
+  formatExperienceNavPriceMeta,
+  formatExperienceNavPriceMetaWithPromotions,
+  formatExperiencePricePartsWithPromotions,
+} from '@/lib/formatExperiencePricePromo'

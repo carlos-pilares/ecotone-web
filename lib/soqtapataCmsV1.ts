@@ -17,6 +17,7 @@ import { clientServer } from '@/lib/sanity'
 import {
   alsoBookFromStructuredRow,
   applyCmsExclusiveExperienceContent,
+  experiencePromotionTarget,
   includedIdsFromRow,
   reviewsFromRow,
   reviewsLayoutFromRow,
@@ -26,6 +27,9 @@ import {
   type SoqtapataStructuredPageRow,
 } from '@/lib/soqtapataStructuredCms'
 import { buildSoqtapataBookingSummary } from '@/lib/buildSoqtapataBookingSummary'
+import { getActivePromotions } from '@/lib/getPromotions'
+import type { PromotionLegalAccordionItem } from '@/lib/promotionTypes'
+import { resolvePromotionLegalItemsForExperience } from '@/lib/promotionPricing'
 import { mergeInternalNavIntoPageNav } from '@/lib/soqtapataInternalNav'
 import { buildRotatingQuoteItemsFromReviews } from '@/lib/reviewQuoteItems'
 import {
@@ -230,6 +234,7 @@ export type SoqtapataPageCmsPayload = {
   reviewsSectionLead: string | null | undefined
   reviewsRatingSummary: ReviewsRatingSummary
   rotatingQuoteItems: { text: string; attr: string }[]
+  offerTerms: PromotionLegalAccordionItem[]
 }
 
 export const soqtapataPristineSeoDefault = {
@@ -264,6 +269,7 @@ export const getSoqtapataPageCms = cache(async (slug: string): Promise<Soqtapata
     pageReviews: { eyebrow?: string | null; title?: string | null; body?: string | null } | null | undefined
     reviewsRatingSummary: ReviewsRatingSummary
     rotatingQuoteItems: { text: string; attr: string }[]
+    offerTerms: PromotionLegalAccordionItem[]
   }): SoqtapataPageCmsPayload {
     const pres = applySoqtapataSectionPresentation({
       experience: params.experience,
@@ -286,6 +292,7 @@ export const getSoqtapataPageCms = cache(async (slug: string): Promise<Soqtapata
       reviewsSectionLead: pres.reviewsSectionLead,
       reviewsRatingSummary: params.reviewsRatingSummary,
       rotatingQuoteItems: params.rotatingQuoteItems,
+      offerTerms: params.offerTerms,
     }
   }
 
@@ -303,6 +310,7 @@ export const getSoqtapataPageCms = cache(async (slug: string): Promise<Soqtapata
       pageReviews: null,
       reviewsRatingSummary: { ...DEFAULT_REVIEWS_RATING_SUMMARY },
       rotatingQuoteItems: [],
+      offerTerms: [],
     })
   }
 
@@ -312,15 +320,18 @@ export const getSoqtapataPageCms = cache(async (slug: string): Promise<Soqtapata
 
   let row: SoqtapataStructuredPageRow | null = null
   let cmsError: string | null = null
+  let promotions: Awaited<ReturnType<typeof getActivePromotions>> = []
   try {
-    const [pageRow, termsConditions, faqsSettings, travellerGuideSettings] = await Promise.all([
+    const [pageRow, termsConditions, faqsSettings, travellerGuideSettings, promoRows] = await Promise.all([
       clientServer.fetch<SoqtapataStructuredPageRow | null>(soqtapataStructuredPageBySlugQuery, {
         slug: normalized,
       }),
       clientServer.fetch<TermsConditionsSettingsRow>(termsConditionsSettingsQuery),
       clientServer.fetch<FaqsSettingsRow>(faqsSettingsQuery),
       clientServer.fetch<TravellerGuideSettingsRow>(travellerGuideSettingsQuery),
+      getActivePromotions(),
     ])
+    promotions = promoRows
     row = pageRow
       ? {
           ...pageRow,
@@ -336,7 +347,7 @@ export const getSoqtapataPageCms = cache(async (slug: string): Promise<Soqtapata
 
   if (!row) return null
   if (!row.experience) return null
-  const soqtapataPartial = soqtapataPartialFromStructuredRow(row)
+  const soqtapataPartial = soqtapataPartialFromStructuredRow(row, local, promotions)
   const partial: Partial<SoqtapataExperience> = {
     ...soqtapataPartial,
   }
@@ -359,14 +370,18 @@ export const getSoqtapataPageCms = cache(async (slug: string): Promise<Soqtapata
     }
   }
   const pageBookingSummary = buildSoqtapataBookingSummary(experience.hero, experience.book)
-  const alsoBook = alsoBookFromStructuredRow(row, local, pageBookingSummary)
+  const alsoBook = alsoBookFromStructuredRow(row, local, pageBookingSummary, promotions)
   if (alsoBook.book) {
     experience = {
       ...experience,
       book: { ...experience.book, ...alsoBook.book },
     }
   }
-  experience = applyCmsExclusiveExperienceContent(experience, row, local, alsoBook)
+  experience = applyCmsExclusiveExperienceContent(experience, row, local, alsoBook, promotions)
+  const exp = row.experience
+  const offerTerms = exp
+    ? resolvePromotionLegalItemsForExperience(experiencePromotionTarget(exp), promotions)
+    : []
   const curatedReviews = reviewsFromRow(row)
   if (curatedReviews !== null) {
     experience = normalizeMergedExperience({ ...experience, reviews: curatedReviews })
@@ -398,6 +413,7 @@ export const getSoqtapataPageCms = cache(async (slug: string): Promise<Soqtapata
     pageReviews: row.reviewsSection ?? null,
     reviewsRatingSummary: normalizeReviewsRatingSummary(row.reviewsSettings ?? null),
     rotatingQuoteItems: buildRotatingQuoteItemsFromReviews(row.reviewsSection?.rotatingReviews ?? []),
+    offerTerms,
   })
 })
 

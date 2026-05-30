@@ -1,8 +1,10 @@
 import '@/app/site-header-mega.css'
 
 import { getSiteHeaderNav } from '@/lib/getSiteHeaderNav'
+import { getAnnouncementBarSettings } from '@/lib/getPromotions'
 import { getSiteSettingsShell } from '@/lib/getSiteSettingsShell'
 import { resolveHeaderLogoDarkUrl } from '@/lib/headerLogoPublic'
+import { ExperiencePriceDisplay } from '@/components/experience/ExperiencePriceDisplay'
 import type { ExperienceNavPriceMeta } from '@/lib/formatExperiencePrice'
 import type {
   ResolvedSiteHeaderNav,
@@ -16,6 +18,7 @@ import type {
 import { SiteHeaderLogoCms } from '@/components/SiteHeaderLogoCms'
 import { SiteHeaderNavBookButtons } from '@/components/SiteHeaderNavBookButtons'
 import { SiteHeaderShellClient } from '@/components/SiteHeaderShellClient'
+import { AnnouncementBar } from '@/components/AnnouncementBar'
 import { SiteHeaderTailorMobileRow, SiteHeaderTailorPanel } from '@/components/SiteHeaderTailorPanel'
 
 function InlineHeaderLogo() {
@@ -122,17 +125,23 @@ function navExpRouteLineOnly(routeLine: string): string {
   return first || routeLine.trim()
 }
 
-function NavExpPriceMeta({ meta }: { meta: ExperienceNavPriceMeta }) {
+function navMetaToDisplay(meta: ExperienceNavPriceMeta) {
   if (meta.kind === 'enquire') {
-    return <div className="dd-exp-meta">Enquire</div>
+    return { kind: 'enquire' as const, promoLabel: meta.promoLabel }
   }
-  return (
-    <div className="dd-exp-meta dd-exp-meta--price">
-      <span className="dd-exp-meta-from">{meta.from} </span>
-      <span className="dd-exp-meta-amount">{meta.amount}</span>
-      <span className="dd-exp-meta-per"> {meta.perPerson}</span>
-    </div>
-  )
+  return {
+    kind: 'priced' as const,
+    from: meta.from,
+    amount: meta.amount,
+    perPerson: meta.perPerson,
+    originalAmount: meta.originalAmount,
+    promoLabel: meta.promoLabel,
+    hasDiscount: meta.hasDiscount,
+  }
+}
+
+function NavExpPriceMeta({ meta }: { meta: ExperienceNavPriceMeta }) {
+  return <ExperiencePriceDisplay display={navMetaToDisplay(meta)} layout="mega" />
 }
 
 /** Mobile drawer: price line only when “Enquire” (no $ amounts in global menu). */
@@ -473,10 +482,19 @@ type SiteHeaderProps = {
    * Set false for the home hero / full-bleed dark hero so the bar starts transparent until scroll (`EcotoneV2Client`).
    */
   mainNavSolid?: boolean
+  /**
+   * Home hero: fixed nav + announcement overlay the hero media; no document-flow spacer.
+   * Internal pages: header stack pushes content down via `.site-header-stack-spacer`.
+   */
+  overlayOnHero?: boolean
 }
 
-export async function SiteHeader({ mainNavSolid = true }: SiteHeaderProps = {}) {
-  const [shell, nav] = await Promise.all([getSiteSettingsShell(), getSiteHeaderNav()])
+export async function SiteHeader({ mainNavSolid = true, overlayOnHero = false }: SiteHeaderProps = {}) {
+  const [shell, nav, announcementSettings] = await Promise.all([
+    getSiteSettingsShell(),
+    getSiteHeaderNav(),
+    getAnnouncementBarSettings(),
+  ])
 
   if (process.env.NODE_ENV === 'development') {
     // eslint-disable-next-line no-console
@@ -501,7 +519,11 @@ export async function SiteHeader({ mainNavSolid = true }: SiteHeaderProps = {}) 
 
   return (
     <>
-      <div className="site-header-mega-root">
+      <div
+        className={
+          'site-header-mega-root' + (overlayOnHero ? ' site-header-mega-root--hero-overlay' : '')
+        }
+      >
         <nav className={navClassName} id="topNav">
           <div className="nav-inner">
             <a href={logoHref} className="nav-logo">
@@ -570,6 +592,8 @@ export async function SiteHeader({ mainNavSolid = true }: SiteHeaderProps = {}) 
             </button>
           </div>
         </nav>
+        <AnnouncementBar settings={announcementSettings} />
+        <div className="site-header-stack-spacer" aria-hidden="true" />
         {nav.tabs.map((tab) => {
           if (tab.hasDropdown && tab.dropdownType === 'experiences' && tab.experiences) {
             return <ExperiencesMega key={tab.key} tab={tab} />

@@ -127,12 +127,29 @@ export function ExperienceHeroSoqtapata({
           </div>
           <div className="exp-price-block">
             <div className="exp-price-cta">
-              <div className="exp-price-titles">
-                <div className="exp-price">{data.priceFrom ? (
-                    <span className="exp-price-from">{data.priceFrom} </span>
-                  ) : null}
-                  <span className="exp-price-amount">{data.priceAmount}</span></div>
-                <div className="exp-price-sub">{data.priceSub}</div>
+              <div className={'exp-price-titles' + (data.promoLabel ? ' exp-price-titles--promo' : '')}>
+                {data.promoLabel ? (
+                  <>
+                    <p className="exp-price-promo">{data.promoLabel}</p>
+                    {data.promoMicrocopy ? <p className="exp-price-promo-micro">{data.promoMicrocopy}</p> : null}
+                    <div className="exp-price exp-price--promo-main">
+                      {data.priceFrom ? <span className="exp-price-from">{data.priceFrom} </span> : null}
+                      <span className="exp-price-amount">{data.priceAmount}</span>
+                    </div>
+                    <p className="exp-price-sub exp-price-sub--promo">per person</p>
+                    {data.priceOriginalAmount ? (
+                      <p className="exp-price-original">{data.priceOriginalAmount}</p>
+                    ) : null}
+                  </>
+                ) : (
+                  <>
+                    <div className="exp-price">
+                      {data.priceFrom ? <span className="exp-price-from">{data.priceFrom} </span> : null}
+                      <span className="exp-price-amount">{data.priceAmount}</span>
+                    </div>
+                    <div className="exp-price-sub">{data.priceSub}</div>
+                  </>
+                )}
               </div>
               {data.bookLabel.trim() ? (
                 bookOpensModal && bookingSummary ? (

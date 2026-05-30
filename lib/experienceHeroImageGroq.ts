@@ -40,6 +40,7 @@ export const GROQ_HEADER_NAV_EXPERIENCE_FIELDS = /* groq */ `
   programType,
   route,
   routeRef->{
+    _id,
     "slug": slug.current,
     shortLabel,
     name

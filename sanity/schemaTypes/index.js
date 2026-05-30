@@ -139,6 +139,8 @@ import {bookingModalSettings} from './bookingModalSettings'
 import {technologyProduct} from './technologyProduct'
 import {photoCollection} from './photoCollection'
 import {photoLibraryItem} from './objects/photoLibraryObjects'
+import {announcementBarSettings} from './announcementBarSettings'
+import {promotion} from './promotion'
 
 const objects = [
   seo,
@@ -246,6 +248,7 @@ const objects = [
 
 const documents = [
   siteSettings,
+  announcementBarSettings,
   headerSettings,
   footerSettings,
   termsConditionsSettings,
@@ -267,6 +270,7 @@ const documents = [
   routesPage,
   aboutPage,
   photoCollection,
+  promotion,
 ]
 
 export const schema = {

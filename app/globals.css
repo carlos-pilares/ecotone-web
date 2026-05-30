@@ -17,6 +17,8 @@
   /* next/font (app/layout.tsx) sets --font-lexend on <html> */
   --f: var(--font-lexend), system-ui, sans-serif;
   --nav-h: 64px;
+  --announcement-h: 0px;
+  --header-stack-h: calc(var(--nav-h) + var(--announcement-h));
   --g: clamp(20px, 3vw, 40px);
   --max: 1200px;
   --r: 14px;

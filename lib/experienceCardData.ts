@@ -22,6 +22,10 @@ export type ExperienceCardData = {
   description: string
   price?: number | null
   priceLabel?: string | null
+  /** Experience KC `_id` — promotion matching. */
+  experienceId?: string | null
+  routeRefId?: string | null
+  programType?: string | null
   href: string
   ctaLabel?: string
   /** Route KC slug — used for Routes page tab filtering. */
@@ -29,6 +33,8 @@ export type ExperienceCardData = {
 }
 
 export type ExperienceCardSourceRow = {
+  experienceId?: string | null
+  routeRefId?: string | null
   name?: string | null
   experienceSlug?: string | null
   experienceLandingSlug?: string | null
@@ -82,6 +88,9 @@ export function toExperienceCardData(
     description,
     price: row.price,
     priceLabel: row.priceLabel,
+    experienceId: row.experienceId?.trim() || undefined,
+    routeRefId: row.routeRefId?.trim() || undefined,
+    programType: row.programType?.trim() || undefined,
     href,
     ctaLabel: opts?.ctaLabel?.trim() || DEFAULT_CTA_LABEL,
     routeSlug: row.routeSlug?.trim() || row.route?.trim() || undefined,
@@ -107,6 +116,8 @@ export function toExperienceCardDataFromSanity(
         shortDescription: doc.shortDescription,
         price: doc.price,
         priceLabel: doc.priceLabel,
+        experienceId: doc._id?.trim(),
+        routeRefId: doc.routeRefId?.trim(),
         experienceSlug: doc.slug?.current,
         experienceLandingSlug: doc.experienceLandingSlug,
       },
@@ -160,6 +171,8 @@ export function toExperienceCardDataFromListedPage(
       shortDescription: row.shortDescription,
       price: row.price,
       priceLabel: row.priceLabel,
+      experienceId: row.experienceId?.trim(),
+      routeRefId: row.routeRefId?.trim(),
       experienceLandingSlug: landingSlug,
       experienceSlug: row.experienceSlug?.trim(),
     },

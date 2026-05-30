@@ -7,7 +7,8 @@ import {
   lodgeSoqtapataRouteLabels,
   normalizeLodgeRouteKey,
 } from '@/data/lodgeSoqtapataResolverDefaults'
-import { formatExperienceNavPriceMeta } from '@/lib/formatExperiencePrice'
+import { formatExperienceNavPriceMetaWithPromotions } from '@/lib/formatExperiencePrice'
+import type { PromotionDoc } from '@/lib/promotionTypes'
 import { resolveExperienceHeroImageUrl } from '@/lib/experienceHeroImage'
 import { resolveExperiencePublicHref } from '@/lib/resolveExperiencePublicHref'
 import type { HeaderNavTabRow } from '@/lib/headerNavTabsAdapter'
@@ -228,11 +229,28 @@ function sortLodgeTmpList(
   return copy.map((x) => x.it)
 }
 
+function headerNavPriceMetaForExperience(
+  exp: NonNullable<SiteHeaderNavExperiencePageRow['experience']>,
+  promotions?: PromotionDoc[] | null,
+) {
+  return formatExperienceNavPriceMetaWithPromotions(
+    {
+      experienceId: exp._id,
+      routeRefId: exp.routeRef?._id,
+      programType: exp.programType,
+      price: exp.price,
+      priceLabel: exp.priceLabel,
+    },
+    promotions,
+  )
+}
+
 function buildExperiencesDropdown(
   tab: HeaderNavTabRow,
   tabKey: string,
   experiencePages: SiteHeaderNavExperiencePageRow[],
   routeNavDocs: SiteHeaderNavRouteNavRow[] | null | undefined,
+  promotions?: PromotionDoc[] | null,
 ): NonNullable<ResolvedSiteHeaderNavTab['experiences']> {
   const cfg = tab.experiencesDropdown
   const programGroups = cfg?.programGroups ?? []
@@ -256,7 +274,7 @@ function buildExperiencesDropdown(
       name,
       href,
       routeLine: resolveHeaderExperienceRoutePill(exp, routeBySlug),
-      priceMeta: formatExperienceNavPriceMeta(exp),
+      priceMeta: headerNavPriceMetaForExperience(exp, promotions),
       thumbUrl:
         resolveExperienceHeroImageUrl({
           gallery: exp.gallery,
@@ -414,6 +432,7 @@ function resolveNavTab(
   experiencePages: SiteHeaderNavExperiencePageRow[],
   lodgePages: SiteHeaderNavLodgePageRow[],
   routeNavDocs: SiteHeaderNavRouteNavRow[] | null | undefined,
+  promotions?: PromotionDoc[] | null,
 ): ResolvedSiteHeaderNavTab | null {
   if (tab.showInHeader === false) return null
   const label = tab.label?.trim() ?? ''
@@ -454,7 +473,7 @@ function resolveNavTab(
       btnId,
       ddId,
       mobAccId,
-      experiences: buildExperiencesDropdown(tab, key, experiencePages, routeNavDocs),
+      experiences: buildExperiencesDropdown(tab, key, experiencePages, routeNavDocs, promotions),
       lodges: null,
     }
   }
@@ -482,6 +501,7 @@ export function resolveSiteHeaderNavFromNavTabs(
   experiencePages: SiteHeaderNavExperiencePageRow[] | null | undefined,
   lodgePages: SiteHeaderNavLodgePageRow[] | null | undefined,
   routeNavDocs: SiteHeaderNavRouteNavRow[] | null | undefined,
+  promotions?: PromotionDoc[] | null,
 ): ResolvedSiteHeaderNav {
   const tabRows = resolveHeaderNavTabRows(headerDoc)
   const pages = Array.isArray(experiencePages) ? experiencePages : []
@@ -489,7 +509,7 @@ export function resolveSiteHeaderNavFromNavTabs(
 
   const tabs: ResolvedSiteHeaderNavTab[] = []
   tabRows.forEach((row, index) => {
-    const resolved = resolveNavTab(row, index, pages, lodges, routeNavDocs)
+    const resolved = resolveNavTab(row, index, pages, lodges, routeNavDocs, promotions)
     if (resolved) tabs.push(resolved)
   })
 

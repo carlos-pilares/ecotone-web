@@ -10,6 +10,7 @@ export type RoutesPagePublishedRouteRow = {
 }
 
 export type RoutesPageListedExperiencePageRow = {
+  experienceId?: string | null
   landingSlug?: string | null
   routeRefId?: string | null
   routeSlug?: string | null

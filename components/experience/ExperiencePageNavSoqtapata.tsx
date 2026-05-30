@@ -10,6 +10,7 @@ import {
   activeHrefFromHash,
   computeActiveHrefFromScroll,
 } from '@/lib/inPageNavScroll'
+import { effectiveHeaderStackH } from '@/lib/headerStackMetrics'
 
 const ANCHOR_GAP = 8
 const PAST_HERO_BODY_CLASS = 'ecotone-exp-past-hero'
@@ -49,11 +50,7 @@ export function ExperiencePageNavSoqtapata({
   }, [scrollLinks])
 
   useEffect(() => {
-    const effectiveMainNavH = () => {
-      const v = getComputedStyle(document.documentElement).getPropertyValue('--nav-h').trim()
-      const n = parseInt(v, 10)
-      return Number.isFinite(n) && n > 20 ? n : 64
-    }
+    const effectiveHeaderStack = () => effectiveHeaderStackH()
 
     const updateActiveFromScroll = () => {
       if (performance.now() < scrollSpyMutedUntilRef.current) return
@@ -62,7 +59,7 @@ export function ExperiencePageNavSoqtapata({
         computeActiveHrefFromScroll(scrollLinks, {
           pageNav: pn,
           anchorGap: ANCHOR_GAP,
-          effectiveMainNavH,
+          effectiveMainNavH: effectiveHeaderStack,
           pastHeroBodyClass: PAST_HERO_BODY_CLASS,
         }),
       )
@@ -104,20 +101,32 @@ export function ExperiencePageNavSoqtapata({
   const canBookLink = Boolean(data.bookHref?.trim())
   const bookOpensModal = Boolean(bookingSummary) && !hideBookCta
 
+  const pnavPrice = data.promoLabel?.trim() ? (
+    <div
+      className="pnav-from-price pnav-from-price--promo"
+      aria-label={`${data.promoLabel}, from ${data.fromNum} per person`}
+    >
+      <span className="pnav-from-promo">{data.promoLabel}</span>
+      <span className="pnav-from-promo-row">
+        <span className="pnav-from-label">from </span>
+        <span className="pnav-from-num">{data.fromNum}</span>
+      </span>
+      <span className="pnav-from-sub">{data.fromSub}</span>
+    </div>
+  ) : (
+    <div className="pnav-from-price" aria-label={data.fromAriaLabel}>
+      <span className="pnav-from-label">{data.fromLabel}</span>
+      <span className="pnav-from-num">{data.fromNum}</span>
+      <span className="pnav-from-sub">{data.fromSub}</span>
+    </div>
+  )
+
   const ctaSlot =
     hideBookCta ? (
-      <div className="pnav-from-price" aria-label={data.fromAriaLabel}>
-        <span className="pnav-from-label">{data.fromLabel}</span>
-        <span className="pnav-from-num">{data.fromNum}</span>
-        <span className="pnav-from-sub">{data.fromSub}</span>
-      </div>
+      pnavPrice
     ) : (
       <>
-        <div className="pnav-from-price" aria-label={data.fromAriaLabel}>
-          <span className="pnav-from-label">{data.fromLabel}</span>
-          <span className="pnav-from-num">{data.fromNum}</span>
-          <span className="pnav-from-sub">{data.fromSub}</span>
-        </div>
+        {pnavPrice}
         {bookOpensModal && bookingSummary ? (
           <button
             type="button"

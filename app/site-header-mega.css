@@ -3,6 +3,19 @@
   position: relative;
 }
 
+.site-header-stack-spacer {
+  display: block;
+  width: 100%;
+  height: var(--header-stack-h, var(--nav-h));
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+/* Home hero: nav + announcement overlay media; spacer stays out of document flow. */
+.site-header-mega-root--hero-overlay .site-header-stack-spacer {
+  height: 0;
+}
+
 .nav-overlay {
   position: fixed;
   inset: 0;
@@ -83,7 +96,7 @@
 
 .nav-dropdown {
   position: fixed;
-  top: var(--nav-h);
+  top: var(--header-stack-h, var(--nav-h));
   left: 0;
   right: 0;
   z-index: 398;
@@ -583,7 +596,7 @@ button.dd-tailor-cta:hover {
 .site-header-mobile-drawer.mobile-drawer {
   flex-direction: column;
   padding: 0;
-  max-height: calc(100vh - var(--nav-h));
+  max-height: calc(100vh - var(--header-stack-h, var(--nav-h)));
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;

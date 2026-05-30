@@ -130,6 +130,7 @@ export type SiteHeaderNavSettingsRow = {
 }
 
 export type SiteHeaderNavExperienceRouteRefRow = {
+  _id?: string | null
   slug?: string | null
   shortLabel?: string | null
   name?: string | null

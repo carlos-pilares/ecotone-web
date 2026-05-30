@@ -9,6 +9,7 @@ import { getBookingModalSettings } from '@/lib/getBookingModalSettings'
 import { getSiteSettingsShell } from '@/lib/getSiteSettingsShell'
 
 import './globals.css'
+import './announcement-bar.css'
 import './shell-logo-tokens.css'
 import './shell-nav-logo.css'
 import '@/components/partners/partners-wall.css'

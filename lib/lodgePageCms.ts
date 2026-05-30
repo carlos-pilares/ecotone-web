@@ -516,6 +516,7 @@ function mapExperienceToCard(
       shortDescription: e.shortDescription,
       price: e.price,
       priceLabel: e.priceLabel,
+      experienceId: e._id,
       experienceLandingSlug: e.experienceLandingSlug,
       experienceSlug: e.slug,
     },

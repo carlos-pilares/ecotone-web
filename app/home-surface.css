@@ -65,7 +65,7 @@ button{font-family:var(--f);cursor:pointer}
   .nav-links,.nav-book.desk{display:none!important}
   .hamburger{display:flex!important}
 }
-.mobile-drawer{display:none;position:fixed;top:var(--nav-h);left:0;right:0;z-index:399;background:var(--w);border-bottom:1px solid var(--n200);padding:8px var(--g) 24px;flex-direction:column;box-shadow:0 4px 24px rgba(26,18,9,.08)}
+.mobile-drawer{display:none;position:fixed;top:var(--header-stack-h,var(--nav-h));left:0;right:0;z-index:399;background:var(--w);border-bottom:1px solid var(--n200);padding:8px var(--g) 24px;flex-direction:column;box-shadow:0 4px 24px rgba(26,18,9,.08)}
 .mobile-drawer.open{display:flex}
 .mobile-drawer a{display:block;padding:14px 0;font-size:14px;font-weight:400;color:var(--n700);border-bottom:1px solid var(--n200)}
 .mobile-drawer .btn-primary{margin-top:16px;justify-content:center}
@@ -100,7 +100,7 @@ button{font-family:var(--f);cursor:pointer}
 /* Brand mark decorative — subtle on hero */
 .hero-brand-mark{position:absolute;right:-60px;top:50%;transform:translateY(-50%);width:400px;height:400px;opacity:.04;pointer-events:none}
 
-.hero-inner{position:relative;z-index:2;max-width:var(--max);width:100%;margin:0 auto;display:grid;grid-template-columns:1fr;align-items:end;padding:calc(var(--nav-h) + 40px) var(--g) 60px}
+.hero-inner{position:relative;z-index:2;max-width:var(--max);width:100%;margin:0 auto;display:grid;grid-template-columns:1fr;align-items:end;padding:calc(var(--header-stack-h,var(--nav-h)) + 40px) var(--g) 60px}
 @media(min-width:900px){.hero-inner{grid-template-columns:1fr 1fr;align-items:end;gap:52px}}
 .hero-eyebrow{font-size:12px;font-weight:400;letter-spacing:.2em;text-transform:uppercase;color:rgba(236,229,213,.6);margin-bottom:18px;display:flex;align-items:center;gap:8px}
 .hero-eyebrow::before{content:'';width:16px;height:1px;background:rgba(212,170,114,.45)}
@@ -338,7 +338,7 @@ button{font-family:var(--f);cursor:pointer}
 .trust-item{display:flex;align-items:center;gap:11px;font-size:13px;font-weight:300;color:var(--n400)}
 .trust-item svg{width:15px;height:15px;color:var(--brown);flex-shrink:0}
 .book-card{background:var(--w);border:1.5px solid var(--n200);border-radius:var(--rxl);padding:30px 26px}
-@media(min-width:800px){.book-card{position:sticky;top:calc(var(--nav-h) + 10px)}}
+@media(min-width:800px){.book-card{position:sticky;top:calc(var(--header-stack-h, var(--nav-h)) + 10px)}}
 .book-price{font-size:48px;font-weight:700;color:var(--n900);line-height:1;letter-spacing:-.05em;margin-bottom:2px}
 .book-price small{font-size:15px;font-weight:300;color:var(--brown);margin-left:8px;letter-spacing:.04em}
 .book-price-sub{font-size:12px;font-weight:300;color:var(--n400);margin-bottom:18px}

@@ -56,6 +56,16 @@ export const structure = (S) =>
                     .title('Site settings — brand & defaults'),
                 ),
               S.listItem()
+                .title('Announcement bar')
+                .icon(DocumentTextIcon)
+                .id('announcementBarSettingsItem')
+                .child(
+                  S.document()
+                    .schemaType('announcementBarSettings')
+                    .documentId('announcementBarSettings')
+                    .title('Announcement bar'),
+                ),
+              S.listItem()
                 .title('Booking modals')
                 .icon(DocumentTextIcon)
                 .id('bookingModalSettingsItem')
@@ -196,6 +206,15 @@ export const structure = (S) =>
                   S.documentTypeList('experience')
                     .id('experienceList')
                     .title('Itinerario, medios, FAQ, términos, lodge ref… (fuente de verdad)'),
+                ),
+              S.listItem()
+                .title('Promotions / Offers')
+                .icon(DocumentTextIcon)
+                .id('promotions')
+                .child(
+                  S.documentTypeList('promotion')
+                    .id('promotionList')
+                    .title('Commercial offers — pricing & legal copy'),
                 ),
               S.listItem()
                 .title('Tech products (fichas)')

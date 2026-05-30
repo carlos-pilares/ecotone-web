@@ -294,7 +294,10 @@ export type RoutesPageResolved = {
   }
 }
 
-export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPageResolved {
+export function resolveRoutesPageData(
+  cms: RoutesPageSanityDoc | null,
+  promotions?: import('@/lib/promotionTypes').PromotionDoc[] | null,
+): RoutesPageResolved {
   const seoFromCms = cms?.seo
   const seo = {
     title: trimOr(routesSeoFallback.title, seoFromCms?.title),
@@ -389,8 +392,8 @@ export function resolveRoutesPageData(cms: RoutesPageSanityDoc | null): RoutesPa
   }
 
   const publishedForRouteCards = cms?.publishedExperiencePages ?? null
-  const footPriceByRouteRef = buildRouteFootPriceHtmlByRouteRef(publishedForRouteCards)
-  const footPriceByStableId = buildRouteFootPriceHtmlByStableId(publishedForRouteCards)
+  const footPriceByRouteRef = buildRouteFootPriceHtmlByRouteRef(publishedForRouteCards, promotions)
+  const footPriceByStableId = buildRouteFootPriceHtmlByStableId(publishedForRouteCards, promotions)
   const routesCardsFromCms = mapRouteCards(cms?.routeCards ?? null, footPriceByRouteRef, footPriceByStableId)
   const routesCards = routesCardsFromCms ?? fallbackRoutesCards
   const sectionVisibility = resolveRoutesPageSectionVisibility(cms?.sectionModules ?? null)

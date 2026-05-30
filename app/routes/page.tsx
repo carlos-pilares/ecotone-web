@@ -11,6 +11,7 @@ import { RoutesTerritory } from '@/components/routes/RoutesTerritory'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
 import { SnapshotBar } from '@/components/shared/SnapshotBar'
+import { getActivePromotions } from '@/lib/getPromotions'
 import { getRoutesPage } from '@/lib/getRoutesPage'
 
 import '../experiences/experience-surface.css'
@@ -34,7 +35,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RoutesPage() {
-  const p = await getRoutesPage()
+  const [p, promotions] = await Promise.all([getRoutesPage(), getActivePromotions()])
   const snapshotItems = p.snapshotStats.map((s) => ({ value: s.value, label: s.label }))
   const sec = p.sectionVisibility
 
@@ -51,7 +52,12 @@ export default async function RoutesPage() {
           <RoutesCompare section={p.compareSection} columns={p.compareColumns} rows={p.compareRows} />
         ) : null}
         {sec.experiences ? (
-          <RoutesExperiences section={p.experiencesSection} filters={p.expFilters} cards={p.expCards} />
+          <RoutesExperiences
+            section={p.experiencesSection}
+            filters={p.expFilters}
+            cards={p.expCards}
+            promotions={promotions}
+          />
         ) : null}
         {sec.reviews ? (
           <ReviewsSection

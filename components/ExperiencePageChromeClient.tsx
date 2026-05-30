@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 
 import { refreshInPageNavAnchorMetrics } from '@/lib/inPageNavAnchorMetrics'
+import { effectiveHeaderStackH } from '@/lib/headerStackMetrics'
 
 const HASH_SCROLL_MAX_RETRIES = 40
 const HASH_SCROLL_RETRY_MS = 50
@@ -19,11 +20,7 @@ const PAST_HERO_BODY_CLASS = 'ecotone-exp-past-hero'
  */
 export function ExperiencePageChromeClient() {
   useEffect(() => {
-    const effectiveMainNavH = () => {
-      const v = getComputedStyle(document.documentElement).getPropertyValue('--nav-h').trim()
-      const n = parseInt(v, 10)
-      return Number.isFinite(n) && n > 20 ? n : 64
-    }
+    const effectiveHeaderStack = () => effectiveHeaderStackH()
 
     let pnavRo: ResizeObserver | undefined
     const pageNav = document.getElementById('pageNav')
@@ -44,7 +41,7 @@ export function ExperiencePageChromeClient() {
       }
       const t = el.getBoundingClientRect().top
       const past = document.body.classList.contains(PAST_HERO_BODY_CLASS)
-      const mainOff = past ? 0 : effectiveMainNavH()
+      const mainOff = past ? 0 : effectiveHeaderStack()
       const stuck = t <= mainOff + 0.5
       document.body.classList.toggle('ecotone-pnav-stuck', stuck)
     }

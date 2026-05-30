@@ -3,9 +3,16 @@
 import { ExperienceCardsSection } from '@/components/experience/ExperienceCardsSection'
 import { buildRelatedExperienceSectionItems } from '@/lib/buildExperienceCardsSectionItems'
 import { tailorMadeBandFromResolved } from '@/lib/tailorMadeBand'
+import type { PromotionDoc } from '@/lib/promotionTypes'
 import type { SoqtapataAlsoCamanti } from '@/data/soqtapataExperienceLocal'
 
-export function ExperienceAlsoCamantiSoqtapata({ data }: { data: SoqtapataAlsoCamanti }) {
+export function ExperienceAlsoCamantiSoqtapata({
+  data,
+  promotions,
+}: {
+  data: SoqtapataAlsoCamanti
+  promotions?: PromotionDoc[] | null
+}) {
   const sectionCards = buildRelatedExperienceSectionItems(data.cards)
   const tailorProps = data.tailorBand ? tailorMadeBandFromResolved(data.tailorBand) : null
 
@@ -21,7 +28,7 @@ export function ExperienceAlsoCamantiSoqtapata({ data }: { data: SoqtapataAlsoCa
             {data.lead}
           </p>
         ) : null}
-        <ExperienceCardsSection cards={sectionCards} tailorMade={tailorProps} />
+        <ExperienceCardsSection cards={sectionCards} tailorMade={tailorProps} promotions={promotions} />
       </div>
     </section>
   )

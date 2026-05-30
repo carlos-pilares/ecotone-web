@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import { LodgePageView } from '@/app/lodges/LodgePageView'
+import { getActivePromotions } from '@/lib/getPromotions'
 import { getSoqtapataLodgePageCms } from '@/lib/lodgePageCms'
 import { lodgeSoqtapataSeoDefault } from '@/lib/lodgePageCmsTypes'
 
@@ -16,6 +17,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function SoqtapataLodgePage() {
-  const resolved = await getSoqtapataLodgePageCms()
-  return <LodgePageView resolved={resolved} />
+  const [resolved, promotions] = await Promise.all([getSoqtapataLodgePageCms(), getActivePromotions()])
+  return <LodgePageView resolved={resolved} promotions={promotions} />
 }

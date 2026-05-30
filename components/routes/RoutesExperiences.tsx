@@ -5,11 +5,13 @@ import { useMemo, useState } from 'react'
 import { ExperienceCardsSection } from '@/components/experience/ExperienceCardsSection'
 import { buildRoutesExperienceSectionItems } from '@/lib/buildExperienceCardsSectionItems'
 import type { RoutesExpCardStatic, RoutesExpFilterPill, RoutesExpRouteFilter } from '@/data/routesStatic'
+import type { PromotionDoc } from '@/lib/promotionTypes'
 
 export function RoutesExperiences({
   section,
   filters,
   cards,
+  promotions,
 }: {
   section: {
     sectionId: string
@@ -22,6 +24,7 @@ export function RoutesExperiences({
   }
   filters: RoutesExpFilterPill[]
   cards: RoutesExpCardStatic[]
+  promotions?: PromotionDoc[] | null
 }) {
   const [active, setActive] = useState<RoutesExpRouteFilter>('all')
 
@@ -56,7 +59,7 @@ export function RoutesExperiences({
           ))}
         </div>
 
-        <ExperienceCardsSection cards={sectionCards} cardCtaLabel={ctaLabel} />
+        <ExperienceCardsSection cards={sectionCards} cardCtaLabel={ctaLabel} promotions={promotions} />
 
         {section.allExperiencesHref ? (
           <p className="routes-exp-see-all">

@@ -9,7 +9,9 @@ import { ReviewsSection } from '@/components/ReviewsSection'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
 import { TechProductsSection } from '@/components/TechProductsSection'
+import { ExperienceOfferTerms } from '@/components/experience/ExperienceOfferTerms'
 import { buildSoqtapataBookingSummary } from '@/lib/buildSoqtapataBookingSummary'
+import { getActivePromotions } from '@/lib/getPromotions'
 import {
   SOQTAPATA_LOCAL_FALLBACK_SLUG,
   getSoqtapataPageCms,
@@ -79,7 +81,10 @@ export default async function ExperienceLandingPage({ params }: PageProps) {
     reviewsSectionLead,
     reviewsRatingSummary,
     rotatingQuoteItems,
+    offerTerms,
   } = data
+
+  const promotions = await getActivePromotions()
 
   const localReviews = ex.reviews
   const bookingSummary = buildSoqtapataBookingSummary(ex.hero, ex.book)
@@ -134,9 +139,14 @@ export default async function ExperienceLandingPage({ params }: PageProps) {
         {sec.resources !== false ? <ExperienceResourcesSoqtapata data={ex.resources} /> : null}
         {sec.faq !== false ? <ExperienceFaqSoqtapata data={ex.faq} /> : null}
         {sec.related !== false && (ex.also.cards.length > 0 || ex.also.tailorBand) ? (
-          <ExperienceAlsoCamantiSoqtapata data={ex.also} />
+          <ExperienceAlsoCamantiSoqtapata data={ex.also} promotions={promotions} />
         ) : null}
-        {sec.reserve !== false ? <ExperienceBookSoqtapata data={ex.book} bookingSummary={bookingSummary} /> : null}
+        {sec.reserve !== false ? (
+          <>
+            <ExperienceBookSoqtapata data={ex.book} bookingSummary={bookingSummary} />
+            <ExperienceOfferTerms items={offerTerms} />
+          </>
+        ) : null}
       </div>
       <ExperiencePageChromeClient />
       <InPageNavDrawerClient />

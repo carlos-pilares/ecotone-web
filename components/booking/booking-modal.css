@@ -8,7 +8,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: calc(var(--nav-h, 64px) + 20px) var(--g, 20px) 28px;
+  padding: calc(var(--header-stack-h, var(--nav-h, 64px)) + 20px) var(--g, 20px) 28px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }

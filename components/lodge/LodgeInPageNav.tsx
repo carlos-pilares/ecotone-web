@@ -9,6 +9,7 @@ import {
   computeActiveHrefFromScroll,
 } from '@/lib/inPageNavScroll'
 import { refreshInPageNavAnchorMetrics } from '@/lib/inPageNavAnchorMetrics'
+import { effectiveHeaderStackH } from '@/lib/headerStackMetrics'
 
 const ANCHOR_GAP = 8
 const HASH_SCROLL_MAX_RETRIES = 40
@@ -46,11 +47,7 @@ export function LodgeInPageNav({ nav }: LodgeInPageNavProps) {
   }, [scrollLinks])
 
   useEffect(() => {
-    const effectiveMainNavH = () => {
-      const v = getComputedStyle(document.documentElement).getPropertyValue('--nav-h').trim()
-      const n = parseInt(v, 10)
-      return Number.isFinite(n) && n > 20 ? n : 64
-    }
+    const effectiveHeaderStack = () => effectiveHeaderStackH()
 
     let pnavRo: ResizeObserver | undefined
     const pageNavEl = document.getElementById('pageNav')
@@ -69,7 +66,7 @@ export function LodgeInPageNav({ nav }: LodgeInPageNavProps) {
       }
       const t = el.getBoundingClientRect().top
       const past = document.body.classList.contains(PAST_HERO_BODY_CLASS)
-      const mainOff = past ? 0 : effectiveMainNavH()
+      const mainOff = past ? 0 : effectiveHeaderStack()
       const stuck = t <= mainOff + 0.5
       document.body.classList.toggle('ecotone-pnav-stuck', stuck)
     }
@@ -145,7 +142,7 @@ export function LodgeInPageNav({ nav }: LodgeInPageNavProps) {
         computeActiveHrefFromScroll(scrollLinks, {
           pageNav: pn,
           anchorGap: ANCHOR_GAP,
-          effectiveMainNavH,
+          effectiveMainNavH: effectiveHeaderStack,
           pastHeroBodyClass: PAST_HERO_BODY_CLASS,
         }),
       )

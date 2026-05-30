@@ -6,7 +6,7 @@
 
 /* ── Hero full-bleed ── */
 .lodge-hero {
-  padding-top: var(--nav-h);
+  padding-top: 0;
 }
 
 .lodge-hero-fullbleed {
@@ -202,7 +202,7 @@
 
 /* In-flow anchors for sections not yet built (Experiences / Reviews / Book) — keeps hash + scroll-spy stable */
 .lodge-nav-spacer {
-  scroll-margin-top: var(--anchor-offset, calc(var(--nav-h) + 56px));
+  scroll-margin-top: var(--anchor-offset, calc(var(--header-stack-h, var(--nav-h)) + 56px));
   min-height: 48px;
   margin: 0;
   padding: 0;
@@ -469,7 +469,7 @@
 
 /* ── Final book CTA — `reference/ecotone-lodge_11.html` `#book` ── */
 .lodge-book-cta {
-  scroll-margin-top: var(--anchor-offset, calc(var(--nav-h) + 56px));
+  scroll-margin-top: var(--anchor-offset, calc(var(--header-stack-h, var(--nav-h)) + 56px));
 }
 
 .lodge-book-cta .lodge-book-card {

@@ -1,12 +1,16 @@
+'use client'
+
 import Link from 'next/link'
 
+import { ExperiencePriceDisplay } from '@/components/experience/ExperiencePriceDisplay'
 import type { ExperienceCardData } from '@/lib/experienceCardData'
 import {
-  formatExperienceCardPriceDisplay,
-  type ExperiencePriceFields,
+  formatExperienceCardPriceDisplayWithPromotions,
 } from '@/lib/formatExperiencePrice'
+import type { PromotionDoc } from '@/lib/promotionTypes'
 
 import './experience-card.css'
+import './experience-price-display.css'
 
 export type ExperienceCardProps = {
   card: ExperienceCardData
@@ -14,20 +18,37 @@ export type ExperienceCardProps = {
   className?: string
   /** Passed to root element for route tab filtering on `/routes`. */
   dataRoute?: string
+  promotions?: PromotionDoc[] | null
 }
 
-function ExperienceCardPrice({ price }: { price: ExperiencePriceFields }) {
-  const display = formatExperienceCardPriceDisplay(price)
-  if (display.kind === 'enquire') {
-    return <span className="experience-card__price experience-card__price--enquire">Enquire</span>
-  }
-  return (
-    <span className="experience-card__price">
-      <span className="experience-card__price-from">{display.from} </span>
-      <span className="experience-card__price-amount">{display.amount}</span>
-      <span className="experience-card__price-per"> {display.perPerson}</span>
-    </span>
+function ExperienceCardPrice({
+  card,
+  promotions,
+}: {
+  card: ExperienceCardData
+  promotions?: PromotionDoc[] | null
+}) {
+  const display = formatExperienceCardPriceDisplayWithPromotions(
+    {
+      price: card.price,
+      priceLabel: card.priceLabel,
+      experienceId: card.experienceId,
+      routeRefId: card.routeRefId,
+      routeSlug: card.routeSlug,
+      programType: card.programType,
+    },
+    promotions,
   )
+  if (display.kind === 'enquire') {
+    return (
+      <ExperiencePriceDisplay
+        display={display}
+        className="experience-card__price experience-card__price--enquire"
+        showPromoLabel
+      />
+    )
+  }
+  return <ExperiencePriceDisplay display={display} showPromoLabel />
 }
 
 function CardArrow() {
@@ -39,7 +60,7 @@ function CardArrow() {
   )
 }
 
-export function ExperienceCard({ card, variant = 'standard', className, dataRoute }: ExperienceCardProps) {
+export function ExperienceCard({ card, variant = 'standard', className, dataRoute, promotions }: ExperienceCardProps) {
   const cta = (card.ctaLabel?.trim() || 'View').replace(/\s*→\s*$/, '')
   const rootClass =
     'experience-card' +
@@ -58,7 +79,7 @@ export function ExperienceCard({ card, variant = 'standard', className, dataRout
         <h3 className="experience-card__title">{card.title}</h3>
         {card.description ? <p className="experience-card__desc">{card.description}</p> : null}
         <div className="experience-card__foot">
-          <ExperienceCardPrice price={{ price: card.price, priceLabel: card.priceLabel }} />
+          <ExperienceCardPrice card={card} promotions={promotions} />
           <span className="experience-card__cta">
             {cta} <CardArrow />
           </span>

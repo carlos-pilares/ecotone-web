@@ -28,7 +28,7 @@
   --rxl: 28px;
 }
 
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; max-width: 100%; overflow-x: hidden; /* anchor targets clear fixed top nav + sticky in-page bar (see --anchor-offset, set in ExperiencePageChromeClient) */ scroll-padding-top: var(--anchor-offset, calc(var(--nav-h) + 56px)); }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; max-width: 100%; overflow-x: hidden; /* anchor targets clear fixed top nav + sticky in-page bar (see --anchor-offset, set in ExperiencePageChromeClient) */ scroll-padding-top: var(--anchor-offset, calc(var(--header-stack-h, var(--nav-h)) + 56px)); }
 @supports (overflow: clip) {
   html { overflow-x: clip; }
 }
@@ -111,7 +111,7 @@ button { font-family: var(--f); cursor: pointer; }
 .hamburger span { display: block; width: 22px; height: 1.5px; background: var(--cream); transition: background .35s; }
 .top-nav.solid .hamburger span { background: var(--n900); }
 @media(max-width: 720px) { .nav-links, .nav-book.desk { display: none !important; } .hamburger { display: flex !important; } }
-.mobile-drawer { display: none; position: fixed; top: var(--nav-h); left: 0; right: 0; z-index: 399; background: var(--w); border-bottom: 1px solid var(--n200); padding: 8px var(--g) 24px; flex-direction: column; box-shadow: 0 4px 24px rgba(26,18,9,.08); }
+.mobile-drawer { display: none; position: fixed; top: var(--header-stack-h, var(--nav-h)); left: 0; right: 0; z-index: 399; background: var(--w); border-bottom: 1px solid var(--n200); padding: 8px var(--g) 24px; flex-direction: column; box-shadow: 0 4px 24px rgba(26,18,9,.08); }
 .mobile-drawer.open { display: flex; }
 .mobile-drawer a { display: block; padding: 13px 0; font-size: 14px; color: var(--n700); border-bottom: 1px solid var(--n200); }
 .mobile-drawer .btn-primary { margin-top: 14px; justify-content: center; }
@@ -122,7 +122,7 @@ button { font-family: var(--f); cursor: pointer; }
    ═══════════════════════════════════════════════════════════ */
 
 /* ── HERO ── */
-.exp-hero { padding-top: var(--nav-h); }
+.exp-hero { padding-top: 0; }
 
 /* Gallery grid (tabs row removed: extra height on desktop to reclaim space) */
 .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; background: var(--n900); }
@@ -246,6 +246,38 @@ button { font-family: var(--f); cursor: pointer; }
 .exp-price-amount { font-size: 32px; font-weight: 700; color: var(--cream); letter-spacing: -.04em; }
 .exp-price-sub { font-size: 12px; font-weight: 300; color: rgba(236,229,213,.45); letter-spacing: 0.03em; }
 
+.exp-price-titles--promo .exp-price-promo {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--b200, #d1a3dd);
+  letter-spacing: 0.03em;
+  line-height: 1.25;
+}
+.exp-price-promo-micro {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 300;
+  color: rgba(236,229,213,.55);
+  line-height: 1.45;
+  max-width: 22rem;
+}
+.exp-price-titles--promo .exp-price--promo-main {
+  margin: 0;
+}
+.exp-price-sub--promo {
+  margin: 2px 0 0;
+}
+.exp-price-titles--promo .exp-price-original {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(236,229,213,.38);
+  text-decoration: line-through;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+}
+
 /* Snapshot bar */
 .snapshot-bar { background: var(--n100); border-bottom: 1px solid var(--n200); }
 .snapshot-inner { max-width: var(--max); margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); }
@@ -266,7 +298,7 @@ button { font-family: var(--f); cursor: pointer; }
   background: var(--w);
   border-bottom: 1.5px solid var(--n200);
   position: sticky;
-  top: var(--nav-h);
+  top: var(--header-stack-h, var(--nav-h));
   z-index: 199;
   max-width: 100%;
   box-sizing: border-box;
@@ -284,6 +316,11 @@ body:has(#ecotone-experience-root).ecotone-exp-past-hero .page-nav {
 /* Oculta header principal tras el hero (misma lógica que ecotone-experience_2.html). Solo experiencia Soqtapata (DOM con #ecotone-experience-root). */
 body:has(#ecotone-experience-root).ecotone-exp-past-hero #topNav {
   transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+body:has(#ecotone-experience-root).ecotone-exp-past-hero .announcement-bar {
+  transform: translateY(calc(-100% - var(--nav-h, 64px)));
   opacity: 0;
   pointer-events: none;
 }
@@ -324,6 +361,82 @@ body:has(#ecotone-experience-root).ecotone-exp-past-hero .pnav-scroll-shim {
 .pnav-from-label { font-size: 10px; font-weight: 500; color: var(--n400); letter-spacing: .02em; display: block; margin-bottom: 1px; }
 .pnav-from-num { font-size: 18px; font-weight: 700; color: var(--n900); letter-spacing: -.03em; }
 .pnav-from-sub { font-size: 10px; font-weight: 300; color: var(--n400); display: block; margin-top: 1px; }
+.pnav-from-price--promo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+  line-height: 1.1;
+}
+.pnav-from-price--promo .pnav-from-promo {
+  display: block;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--brown, #906730);
+  letter-spacing: 0.02em;
+  margin-bottom: 2px;
+  line-height: 1.15;
+  max-width: 8rem;
+  text-align: right;
+}
+.pnav-from-price--promo .pnav-from-promo-row {
+  display: block;
+  line-height: 1.1;
+}
+.pnav-from-price--promo .pnav-from-promo-row .pnav-from-label {
+  display: inline;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--n400);
+  letter-spacing: 0.02em;
+  margin-bottom: 0;
+}
+.pnav-from-price--promo .pnav-from-promo-row .pnav-from-num {
+  display: inline;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--n900);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.pnav-from-price--promo .pnav-from-sub {
+  display: block;
+  margin-top: 1px;
+  font-size: 10px;
+  font-weight: 300;
+  color: var(--n400);
+}
+.experience-offer-terms__list {
+  gap: 4px;
+}
+.experience-offer-terms__list .faq-q {
+  padding: 12px 14px;
+  font-size: 13px;
+}
+.experience-offer-terms__list .faq-a-inner {
+  padding: 12px 14px 14px;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.experience-offer-terms__text {
+  margin: 0 0 8px;
+  white-space: pre-line;
+}
+.experience-offer-terms__text:last-child {
+  margin-bottom: 0;
+}
+.experience-offer-terms__link {
+  display: inline-flex;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brown, #906730);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.experience-offer-terms__link:hover {
+  opacity: 0.85;
+}
 a.pnav-book-btn, button.pnav-book-btn { padding: 8px 18px; font-size: 12px; font-weight: 700; text-decoration: none; }
 .page-nav-mobile-meta-sep,
 .page-nav-mobile-meta { display: none; }

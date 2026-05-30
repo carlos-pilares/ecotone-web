@@ -51,7 +51,13 @@ import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
 import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
 import { buildDefaultExperienceReserveRows, type ExperienceReserveFacts } from '@/lib/experienceReserveRows'
 import { toExperienceCardData } from '@/lib/experienceCardData'
-import { formatExperiencePriceLine, formatExperiencePriceParts } from '@/lib/formatExperiencePrice'
+import {
+  formatExperiencePriceLine,
+  formatExperiencePricePartsWithPromotions,
+  parseUsdAmountFromLabel,
+} from '@/lib/formatExperiencePrice'
+import type { PromotionDoc } from '@/lib/promotionTypes'
+import { resolvePromotionLegalInfo } from '@/lib/promotionPricing'
 import { isActiveExperienceStatus } from '@/lib/reserveCtaPricing'
 import { resolveReserveCtaCard } from '@/lib/resolveReserveCtaCard'
 import {
@@ -1214,13 +1220,14 @@ export function applyCmsExclusiveExperienceContent(
   row: NonNullable<SoqtapataStructuredPageRow>,
   local: SoqtapataExperience,
   alsoBook: { also: SoqtapataAlsoCamanti; book: SoqtapataBook },
+  promotions?: PromotionDoc[] | null,
 ): SoqtapataExperience {
   const e = row.experience
   if (!e) return experience
 
   const ph = row.pageHero
   const h1 = resolveExperiencePageTitle(ph, e, row.internalTitle)
-  const heroPrice = resolveExperienceHeroPriceParts(e, ph)
+  const heroPrice = resolveExperienceHeroPriceParts(e, ph, promotions)
   const priceFrom = heroPrice.from
   const priceAmount = heroPrice.amount
   const priceSub = heroPrice.suffix
@@ -1245,14 +1252,23 @@ export function applyCmsExclusiveExperienceContent(
       priceFrom,
       priceAmount,
       priceSub,
+      priceOriginalAmount: heroPrice.originalAmount,
+      promoLabel: heroPrice.promoLabel,
+      promoMicrocopy: heroPrice.promoMicrocopy,
       breadcrumb,
     },
     pageNav: {
       ...experience.pageNav,
       leadName: h1,
       fromNum: priceAmount,
+      fromOriginalNum: heroPrice.promoLabel ? undefined : heroPrice.originalAmount,
+      promoLabel: heroPrice.promoLabel,
       fromSub: 'per person',
-      fromAriaLabel: `From ${priceAmount} per person`,
+      fromAriaLabel: heroPrice.promoLabel
+        ? `${heroPrice.promoLabel}, ${priceAmount}`
+        : heroPrice.originalAmount
+          ? `Offer price ${priceAmount}, was ${heroPrice.originalAmount} per person`
+          : `From ${priceAmount} per person`,
     },
     stats,
     overview,
@@ -1545,21 +1561,57 @@ function whenMonthFromCms(
 
 const DEFAULT_EXPERIENCE_PRICE_SUB = 'per person · all inclusive'
 
+export function experiencePromotionTarget(
+  e: Partial<Pick<CmsExperience, '_id' | 'programType' | 'routeDocument' | 'route'>> & {
+    routeRef?: { _id?: string | null } | null
+    routeRefId?: string | null
+  },
+): {
+  experienceId?: string | null
+  routeRefId?: string | null
+  programType?: string | null
+} {
+  const routeRefId =
+    e.routeRefId?.trim() ||
+    (typeof e.routeRef === 'object' && e.routeRef && '_id' in e.routeRef
+      ? String((e.routeRef as { _id?: string })._id ?? '').trim()
+      : '') ||
+    null
+  return {
+    experienceId: e._id?.trim() || null,
+    routeRefId: routeRefId || null,
+    programType: e.programType,
+  }
+}
+
 /** KC price wins when `useProductPrice` is true; legacy `pageHero` only when override off. */
 function resolveExperienceHeroPriceParts(
-  e: Pick<CmsExperience, 'price' | 'priceLabel'>,
+  e: Partial<Pick<CmsExperience, '_id' | 'price' | 'priceLabel' | 'programType' | 'routeDocument' | 'route'>> & {
+    routeRef?: { _id?: string | null } | null
+    routeRefId?: string | null
+  },
   ph?: { priceLine?: string | null; priceSub?: string | null; useProductPrice?: boolean | null } | null,
-): { from: string; amount: string; suffix: string } {
+  promotions?: PromotionDoc[] | null,
+): { from: string; amount: string; suffix: string; originalAmount?: string; promoLabel?: string; promoMicrocopy?: string } {
   if (ph?.useProductPrice === false) {
     const raw = ph.priceLine?.trim() || 'Enquire'
     const sub = ph.priceSub?.trim() || DEFAULT_EXPERIENCE_PRICE_SUB
     if (raw.toLowerCase() === 'enquire') return { from: '', amount: 'Enquire', suffix: sub }
     return { from: 'from', amount: raw.replace(/^\s*from\s+/i, '').trim(), suffix: sub }
   }
-  return formatExperiencePriceParts(
-    { price: e.price, priceLabel: e.priceLabel },
+  const parts = formatExperiencePricePartsWithPromotions(
+    { ...experiencePromotionTarget(e), price: e.price, priceLabel: e.priceLabel },
+    promotions,
     { inclusiveExtra: 'all inclusive' },
   )
+  return {
+    from: parts.from,
+    amount: parts.amount,
+    suffix: parts.suffix,
+    originalAmount: parts.originalAmount,
+    promoLabel: parts.promoLabel,
+    promoMicrocopy: parts.promoMicrocopy,
+  }
 }
 
 /** Plain-text breadcrumb trail (non-clickable), aligned with lodge pages. */
@@ -1977,6 +2029,7 @@ function mapExperienceResourcesFromCms(
 export function soqtapataPartialFromStructuredRow(
   row: SoqtapataStructuredPageRow,
   local: SoqtapataExperience = soqtapataExperience,
+  promotions?: PromotionDoc[] | null,
 ): Partial<SoqtapataExperience> {
   if (!row?.experience) return {}
   const e = row.experience
@@ -1986,7 +2039,7 @@ export function soqtapataPartialFromStructuredRow(
   const programBadge = (e.programType && PROGRAM[e.programType]) || 'Classic Nature'
   const routeSlug = experienceRouteSlug(e)
   const routeBadge = routeSlug ? resolveRouteLabel(routeSlug) : 'Camanti Route'
-  const heroPrice = resolveExperienceHeroPriceParts(e, ph)
+  const heroPrice = resolveExperienceHeroPriceParts(e, ph, promotions)
   const priceFrom = heroPrice.from
   const priceAmount = heroPrice.amount
   const priceSubline = heroPrice.suffix
@@ -2390,6 +2443,7 @@ function relatedExperienceToCard(exp: CmsRelatedExperience): SoqtapataRelatedCar
         shortDescription: exp.shortDescription,
         price: exp.price,
         priceLabel: exp.priceLabel,
+        experienceId: exp._id,
         experienceLandingSlug: pageSlug,
       },
       { href, ctaLabel: 'View' },
@@ -2430,6 +2484,7 @@ export function alsoBookFromStructuredRow(
   row: SoqtapataStructuredPageRow,
   local: SoqtapataExperience,
   pageBookingSummary?: ExperienceBookingSummary | null,
+  promotions?: PromotionDoc[] | null,
 ): { also: SoqtapataAlsoCamanti; book: SoqtapataBook } {
   if (!row) {
     return { also: local.also, book: local.book }
@@ -2529,10 +2584,20 @@ export function alsoBookFromStructuredRow(
   }
 
   const exp = row.experience
+  const promoParts =
+    exp != null
+      ? formatExperiencePricePartsWithPromotions(
+          { ...experiencePromotionTarget(exp), price: exp.price, priceLabel: exp.priceLabel },
+          promotions,
+          { inclusiveExtra: 'all inclusive' },
+        )
+      : null
   const expPriceUsd =
     exp && isActiveExperienceStatus(exp.status) && typeof exp.price === 'number' && exp.price > 0
       ? exp.price
       : null
+  const promoUsd = promoParts ? parseUsdAmountFromLabel(promoParts.amount) : null
+  const displayUsd = promoUsd ?? expPriceUsd
   const expReserveFacts: ExperienceReserveFacts = {
       route: exp?.route,
       duration: exp?.duration,
@@ -2552,9 +2617,12 @@ export function alsoBookFromStructuredRow(
   const rs = row.reserveCtaSettings
   const reserveCard = resolveReserveCtaCard({
     settings: rs,
-    lowestUsd: expPriceUsd,
+    lowestUsd: displayUsd,
     priceLineStyle: 'exact',
-    legacyPriceLine: book.price,
+    legacyPriceLine:
+      promoParts != null
+        ? [promoParts.from, promoParts.amount].filter(Boolean).join(' ').trim() || book.price
+        : book.price,
     legacyPriceSuffix: book.priceSmall,
     legacySubline: book.sub,
     defaultSubline: lBook.sub,

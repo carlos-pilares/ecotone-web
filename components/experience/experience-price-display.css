@@ -1,0 +1,81 @@
+/* Shared promotion-aware price layouts (cards + mega menu). */
+
+.experience-price-display--card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  line-height: 1.25;
+}
+
+.experience-price-display--card .experience-price-display__promo-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--brown, #906730);
+  letter-spacing: 0.02em;
+  margin-bottom: 1px;
+  max-width: 11rem;
+  line-height: 1.2;
+}
+
+.experience-price-display--card .experience-price-display__price-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 5px;
+}
+
+.experience-price-display--card .experience-price-display__original {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--n400, #9a8f82);
+  text-decoration: line-through;
+}
+
+.experience-price-display--mega {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  line-height: 1.25;
+}
+
+.experience-price-display--mega .experience-price-display__promo-label,
+.experience-price-display--mega .dd-exp-meta-promo {
+  display: block;
+  order: -2;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--brown, #906730);
+  letter-spacing: 0.02em;
+  margin-bottom: 2px;
+  line-height: 1.2;
+}
+
+.experience-price-display--mega .experience-price-display__mega-line {
+  display: block;
+}
+
+.experience-price-display--mega .experience-price-display__original,
+.experience-price-display--mega .dd-exp-meta-original {
+  display: block;
+  order: 1;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--n400, #9a8f82);
+  text-decoration: line-through;
+  margin-top: 1px;
+}
+
+.experience-price-display--enquire {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.experience-price-display--enquire .experience-price-display__promo-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--brown, #906730);
+}

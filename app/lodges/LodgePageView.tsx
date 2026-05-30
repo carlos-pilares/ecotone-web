@@ -19,12 +19,15 @@ import { SiteHeader } from '@/components/SiteHeader'
 import type { SoqtapataFaq } from '@/data/soqtapataExperienceLocal'
 import type { LodgePageResolvedPayload } from '@/lib/lodgePageCmsTypes'
 
+import type { PromotionDoc } from '@/lib/promotionTypes'
+
 type LodgePageViewProps = {
   resolved: LodgePageResolvedPayload
+  promotions?: PromotionDoc[] | null
 }
 
 /** Shared lodge landing layout (CMS + static merge). */
-export function LodgePageView({ resolved }: LodgePageViewProps) {
+export function LodgePageView({ resolved, promotions }: LodgePageViewProps) {
   const lodgeFeaturedQuotes = [...resolved.featuredQuotes]
   const sec = resolved.sectionVisibility
 
@@ -43,7 +46,7 @@ export function LodgePageView({ resolved }: LodgePageViewProps) {
         {sec.facilities ? <LodgeFacilities data={resolved.facilities} /> : null}
         {sec.location ? <LodgeLocation data={resolved.location} /> : null}
         {sec.research ? <LodgeResearch data={resolved.research} /> : null}
-        {sec.experiences ? <LodgeExperiences data={resolved.experiences} /> : null}
+        {sec.experiences ? <LodgeExperiences data={resolved.experiences} promotions={promotions} /> : null}
         {sec.reviews ? (
           <ReviewsSection
             sectionClassName="sec bg-cream fade"
