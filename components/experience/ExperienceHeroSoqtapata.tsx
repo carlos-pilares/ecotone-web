@@ -2,6 +2,7 @@
 
 import { useBookingModal } from '@/components/booking/BookingModalContext'
 import type { ExperienceBookingSummary } from '@/components/booking/types'
+import { trackBookNowClick } from '@/lib/trackBookNowClick'
 import type { SoqtapataPhase1Hero } from '@/data/soqtapataExperienceLocal'
 
 /**
@@ -16,6 +17,18 @@ export function ExperienceHeroSoqtapata({
 }) {
   const { openExperienceBooking } = useBookingModal()
   const bookOpensModal = Boolean(bookingSummary) && Boolean(data.bookLabel.trim())
+  const bookTracking = {
+    button_location: 'hero' as const,
+    price: data.priceAmount?.trim() || undefined,
+    promo_label: data.promoLabel?.trim() || undefined,
+  }
+  const bookOptionalContext = bookingSummary
+    ? {
+        experience_name: bookingSummary.experienceName,
+        route: bookingSummary.route,
+        program_type: bookingSummary.programType,
+      }
+    : {}
   return (
     <section className="exp-hero" id="top">
       {data.gallery.length > 0 ? (
@@ -158,7 +171,7 @@ export function ExperienceHeroSoqtapata({
                     type="button"
                     onClick={(e) => {
                       e.preventDefault()
-                      openExperienceBooking(bookingSummary)
+                      openExperienceBooking(bookingSummary!, bookTracking)
                     }}
                   >
                     {data.bookLabel}
@@ -168,6 +181,7 @@ export function ExperienceHeroSoqtapata({
                     className="btn btn-primary"
                     type="button"
                     onClick={() => {
+                      trackBookNowClick({ ...bookTracking, ...bookOptionalContext })
                       window.location.href = data.bookUrl
                     }}
                   >

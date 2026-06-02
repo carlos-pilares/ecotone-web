@@ -16,8 +16,11 @@ export function ExperienceBookSoqtapata({
 }) {
   const { openExperienceBooking } = useBookingModal()
   const onPrimary = useCallback(() => {
-    openExperienceBooking(bookingSummary)
-  }, [openExperienceBooking, bookingSummary])
+    openExperienceBooking(bookingSummary, {
+      button_location: 'reserve_section',
+      price: data.price,
+    })
+  }, [openExperienceBooking, bookingSummary, data.price])
 
   const ctas: ReserveCtaCta[] = []
   if (data.primaryBookingModal) {
@@ -79,6 +82,7 @@ export function ExperienceBookSoqtapata({
       experienceBookPrimaryModal={legacyPrimaryOpensPageModal}
       onExperienceBookPrimaryClick={legacyPrimaryOpensPageModal ? onPrimary : undefined}
       experienceReserveTrustTermsExact
+      bookNowTracking={{ price: data.price }}
       card={{
         priceLine: data.price,
         priceSuffix: data.priceSmall,

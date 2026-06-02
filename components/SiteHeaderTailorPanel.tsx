@@ -36,14 +36,18 @@ function TailorCta({ cta }: { cta: NonNullable<SiteHeaderNavTailor['cta']> }) {
 
   if (cta.bookingModal === 'plan') {
     return (
-      <button type="button" className="dd-tailor-cta" onClick={() => openPlanJourney()}>
+      <button type="button" className="dd-tailor-cta" onClick={() => openPlanJourney({ button_location: 'header' })}>
         {inner}
       </button>
     )
   }
   if (cta.bookingModal === 'experience' && cta.bookingSummary) {
     return (
-      <button type="button" className="dd-tailor-cta" onClick={() => openExperienceBooking(cta.bookingSummary!)}>
+      <button
+        type="button"
+        className="dd-tailor-cta"
+        onClick={() => openExperienceBooking(cta.bookingSummary!, { button_location: 'header' })}
+      >
         {inner}
       </button>
     )
@@ -140,7 +144,7 @@ export function SiteHeaderTailorMobileRow({ tailor }: { tailor: SiteHeaderNavTai
 
   if (cta?.bookingModal === 'plan') {
     return (
-      <button type="button" className="mob-tailor-mobile-row" onClick={() => openPlanJourney()}>
+      <button type="button" className="mob-tailor-mobile-row" onClick={() => openPlanJourney({ button_location: 'header' })}>
         {inner}
       </button>
     )
@@ -150,7 +154,7 @@ export function SiteHeaderTailorMobileRow({ tailor }: { tailor: SiteHeaderNavTai
       <button
         type="button"
         className="mob-tailor-mobile-row"
-        onClick={() => openExperienceBooking(cta.bookingSummary!)}
+        onClick={() => openExperienceBooking(cta.bookingSummary!, { button_location: 'header' })}
       >
         {inner}
       </button>

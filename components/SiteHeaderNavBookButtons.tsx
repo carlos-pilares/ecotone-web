@@ -51,7 +51,7 @@ export function SiteHeaderNavBookButtons({ label, href, openInNewTab }: Props) {
 
   const open = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
-    openPlanJourney()
+    openPlanJourney({ button_location: 'header' })
   }
 
   return (

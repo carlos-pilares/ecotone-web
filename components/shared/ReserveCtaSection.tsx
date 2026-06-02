@@ -6,6 +6,11 @@ import type { ReactNode } from 'react'
 import { useBookingModal } from '@/components/booking/BookingModalContext'
 import type { ExperienceBookingSummary } from '@/components/booking/types'
 import { isWhatsappHref, trackWhatsappClick } from '@/lib/trackWhatsappClick'
+import {
+  isBookIntentLabel,
+  trackBookNowClick,
+  type BookNowOpenSource,
+} from '@/lib/trackBookNowClick'
 
 import './reserve-cta-section.css'
 
@@ -64,6 +69,8 @@ export type ReserveCtaSectionProps = {
    * defaults that would mask empty suffix, custom copy, or resolver output.
    */
   experienceReserveTrustTermsExact?: boolean
+  /** Passed to book-intent analytics for reserve-section CTAs. */
+  bookNowTracking?: Pick<BookNowOpenSource, 'price' | 'promo_label'>
 }
 
 const DEFAULT_TRUST_ITEMS: ReserveCtaTrustItem[] = [
@@ -132,7 +139,39 @@ function reserveWhatsappClickHandler(cta: ReserveCtaCta) {
   }
 }
 
-function ReserveCtaLink({ cta }: { cta: ReserveCtaCta }) {
+function reserveBookClickHandler(
+  cta: ReserveCtaCta,
+  bookNowTracking?: Pick<BookNowOpenSource, 'price' | 'promo_label'>,
+) {
+  if (cta.bookingModal) return undefined
+  if (isWhatsappCta(cta)) return undefined
+  const variant = cta.variant ?? 'primary'
+  if (variant !== 'primary' || !isBookIntentLabel(cta.label)) return undefined
+  return () => {
+    const summary = cta.bookingSummary
+    trackBookNowClick({
+      button_location: 'reserve_section',
+      ...(bookNowTracking?.price ? { price: bookNowTracking.price } : {}),
+      ...(bookNowTracking?.promo_label ? { promo_label: bookNowTracking.promo_label } : {}),
+      ...(summary
+        ? {
+            experience_name: summary.experienceName,
+            route: summary.route,
+            program_type: summary.programType,
+            price: bookNowTracking?.price ?? summary.priceLine,
+          }
+        : {}),
+    })
+  }
+}
+
+function ReserveCtaLink({
+  cta,
+  bookNowTracking,
+}: {
+  cta: ReserveCtaCta
+  bookNowTracking?: Pick<BookNowOpenSource, 'price' | 'promo_label'>
+}) {
   const { openPlanJourney, openExperienceBooking } = useBookingModal()
   const variant = cta.variant ?? 'primary'
   const cls = `reserve-cta-btn ${variant === 'secondary' ? 'reserve-cta-btn--secondary' : 'reserve-cta-btn--primary'}`
@@ -145,7 +184,17 @@ function ReserveCtaLink({ cta }: { cta: ReserveCtaCta }) {
 
   if (cta.bookingModal === 'plan') {
     return (
-      <button type="button" className={cls} onClick={() => openPlanJourney()}>
+      <button
+        type="button"
+        className={cls}
+        onClick={() =>
+          openPlanJourney({
+            button_location: 'reserve_section',
+            ...(bookNowTracking?.price ? { price: bookNowTracking.price } : {}),
+            ...(bookNowTracking?.promo_label ? { promo_label: bookNowTracking.promo_label } : {}),
+          })
+        }
+      >
         {inner}
       </button>
     )
@@ -153,7 +202,17 @@ function ReserveCtaLink({ cta }: { cta: ReserveCtaCta }) {
   if (cta.bookingModal === 'experience' && cta.bookingSummary) {
     const summary: ExperienceBookingSummary = cta.bookingSummary
     return (
-      <button type="button" className={cls} onClick={() => openExperienceBooking(summary)}>
+      <button
+        type="button"
+        className={cls}
+        onClick={() =>
+          openExperienceBooking(summary, {
+            button_location: 'reserve_section',
+            price: bookNowTracking?.price ?? summary.priceLine,
+            ...(bookNowTracking?.promo_label ? { promo_label: bookNowTracking.promo_label } : {}),
+          })
+        }
+      >
         {inner}
       </button>
     )
@@ -162,9 +221,14 @@ function ReserveCtaLink({ cta }: { cta: ReserveCtaCta }) {
   const external = cta.external === true
   const href = cta.href.trim()
   const onWhatsappClick = reserveWhatsappClickHandler(cta)
+  const onBookClick = reserveBookClickHandler(cta, bookNowTracking)
+  const onLinkClick = () => {
+    onWhatsappClick?.()
+    onBookClick?.()
+  }
   if (!external && href.startsWith('/') && !href.startsWith('//')) {
     return (
-      <Link href={href} className={cls} onClick={onWhatsappClick}>
+      <Link href={href} className={cls} onClick={onLinkClick}>
         {inner}
       </Link>
     )
@@ -174,7 +238,7 @@ function ReserveCtaLink({ cta }: { cta: ReserveCtaCta }) {
     <a
       className={cls}
       href={href}
-      onClick={onWhatsappClick}
+      onClick={onLinkClick}
       {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
     >
       {inner}
@@ -207,6 +271,7 @@ export function ReserveCtaSection({
   experienceBookPrimaryModal,
   onExperienceBookPrimaryClick,
   experienceReserveTrustTermsExact = false,
+  bookNowTracking,
 }: ReserveCtaSectionProps) {
   const sectionClass = [
     'reserve-cta',
@@ -303,7 +368,7 @@ export function ReserveCtaSection({
                       </button>
                     )
                   }
-                  return <ReserveCtaLink key={`${c.href}-${c.label}-${i}`} cta={c} />
+                  return <ReserveCtaLink key={`${c.href}-${c.label}-${i}`} cta={c} bookNowTracking={bookNowTracking} />
                 })}
               </div>
             ) : null}
