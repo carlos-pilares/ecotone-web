@@ -1,7 +1,9 @@
 import { HeroMedia } from '@/components/HeroMedia'
+import { HeroWhatsappCta } from '@/components/HeroWhatsappCta'
 import type { ResolvedHomePage } from '@/lib/homePageDefaults'
 import { resolveHomeHeroMedia } from '@/lib/homeHeroMedia'
 import { HOME_HERO_BACKGROUND_FALLBACK_URL } from '@/lib/homePageImageFallbacks'
+import { isWhatsappHref } from '@/lib/trackWhatsappClick'
 
 const PILL_ICONS = [
   <svg key="0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
@@ -63,9 +65,15 @@ export function Hero({ heroData }: { heroData: ResolvedHomePage }) {
               </a>
             ) : null}
             {h.heroCta2Link?.trim() && h.heroCta2Text?.trim() ? (
-              <a href={h.heroCta2Link} className="hero-ghost">
-                {h.heroCta2Text}
-              </a>
+              isWhatsappHref(h.heroCta2Link) ? (
+                <HeroWhatsappCta href={h.heroCta2Link} className="hero-ghost">
+                  {h.heroCta2Text}
+                </HeroWhatsappCta>
+              ) : (
+                <a href={h.heroCta2Link} className="hero-ghost">
+                  {h.heroCta2Text}
+                </a>
+              )
             ) : null}
           </div>
         </div>

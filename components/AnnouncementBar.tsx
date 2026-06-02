@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AnnouncementBarDoc } from '@/lib/promotionTypes'
 import { refreshInPageNavAnchorMetrics } from '@/lib/inPageNavAnchorMetrics'
 import { resolveAnnouncementBar } from '@/lib/resolveAnnouncementBar'
+import { isWhatsappHref, trackWhatsappClick } from '@/lib/trackWhatsappClick'
 
 type AnnouncementBarProps = {
   settings: AnnouncementBarDoc | null
@@ -110,6 +111,11 @@ export function AnnouncementBar({ settings }: AnnouncementBarProps) {
               className="announcement-bar__cta"
               target={cta.openInNewTab ? '_blank' : undefined}
               rel={cta.rel || undefined}
+              onClick={
+                isWhatsappHref(cta.href)
+                  ? () => trackWhatsappClick({ button_location: 'announcement_bar' })
+                  : undefined
+              }
             >
               {cta.label}
             </a>

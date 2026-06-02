@@ -103,6 +103,220 @@ export const experienceGalleryItem = defineType({
   },
 })
 
+/** Phase in a programme-flow itinerary (Experiential Learning). */
+export const experienceProgrammePhase = defineType({
+  name: 'experienceProgrammePhase',
+  title: 'Programme phase',
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'title',
+      title: 'Title',
+      type: 'string',
+      validation: (Rule) => [Rule.required(), Rule.max(80)],
+    }),
+    defineField({
+      name: 'subtitle',
+      title: 'Subtitle (optional)',
+      type: 'string',
+      validation: (Rule) => Rule.max(120),
+    }),
+    defineField({
+      name: 'body',
+      title: 'Body',
+      type: 'text',
+      rows: 4,
+      validation: (Rule) => [Rule.required(), Rule.max(600)],
+    }),
+    defineField({
+      name: 'image',
+      title: 'Image (optional)',
+      type: 'image',
+      options: imgHot,
+    }),
+    defineField({
+      name: 'durationLabel',
+      title: 'Duration label (optional)',
+      type: 'string',
+      description: 'e.g. “Days 3–12” or “2 weeks”.',
+      validation: (Rule) => Rule.max(60),
+    }),
+    defineField({
+      name: 'accommodation',
+      title: 'Accommodation (optional)',
+      type: 'string',
+      validation: (Rule) => Rule.max(120),
+    }),
+  ],
+  preview: {
+    select: {title: 'title', subtitle: 'subtitle', media: 'image'},
+    prepare: ({title, subtitle, media}) => ({
+      title: title || 'Phase',
+      subtitle: subtitle || undefined,
+      media,
+    }),
+  },
+})
+
+/** Row in a typical-day itinerary block. */
+export const experienceTypicalDayRow = defineType({
+  name: 'experienceTypicalDayRow',
+  title: 'Typical day row',
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'timeLabel',
+      title: 'Time label (optional)',
+      type: 'string',
+      description: 'e.g. “Morning”, “Afternoon”, “Evening”.',
+      validation: (Rule) => Rule.max(40),
+    }),
+    defineField({
+      name: 'title',
+      title: 'Title',
+      type: 'string',
+      validation: (Rule) => [Rule.required(), Rule.max(80)],
+    }),
+    defineField({
+      name: 'body',
+      title: 'Body',
+      type: 'text',
+      rows: 3,
+      validation: (Rule) => [Rule.required(), Rule.max(400)],
+    }),
+  ],
+  preview: {
+    select: {timeLabel: 'timeLabel', title: 'title'},
+    prepare: ({timeLabel, title}) => ({
+      title: [timeLabel, title].filter(Boolean).join(' — ') || 'Row',
+    }),
+  },
+})
+
+/** Duration option for multi-length experiential programmes. */
+export const experienceDurationOption = defineType({
+  name: 'experienceDurationOption',
+  title: 'Duration option',
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'enabled',
+      title: 'Enabled',
+      type: 'boolean',
+      initialValue: true,
+    }),
+    defineField({
+      name: 'label',
+      title: 'Label',
+      type: 'string',
+      description: 'e.g. “2 weeks”, “4 weeks”.',
+      validation: (Rule) => [Rule.required(), Rule.max(40)],
+    }),
+    defineField({
+      name: 'durationDetail',
+      title: 'Duration detail',
+      type: 'string',
+      description: 'e.g. “16 days / 15 nights”.',
+      validation: (Rule) => Rule.max(80),
+    }),
+    defineField({
+      name: 'shortBreakdown',
+      title: 'Short breakdown (optional)',
+      type: 'string',
+      validation: (Rule) => Rule.max(200),
+    }),
+    defineField({
+      name: 'price',
+      title: 'Price (optional)',
+      type: 'number',
+      validation: (Rule) => Rule.min(0),
+    }),
+    defineField({
+      name: 'startDates',
+      title: 'Start dates (optional)',
+      type: 'text',
+      rows: 2,
+      description: 'One line per date or intake window.',
+      validation: (Rule) => Rule.max(300),
+    }),
+  ],
+  preview: {
+    select: {label: 'label', enabled: 'enabled', detail: 'durationDetail'},
+    prepare: ({label, enabled, detail}) => ({
+      title: label || 'Duration',
+      subtitle: [enabled === false ? 'Disabled' : null, detail].filter(Boolean).join(' · ') || undefined,
+    }),
+  },
+})
+
+export const experienceItineraryProgrammeFlow = defineType({
+  name: 'experienceItineraryProgrammeFlow',
+  title: 'Programme flow',
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'eyebrow',
+      title: 'Section eyebrow (optional)',
+      type: 'string',
+      validation: (Rule) => Rule.max(60),
+    }),
+    defineField({
+      name: 'title',
+      title: 'Section title (optional)',
+      type: 'string',
+      validation: (Rule) => Rule.max(120),
+    }),
+    defineField({
+      name: 'intro',
+      title: 'Intro text (optional)',
+      type: 'text',
+      rows: 3,
+      validation: (Rule) => Rule.max(500),
+    }),
+    defineField({
+      name: 'phases',
+      title: 'Programme phases',
+      type: 'array',
+      of: [{type: 'experienceProgrammePhase'}],
+      validation: (Rule) => Rule.max(12),
+    }),
+  ],
+})
+
+export const experienceItineraryTypicalDay = defineType({
+  name: 'experienceItineraryTypicalDay',
+  title: 'Typical day in the field',
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'eyebrow',
+      title: 'Section eyebrow (optional)',
+      type: 'string',
+      validation: (Rule) => Rule.max(60),
+    }),
+    defineField({
+      name: 'title',
+      title: 'Section title (optional)',
+      type: 'string',
+      validation: (Rule) => Rule.max(120),
+    }),
+    defineField({
+      name: 'intro',
+      title: 'Intro text (optional)',
+      type: 'text',
+      rows: 3,
+      validation: (Rule) => Rule.max(500),
+    }),
+    defineField({
+      name: 'rows',
+      title: 'Typical day rows',
+      type: 'array',
+      of: [{type: 'experienceTypicalDayRow'}],
+      validation: (Rule) => Rule.max(8),
+    }),
+  ],
+})
+
 /** Lodging line on an itinerary day */
 export const experienceItineraryOvernight = defineType({
   name: 'experienceItineraryOvernight',

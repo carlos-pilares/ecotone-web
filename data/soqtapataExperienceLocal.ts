@@ -198,12 +198,61 @@ export type SoqtapataItineraryDay = {
   lodgeBadge?: SoqtapataDayLodgeBadge
 }
 
+export type ExperienceItineraryMode = 'dayByDay' | 'programmeFlow' | 'typicalDay' | 'hybrid'
+
+export type ExperienceProgrammePhase = {
+  id: string
+  title: string
+  subtitle?: string
+  body: string
+  imageSrc?: string
+  imageAlt?: string
+  durationLabel?: string
+  accommodation?: string
+}
+
+export type ExperienceProgrammeFlowSection = {
+  eyebrow?: string
+  title?: string
+  intro?: string
+  phases: ExperienceProgrammePhase[]
+}
+
+export type ExperienceTypicalDayRow = {
+  id: string
+  timeLabel?: string
+  title: string
+  body: string
+}
+
+export type ExperienceTypicalDaySection = {
+  eyebrow?: string
+  title?: string
+  intro?: string
+  rows: ExperienceTypicalDayRow[]
+}
+
+export type ExperienceDurationOption = {
+  id: string
+  label: string
+  durationDetail?: string
+  shortBreakdown?: string
+  priceLabel?: string
+  startDates?: string
+  enabled: boolean
+}
+
 export type SoqtapataItinerary = {
+  mode: ExperienceItineraryMode
   eyebrow: string
   h2: string
   /** Intro opcional bajo el H2 (presentación CMS). */
   lead?: string
   days: SoqtapataItineraryDay[]
+  programmeFlow?: ExperienceProgrammeFlowSection
+  typicalDay?: ExperienceTypicalDaySection
+  hybridSummaryIntro?: string
+  durationOptions?: ExperienceDurationOption[]
 }
 
 export const soqtapataPhase2: { overview: SoqtapataOverview; itinerary: SoqtapataItinerary } = {
@@ -223,6 +272,7 @@ export const soqtapataPhase2: { overview: SoqtapataOverview; itinerary: Soqtapat
     ],
   },
   itinerary: {
+    mode: 'dayByDay',
     eyebrow: 'Day by day',
     h2: "What you'll experience",
     days: [

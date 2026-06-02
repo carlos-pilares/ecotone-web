@@ -7,6 +7,7 @@ import type { ExperienceModalCopy } from '@/lib/bookingModalCopy'
 import { effectiveWhatsappNumber } from '@/lib/bookingModalCopy'
 import { buildWaMeLink } from '@/lib/bookingWhatsapp'
 import { submitEnquiryInBackground } from '@/lib/submitEnquiry'
+import { trackWhatsappClick } from '@/lib/trackWhatsappClick'
 
 const EMAIL_OK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -191,7 +192,14 @@ export function BookExperienceModal({ waNumber, copy, summary, onClose }: Props)
     }
     if (selectedContact?.type !== 'whatsapp') {
       e.preventDefault()
+      return
     }
+    trackWhatsappClick({
+      button_location: 'booking_modal',
+      experience_name: summary.experienceName,
+      route: summary.route,
+      program_type: summary.programType,
+    })
   }
 
   const bannerSub = `${summary.route} · ${summary.duration} · ${summary.programType}`

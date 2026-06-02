@@ -48,6 +48,7 @@ export function ExperienceBookSoqtapata({
       variant: 'secondary',
       external: true,
       whatsappIcon: true,
+      bookingSummary,
     })
   }
 

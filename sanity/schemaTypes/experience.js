@@ -287,11 +287,74 @@ export const experience = defineType({
 
     // --- Itinerary ---
     defineField({
+      name: 'itineraryMode',
+      title: 'Itinerary display mode',
+      type: 'string',
+      group: 'itinerary',
+      initialValue: 'dayByDay',
+      options: {
+        list: [
+          {title: 'Day by day (classic journeys)', value: 'dayByDay'},
+          {title: 'Programme flow (learning pathways)', value: 'programmeFlow'},
+          {title: 'Typical day in the field', value: 'typicalDay'},
+          {title: 'Hybrid (flow + typical day + optional day summary)', value: 'hybrid'},
+        ],
+        layout: 'radio',
+      },
+      description:
+        'How the Itinerary section renders on Experience Pages. Existing experiences default to day-by-day. Experiential Learning programmes often use programme flow or hybrid.',
+    }),
+    defineField({
+      name: 'programmeFlow',
+      title: 'Programme flow content',
+      type: 'experienceItineraryProgrammeFlow',
+      group: 'itinerary',
+      hidden: ({document}) => !['programmeFlow', 'hybrid'].includes(document?.itineraryMode || 'dayByDay'),
+      description: 'Phases such as arrival, training, field project, return — instead of a day-by-day accordion.',
+    }),
+    defineField({
+      name: 'typicalDay',
+      title: 'Typical day content',
+      type: 'experienceItineraryTypicalDay',
+      group: 'itinerary',
+      hidden: ({document}) => !['typicalDay', 'hybrid'].includes(document?.itineraryMode || 'dayByDay'),
+      description: 'Compact morning / afternoon / evening rhythm for field programmes.',
+    }),
+    defineField({
+      name: 'hybridSummaryIntro',
+      title: 'Hybrid — summarized itinerary intro (optional)',
+      type: 'text',
+      rows: 2,
+      group: 'itinerary',
+      hidden: ({document}) => document?.itineraryMode !== 'hybrid',
+      validation: (Rule) => Rule.max(400),
+      description: 'Short lead above the optional condensed day list (uses **Itinerario** days below when present).',
+    }),
+    defineField({
+      name: 'durationOptions',
+      title: 'Duration options',
+      type: 'array',
+      group: 'itinerary',
+      of: [{type: 'experienceDurationOption'}],
+      validation: (Rule) => Rule.max(8),
+      hidden: ({document}) => {
+        const mode = document?.itineraryMode || 'dayByDay'
+        if (mode !== 'dayByDay') return false
+        return document?.programType !== 'experiential-learning'
+      },
+      description:
+        'Multiple programme lengths (e.g. 2 / 4 / 6 weeks). Shown on the Experience Page for Experiential Learning and non–day-by-day modes.',
+    }),
+    defineField({
       name: 'itinerary',
       title: 'Itinerario',
       type: 'array',
       group: 'itinerary',
-      description: 'Un objeto por día. El orden determina Day 1, Day 2, etc.',
+      hidden: ({document}) => {
+        const mode = document?.itineraryMode || 'dayByDay'
+        return mode === 'programmeFlow' || mode === 'typicalDay'
+      },
+      description: 'Un objeto por día. El orden determina Day 1, Day 2, etc. Hidden for programme-flow-only and typical-day-only modes.',
       of: [
         {
           type: 'object',

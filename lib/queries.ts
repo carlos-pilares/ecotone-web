@@ -8,6 +8,7 @@ import { GROQ_RESERVE_CTA_SETTINGS_FIELDS } from '@/lib/reserveCtaGroq'
 import { GROQ_PARTNER_DOC_FIELDS } from '@/lib/partnerGroq'
 import { GROQ_LODGE_ALTITUDE_AS_ALTITUDE } from '@/lib/lodgeAltitudeGroq'
 import { GROQ_EXPERIENCE_KC_CARD_FIELDS } from '@/lib/experienceCardGroq'
+import { GROQ_EXPERIENCE_ITINERARY_MODE_FIELDS } from '@/lib/experienceItineraryGroq'
 import { GROQ_EXPERIENCE_LODGE_CARD_LODGE_FIELDS } from '@/lib/lodgeIdentityGroq'
 
 /** Experience card row (homepage + listados). */
@@ -761,6 +762,7 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       videoUrl, videoTitle, videoDuration,
       highlights,
       "highlightsKeyed": highlights[] { "_key": _key, "text": @ },
+      ${GROQ_EXPERIENCE_ITINERARY_MODE_FIELDS}
       "itinerary": itinerary | order(dayNumber asc) {
         dayNumber, title, subtitle, photoCaption,
         image,
@@ -1532,6 +1534,7 @@ export const experienceBySlugQuery = groq`
       "url": image.asset->url
     },
     videoUrl, videoTitle, videoDuration,
+    ${GROQ_EXPERIENCE_ITINERARY_MODE_FIELDS}
     "itinerary": itinerary | order(dayNumber asc) {
       dayNumber, title, subtitle, photoCaption,
       image,

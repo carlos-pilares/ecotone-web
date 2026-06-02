@@ -67,6 +67,7 @@ import {
   resolvePlainStringKcList,
 } from '@/lib/experienceKcStringListKeys'
 import { buildSnapshotHighlightsBarFromCms, type CmsSnapshotHighlightRow } from '@/lib/snapshotHighlightsResolve'
+import { buildExperienceItineraryFromCms, type CmsExperienceItineraryFields } from '@/lib/mapExperienceItinerary'
 
 /** CMS sometimes stores non-string rows in string-array fields; coerce to display lines. */
 function normalizeStringHighlightList(raw: unknown[] | null | undefined): string[] {
@@ -416,6 +417,11 @@ type CmsExperience = {
   videoDuration?: string | null
   highlights?: string[] | null
   itinerary?: CmsItineraryDay[] | null
+  itineraryMode?: string | null
+  programmeFlow?: CmsExperienceItineraryFields['programmeFlow']
+  typicalDay?: CmsExperienceItineraryFields['typicalDay']
+  hybridSummaryIntro?: string | null
+  durationOptions?: CmsExperienceItineraryFields['durationOptions']
   includes?: string[] | null
   notIncludes?: string[] | null
   lodge?: CmsLodge | null
@@ -2103,52 +2109,9 @@ export function soqtapataPartialFromStructuredRow(
     },
   }
 
-  if (e.itinerary && e.itinerary.length > 0) {
-    const localDays = l.itinerary.days
-    const lastLocal = localDays[localDays.length - 1]!
-    out.itinerary = {
-      ...l.itinerary,
-      days: e.itinerary.map((d, i) => {
-        const template = localDays[i] ?? lastLocal
-        const id = (DAY_IDS[i] ?? (`day${i + 1}` as (typeof DAY_IDS)[number])) as (typeof l.itinerary.days)[number]['id']
-        const photo = d.imageUrl || (d.image ? assetToUrl(d.image, 1000, template.photoSrc) : template.photoSrc)
-        return {
-          ...template,
-          id,
-          dayNum: String(d.dayNumber ?? i + 1),
-          title: d.title || template.title,
-          subtitle: d.subtitle || template.subtitle,
-          photoSrc: photo,
-          photoAlt: d.title || template.photoAlt,
-          caption: d.photoCaption || template.caption,
-          timeline: (d.timeline && d.timeline.length > 0
-            ? d.timeline.map((t) => ({
-                time: t.time || '',
-                title: t.title || '',
-                desc: t.description || '',
-              }))
-            : template.timeline) as (typeof l.itinerary)['days'][0]['timeline'],
-          lodgeBadge: (() => {
-            const mode = d.overnight?.mode
-            if (mode === 'none') return undefined
-            const lod = d.overnightLodge
-            if (lod?.name?.trim()) {
-              const mod = lodgeModifiersFor(e, lod._id)
-              const sub =
-                (mod?.highlightLabel && mod.highlightLabel.trim()) ||
-                (mod?.nightsLabel && mod.nightsLabel.trim()) ||
-                ''
-              return { name: lod.name.trim(), sub }
-            }
-            if (d.lodgeOvernight || d.lodgeSub) {
-              return { name: (d.lodgeOvernight || '').trim(), sub: (d.lodgeSub || '').trim() }
-            }
-            return template.lodgeBadge
-          })(),
-        }
-      }),
-    }
-  }
+  out.itinerary = buildExperienceItineraryFromCms(e, l.itinerary, {
+    lodgeModifiersFor: (lodgeId) => lodgeModifiersFor(e, lodgeId),
+  })
 
   if (e.wildlife && e.wildlife.length > 0) {
     let wRows = [...e.wildlife]

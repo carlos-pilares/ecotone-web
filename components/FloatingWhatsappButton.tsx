@@ -7,6 +7,7 @@ import {
   floatingWhatsappHiddenOnPath,
   type ResolvedFloatingWhatsapp,
 } from '@/lib/floatingWhatsapp'
+import { trackWhatsappClick } from '@/lib/trackWhatsappClick'
 
 import '@/app/floating-whatsapp.css'
 
@@ -105,6 +106,7 @@ export function FloatingWhatsappButton({ config }: { config: ResolvedFloatingWha
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with Ecotone on WhatsApp"
+      onClick={() => trackWhatsappClick({ button_location: 'floating_whatsapp' })}
     >
       <WaIcon />
       <span className="wa-float__label">{label}</span>

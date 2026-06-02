@@ -7,6 +7,7 @@ import type { GeneralModalCopy, TravellerIconKey } from '@/lib/bookingModalCopy'
 import { effectiveWhatsappNumber } from '@/lib/bookingModalCopy'
 import { buildWaMeLink } from '@/lib/bookingWhatsapp'
 import { submitEnquiryInBackground } from '@/lib/submitEnquiry'
+import { trackWhatsappClick } from '@/lib/trackWhatsappClick'
 
 const EMAIL_OK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -270,7 +271,9 @@ export function PlanJourneyModal({ waNumber, copy, onClose }: Props) {
   const handleWaClick = (e: MouseEvent<HTMLAnchorElement>) => {
     if (!draft.fullName || travellerType === null || season === null || partySize < 1 || selectedContact?.type !== 'whatsapp') {
       e.preventDefault()
+      return
     }
+    trackWhatsappClick({ button_location: 'booking_modal' })
   }
 
   return (

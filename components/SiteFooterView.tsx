@@ -11,6 +11,7 @@ import {
   type FooterSocialItemResolved,
   type ResolvedFooterShell,
 } from '@/lib/resolveFooterShell'
+import { isWhatsappHref, trackWhatsappClick } from '@/lib/trackWhatsappClick'
 
 export type SiteFooterViewProps = {
   footer: ResolvedFooterShell
@@ -25,6 +26,11 @@ function FooterOptionalLink({ item }: { item: FooterShellLink }) {
       <a
         href={item.href}
         {...(item.openInNewTab ? { target: '_blank', rel: item.rel || 'noopener noreferrer' } : {})}
+        onClick={
+          isWhatsappHref(item.href)
+            ? () => trackWhatsappClick({ button_location: 'footer' })
+            : undefined
+        }
       >
         {item.label}
       </a>

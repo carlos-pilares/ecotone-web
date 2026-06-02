@@ -5,6 +5,7 @@ import type { ReactNode } from 'react'
 
 import { useBookingModal } from '@/components/booking/BookingModalContext'
 import type { ExperienceBookingSummary } from '@/components/booking/types'
+import { isWhatsappHref, trackWhatsappClick } from '@/lib/trackWhatsappClick'
 
 import './reserve-cta-section.css'
 
@@ -110,6 +111,27 @@ function WhatsAppGlyph() {
   )
 }
 
+function isWhatsappCta(cta: ReserveCtaCta): boolean {
+  return Boolean(cta.whatsappIcon) || isWhatsappHref(cta.href)
+}
+
+function reserveWhatsappClickHandler(cta: ReserveCtaCta) {
+  if (!isWhatsappCta(cta)) return undefined
+  return () => {
+    const summary = cta.bookingSummary
+    trackWhatsappClick({
+      button_location: 'reserve_section',
+      ...(summary
+        ? {
+            experience_name: summary.experienceName,
+            route: summary.route,
+            program_type: summary.programType,
+          }
+        : {}),
+    })
+  }
+}
+
 function ReserveCtaLink({ cta }: { cta: ReserveCtaCta }) {
   const { openPlanJourney, openExperienceBooking } = useBookingModal()
   const variant = cta.variant ?? 'primary'
@@ -139,16 +161,22 @@ function ReserveCtaLink({ cta }: { cta: ReserveCtaCta }) {
 
   const external = cta.external === true
   const href = cta.href.trim()
+  const onWhatsappClick = reserveWhatsappClickHandler(cta)
   if (!external && href.startsWith('/') && !href.startsWith('//')) {
     return (
-      <Link href={href} className={cls}>
+      <Link href={href} className={cls} onClick={onWhatsappClick}>
         {inner}
       </Link>
     )
   }
 
   return (
-    <a className={cls} href={href} {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+    <a
+      className={cls}
+      href={href}
+      onClick={onWhatsappClick}
+      {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+    >
       {inner}
     </a>
   )
