@@ -91,7 +91,7 @@ function buildOptions(source, doc, experienceId, termsConditions, faqsSettings, 
   if (!doc && source !== 'termsPanels' && source !== 'faq' && source !== 'travellerGuide') return []
   switch (source) {
     case 'overviewHighlights': {
-      const raw = doc.highlights
+      const raw = doc.overviewHighlights ?? doc.highlights
       if (!Array.isArray(raw)) return []
       return raw.map((item, idx) => {
         const label = lineText(item) || `Highlight ${idx + 1}`
@@ -253,6 +253,7 @@ export function ExperienceKcOrderInput(props) {
   const {value, onChange, schemaType} = props
   const client = useClient({apiVersion: '2024-01-01'})
   const experienceRef = useFormValue(['experience'])
+  const learningProgrammeRef = useFormValue(['learningProgramme'])
   const source = schemaType?.options?.kcSource
 
   const [doc, setDoc] = useState(null)
@@ -261,7 +262,7 @@ export function ExperienceKcOrderInput(props) {
   const [travellerGuideSettings, setTravellerGuideSettings] = useState(null)
   const [loadErr, setLoadErr] = useState(null)
 
-  const id = normalizeRefId(experienceRef)
+  const id = normalizeRefId(experienceRef) || normalizeRefId(learningProgrammeRef)
 
   useEffect(() => {
     let cancelled = false
@@ -279,7 +280,7 @@ export function ExperienceKcOrderInput(props) {
       setLoadErr(null)
       try {
         const q = `{
-          "experience": *[_id in $ids] | order(_updatedAt desc)[0] ${experienceKcOrderDocProjection},
+          "kc": *[_id in $ids] | order(_updatedAt desc)[0] ${experienceKcOrderDocProjection},
           "termsConditions": *[_id == "termsConditionsSettings"][0]{
             termsItems[]{
               _key,
@@ -311,7 +312,7 @@ export function ExperienceKcOrderInput(props) {
         }`
         const res = await client.fetch(q, {ids: candidates})
         if (!cancelled) {
-          setDoc(res?.experience || null)
+          setDoc(res?.kc || null)
           setTermsConditions(res?.termsConditions || null)
           setFaqsSettings(res?.faqsSettings || null)
           setTravellerGuideSettings(res?.travellerGuideSettings || null)
@@ -392,7 +393,8 @@ export function ExperienceKcOrderInput(props) {
     return (
       <Card padding={3} radius={2} border tone="transparent">
         <Text size={1} muted>
-          Link an <strong>Experience</strong> first to load items from the Knowledge Center.
+          Link an <strong>Experience</strong> or <strong>Learning Programme</strong> first to load items
+          from the Knowledge Center.
         </Text>
       </Card>
     )

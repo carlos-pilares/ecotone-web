@@ -53,6 +53,7 @@ export function LodgeExperiences({ data, promotions }: LodgeExperiencesProps) {
           cardCtaLabel={ctaLabel}
           tailorMade={tailor}
           promotions={promotions}
+          sourceSection="lodge"
           emptyMessage={
             sectionCards.length === 0 && !tailor ? (
               <p className="lodge-exp-empty">No experiences are listed for this lodge yet.</p>

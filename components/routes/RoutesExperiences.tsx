@@ -59,7 +59,12 @@ export function RoutesExperiences({
           ))}
         </div>
 
-        <ExperienceCardsSection cards={sectionCards} cardCtaLabel={ctaLabel} promotions={promotions} />
+        <ExperienceCardsSection
+          cards={sectionCards}
+          cardCtaLabel={ctaLabel}
+          promotions={promotions}
+          sourceSection="routes"
+        />
 
         {section.allExperiencesHref ? (
           <p className="routes-exp-see-all">

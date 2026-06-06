@@ -84,7 +84,8 @@ export function ExperienceBookSoqtapata({
       experienceReserveTrustTermsExact
       bookNowTracking={{ price: data.price }}
       card={{
-        priceLine: data.price,
+        pricePrefix: data.pricePrefix,
+        priceAmount: data.price,
         priceSuffix: data.priceSmall,
         subline: data.sub,
         rows: data.rows,

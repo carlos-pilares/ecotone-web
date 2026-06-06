@@ -30,8 +30,13 @@ export type ReserveCtaCta = {
 }
 
 export type ReserveCtaCardProps = {
-  priceLine: string
+  /** Small/light text before the amount (e.g. “from”). */
+  pricePrefix?: string
+  /** Large price amount (e.g. “USD 1,800”). */
+  priceAmount: string
   priceSuffix?: string
+  /** @deprecated Use `priceAmount` — legacy callers only. */
+  priceLine?: string
   subline: string
   rows: ReserveCtaDetailRow[]
   ctas: ReserveCtaCta[]
@@ -320,6 +325,10 @@ export function ReserveCtaSection({
   const termsRelEffective =
     termsRelTrim || (termsNewTab && termsHrefTrim ? 'noopener noreferrer' : undefined)
 
+  const pricePrefix = card.pricePrefix?.trim() || ''
+  const priceAmount = card.priceAmount?.trim() || card.priceLine?.trim() || ''
+  const priceSuffix = card.priceSuffix?.trim() || ''
+
   const hasEyebrow = eyebrow != null && eyebrow !== ''
   const hasBody = body != null && body !== ''
 
@@ -342,11 +351,26 @@ export function ReserveCtaSection({
 
         <div className="reserve-cta-card">
           <div className="booking-card reserve-cta-booking-card">
-            <div className="booking-price-big">
-              {card.priceLine}
-              {card.priceSuffix?.trim() ? <small>{card.priceSuffix.trim()}</small> : null}
+            <div className="booking-price-block">
+              <div className="booking-price-big">
+                {pricePrefix ? (
+                  <div className="booking-price-prefix-line">
+                    <small className="booking-price-prefix">{pricePrefix}</small>
+                  </div>
+                ) : null}
+                {priceAmount ? (
+                  <div className="booking-price-amount-line">
+                    <span className="booking-price-amount">{priceAmount}</span>
+                  </div>
+                ) : null}
+                {priceSuffix ? (
+                  <div className="booking-price-suffix-line">
+                    <small className="booking-price-suffix">{priceSuffix}</small>
+                  </div>
+                ) : null}
+              </div>
+              {card.subline?.trim() ? <p className="reserve-cta-subline">{card.subline.trim()}</p> : null}
             </div>
-            <p className="reserve-cta-subline">{card.subline}</p>
             <div className="booking-divider" />
             <div className="booking-rows">
               {card.rows.map((row) => (

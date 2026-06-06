@@ -8,8 +8,11 @@ import { GROQ_RESERVE_CTA_SETTINGS_FIELDS } from '@/lib/reserveCtaGroq'
 import { GROQ_PARTNER_DOC_FIELDS } from '@/lib/partnerGroq'
 import { GROQ_LODGE_ALTITUDE_AS_ALTITUDE } from '@/lib/lodgeAltitudeGroq'
 import { GROQ_EXPERIENCE_KC_CARD_FIELDS } from '@/lib/experienceCardGroq'
-import { GROQ_EXPERIENCE_ITINERARY_MODE_FIELDS } from '@/lib/experienceItineraryGroq'
 import { GROQ_EXPERIENCE_LODGE_CARD_LODGE_FIELDS } from '@/lib/lodgeIdentityGroq'
+import {
+  GROQ_LEARNING_PROGRAMME_DEREF_FIELDS,
+  GROQ_LODGE_LINKED_LEARNING_PROGRAMME_VIA_PAGE,
+} from '@/lib/learningProgrammeGroq'
 
 /** Experience card row (homepage + listados). */
 export type ExperienceFromSanity = {
@@ -449,6 +452,11 @@ export const experiencePageSlugsQuery = groq`
   *[_type == "experiencePage" && defined(slug.current)].slug.current
 `
 
+/** Tourism + active learning programme slugs for `/experiences/[slug]`. */
+export const experienceLandingSlugsQuery = groq`
+  *[_type == "experiencePage" && defined(slug.current)].slug.current
+`
+
 /** Singleton — central Terms & Conditions Knowledge Center. */
 /** Singleton — central FAQs Knowledge Center. */
 /** Singleton — central Traveller Guide / Before You Go Knowledge Center. */
@@ -563,6 +571,10 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       manualRatingValue,
       manualReviewCount,
       manualReviewProviderLabel,
+      heroPricePrefix,
+      heroPriceSuffix,
+      heroPriceFootnote,
+      hideHeroPriceFootnote,
       priceLine,
       priceSub,
       useProductPrice,
@@ -677,13 +689,29 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       _type,
       "pageSlug": slug.current,
       "experience": select(
-        _type == "experiencePage" => experience-> {
+        _type == "experiencePage" && defined(experience) => experience-> {
           _id,
           ${GROQ_EXPERIENCE_KC_CARD_FIELDS},
           tagline,
           duration,
           mainImage,
           "slug": slug.current
+        },
+        _type == "experiencePage" && defined(learningProgramme) => learningProgramme-> {
+          _id,
+          "name": title,
+          shortDescription,
+          price,
+          priceLabel,
+          status,
+          "programType": "experiential-learning",
+          "duration": durationDisplay,
+          durationDisplay,
+          mainImage,
+          "mainImageUrl": mainImage.asset->url,
+          "routeSlug": coalesce(routeRef->slug.current, routeRef->route),
+          "routeLabel": coalesce(routeRef->shortLabel, routeRef->name),
+          "route": routeRef->slug.current
         },
         {
           _id,
@@ -739,6 +767,9 @@ export const soqtapataStructuredPageBySlugQuery = groq`
         order
       }
     },
+    "learningProgramme": learningProgramme-> {
+      ${GROQ_LEARNING_PROGRAMME_DEREF_FIELDS}
+    },
     "experience": experience-> {
       _id,
       name, tagline, programType, route, status,
@@ -762,7 +793,6 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       videoUrl, videoTitle, videoDuration,
       highlights,
       "highlightsKeyed": highlights[] { "_key": _key, "text": @ },
-      ${GROQ_EXPERIENCE_ITINERARY_MODE_FIELDS}
       "itinerary": itinerary | order(dayNumber asc) {
         dayNumber, title, subtitle, photoCaption,
         image,
@@ -978,6 +1008,18 @@ export const lodgeStructuredPageBySlugQuery = groq`
       && ^.lodge._ref in lodgePresentationRows[].lodge._ref
     ] | order(name asc) {
       ${GROQ_LODGE_PAGE_LINKED_EXPERIENCE_FIELDS}
+    },
+    "linkedLearningProgrammesFromPresentation": *[
+      _type == "experiencePage"
+      && defined(slug.current)
+      && defined(learningProgramme._ref)
+      && defined(^.lodge._ref)
+      && (
+        ^.lodge._ref in learningProgramme->lodgePresentationRows[].lodge._ref
+        || learningProgramme->fieldBaseRef._ref == ^.lodge._ref
+      )
+    ] | order(learningProgramme->title asc) {
+      ${GROQ_LODGE_LINKED_LEARNING_PROGRAMME_VIA_PAGE}
     },
     experiencesTailorCta {
       enabled,
@@ -1534,7 +1576,6 @@ export const experienceBySlugQuery = groq`
       "url": image.asset->url
     },
     videoUrl, videoTitle, videoDuration,
-    ${GROQ_EXPERIENCE_ITINERARY_MODE_FIELDS}
     "itinerary": itinerary | order(dayNumber asc) {
       dayNumber, title, subtitle, photoCaption,
       image,

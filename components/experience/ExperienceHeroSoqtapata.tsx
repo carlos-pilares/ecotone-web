@@ -149,7 +149,8 @@ export function ExperienceHeroSoqtapata({
                       {data.priceFrom ? <span className="exp-price-from">{data.priceFrom} </span> : null}
                       <span className="exp-price-amount">{data.priceAmount}</span>
                     </div>
-                    <p className="exp-price-sub exp-price-sub--promo">per person</p>
+                    {data.priceSub ? <p className="exp-price-sub exp-price-sub--promo">{data.priceSub}</p> : null}
+                    {data.priceFootnote ? <p className="exp-price-sub exp-price-sub--promo">{data.priceFootnote}</p> : null}
                     {data.priceOriginalAmount ? (
                       <p className="exp-price-original">{data.priceOriginalAmount}</p>
                     ) : null}
@@ -160,7 +161,8 @@ export function ExperienceHeroSoqtapata({
                       {data.priceFrom ? <span className="exp-price-from">{data.priceFrom} </span> : null}
                       <span className="exp-price-amount">{data.priceAmount}</span>
                     </div>
-                    <div className="exp-price-sub">{data.priceSub}</div>
+                    {data.priceSub ? <div className="exp-price-sub">{data.priceSub}</div> : null}
+                    {data.priceFootnote ? <div className="exp-price-sub">{data.priceFootnote}</div> : null}
                   </>
                 )}
               </div>

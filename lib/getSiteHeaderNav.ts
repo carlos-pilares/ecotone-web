@@ -66,6 +66,7 @@ export const getSiteHeaderNav = cache(async () => {
           row?.lodgePages ?? [],
           row?.routeNavDocs ?? [],
           promotions,
+          row?.learningProgrammes ?? [],
         )
       : resolveSiteHeaderNavData(
           mergeHeaderNavSettings(
@@ -76,6 +77,7 @@ export const getSiteHeaderNav = cache(async () => {
           row?.lodgePages ?? [],
           row?.routeNavDocs ?? [],
           promotions,
+          row?.learningProgrammes ?? [],
         )
 
     if (process.env.NODE_ENV === 'development') {

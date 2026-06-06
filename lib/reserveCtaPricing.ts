@@ -82,46 +82,151 @@ export function getLodgeReserveLowestUsd(
 }
 
 export type FormatReservePriceInput = {
-  /** When set, replaces the entire main price line (no automatic “from”). */
+  /** When set, replaces the entire main price line (legacy / custom full line). */
   priceOverrideText?: string | null
+  /** Custom amount only (assembled with prefix). */
+  customPriceText?: string | null
   pricePrefixOverride?: string | null
   priceSuffixOverride?: string | null
   /** Derived USD integer from experience documents. */
   lowestUsd?: number | null
+  /** Pre-formatted amount from KC `priceLabel` (e.g. “USD 1,800”). */
+  linkedPriceLine?: string | null
   /**
-   * When `lowestUsd` is used: `from` → `from $N` (listing pages), `exact` → `$N` (single experience).
-   * Ignored when `priceOverrideText` is set.
+   * When building from numeric/linked amount: `from` → `from USD N` (listing pages), `exact` → amount only style.
+   * Ignored when override/custom full line is set.
    */
   priceLineStyle?: 'from' | 'exact'
+  /**
+   * `custom` — only `customPriceText` (Enquire when empty; never falls back to linked).
+   * `linked` — only linked KC / lowestUsd (never reads custom text).
+   * `auto` — custom text when present, else linked (home / routes legacy).
+   */
+  mode?: 'custom' | 'linked' | 'auto'
 }
 
-const DEFAULT_SUFFIX = 'per person'
+function resolveReservePrefix(raw: string | null | undefined, defaultWhenUnset: string): string {
+  if (raw === undefined || raw === null) return defaultWhenUnset
+  return raw.trim()
+}
+
+function resolveReserveSuffix(raw: string | null | undefined, defaultWhenUnset: string): string {
+  if (raw === undefined || raw === null) return defaultWhenUnset
+  return raw.trim()
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function stripLeadingPrefixFromAmount(amount: string, prefix: string): string {
+  let a = amount.trim()
+  if (!a) return a
+  const candidates = new Set<string>()
+  const p = prefix.trim()
+  if (p) candidates.add(p)
+  candidates.add('from')
+  for (const candidate of candidates) {
+    const re = new RegExp(`^${escapeRegExp(candidate)}\\s+`, 'i')
+    while (re.test(a)) a = a.replace(re, '').trim()
+  }
+  return a
+}
+
+/** Amount only — no prefix or trailing “per person”. */
+function normalizeReserveAmount(amount: string, prefix: string): string {
+  return stripLeadingPrefixFromAmount(amount, prefix)
+    .replace(/\s+per person\s*$/i, '')
+    .trim()
+}
+
+export type ReservePriceParts = {
+  pricePrefix: string
+  priceAmount: string
+  priceSuffix: string
+}
 
 /**
- * Main price line + small suffix for `ReserveCtaSection`.
- * When no numeric and no override → “Enquire”, empty suffix.
+ * Main price parts for `ReserveCtaSection`.
+ * Prefix and suffix are separate from the large amount typography.
  */
-export function formatReservePriceDisplay(input: FormatReservePriceInput): {
-  priceLine: string
-  priceSuffix: string
-} {
-  const ov = input.priceOverrideText?.trim()
-  if (ov) {
+export function formatReservePriceDisplay(input: FormatReservePriceInput): ReservePriceParts {
+  const suffix = resolveReserveSuffix(input.priceSuffixOverride, 'per person')
+  const prefix = resolveReservePrefix(input.pricePrefixOverride, 'from')
+  const mode = input.mode ?? 'auto'
+
+  const customAmount = input.customPriceText?.trim() || input.priceOverrideText?.trim()
+  if (mode === 'custom' || (mode === 'auto' && customAmount)) {
+    if (!customAmount) {
+      return { pricePrefix: prefix, priceAmount: 'Enquire', priceSuffix: suffix }
+    }
     return {
-      priceLine: ov,
-      priceSuffix: input.priceSuffixOverride?.trim() || DEFAULT_SUFFIX,
+      pricePrefix: prefix,
+      priceAmount: normalizeReserveAmount(customAmount, prefix),
+      priceSuffix: suffix,
     }
   }
+
+  const linkedLine = input.linkedPriceLine?.trim()
+  if (linkedLine) {
+    return {
+      pricePrefix: prefix,
+      priceAmount: normalizeReserveAmount(linkedLine, prefix),
+      priceSuffix: suffix,
+    }
+  }
+
   const n = input.lowestUsd
   if (n != null && n > 0) {
     const usd = `USD ${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-    const prefix = (input.pricePrefixOverride?.trim() || 'from').replace(/\s+$/, '')
     return {
-      priceLine: `${prefix} ${usd}`,
-      priceSuffix: input.priceSuffixOverride?.trim() || DEFAULT_SUFFIX,
+      pricePrefix: prefix,
+      priceAmount: usd,
+      priceSuffix: suffix,
     }
   }
-  return { priceLine: 'Enquire', priceSuffix: '' }
+  return { pricePrefix: '', priceAmount: 'Enquire', priceSuffix: '' }
+}
+
+/** Split a legacy combined price line (e.g. “from USD 986”) for reserve cards. */
+export function parseLegacyReservePriceLine(
+  line: string,
+  prefixOverride?: string | null,
+): ReservePriceParts {
+  const raw = line.trim()
+  if (!raw) return { pricePrefix: '', priceAmount: '', priceSuffix: '' }
+  const explicitPrefix =
+    prefixOverride === undefined || prefixOverride === null ? null : prefixOverride.trim()
+  const fromMatch = raw.match(/^(from)\s+(.+)$/i)
+  const resolvedPrefix = explicitPrefix ?? (fromMatch ? fromMatch[1]!.toLowerCase() : '')
+  const rawAmount = fromMatch ? fromMatch[2]!.trim() : raw
+  return {
+    pricePrefix: resolvedPrefix,
+    priceAmount: normalizeReserveAmount(rawAmount, resolvedPrefix),
+    priceSuffix: '',
+  }
+}
+
+/** Resolve linked KC price for reserve cards (Experience or Learning Programme). */
+export function resolveLinkedProductReservePrice(input: ExperiencePriceInput): {
+  lowestUsd: number | null
+  linkedPriceLine: string | null
+} {
+  if (input.status != null && String(input.status).trim() !== '' && !isActiveExperienceStatus(input.status)) {
+    return { lowestUsd: null, linkedPriceLine: null }
+  }
+  const label = input.priceLabel?.trim()
+  if (label) {
+    return { lowestUsd: parseUsdFromPriceLabel(label), linkedPriceLine: label }
+  }
+  if (typeof input.price === 'number' && input.price > 0) {
+    const usd = Math.round(input.price)
+    return {
+      lowestUsd: usd,
+      linkedPriceLine: `USD ${usd.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
+    }
+  }
+  return { lowestUsd: null, linkedPriceLine: null }
 }
 
 /** Home / About / Routes default rows (Pickup → Pickup time). */

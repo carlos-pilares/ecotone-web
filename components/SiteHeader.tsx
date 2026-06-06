@@ -1,5 +1,6 @@
 import '@/app/site-header-mega.css'
 
+import { TrackedExperienceNavLink } from '@/components/TrackedExperienceNavLink'
 import { getSiteHeaderNav } from '@/lib/getSiteHeaderNav'
 import { getAnnouncementBarSettings } from '@/lib/getPromotions'
 import { getSiteSettingsShell } from '@/lib/getSiteSettingsShell'
@@ -214,7 +215,14 @@ function ExperiencesMega({ tab }: { tab: ResolvedSiteHeaderNavTab }) {
                 g.items.map((it) => {
                   const routeOnly = navExpRouteLineOnly(it.routeLine)
                   return (
-                    <a key={it.id} href={it.href} className="dd-exp-card">
+                    <TrackedExperienceNavLink
+                      key={it.id}
+                      href={it.href}
+                      experienceName={it.name}
+                      sourceSection="mega_menu"
+                      route={routeOnly || undefined}
+                      className="dd-exp-card"
+                    >
                       <div className="dd-exp-thumb">{it.thumbUrl ? <img src={it.thumbUrl} alt="" width={160} height={112} /> : null}</div>
                       <div className="dd-exp-body">
                         {routeOnly ? (
@@ -229,7 +237,7 @@ function ExperiencesMega({ tab }: { tab: ResolvedSiteHeaderNavTab }) {
                           <ArrowSeeAll />
                         </div>
                       </div>
-                    </a>
+                    </TrackedExperienceNavLink>
                   )
                 })
               )}
@@ -360,7 +368,14 @@ function MobileExperiencesPanel({ tab }: { tab: ResolvedSiteHeaderNavTab }) {
               const routeOnly = navExpRouteLineOnly(it.routeLine)
               const metaShown = navExpMetaSansBooking(it)
               return (
-                <a key={it.id} href={it.href} className="mob-item mob-item--exp">
+                <TrackedExperienceNavLink
+                  key={it.id}
+                  href={it.href}
+                  experienceName={it.name}
+                  sourceSection="mega_menu"
+                  route={routeOnly || undefined}
+                  className="mob-item mob-item--exp"
+                >
                   <div className="mob-item-thumb">{it.thumbUrl ? <img src={it.thumbUrl} alt="" width={80} height={60} /> : null}</div>
                   <div className="mob-item-text">
                     <div className="mob-item-route">{routeOnly}</div>
@@ -370,7 +385,7 @@ function MobileExperiencesPanel({ tab }: { tab: ResolvedSiteHeaderNavTab }) {
                   <span className="mob-item-arrow" aria-hidden>
                     →
                   </span>
-                </a>
+                </TrackedExperienceNavLink>
               )
             })}
           </div>

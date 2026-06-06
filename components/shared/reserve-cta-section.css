@@ -156,7 +156,47 @@
     0 8px 18px -8px rgba(26, 18, 9, 0.09);
 }
 
+.reserve-cta .booking-price-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: 100%;
+  margin-bottom: 2px;
+}
+
 .reserve-cta .booking-price-big {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: 100%;
+  gap: 2px;
+  line-height: 1;
+  text-align: right;
+}
+
+.reserve-cta .booking-price-prefix-line,
+.reserve-cta .booking-price-amount-line,
+.reserve-cta .booking-price-suffix-line {
+  width: 100%;
+  text-align: right;
+}
+
+.reserve-cta .booking-price-prefix-line {
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.reserve-cta .booking-price-amount-line {
+  line-height: 1;
+}
+
+.reserve-cta .booking-price-suffix-line {
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+.reserve-cta .booking-price-amount {
+  display: inline-block;
   font-size: 40px;
   font-weight: 700;
   color: var(--n900);
@@ -164,19 +204,31 @@
   line-height: 1;
 }
 
-.reserve-cta .booking-price-big small {
+/* Experience #book reserve card — beat legacy `.booking-price-big` rules in experience-surface.css */
+section#book.reserve-cta .booking-price-big {
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+}
+
+.reserve-cta .booking-price-big small,
+.reserve-cta .booking-price-prefix,
+.reserve-cta .booking-price-suffix {
+  display: inline-block;
   font-size: 13px;
   font-weight: 300;
   color: var(--brown);
-  margin-left: 6px;
   letter-spacing: 0.04em;
+  margin-left: 0;
 }
 
 .reserve-cta .reserve-cta-subline {
-  font-size: 12px;
+  width: 100%;
+  text-align: right;
+  font-size: 11px;
   font-weight: 300;
   color: var(--n400);
-  margin-top: 3px;
+  margin-top: 6px;
   margin-bottom: 0;
   line-height: 1.45;
 }

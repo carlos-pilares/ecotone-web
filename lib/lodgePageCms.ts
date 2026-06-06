@@ -77,7 +77,7 @@ import {
   enrichSmartLinkWithLabelFallback,
   resolveExperiencePublicHref,
 } from '@/lib/resolveExperiencePublicHref'
-import { getLodgeReserveLowestUsd, buildReserveRowsForLodge } from '@/lib/reserveCtaPricing'
+import { getLodgeReserveLowestUsd, buildReserveRowsForLodge, resolveLinkedProductReservePrice } from '@/lib/reserveCtaPricing'
 import { formatLodgeAltitudeForSubtitle } from '@/lib/lodgeAltitudeDisplay'
 import { resolveReserveCtaCard } from '@/lib/resolveReserveCtaCard'
 import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
@@ -423,11 +423,30 @@ function pickDisplayableExperiences(
   return out
 }
 
-/** Experiences for the lodge landing: KC → Lodges → `lodgePresentationRows[].lodge` only. */
+/** Tourism KC + Learning Programme KC rows linked to this lodge (deduped by landing slug). */
 function pickLinkedDisplayableExperiences(
   row: NonNullable<LodgeStructuredPageRow>,
 ): LodgeCmsExperienceCardRow[] {
-  return pickDisplayableExperiences(row.linkedExperiencesFromPresentation)
+  const seenSlug = new Set<string>()
+  const seenId = new Set<string>()
+  const merged: LodgeCmsExperienceCardRow[] = []
+  for (const e of [
+    ...(row.linkedExperiencesFromPresentation ?? []),
+    ...(row.linkedLearningProgrammesFromPresentation ?? []),
+  ]) {
+    if (!e?._id) continue
+    const slugKey = e.experienceLandingSlug?.trim() || e.slug?.trim()
+    if (slugKey) {
+      if (seenSlug.has(slugKey)) continue
+      seenSlug.add(slugKey)
+    } else if (seenId.has(e._id)) {
+      continue
+    }
+    seenId.add(e._id)
+    merged.push(e)
+  }
+  const displayable = pickDisplayableExperiences(merged)
+  return displayable.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '', undefined, { sensitivity: 'base' }))
 }
 
 function computeLodgeHeroReviewStats(reviews: ReviewDoc[] | null | undefined): {
@@ -1224,7 +1243,22 @@ export function mergeLodgePageWithFallback(
   }
 
   const expForLodgePrice = resolvedExperienceRows
-  const lowestLodgeUsd = getLodgeReserveLowestUsd(expForLodgePrice, lodge.startingPrice)
+  const rsLodge = row.reserveCtaSettings
+  const linkedExpRef = rsLodge?.priceLinkedExperienceRef?._ref?.replace(/^drafts\./, '') ?? ''
+  const linkedExpRow = linkedExpRef
+    ? expForLodgePrice.find((e) => (e._id ?? '').replace(/^drafts\./, '') === linkedExpRef)
+    : null
+  let lowestLodgeUsd: number | null = null
+  let linkedPriceLine: string | null = null
+  if (rsLodge?.priceSource !== 'custom') {
+    if (linkedExpRow) {
+      const linked = resolveLinkedProductReservePrice(linkedExpRow)
+      lowestLodgeUsd = linked.lowestUsd
+      linkedPriceLine = linked.linkedPriceLine
+    } else {
+      lowestLodgeUsd = getLodgeReserveLowestUsd(expForLodgePrice, lodge.startingPrice)
+    }
+  }
   const rowByBookKey = (k: LodgeBookRowKey) => out.book.rows.find((r) => r.rowKey === k)
   const lodgeReserveRows = buildReserveRowsForLodge({
     shortestProgramLabel: rowByBookKey('shortestProgram')?.label,
@@ -1236,13 +1270,13 @@ export function mergeLodgePageWithFallback(
     availabilityLabel: rowByBookKey('availability')?.label,
     availabilityValue: rowByBookKey('availability')?.value,
   })
-  const rsLodge = row.reserveCtaSettings
   const reserveFallback = lodgeSoqtapataBook
   const nameLine = out.book.cardTitle
   const tagLine = out.book.cardSubtitle
   const lodgeReserveCard = resolveReserveCtaCard({
     settings: rsLodge,
     lowestUsd: lowestLodgeUsd,
+    linkedPriceLine,
     legacyPriceLine: null,
     legacyPriceSuffix: null,
     legacySubline: tagLine,
@@ -1273,7 +1307,8 @@ export function mergeLodgePageWithFallback(
     eyebrow: rsLodge?.eyebrow?.trim() || reserveFallback.eyebrow,
     title: rsLodge?.title?.trim() || reserveFallback.title,
     body: reserveBodyFromCms !== null ? reserveBodyFromCms : reserveFallback.body,
-    cardTitle: lodgeReserveCard.priceLine,
+    cardTitle: lodgeReserveCard.priceAmount,
+    cardPricePrefix: lodgeReserveCard.pricePrefix || undefined,
     cardPriceSuffix: lodgeReserveCard.priceSuffix,
     cardSubtitle: lodgeReserveCard.subline,
     rows: lodgeReserveCard.rows.map((r) => {

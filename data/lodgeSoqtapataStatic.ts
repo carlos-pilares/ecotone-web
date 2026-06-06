@@ -760,6 +760,8 @@ export type LodgeBookTrustItem = {
 
 export type LodgeBookCtaData = LodgeSectionHeaderFields & {
   cardTitle: string
+  /** Small prefix before `cardTitle` (e.g. “from”). */
+  cardPricePrefix?: string
   /** Shown next to the main price line (e.g. `/ person`), from derived or CMS reserve settings. */
   cardPriceSuffix?: string
   cardSubtitle: string

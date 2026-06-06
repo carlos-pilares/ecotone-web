@@ -28,7 +28,12 @@ export function ExperienceAlsoCamantiSoqtapata({
             {data.lead}
           </p>
         ) : null}
-        <ExperienceCardsSection cards={sectionCards} tailorMade={tailorProps} promotions={promotions} />
+        <ExperienceCardsSection
+          cards={sectionCards}
+          tailorMade={tailorProps}
+          promotions={promotions}
+          sourceSection="related_experiences"
+        />
       </div>
     </section>
   )

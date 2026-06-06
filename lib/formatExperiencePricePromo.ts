@@ -97,25 +97,39 @@ export function formatExperiencePricePartsWithPromotions(
   exp: ExperiencePromotionFields,
   promotions?: PromotionDoc[] | null,
   options?: ExperiencePricePartsOptions,
-): { from: string; amount: string; suffix: string; originalAmount?: string; promoLabel?: string; promoMicrocopy?: string } {
+): {
+  from: string
+  amount: string
+  suffix: string
+  footnote: string
+  originalAmount?: string
+  promoLabel?: string
+  promoMicrocopy?: string
+} {
   const { display } = resolveExperiencePromotion(exp, promotions, options)
+  const copySuffix =
+    options?.priceSuffix === undefined || options?.priceSuffix === null
+      ? 'per person'
+      : options.priceSuffix.trim()
+  const copyFootnote =
+    options?.priceFootnote === undefined || options?.priceFootnote === null
+      ? options?.inclusiveExtra?.trim() ?? 'all inclusive'
+      : options.priceFootnote.trim()
   if (display.kind === 'enquire') {
-    const extra = options?.inclusiveExtra?.trim()
     return {
       from: '',
       amount: 'Enquire',
-      suffix: extra ? `per person · ${extra}` : 'per person',
+      suffix: copySuffix,
+      footnote: copyFootnote,
       promoLabel: display.promoLabel,
       promoMicrocopy: display.promoMicrocopy,
     }
   }
-  const suffix = display.suffixExtra
-    ? `${display.perPerson} · ${display.suffixExtra}`
-    : display.perPerson
   return {
     from: display.from,
     amount: display.amount,
-    suffix,
+    suffix: display.perPerson,
+    footnote: display.suffixExtra ?? '',
     originalAmount: display.originalAmount,
     promoLabel: display.promoLabel,
     promoMicrocopy: display.promoMicrocopy,

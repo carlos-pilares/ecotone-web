@@ -48,6 +48,7 @@ import {
   experienceTravelerGuideRow,
   experienceTravelerGuideChecklistRow,
   experienceTravelerGuideSubsection,
+  experienceWildlifeItem,
 } from './objects/experienceKnowledgeObjects'
 import {experienceResourceCard} from './objects/experienceResourceCard'
 import {experiencePageResources} from './objects/experiencePageResources'
@@ -144,8 +145,15 @@ import {bookingModalSettings} from './bookingModalSettings'
 import {technologyProduct} from './technologyProduct'
 import {photoCollection} from './photoCollection'
 import {photoLibraryItem} from './objects/photoLibraryObjects'
-import {announcementBarSettings} from './announcementBarSettings'
 import {promotion} from './promotion'
+import {announcementBarSettings} from './announcementBarSettings'
+import {learningProgramme} from './learningProgramme'
+import {
+  learningProgrammeOutcome,
+  learningProgrammeProject,
+  learningProgrammeStep,
+  learningProgrammeTypicalDayRow,
+} from './objects/learningProgrammeObjects'
 
 const objects = [
   seo,
@@ -196,6 +204,7 @@ const objects = [
   experienceTravelerGuideSubsection,
   experienceTermsPanel,
   experienceKnowledgeResource,
+  experienceWildlifeItem,
   experienceResourceCard,
   experiencePageResources,
   internalNavItem,
@@ -254,6 +263,10 @@ const objects = [
   journalBlockCta,
   journalBlockRelatedExperience,
   photoLibraryItem,
+  learningProgrammeStep,
+  learningProgrammeTypicalDayRow,
+  learningProgrammeProject,
+  learningProgrammeOutcome,
 ]
 
 const documents = [
@@ -281,6 +294,7 @@ const documents = [
   aboutPage,
   photoCollection,
   promotion,
+  learningProgramme,
 ]
 
 export const schema = {

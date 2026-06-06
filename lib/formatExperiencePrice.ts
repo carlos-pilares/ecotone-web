@@ -10,6 +10,28 @@ export type ExperiencePriceFields = {
 const PER_PERSON = 'per person'
 const ENQUIRE = 'Enquire'
 
+function resolvePriceCopy(options?: ExperiencePricePartsOptions): {
+  prefix: string
+  suffix: string
+  footnote: string
+} {
+  const legacyFootnote = options?.inclusiveExtra?.trim()
+  const footnoteRaw = options?.priceFootnote
+  const footnote =
+    footnoteRaw === undefined || footnoteRaw === null
+      ? legacyFootnote ?? 'all inclusive'
+      : footnoteRaw.trim()
+  const prefix =
+    options?.pricePrefix === undefined || options?.pricePrefix === null
+      ? 'from'
+      : options.pricePrefix.trim()
+  const suffix =
+    options?.priceSuffix === undefined || options?.priceSuffix === null
+      ? PER_PERSON
+      : options.priceSuffix.trim()
+  return { prefix, suffix, footnote }
+}
+
 function formatUsdAmount(n: number): string {
   const rounded = Math.round(n)
   return `USD ${rounded.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
@@ -85,8 +107,12 @@ export function formatExperiencePriceLine(exp: ExperiencePriceFields): string {
 }
 
 export type ExperiencePricePartsOptions = {
-  /** Appended after “per person”, e.g. “all inclusive”. */
+  /** @deprecated Prefer `priceFootnote`. Appended after suffix when footnote unset. */
   inclusiveExtra?: string | null
+  pricePrefix?: string | null
+  priceSuffix?: string | null
+  /** Empty string = no footnote line. */
+  priceFootnote?: string | null
 }
 
 export type ExperiencePriceStructuredParts =
@@ -98,19 +124,19 @@ export function formatExperiencePriceStructured(
   exp: ExperiencePriceFields,
   options?: ExperiencePricePartsOptions,
 ): ExperiencePriceStructuredParts {
+  const copy = resolvePriceCopy(options)
   const line = formatExperiencePriceLine(exp)
   if (line === ENQUIRE) return { kind: 'enquire' }
   const usd =
     normalizeUsdToken(exp.priceLabel ?? '') ??
     (typeof exp.price === 'number' && exp.price > 0 ? formatUsdAmount(exp.price) : null)
   const amount = usd ?? line.replace(/^\s*from\s+/i, '').replace(new RegExp(`\\s*${PER_PERSON}\\s*$`, 'i'), '').trim()
-  const extra = options?.inclusiveExtra?.trim()
   return {
     kind: 'priced',
-    from: 'from',
+    from: copy.prefix,
     amount,
-    perPerson: PER_PERSON,
-    ...(extra ? { suffixExtra: extra } : {}),
+    perPerson: copy.suffix,
+    ...(copy.footnote ? { suffixExtra: copy.footnote } : {}),
   }
 }
 
@@ -120,20 +146,23 @@ export function formatExperiencePriceStructured(
 export function formatExperiencePriceParts(
   exp: ExperiencePriceFields,
   options?: ExperiencePricePartsOptions,
-): { from: string; amount: string; suffix: string } {
+): { from: string; amount: string; suffix: string; footnote: string } {
+  const copy = resolvePriceCopy(options)
   const structured = formatExperiencePriceStructured(exp, options)
   if (structured.kind === 'enquire') {
-    const extra = options?.inclusiveExtra?.trim()
     return {
       from: '',
       amount: ENQUIRE,
-      suffix: extra ? `${PER_PERSON} · ${extra}` : PER_PERSON,
+      suffix: copy.suffix,
+      footnote: copy.footnote,
     }
   }
-  const suffix = structured.suffixExtra
-    ? `${structured.perPerson} · ${structured.suffixExtra}`
-    : structured.perPerson
-  return { from: structured.from, amount: structured.amount, suffix }
+  return {
+    from: structured.from,
+    amount: structured.amount,
+    suffix: structured.perPerson,
+    footnote: structured.suffixExtra ?? '',
+  }
 }
 
 /** Route card footer HTML: count + price line with per person. */

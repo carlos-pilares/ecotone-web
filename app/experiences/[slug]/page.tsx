@@ -14,11 +14,10 @@ import { buildSoqtapataBookingSummary } from '@/lib/buildSoqtapataBookingSummary
 import { getActivePromotions } from '@/lib/getPromotions'
 import {
   SOQTAPATA_LOCAL_FALLBACK_SLUG,
-  getSoqtapataPageCms,
   soqtapataPristineSeoDefault,
 } from '@/lib/soqtapataCmsV1'
 import { experienceHasMediaSection } from '@/lib/soqtapataStructuredCms'
-import { experiencePageSlugsQuery } from '@/lib/queries'
+import { experienceLandingSlugsQuery } from '@/lib/queries'
 import { clientServer } from '@/lib/sanity'
 import { ExperienceHeroSoqtapata } from '@/components/experience/ExperienceHeroSoqtapata'
 import { ExperienceStatsBarSoqtapata } from '@/components/experience/ExperienceStatsBarSoqtapata'
@@ -36,7 +35,15 @@ import { ExperienceResourcesSoqtapata } from '@/components/experience/Experience
 import { ExperienceFaqSoqtapata } from '@/components/experience/ExperienceFaqSoqtapata'
 import { ExperienceAlsoCamantiSoqtapata } from '@/components/experience/ExperienceAlsoCamantiSoqtapata'
 import { ExperienceBookSoqtapata } from '@/components/experience/ExperienceBookSoqtapata'
+import { ExperienceLearningPageSections } from '@/components/experience/learning/ExperienceLearningPageSections'
+import { ExperienceViewTracker } from '@/components/experience/ExperienceViewTracker'
 import type { ReviewsSectionProps } from '@/components/ReviewsSection'
+import { buildExperienceLearningPageNav } from '@/lib/experienceLearningNav'
+import {
+  getExperienceLearningPreviewContent,
+  isExperienceLearningPreviewRequest,
+} from '@/lib/experienceLearningPreview'
+import { getExperienceLandingPage } from '@/lib/getExperienceLandingPage'
 
 import '@/components/shared/in-page-nav.css'
 import '../experience-surface.css'
@@ -48,41 +55,57 @@ export const dynamicParams = true
 
 type PageProps = {
   params: Promise<{ slug: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 export async function generateStaticParams() {
   if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || !process.env.NEXT_PUBLIC_SANITY_DATASET) {
     return [{ slug: SOQTAPATA_LOCAL_FALLBACK_SLUG }]
   }
-  const slugs = await clientServer.fetch<string[] | null>(experiencePageSlugsQuery)
+  const slugs = await clientServer.fetch<string[] | null>(experienceLandingSlugsQuery)
   const list = (slugs ?? []).filter((s): s is string => typeof s === 'string' && Boolean(s.trim())).map((s) => s.trim())
   return list.map((slug) => ({ slug }))
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
-  const data = await getSoqtapataPageCms(slug)
-  if (!data) notFound()
+  const landing = await getExperienceLandingPage(slug)
+  if (!landing) notFound()
+  const seo = landing.seo
   return {
-    title: data.seo.title || soqtapataPristineSeoDefault.title,
-    description: data.seo.description || soqtapataPristineSeoDefault.description,
+    title: seo.title || soqtapataPristineSeoDefault.title,
+    description: seo.description || soqtapataPristineSeoDefault.description,
   }
 }
 
-export default async function ExperienceLandingPage({ params }: PageProps) {
+export default async function ExperienceLandingPage({ params, searchParams }: PageProps) {
   const { slug } = await params
-  const data = await getSoqtapataPageCms(slug)
-  if (!data) notFound()
+  const sp = await searchParams
+  const landing = await getExperienceLandingPage(slug)
+  if (!landing) notFound()
+
+  const previewLearning = isExperienceLearningPreviewRequest(sp)
+  const isExperientialLearning = landing.pageKind === 'learning' || previewLearning
 
   const {
     experience: ex,
+    programType,
     reviewsLayout,
     sectionVisibility: sec,
     reviewsSectionLead,
     reviewsRatingSummary,
     rotatingQuoteItems,
     offerTerms,
-  } = data
+  } = landing
+
+  const learningContent =
+    landing.pageKind === 'learning'
+      ? landing.learningContent
+      : previewLearning
+        ? getExperienceLearningPreviewContent()
+        : null
+
+  const pageNav = isExperientialLearning ? buildExperienceLearningPageNav(ex.pageNav) : ex.pageNav
 
   const promotions = await getActivePromotions()
 
@@ -103,6 +126,12 @@ export default async function ExperienceLandingPage({ params }: PageProps) {
 
   return (
     <EcotoneV2Client solidMainNav featuredQuoteItems={rotatingQuoteItems}>
+      <ExperienceViewTracker
+        experience_name={bookingSummary.experienceName}
+        experience_slug={slug}
+        route={bookingSummary.route}
+        program_type={programType ?? bookingSummary.programType}
+      />
       <IsotipoDefs />
       <SiteHeader mainNavSolid />
       <SoqtapataPhotoLightbox items={ex.media.lightboxItems} />
@@ -112,41 +141,78 @@ export default async function ExperienceLandingPage({ params }: PageProps) {
         ) : null}
         {sec.highlights !== false ? <ExperienceStatsBarSoqtapata items={ex.stats} /> : null}
         {sec.internalNav !== false ? (
-          <ExperiencePageNavSoqtapata data={ex.pageNav} bookingSummary={bookingSummary} />
+          <ExperiencePageNavSoqtapata data={pageNav} bookingSummary={bookingSummary} />
         ) : null}
         {sec.overview !== false ? <ExperienceOverviewSoqtapata data={ex.overview} /> : null}
-        {sec.itinerary !== false ? <ExperienceItinerarySoqtapata data={ex.itinerary} /> : null}
-        {sec.lodge !== false ? <ExperienceLodgeSoqtapata data={ex.lodge} /> : null}
-        {sec.wildlife !== false ? <ExperienceWildlifeSoqtapata data={ex.wildlife} /> : null}
-        {sec.includes !== false ? <ExperienceIncludesSoqtapata data={ex.includes} /> : null}
-        {sec.tech !== false ? (
-          <TechProductsSection
-            variant="experience"
-            products={ex.techProducts}
-            includedProductIds={ex.includedProductIds}
-            description={ex.techDescription}
-            eyebrow={ex.techEyebrow}
-            title={ex.techTitle}
-          />
-        ) : null}
-        {sec.media !== false && experienceHasMediaSection(ex.media) ? (
-          <ExperienceMediaSoqtapata data={ex.media} />
-        ) : null}
-        {sec.whenToVisit !== false ? <ExperienceWhenSoqtapata data={ex.when} /> : null}
-        {sec.beforeYouGo !== false ? <ExperienceBeforeYouGoSoqtapata data={ex.beforeYouGo} /> : null}
-        {sec.reviews !== false ? <ReviewsSection {...reviewsProps} /> : null}
-        {sec.terms !== false ? <ExperienceTermsSoqtapata data={ex.terms} /> : null}
-        {sec.resources !== false ? <ExperienceResourcesSoqtapata data={ex.resources} /> : null}
-        {sec.faq !== false ? <ExperienceFaqSoqtapata data={ex.faq} /> : null}
-        {sec.related !== false && (ex.also.cards.length > 0 || ex.also.tailorBand) ? (
-          <ExperienceAlsoCamantiSoqtapata data={ex.also} promotions={promotions} />
-        ) : null}
-        {sec.reserve !== false ? (
+
+        {isExperientialLearning && learningContent ? (
           <>
-            <ExperienceBookSoqtapata data={ex.book} bookingSummary={bookingSummary} />
-            <ExperienceOfferTerms items={offerTerms} />
+            <ExperienceLearningPageSections
+              content={learningContent}
+              lodge={ex.lodge}
+              showFieldBase={sec.lodge !== false}
+            />
+            {sec.wildlife !== false ? <ExperienceWildlifeSoqtapata data={ex.wildlife} /> : null}
+            {sec.includes !== false ? <ExperienceIncludesSoqtapata data={ex.includes} /> : null}
+            {sec.media !== false && experienceHasMediaSection(ex.media) ? (
+              <ExperienceMediaSoqtapata data={ex.media} />
+            ) : null}
+            {sec.beforeYouGo !== false ? (
+              <ExperienceBeforeYouGoSoqtapata data={ex.beforeYouGo} sectionId="good-to-know" />
+            ) : null}
+            {sec.terms !== false ? <ExperienceTermsSoqtapata data={ex.terms} /> : null}
+            {sec.resources !== false ? (
+              <ExperienceResourcesSoqtapata data={ex.resources} experienceName={bookingSummary.experienceName} />
+            ) : null}
+            {sec.faq !== false ? <ExperienceFaqSoqtapata data={ex.faq} /> : null}
+            {sec.related !== false && (ex.also.cards.length > 0 || ex.also.tailorBand) ? (
+              <ExperienceAlsoCamantiSoqtapata data={ex.also} promotions={promotions} />
+            ) : null}
+            {sec.reserve !== false ? (
+              <>
+                <ExperienceBookSoqtapata data={ex.book} bookingSummary={bookingSummary} />
+                <ExperienceOfferTerms items={offerTerms} />
+              </>
+            ) : null}
           </>
-        ) : null}
+        ) : (
+          <>
+            {sec.itinerary !== false ? <ExperienceItinerarySoqtapata data={ex.itinerary} /> : null}
+            {sec.lodge !== false ? <ExperienceLodgeSoqtapata data={ex.lodge} /> : null}
+            {sec.wildlife !== false ? <ExperienceWildlifeSoqtapata data={ex.wildlife} /> : null}
+            {sec.includes !== false ? <ExperienceIncludesSoqtapata data={ex.includes} /> : null}
+            {sec.tech !== false ? (
+              <TechProductsSection
+                variant="experience"
+                products={ex.techProducts}
+                includedProductIds={ex.includedProductIds}
+                description={ex.techDescription}
+                eyebrow={ex.techEyebrow}
+                title={ex.techTitle}
+              />
+            ) : null}
+            {sec.media !== false && experienceHasMediaSection(ex.media) ? (
+              <ExperienceMediaSoqtapata data={ex.media} />
+            ) : null}
+            {sec.whenToVisit !== false ? <ExperienceWhenSoqtapata data={ex.when} /> : null}
+            {sec.beforeYouGo !== false ? <ExperienceBeforeYouGoSoqtapata data={ex.beforeYouGo} /> : null}
+            {sec.reviews !== false ? <ReviewsSection {...reviewsProps} /> : null}
+            {sec.terms !== false ? <ExperienceTermsSoqtapata data={ex.terms} /> : null}
+            {sec.resources !== false ? (
+              <ExperienceResourcesSoqtapata data={ex.resources} experienceName={bookingSummary.experienceName} />
+            ) : null}
+            {sec.faq !== false ? <ExperienceFaqSoqtapata data={ex.faq} /> : null}
+            {sec.related !== false && (ex.also.cards.length > 0 || ex.also.tailorBand) ? (
+              <ExperienceAlsoCamantiSoqtapata data={ex.also} promotions={promotions} />
+            ) : null}
+            {sec.reserve !== false ? (
+              <>
+                <ExperienceBookSoqtapata data={ex.book} bookingSummary={bookingSummary} />
+                <ExperienceOfferTerms items={offerTerms} />
+              </>
+            ) : null}
+          </>
+        )}
       </div>
       <ExperiencePageChromeClient />
       <InPageNavDrawerClient />

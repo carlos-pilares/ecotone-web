@@ -2,7 +2,7 @@ import type { ReserveCtaCta, ReserveCtaDetailRow, ReserveCtaTrustItem } from '@/
 import type { ExperienceReserveFacts } from '@/lib/experienceReserveRows'
 import { resolveExperienceReserveCardRows as resolveExpReserveRows } from '@/lib/experienceReserveRows'
 import type { ReserveCtaSettingsGroq, ReserveCtaTrustItemGroq } from '@/lib/reserveCtaGroq'
-import { formatReservePriceDisplay } from '@/lib/reserveCtaPricing'
+import { formatReservePriceDisplay, parseLegacyReservePriceLine, type ReservePriceParts } from '@/lib/reserveCtaPricing'
 import type { ExperienceBookingSummary } from '@/components/booking/types'
 import type { ResolvedSmartLink, SmartLinkGroq } from '@/lib/resolveSmartLink'
 import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
@@ -70,6 +70,11 @@ function ctaFromResolved(
   return { label, href, variant, external, whatsappIcon }
 }
 
+function resolveReservePriceSource(settings: ReserveCtaSettingsGroq | undefined): 'linked' | 'custom' {
+  if (settings?.priceSource === 'custom') return 'custom'
+  return 'linked'
+}
+
 /**
  * Merge `reserveCtaSettings` with legacy CTAs and derived pricing.
  * Priority: settings → legacy presentation → defaults.
@@ -77,6 +82,8 @@ function ctaFromResolved(
 export function resolveReserveCtaCard(opts: {
   settings: ReserveCtaSettingsGroq | undefined
   lowestUsd: number | null
+  /** Pre-formatted linked KC amount (e.g. priceLabel). */
+  linkedPriceLine?: string | null
   /** `exact` for a single experience card; default `from` for lowest-among-pages. */
   priceLineStyle?: 'from' | 'exact'
   legacyPriceLine?: string | null
@@ -89,9 +96,7 @@ export function resolveReserveCtaCard(opts: {
   legacyCtas: LegacyCtaPair
   defaultTermsHref: string
   pageBookingSummary?: ExperienceBookingSummary | null
-}): {
-  priceLine: string
-  priceSuffix: string
+}): ReservePriceParts & {
   subline: string
   rows: ReserveCtaDetailRow[]
   ctas: ReserveCtaCta[]
@@ -104,36 +109,45 @@ export function resolveReserveCtaCard(opts: {
   trustItems?: ReserveCtaTrustItem[]
 } {
   const s = opts.settings
-  const hasOverride = Boolean(s?.priceOverrideText?.trim())
-  let priceLine: string
-  let priceSuffix: string
+  const priceSource = resolveReservePriceSource(s)
+  const explicitLinkedSource = s?.priceSource === 'linked'
+  const explicitCustomSource = s?.priceSource === 'custom'
 
-  if (hasOverride) {
-    const f = formatReservePriceDisplay({
-      priceOverrideText: s?.priceOverrideText,
+  let priceParts: ReservePriceParts
+
+  if (priceSource === 'custom') {
+    priceParts = formatReservePriceDisplay({
+      mode: 'custom',
+      customPriceText: s?.customPriceText ?? s?.priceOverrideText,
       pricePrefixOverride: s?.pricePrefixOverride,
       priceSuffixOverride: s?.priceSuffixOverride,
+      priceLineStyle: opts.priceLineStyle,
     })
-    priceLine = f.priceLine
-    priceSuffix = f.priceSuffix
   } else {
-    const f = formatReservePriceDisplay({
+    priceParts = formatReservePriceDisplay({
+      mode: 'linked',
       pricePrefixOverride: s?.pricePrefixOverride,
       priceSuffixOverride: s?.priceSuffixOverride,
       lowestUsd: opts.lowestUsd,
+      linkedPriceLine: opts.linkedPriceLine,
       priceLineStyle: opts.priceLineStyle,
     })
-    if (f.priceLine === 'Enquire' && opts.legacyPriceLine?.trim()) {
-      priceLine = opts.legacyPriceLine.trim()
-      priceSuffix = opts.legacyPriceSuffix?.trim() || f.priceSuffix
-    } else {
-      priceLine = f.priceLine
-      priceSuffix = f.priceSuffix
+    if (
+      priceParts.priceAmount === 'Enquire' &&
+      !explicitLinkedSource &&
+      !explicitCustomSource &&
+      opts.legacyPriceLine?.trim()
+    ) {
+      const legacy = parseLegacyReservePriceLine(opts.legacyPriceLine, s?.pricePrefixOverride)
+      priceParts = {
+        pricePrefix: legacy.pricePrefix,
+        priceAmount: legacy.priceAmount,
+        priceSuffix: opts.legacyPriceSuffix?.trim() || priceParts.priceSuffix,
+      }
     }
   }
 
-  const subline =
-    s?.sublineOverride?.trim() || opts.legacySubline?.trim() || opts.defaultSubline || ''
+  const subline = s?.sublineOverride?.trim() || opts.legacySubline?.trim() || opts.defaultSubline || ''
 
   const structuredRows = resolveExpReserveRows(s?.experienceReserveRows, opts.experienceReserveFacts ?? null)
   const ovRows = rowFromOverride(s?.rowsOverride ?? null)
@@ -209,8 +223,7 @@ export function resolveReserveCtaCard(opts: {
   const trustItems = trustParsed.length > 0 ? trustParsed : undefined
 
   return {
-    priceLine,
-    priceSuffix,
+    ...priceParts,
     subline,
     rows,
     ctas,

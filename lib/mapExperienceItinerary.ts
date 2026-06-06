@@ -1,17 +1,10 @@
 import type {
   SoqtapataItinerary,
   SoqtapataItineraryDay,
+  SoqtapataItineraryDayId,
 } from '@/data/soqtapataExperienceLocal'
 import type { SanityImageSource } from '@sanity/image-url'
 
-import {
-  normalizeExperienceItineraryMode,
-  type ExperienceDurationOption,
-  type ExperienceItineraryMode,
-  type ExperienceProgrammeFlowSection,
-  type ExperienceTypicalDaySection,
-} from '@/lib/experienceItineraryTypes'
-import { formatUsdAmountPublic } from '@/lib/formatExperiencePrice'
 import { urlFor } from '@/lib/sanity'
 
 type CmsItineraryDay = {
@@ -28,54 +21,11 @@ type CmsItineraryDay = {
   lodgeSub?: string | null
 }
 
-type CmsProgrammePhase = {
-  _key?: string | null
-  title?: string | null
-  subtitle?: string | null
-  body?: string | null
-  image?: SanityImageSource | null
-  imageUrl?: string | null
-  durationLabel?: string | null
-  accommodation?: string | null
-}
-
-type CmsTypicalDayRow = {
-  _key?: string | null
-  timeLabel?: string | null
-  title?: string | null
-  body?: string | null
-}
-
-type CmsDurationOption = {
-  _key?: string | null
-  label?: string | null
-  durationDetail?: string | null
-  shortBreakdown?: string | null
-  price?: number | null
-  startDates?: string | null
-  enabled?: boolean | null
-}
-
 export type CmsExperienceItineraryFields = {
-  itineraryMode?: string | null
-  programmeFlow?: {
-    eyebrow?: string | null
-    title?: string | null
-    intro?: string | null
-    phases?: CmsProgrammePhase[] | null
-  } | null
-  typicalDay?: {
-    eyebrow?: string | null
-    title?: string | null
-    intro?: string | null
-    rows?: CmsTypicalDayRow[] | null
-  } | null
-  hybridSummaryIntro?: string | null
-  durationOptions?: CmsDurationOption[] | null
   itinerary?: CmsItineraryDay[] | null
 }
 
-const DAY_IDS = [
+const DAY_IDS: SoqtapataItineraryDayId[] = [
   'day1',
   'day2',
   'day3',
@@ -86,79 +36,15 @@ const DAY_IDS = [
   'day8',
   'day9',
   'day10',
-] as const
+]
 
-function assetToUrl(image: SanityImageSource | null | undefined, width: number, fallback: string): string {
-  if (!image) return fallback
+function imgW(src: string | SanityImageSource | null | undefined, w: number): string | null {
+  if (!src) return null
+  if (typeof src === 'string') return src
   try {
-    return urlFor(image).width(width).quality(85).auto('format').url()
+    return urlFor(src).width(w).quality(85).url()
   } catch {
-    return fallback
-  }
-}
-
-function mapDurationOptions(raw: CmsDurationOption[] | null | undefined): ExperienceDurationOption[] {
-  if (!raw?.length) return []
-  return raw
-    .filter((o) => o && o.enabled !== false && String(o.label ?? '').trim())
-    .map((o, i) => {
-      const price =
-        typeof o.price === 'number' && o.price > 0
-          ? `from USD ${formatUsdAmountPublic(o.price)}`
-          : undefined
-      return {
-        id: (o._key && String(o._key)) || `dur-${i}`,
-        label: String(o.label).trim(),
-        durationDetail: o.durationDetail?.trim() || undefined,
-        shortBreakdown: o.shortBreakdown?.trim() || undefined,
-        priceLabel: price,
-        startDates: o.startDates?.trim() || undefined,
-        enabled: o.enabled !== false,
-      }
-    })
-}
-
-function mapProgrammeFlow(
-  raw: CmsExperienceItineraryFields['programmeFlow'],
-): ExperienceProgrammeFlowSection | undefined {
-  const phases = (raw?.phases ?? [])
-    .filter((p) => p && String(p.title ?? '').trim() && String(p.body ?? '').trim())
-    .map((p, i) => ({
-      id: (p._key && String(p._key)) || `phase-${i}`,
-      title: String(p.title).trim(),
-      subtitle: p.subtitle?.trim() || undefined,
-      body: String(p.body).trim(),
-      imageSrc: p.imageUrl || (p.image ? assetToUrl(p.image, 960, '') : undefined) || undefined,
-      imageAlt: p.title?.trim() || undefined,
-      durationLabel: p.durationLabel?.trim() || undefined,
-      accommodation: p.accommodation?.trim() || undefined,
-    }))
-  if (!phases.length && !raw?.intro?.trim()) return undefined
-  return {
-    eyebrow: raw?.eyebrow?.trim() || undefined,
-    title: raw?.title?.trim() || undefined,
-    intro: raw?.intro?.trim() || undefined,
-    phases,
-  }
-}
-
-function mapTypicalDay(
-  raw: CmsExperienceItineraryFields['typicalDay'],
-): ExperienceTypicalDaySection | undefined {
-  const rows = (raw?.rows ?? [])
-    .filter((r) => r && String(r.title ?? '').trim() && String(r.body ?? '').trim())
-    .map((r, i) => ({
-      id: (r._key && String(r._key)) || `tday-${i}`,
-      timeLabel: r.timeLabel?.trim() || undefined,
-      title: String(r.title).trim(),
-      body: String(r.body).trim(),
-    }))
-  if (!rows.length && !raw?.intro?.trim()) return undefined
-  return {
-    eyebrow: raw?.eyebrow?.trim() || undefined,
-    title: raw?.title?.trim() || undefined,
-    intro: raw?.intro?.trim() || undefined,
-    rows,
+    return null
   }
 }
 
@@ -168,34 +54,35 @@ function mapDayByDayDays(
   lodgeModifiersFor: (
     lodgeId: string | undefined | null,
   ) => { highlightLabel?: string | null; nightsLabel?: string | null } | null,
-  experienceLodgeRows?: { lodge?: { _id?: string; name?: string | null } | null }[] | null,
 ): SoqtapataItineraryDay[] | null {
-  if (!e.itinerary?.length) return null
-  const localDays = local.days
-  const lastLocal = localDays[localDays.length - 1]!
-  return e.itinerary.map((d, i) => {
-    const template = localDays[i] ?? lastLocal
-    const id = (DAY_IDS[i] ?? (`day${i + 1}` as (typeof DAY_IDS)[number])) as SoqtapataItineraryDay['id']
-    const photo = d.imageUrl || (d.image ? assetToUrl(d.image, 1000, template.photoSrc) : template.photoSrc)
+  const rows = e.itinerary
+  if (!rows?.length) return null
+
+  return rows.map((d, i) => {
+    const template = local.days[i] ?? local.days[local.days.length - 1]!
+    const dayNum = String(d.dayNumber ?? i + 1)
+    const id: SoqtapataItineraryDayId = DAY_IDS[i] ?? template.id
+    const photoSrc =
+      (d.imageUrl && d.imageUrl.trim()) ||
+      imgW(d.image, 960) ||
+      template.photoSrc
     return {
-      ...template,
       id,
-      dayNum: String(d.dayNumber ?? i + 1),
-      title: d.title || template.title,
-      subtitle: d.subtitle || template.subtitle,
-      photoSrc: photo,
-      photoAlt: d.title || template.photoAlt,
-      caption: d.photoCaption || template.caption,
-      timeline: (d.timeline && d.timeline.length > 0
-        ? d.timeline.map((t) => ({
-            time: t.time || '',
-            title: t.title || '',
-            desc: t.description || '',
-          }))
-        : template.timeline) as SoqtapataItineraryDay['timeline'],
+      dayNum,
+      title: (d.title && d.title.trim()) || template.title,
+      subtitle: (d.subtitle && d.subtitle.trim()) || template.subtitle,
+      photoSrc,
+      photoAlt: (d.title && d.title.trim()) || template.photoAlt,
+      caption: (d.photoCaption && d.photoCaption.trim()) || template.caption,
+      timeline: (d.timeline ?? []).map((t, j) => {
+        const fb = template.timeline[j] ?? template.timeline[template.timeline.length - 1]!
+        return {
+          time: (t.time && t.time.trim()) || fb.time,
+          title: (t.title && t.title.trim()) || fb.title,
+          desc: (t.description && t.description.trim()) || fb.desc,
+        }
+      }),
       lodgeBadge: (() => {
-        const mode = d.overnight?.mode
-        if (mode === 'none') return undefined
         const lod = d.overnightLodge
         if (lod?.name?.trim()) {
           const mod = lodgeModifiersFor?.(lod._id)
@@ -223,40 +110,15 @@ export function buildExperienceItineraryFromCms(
     ) => { highlightLabel?: string | null; nightsLabel?: string | null } | null
   },
 ): SoqtapataItinerary {
-  const mode: ExperienceItineraryMode = normalizeExperienceItineraryMode(e.itineraryMode)
-  const programmeFlow = mapProgrammeFlow(e.programmeFlow)
-  const typicalDay = mapTypicalDay(e.typicalDay)
-  const durationOptions = mapDurationOptions(e.durationOptions)
-  const hybridSummaryIntro = e.hybridSummaryIntro?.trim() || undefined
-
   const cmsDays = mapDayByDayDays(e, local, opts?.lodgeModifiersFor ?? (() => null))
-  const days =
-    mode === 'programmeFlow' || mode === 'typicalDay'
-      ? []
-      : cmsDays && cmsDays.length > 0
-        ? cmsDays
-        : mode === 'dayByDay'
-          ? local.days
-          : []
+  const days = cmsDays && cmsDays.length > 0 ? cmsDays : local.days
 
   return {
     ...local,
-    mode,
     days,
-    programmeFlow,
-    typicalDay,
-    hybridSummaryIntro,
-    durationOptions: durationOptions.length ? durationOptions : undefined,
   }
 }
 
 export function experienceItineraryHasContent(data: SoqtapataItinerary): boolean {
-  if (data.durationOptions?.some((d) => d.enabled)) return true
-  if (data.programmeFlow?.phases?.length) return true
-  if (data.typicalDay?.rows?.length) return true
-  if (data.mode === 'dayByDay' || data.mode === 'hybrid') {
-    if (data.days.length > 0) return true
-  }
-  if (data.hybridSummaryIntro?.trim()) return true
-  return false
+  return data.days.length > 0
 }

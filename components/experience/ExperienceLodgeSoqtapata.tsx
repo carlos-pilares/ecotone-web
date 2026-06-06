@@ -1,9 +1,18 @@
 import type { SoqtapataLodge } from '@/data/soqtapataExperienceLocal'
 
 /** `section#lodges` — paridad con `ecotone-experience_2.html`. */
-export function ExperienceLodgeSoqtapata({ data }: { data: SoqtapataLodge }) {
+export function ExperienceLodgeSoqtapata({
+  data,
+  sectionId = 'lodges',
+  sectionClassName,
+}: {
+  data: SoqtapataLodge
+  sectionId?: string
+  sectionClassName?: string
+}) {
+  const sectionClass = ['content-section fade', sectionClassName].filter(Boolean).join(' ')
   return (
-    <section className="content-section fade" id="lodges">
+    <section className={sectionClass} id={sectionId}>
       <div className="content-inner">
         <div className="eyebrow">{data.eyebrow}</div>
         <h2 className="h2" style={data.h2Style}>

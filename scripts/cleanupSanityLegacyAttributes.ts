@@ -212,7 +212,13 @@ async function main() {
       relatedSectionEyebrow,
       relatedSectionTitle,
       reviewRefs,
-      reviewsSection{ "reviewCards": reviewCards }
+      reviewsSection{ "reviewCards": reviewCards },
+      showTailorMade,
+      tailorMadeCtaSmartLink,
+      pageHero { bookCta, bookCtaSmartLink },
+      internalNav { bookCta, bookCtaSmartLink, ctaSmartLink },
+      reserveBlock,
+      reserveCtaSettings { priceSource, customPriceText, priceOverrideText, primaryCtaSmartLink }
     }`,
   )
 
@@ -226,11 +232,36 @@ async function main() {
     ) {
       fields.push('reviewRefs')
     }
+    const ph = doc.pageHero as Record<string, unknown> | null | undefined
+    if (ph?.bookCtaSmartLink && defined(ph.bookCta)) {
+      fields.push('pageHero.bookCta')
+    }
+    const nav = doc.internalNav as Record<string, unknown> | null | undefined
+    if (nav?.ctaSmartLink && defined(nav.bookCta)) {
+      fields.push('internalNav.bookCta')
+    }
+    if (defined(nav?.bookCtaSmartLink)) {
+      fields.push('internalNav.bookCtaSmartLink')
+    }
+    const hasReserveCta = Boolean(
+      (doc.reserveCtaSettings as Record<string, unknown> | null | undefined)?.primaryCtaSmartLink,
+    )
+    if (hasReserveCta && defined(doc.reserveBlock)) {
+      fields.push('reserveBlock')
+    }
+    if (doc.showTailorMade === false && defined(doc.tailorMadeCtaSmartLink)) {
+      fields.push('tailorMadeCtaSmartLink')
+    }
+    const rs = doc.reserveCtaSettings as Record<string, unknown> | null | undefined
+    if (rs?.priceSource === 'linked') {
+      if (defined(rs.customPriceText)) fields.push('reserveCtaSettings.customPriceText')
+      if (defined(rs.priceOverrideText)) fields.push('reserveCtaSettings.priceOverrideText')
+    }
     if (fields.length) {
       plans.push({
         _id: doc._id,
         _type: 'experiencePage',
-        fields,
+        fields: [...new Set(fields)],
         reason:
           fields.includes('reviewRefs')
             ? 'Deprecated page fields; reviewRefs superseded by reviewsSection'
@@ -336,23 +367,207 @@ async function main() {
     }
   }
 
-  // --- routesPage routeCards[].footPriceHtml ---
-  const routesPages = await client.fetch<
-    Array<{
-      _id: string
-      routeCards?: Array<{ _key?: string; footPriceHtml?: string | null }> | null
-    }>
-  >(`*[_type == "routesPage"]{ _id, routeCards[]{ _key, footPriceHtml } }`)
+  // --- routesPage legacy fields (superseded by smart links / listed pages / reviewsSection / reserveCtaSettings) ---
+  const routesLegacy = await client.fetch<
+    Array<
+      Record<string, unknown> & {
+        _id: string
+        heroPrimaryCta?: unknown
+        heroSecondaryCta?: unknown
+        heroPrimarySmartLink?: unknown
+        heroSecondarySmartLink?: unknown
+        experienceCards?: unknown[] | null
+        experiencesFilters?: unknown[] | null
+        selectedExperiences?: unknown[] | null
+        fallbackToAllExperiences?: boolean | null
+        reviewsSection?: {
+          eyebrow?: string | null
+          title?: string | null
+          reviewCards?: unknown[] | null
+          rotatingReviews?: unknown[] | null
+        } | null
+        reviewsFeaturedQuotes?: unknown[] | null
+        reviewsRefs?: unknown[] | null
+        reviewsEyebrow?: string | null
+        reviewsHeadline?: string | null
+        reviewsSectionLead?: string | null
+        reviewsAverageRating?: string | null
+        reviewsSourceLabel?: string | null
+        reviewsSecondaryRatingLine?: string | null
+        reserveCtaSettings?: {
+          eyebrow?: string | null
+          title?: string | null
+          body?: string | null
+          trustItems?: unknown[] | null
+        } | null
+        finalCtaEyebrow?: string | null
+        finalCtaH2?: string | null
+        finalCtaBody?: string | null
+        finalCtaWhatsappHref?: string | null
+        finalCtaWhatsappLabel?: string | null
+        finalCtaSecondaryHref?: string | null
+        finalCtaSecondaryLabel?: string | null
+        finalCtaWhatsappSmartLink?: unknown
+        finalCtaSecondarySmartLink?: unknown
+        finalCtaTrustItems?: unknown[] | null
+        routeCards?: Array<{ _key?: string; cta?: unknown; ctaSmartLink?: unknown; footPriceHtml?: string | null }> | null
+      }
+    >
+  >(
+    `*[_type == "routesPage"]{
+      _id,
+      heroPrimaryCta,
+      heroSecondaryCta,
+      heroPrimarySmartLink,
+      heroSecondarySmartLink,
+      experienceCards,
+      experiencesFilters,
+      selectedExperiences,
+      fallbackToAllExperiences,
+      reviewsSection { eyebrow, title, reviewCards, rotatingReviews },
+      reviewsFeaturedQuotes,
+      reviewsRefs,
+      reviewsEyebrow,
+      reviewsHeadline,
+      reviewsSectionLead,
+      reviewsAverageRating,
+      reviewsSourceLabel,
+      reviewsSecondaryRatingLine,
+      reserveCtaSettings { eyebrow, title, body, trustItems },
+      finalCtaEyebrow,
+      finalCtaH2,
+      finalCtaBody,
+      finalCtaWhatsappHref,
+      finalCtaWhatsappLabel,
+      finalCtaSecondaryHref,
+      finalCtaSecondaryLabel,
+      finalCtaWhatsappSmartLink,
+      finalCtaSecondarySmartLink,
+      finalCtaTrustItems,
+      routeCards[]{ _key, cta, ctaSmartLink, footPriceHtml }
+    }`,
+  )
 
-  for (const doc of routesPages) {
-    const cards = doc.routeCards ?? []
-    for (const card of cards) {
-      if (!card._key || !card.footPriceHtml?.trim()) continue
+  for (const doc of routesLegacy) {
+    const fields: string[] = []
+    if (defined(doc.experienceCards)) fields.push('experienceCards')
+    if (defined(doc.experiencesFilters)) fields.push('experiencesFilters')
+    if (defined(doc.selectedExperiences)) fields.push('selectedExperiences')
+    if (doc.fallbackToAllExperiences != null) fields.push('fallbackToAllExperiences')
+    if (doc.heroPrimarySmartLink && defined(doc.heroPrimaryCta)) fields.push('heroPrimaryCta')
+    if (doc.heroSecondarySmartLink && defined(doc.heroSecondaryCta)) fields.push('heroSecondaryCta')
+
+    const rs = doc.reviewsSection
+    const hasReviewsBlock =
+      Boolean(rs?.eyebrow?.trim()) ||
+      Boolean(rs?.title?.trim()) ||
+      Boolean(rs?.reviewCards?.length) ||
+      Boolean(rs?.rotatingReviews?.length)
+    if (hasReviewsBlock) {
+      if (defined(doc.reviewsFeaturedQuotes)) fields.push('reviewsFeaturedQuotes')
+      if (defined(doc.reviewsRefs)) fields.push('reviewsRefs')
+      if (defined(doc.reviewsEyebrow)) fields.push('reviewsEyebrow')
+      if (defined(doc.reviewsHeadline)) fields.push('reviewsHeadline')
+      if (defined(doc.reviewsSectionLead)) fields.push('reviewsSectionLead')
+      if (defined(doc.reviewsAverageRating)) fields.push('reviewsAverageRating')
+      if (defined(doc.reviewsSourceLabel)) fields.push('reviewsSourceLabel')
+      if (defined(doc.reviewsSecondaryRatingLine)) fields.push('reviewsSecondaryRatingLine')
+    }
+
+    const reserve = doc.reserveCtaSettings
+    const hasReserveBlock =
+      Boolean(reserve?.eyebrow?.trim()) ||
+      Boolean(reserve?.title?.trim()) ||
+      Boolean(reserve?.body?.trim()) ||
+      Boolean(reserve?.trustItems?.length)
+    if (hasReserveBlock || (doc.finalCtaWhatsappSmartLink && doc.finalCtaSecondarySmartLink)) {
+      if (defined(doc.finalCtaEyebrow)) fields.push('finalCtaEyebrow')
+      if (defined(doc.finalCtaH2)) fields.push('finalCtaH2')
+      if (defined(doc.finalCtaBody)) fields.push('finalCtaBody')
+      if (defined(doc.finalCtaWhatsappHref)) fields.push('finalCtaWhatsappHref')
+      if (defined(doc.finalCtaWhatsappLabel)) fields.push('finalCtaWhatsappLabel')
+      if (defined(doc.finalCtaSecondaryHref)) fields.push('finalCtaSecondaryHref')
+      if (defined(doc.finalCtaSecondaryLabel)) fields.push('finalCtaSecondaryLabel')
+    }
+    if (hasReserveBlock && defined(doc.finalCtaTrustItems)) {
+      fields.push('finalCtaTrustItems')
+    }
+
+    for (const card of doc.routeCards ?? []) {
+      if (!card._key) continue
+      if (defined(card.cta) && defined(card.ctaSmartLink)) {
+        fields.push(`routeCards[_key=="${card._key}"].cta`)
+      }
+      if (card.footPriceHtml?.trim()) {
+        fields.push(`routeCards[_key=="${card._key}"].footPriceHtml`)
+      }
+    }
+
+    if (fields.length) {
       plans.push({
         _id: doc._id,
         _type: 'routesPage',
-        fields: [`routeCards[_key=="${card._key}"].footPriceHtml`],
-        reason: 'footPriceHtml computed at runtime, not read from CMS',
+        fields: [...new Set(fields)],
+        reason: 'Legacy routesPage fields superseded by smart links, listed pages, reviewsSection, reserveCtaSettings',
+      })
+    }
+  }
+
+  // --- learningProgramme drafts: broken in-progress gallery uploads ---
+  const lpDrafts = await client.fetch<
+    Array<{
+      _id: string
+      fieldBaseRef?: unknown
+      lodgePresentationRows?: unknown[] | null
+      gallery?: Array<{ _key?: string; image?: { _upload?: unknown; asset?: unknown } | null }> | null
+    }>
+  >(
+    `*[_type == "learningProgramme" && _id match "drafts.*"]{
+      _id,
+      fieldBaseRef,
+      lodgePresentationRows,
+      gallery[]{ _key, image { asset, _upload } }
+    }`,
+  )
+  for (const doc of lpDrafts) {
+    const brokenKeys = (doc.gallery ?? [])
+      .filter((g) => g?._key && g.image?._upload && !g.image?.asset)
+      .map((g) => g._key!)
+    for (const key of brokenKeys) {
+      plans.push({
+        _id: doc._id,
+        _type: 'learningProgramme',
+        fields: [`gallery[_key=="${key}"]`],
+        reason: 'Remove broken in-progress gallery upload (_upload without asset)',
+      })
+    }
+    const lp = doc
+    if (Array.isArray(lp.lodgePresentationRows) && lp.lodgePresentationRows.length > 0 && defined(lp.fieldBaseRef)) {
+      plans.push({
+        _id: doc._id,
+        _type: 'learningProgramme',
+        fields: ['fieldBaseRef'],
+        reason: 'Legacy fieldBaseRef superseded by lodgePresentationRows',
+      })
+    }
+  }
+
+  const publishedLps = await client.fetch<
+    Array<{ _id: string; fieldBaseRef?: unknown; lodgePresentationRows?: unknown[] | null }>
+  >(
+    `*[_type == "learningProgramme" && !(_id match "drafts.*")]{
+      _id,
+      fieldBaseRef,
+      lodgePresentationRows
+    }`,
+  )
+  for (const doc of publishedLps) {
+    if (Array.isArray(doc.lodgePresentationRows) && doc.lodgePresentationRows.length > 0 && defined(doc.fieldBaseRef)) {
+      plans.push({
+        _id: doc._id,
+        _type: 'learningProgramme',
+        fields: ['fieldBaseRef'],
+        reason: 'Legacy fieldBaseRef superseded by lodgePresentationRows',
       })
     }
   }

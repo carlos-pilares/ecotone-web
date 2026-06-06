@@ -86,3 +86,64 @@ Studio should load again (under limit).
 | `experience` | 5 | `termsPanels`, `fullTermsPdf`, `faqs`, `resources` |
 | `lodgePage` | 4 | `heroCtaSmartLink` |
 | `routesPage` | 1 (3 array paths) | `routeCards[].footPriceHtml` |
+
+---
+
+## Second pass — Biodiversity / Learning Programme publish block (2026-06-06)
+
+### Trigger
+
+Publishing **Biodiversity Experiential Learning** failed with `Total attribute/datatype count 2007 exceeds limit of 2000`.
+
+**Important:** Sanity’s 2000 limit is **dataset-wide** (unique stored attribute paths), not per document. No single document exceeded 2000; the dataset had crept back over the limit after new content and legacy stored fields.
+
+### Affected documents
+
+| Role | Type | ID | Slug / title |
+|------|------|-----|--------------|
+| Learning Programme (KC) | `learningProgramme` | `5e5f0c46-abb6-4949-ba4a-78adf4acb7fe` | `biodiversity-experiential-learning` — *Biodiversity Experiential Learning* |
+| Experience Page (presentation) | `experiencePage` | `9202d4bc-66e6-40e3-bd10-9ea683a356fc` | `biodiversity-experiential-learning` |
+| Stale singleton draft | `headerSettings` | `drafts.headerSettings` | Duplicate of published nav (discarded) |
+
+LP draft attrs ≈ **328**; XP attrs ≈ **410**. Top LP contributors: `projects`, `resources`, `typicalDayRows`, `snapshotHighlights`, `howItWorksSteps`.
+
+### Attribute contributors (dataset)
+
+| Source | Approx. attrs removed | Notes |
+|--------|----------------------|-------|
+| `experiencePage` legacy CTAs / reserve (7 docs) | −44 | `pageHero.bookCta`, `internalNav.bookCta*`, `reserveBlock`, linked-price text |
+| `routesPage` legacy `routeCards[].cta` | −4 | Superseded by `ctaSmartLink` |
+| `routesPage` deprecated experiences/reviews/final CTA blobs | **−63** | `experienceCards` (~142 stored paths), filters, hero/reviews/final legacy |
+| `drafts.headerSettings` discarded | 0 (paths already counted) | Stale Studio fork; nav structure matched published |
+
+### Final stats
+
+| Metric | Value |
+|--------|-------|
+| Before second pass | **2038** |
+| After second pass | **1971** |
+| Delta | **−67** |
+| Learning Programme published | **Yes** (`5e5f0c46-abb6-4949-ba4a-78adf4acb7fe`) |
+
+### Scripts
+
+| Command | Purpose |
+|---------|---------|
+| `npm run cleanup:sanity-legacy-attributes` | Dry-run legacy unset plan |
+| `npm run cleanup:sanity-legacy-attributes -- --commit` | Apply patches |
+| `npm run diagnose:sanity-document-attributes` | Per-document attribute audit |
+| `npm run diagnose:sanity-document-attributes -- --id=<id>` | Single doc breakdown |
+
+### Safe unset rules added (second pass)
+
+- `routesPage`: `experienceCards`, `experiencesFilters`, `selectedExperiences`, hero legacy CTAs when smart links exist, reviews legacy when `reviewsSection` populated, final CTA legacy when `reserveCtaSettings` / smart links exist
+- `experiencePage`: hero/nav/reserve legacy when smart-link replacements exist
+- `learningProgramme` drafts: broken gallery `_upload` rows; `fieldBaseRef` when `lodgePresentationRows` populated
+
+### Recommendations
+
+1. **Re-run cleanup after major CMS migrations** — hidden schema fields still count when data remains stored.
+2. **Unset legacy on `routesPage` / `homePage` / `aboutPage`** in a follow-up pass (same pattern as routes second pass); `homePage` legacy CTAs still fall back at runtime.
+3. **Discard stale singleton drafts** (`headerSettings`, etc.) when Studio opens docs without publishing — use Sanity “Discard changes” or `discard_drafts`.
+4. **Monitor** with stats API: `https://{projectId}.api.sanity.io/v1/data/stats/{dataset}` — keep headroom under **1900** for edits.
+5. **Schema phase 2:** remove hidden legacy fields from schema once all documents are migrated (optional; unset is sufficient for the limit).

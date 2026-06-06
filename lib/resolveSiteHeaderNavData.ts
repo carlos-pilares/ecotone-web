@@ -14,6 +14,7 @@ import { formatExperienceNavPriceMetaWithPromotions } from '@/lib/formatExperien
 import type { PromotionDoc } from '@/lib/promotionTypes'
 import { resolveExperienceHeroImageUrl } from '@/lib/experienceHeroImage'
 import { resolveExperiencePublicHref } from '@/lib/resolveExperiencePublicHref'
+import { appendLearningProgrammesToNavMap } from '@/lib/headerNavLearningProgrammes'
 import {
   resolveSmartLinkOrLegacy,
   smartLinkIsDisabled,
@@ -30,6 +31,7 @@ import type {
   HeaderNavRouteGroupOverrideRow,
   HeaderNavSeeAllRow,
   SiteHeaderNavExperiencePageRow,
+  SiteHeaderNavLearningProgrammeRow,
   SiteHeaderNavLodgePageRow,
   SiteHeaderNavRouteNavRow,
   SiteHeaderNavSettingsRow,
@@ -800,6 +802,7 @@ export function resolveSiteHeaderNavData(
   lodgePages: SiteHeaderNavLodgePageRow[] | null | undefined,
   routeNavDocs: SiteHeaderNavRouteNavRow[] | null | undefined,
   promotions?: PromotionDoc[] | null,
+  learningProgrammes?: SiteHeaderNavLearningProgrammeRow[] | null,
 ): ResolvedSiteHeaderNav {
   const base = emptyNav()
   const pages = Array.isArray(experiencePages) ? experiencePages : []
@@ -876,6 +879,8 @@ export function resolveSiteHeaderNavData(
     list.push({ it: item, sk, sn: name.toLowerCase() })
     byProgramType.set(programType, list)
   }
+
+  appendLearningProgrammesToNavMap(byProgramType, learningProgrammes, promotions)
 
   for (const list of byProgramType.values()) {
     list.sort((a, z) => (a.sk !== z.sk ? a.sk - z.sk : a.sn.localeCompare(z.sn)))

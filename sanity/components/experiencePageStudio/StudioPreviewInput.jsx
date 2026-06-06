@@ -7,6 +7,7 @@ import {apiVersion} from '../../env'
 import {
   experienceStudioPreviewById,
   experienceDocsByIds,
+  learningProgrammeStudioPreviewById,
   reviewDocsByIds,
   techDocsByIds,
 } from '../../lib/experiencePageStudioQuery'
@@ -172,7 +173,8 @@ export function StudioPreviewInput(props) {
   const section = props?.schemaType?.options?.section || 'overview'
   const client = useClient({apiVersion})
   const expRef = useFormValue(['experience'])
-  const id = expRef?._ref
+  const lpRef = useFormValue(['learningProgramme'])
+  const id = expRef?._ref || lpRef?._ref
   const pageHero = useFormValue(['pageHero'])
   const sectionModules = useFormValue(['sectionModules']) || []
   const snapshotStatSelections = useFormValue(['snapshotStatSelections']) || []
@@ -198,7 +200,8 @@ export function StudioPreviewInput(props) {
 
     async function run() {
       try {
-        const d = await client.fetch(experienceStudioPreviewById, {id})
+        const query = lpRef?._ref && !expRef?._ref ? learningProgrammeStudioPreviewById : experienceStudioPreviewById
+        const d = await client.fetch(query, {id})
         if (cancelled) return
         setData(d)
       } catch (e) {
@@ -213,7 +216,7 @@ export function StudioPreviewInput(props) {
     return () => {
       cancelled = true
     }
-  }, [client, id])
+  }, [client, id, expRef?._ref, lpRef?._ref])
 
   useEffect(() => {
     if (!id) {

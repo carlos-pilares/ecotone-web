@@ -98,6 +98,7 @@ export function ExperiencesExplorer({
           tailorMade={tailorProps}
           gridClassName="experience-cards-grid fade fade-d2"
           gridId="expGrid"
+          sourceSection="home"
           emptyMessage={sectionCards.length === 0 ? <ExperiencesFallback explorer={e} /> : null}
         />
       </div>

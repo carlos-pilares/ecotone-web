@@ -18,25 +18,32 @@ const nextConfig: NextConfig = {
   ],
   webpack: (config, { dir }) => {
     const sanityPkg = path.join(dir, 'node_modules', 'sanity')
+    const sanityLib = path.join(sanityPkg, 'lib')
+    const mdItCjs = path.join(dir, 'node_modules', 'markdown-it', 'dist', 'index.cjs.js')
 
     config.resolve = config.resolve ?? {}
     const prev = (config.resolve.alias ?? {}) as Record<string, string | false | string[]>
 
-    const mdItCjs = path.join(dir, 'node_modules', 'markdown-it', 'dist', 'index.cjs.js')
+    /** Pin every npm `sanity/*` export — local `./sanity/` shadows them and breaks Studio (incl. uploads). */
+    const sanitySubpathAliases: Record<string, string> = {
+      'sanity$': path.join(sanityLib, 'index.js'),
+      'sanity/_internal': path.join(sanityLib, '_internal.js'),
+      'sanity/_singletons': path.join(sanityLib, '_singletons.js'),
+      'sanity/_createContext': path.join(sanityLib, '_createContext.js'),
+      'sanity/cli': path.join(sanityLib, 'cli.js'),
+      'sanity/desk': path.join(sanityLib, 'desk.js'),
+      'sanity/presentation': path.join(sanityLib, 'presentation.js'),
+      'sanity/router': path.join(sanityLib, 'router.js'),
+      'sanity/structure': path.join(sanityLib, 'structure.js'),
+      'sanity/media-library': path.join(sanityLib, 'media-library.js'),
+      'sanity/migrate': path.join(sanityLib, 'migrate.js'),
+    }
 
     config.resolve.alias = {
       ...prev,
       '@': dir,
-      /** Prefer CJS build: published `index.mjs` can point at a missing `./lib/` tree in some installs. */
       'markdown-it$': mdItCjs,
-      sanity$: path.join(sanityPkg, 'lib', 'index.js'),
-      'sanity/structure': path.join(sanityPkg, 'lib', 'structure.js'),
-      'sanity/router': path.join(sanityPkg, 'lib', 'router.js'),
-      'sanity/desk': path.join(sanityPkg, 'lib', 'desk.js'),
-      'sanity/presentation': path.join(sanityPkg, 'lib', 'presentation.js'),
-      'sanity/migrate': path.join(sanityPkg, 'lib', 'migrate.js'),
-      'sanity/cli': path.join(sanityPkg, 'lib', 'cli.js'),
-      'sanity/media-library': path.join(sanityPkg, 'lib', 'media-library.js'),
+      ...sanitySubpathAliases,
     }
     return config
   },

@@ -29,30 +29,65 @@ export const reserveCtaSettings = defineType({
       validation: (r) => r.max(2000),
     }),
     defineField({
-      name: 'priceOverrideText',
-      title: 'Price line override',
+      name: 'priceSource',
+      title: 'Price source',
       type: 'string',
+      options: {
+        list: [
+          {title: 'Use linked product price', value: 'linked'},
+          {title: 'Custom price', value: 'custom'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'linked',
       description:
-        'Replaces the derived price line (e.g. “from $986”). Leave empty to use lowest active experience price or “Enquire”.',
+        'Experience / Learning Programme pages: linked = price from the linked KC. Lodge / Home / Routes: linked = selected or lowest experience price.',
+    }),
+    defineField({
+      name: 'priceLinkedExperienceRef',
+      title: 'Experience for price',
+      type: 'reference',
+      to: [{type: 'experience'}],
+      hidden: ({parent, document}) =>
+        parent?.priceSource !== 'linked' || document?._type !== 'lodgePage',
+      description:
+        'Lodge pages only. When set, shows this experience’s price on the reserve card. Empty = lowest price among lodge experiences.',
+    }),
+    defineField({
+      name: 'customPriceText',
+      title: 'Custom price',
+      type: 'string',
+      hidden: ({parent}) => parent?.priceSource !== 'custom',
+      description: 'Main price amount when source is Custom (e.g. “USD 1,800”). Prefix and suffix are configured separately below.',
+      validation: (r) => r.max(80),
+    }),
+    defineField({
+      name: 'priceOverrideText',
+      title: 'Price line override (legacy)',
+      type: 'string',
+      hidden: true,
+      description: 'Deprecated — use Custom price + prefix/suffix. Still read for older documents.',
       validation: (r) => r.max(80),
     }),
     defineField({
       name: 'pricePrefixOverride',
-      title: 'Price prefix override',
+      title: 'Price prefix',
       type: 'string',
-      description: 'Default on site: “from”. Only used when building price from numeric amount.',
+      description: 'Small text before the amount (e.g. “from”). Empty = hide prefix. Unset on old pages defaults to “from”.',
       validation: (r) => r.max(24),
     }),
     defineField({
       name: 'priceSuffixOverride',
-      title: 'Price suffix (small, e.g. / person)',
+      title: 'Price suffix',
       type: 'string',
+      description: 'Small text beside/below the amount (e.g. “per person”). Empty = hide suffix. Unset on old pages defaults to “per person”.',
       validation: (r) => r.max(40),
     }),
     defineField({
       name: 'sublineOverride',
       title: 'Subline under price',
       type: 'string',
+      description: 'Free text under the suffix line (e.g. “all inclusive”). Empty = hide.',
       validation: (r) => r.max(160),
     }),
     defineField({

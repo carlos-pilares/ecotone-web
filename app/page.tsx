@@ -27,6 +27,11 @@ import {
   reviewsQuery,
   technologyProductsQuery,
 } from '@/lib/queries'
+import {
+  learningProgrammesForListingQuery,
+  mergeExperienceListingRows,
+  type LearningProgrammeCardRow,
+} from '@/lib/mergeExperienceListingRows'
 import { filterPublishedPartnerDocs } from '@/lib/partnerDocs'
 import { client } from '@/lib/sanity'
 
@@ -65,19 +70,20 @@ export default async function Home() {
 
   if (canFetch) {
     try {
-      const [hp, r, t, b, e, promoRows] = await Promise.all([
+      const [hp, r, t, b, e, lp, promoRows] = await Promise.all([
         getHomePage(),
         client.fetch<ReviewDoc[]>(reviewsQuery),
         client.fetch<TechnologyProductDoc[]>(technologyProductsQuery),
         client.fetch<BlogPostDoc[]>(blogPostsQuery),
         client.fetch<ExperienceFromSanity[]>(experiencesQuery),
+        client.fetch<LearningProgrammeCardRow[]>(learningProgrammesForListingQuery),
         getActivePromotions(),
       ])
       homePage = hp
       reviews = Array.isArray(r) ? r : []
       techProducts = Array.isArray(t) ? t : []
       blogPosts = Array.isArray(b) ? b : []
-      experiences = Array.isArray(e) ? e : []
+      experiences = mergeExperienceListingRows(Array.isArray(e) ? e : [], lp)
       promotions = promoRows
     } catch {
       // Other lists empty; `homePage` is always resolvable (approved defaults, never null).

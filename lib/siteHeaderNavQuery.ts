@@ -80,6 +80,7 @@ export type SiteHeaderNavBundleRow = {
   headerSettings: Record<string, unknown> | null
   legacyHeader: Record<string, unknown> | null
   experiencePages: SiteHeaderNavExperiencePageRow[] | null
+  learningProgrammes: SiteHeaderNavLearningProgrammeRow[] | null
   lodgePages: SiteHeaderNavLodgePageRow[] | null
   routeNavDocs: SiteHeaderNavRouteNavRow[] | null
 }
@@ -134,6 +135,19 @@ export type SiteHeaderNavExperienceRouteRefRow = {
   slug?: string | null
   shortLabel?: string | null
   name?: string | null
+}
+
+export type SiteHeaderNavLearningProgrammeRow = {
+  _id: string
+  title?: string | null
+  pageSlug?: string | null
+  headerNavOrder?: number | null
+  programmeCategory?: string | null
+  durationDisplay?: string | null
+  price?: number | null
+  priceLabel?: string | null
+  mainImageUrl?: string | null
+  routeRef?: SiteHeaderNavExperienceRouteRefRow | null
 }
 
 export type SiteHeaderNavExperiencePageRow = {
@@ -314,6 +328,24 @@ export const siteHeaderNavBundleQuery = groq`{
     galleryOrderKeys,
     "experience": experience-> {
       ${GROQ_HEADER_NAV_EXPERIENCE_FIELDS}
+    }
+  },
+  "learningProgrammes": *[_type == "experiencePage" && defined(learningProgramme._ref) && learningProgramme->status == "active" && defined(slug.current)]
+    | order(coalesce(headerNavOrder, 999) asc, learningProgramme->title asc) {
+    "_id": learningProgramme._ref,
+    "title": learningProgramme->title,
+    "pageSlug": slug.current,
+    headerNavOrder,
+    "programmeCategory": learningProgramme->programmeCategory,
+    "durationDisplay": coalesce(learningProgramme->durationDisplay, learningProgramme->duration),
+    "price": learningProgramme->price,
+    "priceLabel": learningProgramme->priceLabel,
+    "mainImageUrl": learningProgramme->mainImage.asset->url,
+    "routeRef": learningProgramme->routeRef-> {
+      _id,
+      "slug": slug.current,
+      shortLabel,
+      name
     }
   },
   "lodgePages": *[_type == "lodgePage" && defined(slug.current) && defined(lodge)]

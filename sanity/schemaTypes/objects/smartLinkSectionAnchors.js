@@ -49,6 +49,8 @@ const EXPERIENCE_PAGE_SECTIONS = [
   {title: 'FAQ', value: 'faq'},
   {title: 'Related', value: 'also-camanti'},
   {title: 'Book', value: 'book'},
+  {title: 'Projects (EL)', value: 'projects'},
+  {title: 'Learning outcomes (EL)', value: 'learningOutcomes'},
 ]
 
 const LODGE_PAGE_SECTIONS = [

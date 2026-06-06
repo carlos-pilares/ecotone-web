@@ -11,6 +11,17 @@ const experienceRefField = (hiddenWhenAll) =>
     hidden: ({parent}) => (hiddenWhenAll ? parent?.appliesToAll === true : false),
   })
 
+const learningProgrammeRefField = (hiddenWhenAll) =>
+  defineField({
+    name: 'learningProgrammes',
+    title: 'Learning programmes',
+    type: 'array',
+    of: [defineArrayMember({type: 'reference', to: [{type: 'learningProgramme'}]})],
+    description:
+      'Select which Learning Programme documents receive this FAQ. Ignored when “Applies to all experiences” is on.',
+    hidden: ({parent}) => (hiddenWhenAll ? parent?.appliesToAll === true : false),
+  })
+
 export const faqItem = defineType({
   name: 'faqItem',
   title: 'FAQ',
@@ -38,6 +49,7 @@ export const faqItem = defineType({
         'When enabled, this FAQ is available on every current and future experience (unless hidden on the Experience Page picker).',
     }),
     experienceRefField(true),
+    learningProgrammeRefField(true),
   ],
   preview: {
     select: {

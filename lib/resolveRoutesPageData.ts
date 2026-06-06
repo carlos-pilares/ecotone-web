@@ -23,7 +23,9 @@ import {
   buildRoutesExpCardsFromListedExperiencePages,
   buildRoutesExpFiltersFromPublishedRoutes,
   orderPublishedRoutes,
+  type RoutesPageListedExperiencePageRow,
 } from '@/lib/routesPageExperiencesSection'
+import { learningProgrammeToRoutesListedRow } from '@/lib/mergeExperienceListingRows'
 import type { RoutesPageSanityDoc, RoutesPageSanityRouteCard } from '@/lib/routesPageQuery'
 import {
   routesCards as fallbackRoutesCards,
@@ -436,7 +438,26 @@ export function resolveRoutesPageData(
   }
   const orderedRoutes = orderPublishedRoutes(cms?.publishedRoutes ?? null, cms?.experiencesRouteOrder ?? null)
   const expFilters = buildRoutesExpFiltersFromPublishedRoutes(orderedRoutes)
-  const expCards = buildRoutesExpCardsFromListedExperiencePages(cms?.listedExperiencePages ?? null, {
+  const listedPages: RoutesPageListedExperiencePageRow[] = [...(cms?.listedExperiencePages ?? [])]
+  for (const row of cms?.listedLearningProgrammes ?? []) {
+    const mapped = learningProgrammeToRoutesListedRow({
+      _id: row._id?.trim() || '',
+      title: row.title,
+      experienceSlug: row.experienceSlug,
+      programType: row.programType,
+      routeRefId: row.routeRefId,
+      routeSlug: row.routeSlug,
+      routeLabel: row.routeLabel,
+      shortDescription: row.shortDescription,
+      price: row.price,
+      priceLabel: row.priceLabel,
+      status: row.status,
+      durationDisplay: row.durationDisplay,
+      mainImageUrl: row.mainImageUrl,
+    })
+    if (mapped) listedPages.push(mapped)
+  }
+  const expCards = buildRoutesExpCardsFromListedExperiencePages(listedPages, {
     ctaLabel: cardCtaLabel,
   })
 

@@ -37,7 +37,8 @@ export function LodgeBookCta({ data }: LodgeBookCtaProps) {
       title={data.title}
       body={data.body}
       card={{
-        priceLine: data.cardTitle,
+        pricePrefix: data.cardPricePrefix,
+        priceAmount: data.cardTitle,
         priceSuffix: data.cardPriceSuffix ?? '',
         subline: data.cardSubtitle,
         rows: data.rows.map((r) => ({ label: r.label, value: r.value })),

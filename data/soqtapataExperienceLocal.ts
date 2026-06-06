@@ -42,7 +42,10 @@ export type SoqtapataPhase1Hero = {
   priceOriginalAmount?: string
   promoLabel?: string
   promoMicrocopy?: string
+  /** First line under amount, e.g. “per person”. */
   priceSub: string
+  /** Optional second line, e.g. “all inclusive”. Omitted when empty. */
+  priceFootnote?: string
   bookUrl: string
   bookLabel: string
 }
@@ -117,9 +120,9 @@ export const soqtapataPhase1: { hero: SoqtapataPhase1Hero; stats: SoqtapataPhase
     ratingReviews: '· 12 reviews',
     ratingDivider: true,
     lodgeName: 'Soqtapata Lodge',
-    priceFrom: 'from',
+    priceFrom: '',
     priceAmount: 'USD 986',
-    priceSub: 'per person · all inclusive',
+    priceSub: '',
     bookUrl: 'https://www.wetravel.com',
     bookLabel: 'Book now',
   },
@@ -198,61 +201,12 @@ export type SoqtapataItineraryDay = {
   lodgeBadge?: SoqtapataDayLodgeBadge
 }
 
-export type ExperienceItineraryMode = 'dayByDay' | 'programmeFlow' | 'typicalDay' | 'hybrid'
-
-export type ExperienceProgrammePhase = {
-  id: string
-  title: string
-  subtitle?: string
-  body: string
-  imageSrc?: string
-  imageAlt?: string
-  durationLabel?: string
-  accommodation?: string
-}
-
-export type ExperienceProgrammeFlowSection = {
-  eyebrow?: string
-  title?: string
-  intro?: string
-  phases: ExperienceProgrammePhase[]
-}
-
-export type ExperienceTypicalDayRow = {
-  id: string
-  timeLabel?: string
-  title: string
-  body: string
-}
-
-export type ExperienceTypicalDaySection = {
-  eyebrow?: string
-  title?: string
-  intro?: string
-  rows: ExperienceTypicalDayRow[]
-}
-
-export type ExperienceDurationOption = {
-  id: string
-  label: string
-  durationDetail?: string
-  shortBreakdown?: string
-  priceLabel?: string
-  startDates?: string
-  enabled: boolean
-}
-
 export type SoqtapataItinerary = {
-  mode: ExperienceItineraryMode
   eyebrow: string
   h2: string
   /** Intro opcional bajo el H2 (presentación CMS). */
   lead?: string
   days: SoqtapataItineraryDay[]
-  programmeFlow?: ExperienceProgrammeFlowSection
-  typicalDay?: ExperienceTypicalDaySection
-  hybridSummaryIntro?: string
-  durationOptions?: ExperienceDurationOption[]
 }
 
 export const soqtapataPhase2: { overview: SoqtapataOverview; itinerary: SoqtapataItinerary } = {
@@ -272,7 +226,6 @@ export const soqtapataPhase2: { overview: SoqtapataOverview; itinerary: Soqtapat
     ],
   },
   itinerary: {
-    mode: 'dayByDay',
     eyebrow: 'Day by day',
     h2: "What you'll experience",
     days: [
@@ -1139,7 +1092,10 @@ export type SoqtapataBook = {
   h2Style: { marginBottom: number; textAlign: 'center' }
   /** Optional intro under the H2 (`reserveCtaSettings.body` / CMS). */
   lead?: string
+  /** Large price amount for the reserve card. */
   price: string
+  /** Small prefix before `price` (e.g. “from”). */
+  pricePrefix?: string
   priceSmall: string
   sub: string
   rows: { label: string; value: string }[]

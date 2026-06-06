@@ -51,6 +51,25 @@ export const experienceStudioPreviewById = /* groq */ `*[_id == $id][0]{
   }
 }`
 
+export const learningProgrammeStudioPreviewById = /* groq */ `*[_id == $id][0]{
+  _id,
+  title,
+  shortDescription,
+  durationDisplay,
+  price,
+  priceLabel,
+  wildlife[]{ name, description, iconType, badge, "imageUrl": image.asset->url },
+  includes,
+  notIncludes,
+  overviewHighlights,
+  gallery[]{ caption, "url": image.asset->url },
+  "mainImageUrl": mainImage.asset->url,
+  "fieldBase": fieldBaseRef->{
+    _id, name, shortDescription, amenities,
+    "mainImageUrl": mainImage.asset->url
+  }
+}`
+
 export const reviewDocsByIds = /* groq */ `*[_id in $ids]{
   _id, quote, authorName, authorCity, authorCountry,
   "experience": experience->{ name, slug },

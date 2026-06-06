@@ -8,12 +8,12 @@ import {
   experienceTermsPanel,
   experienceTravelerGuideSection,
   experienceTravelerGuideSubsection,
+  experienceWildlifeItem,
 } from './objects/experienceKnowledgeObjects'
 
 const PROGRAM_TYPE_OPTIONS = [
   {title: 'Classic Nature', value: 'nature-core'},
   {title: 'Signature Expeditions', value: 'family-adventure'},
-  {title: 'Experiential Learning', value: 'experiential-learning'},
   {title: 'Tailor Made', value: 'tailor-made'},
 ]
 
@@ -285,76 +285,13 @@ export const experience = defineType({
         'Title + subtitle pairs for the highlight bar under the hero on Experience Pages (e.g. “4D · 3N” / “Duration”). Each Experience Page picks up to 6. Not the Overview bullet list (tab Overview · datos).',
     }),
 
-    // --- Itinerary ---
-    defineField({
-      name: 'itineraryMode',
-      title: 'Itinerary display mode',
-      type: 'string',
-      group: 'itinerary',
-      initialValue: 'dayByDay',
-      options: {
-        list: [
-          {title: 'Day by day (classic journeys)', value: 'dayByDay'},
-          {title: 'Programme flow (learning pathways)', value: 'programmeFlow'},
-          {title: 'Typical day in the field', value: 'typicalDay'},
-          {title: 'Hybrid (flow + typical day + optional day summary)', value: 'hybrid'},
-        ],
-        layout: 'radio',
-      },
-      description:
-        'How the Itinerary section renders on Experience Pages. Existing experiences default to day-by-day. Experiential Learning programmes often use programme flow or hybrid.',
-    }),
-    defineField({
-      name: 'programmeFlow',
-      title: 'Programme flow content',
-      type: 'experienceItineraryProgrammeFlow',
-      group: 'itinerary',
-      hidden: ({document}) => !['programmeFlow', 'hybrid'].includes(document?.itineraryMode || 'dayByDay'),
-      description: 'Phases such as arrival, training, field project, return — instead of a day-by-day accordion.',
-    }),
-    defineField({
-      name: 'typicalDay',
-      title: 'Typical day content',
-      type: 'experienceItineraryTypicalDay',
-      group: 'itinerary',
-      hidden: ({document}) => !['typicalDay', 'hybrid'].includes(document?.itineraryMode || 'dayByDay'),
-      description: 'Compact morning / afternoon / evening rhythm for field programmes.',
-    }),
-    defineField({
-      name: 'hybridSummaryIntro',
-      title: 'Hybrid — summarized itinerary intro (optional)',
-      type: 'text',
-      rows: 2,
-      group: 'itinerary',
-      hidden: ({document}) => document?.itineraryMode !== 'hybrid',
-      validation: (Rule) => Rule.max(400),
-      description: 'Short lead above the optional condensed day list (uses **Itinerario** days below when present).',
-    }),
-    defineField({
-      name: 'durationOptions',
-      title: 'Duration options',
-      type: 'array',
-      group: 'itinerary',
-      of: [{type: 'experienceDurationOption'}],
-      validation: (Rule) => Rule.max(8),
-      hidden: ({document}) => {
-        const mode = document?.itineraryMode || 'dayByDay'
-        if (mode !== 'dayByDay') return false
-        return document?.programType !== 'experiential-learning'
-      },
-      description:
-        'Multiple programme lengths (e.g. 2 / 4 / 6 weeks). Shown on the Experience Page for Experiential Learning and non–day-by-day modes.',
-    }),
+    // --- Itinerary (day-by-day tourism model) ---
     defineField({
       name: 'itinerary',
       title: 'Itinerario',
       type: 'array',
       group: 'itinerary',
-      hidden: ({document}) => {
-        const mode = document?.itineraryMode || 'dayByDay'
-        return mode === 'programmeFlow' || mode === 'typicalDay'
-      },
-      description: 'Un objeto por día. El orden determina Day 1, Day 2, etc. Hidden for programme-flow-only and typical-day-only modes.',
+      description: 'Un objeto por día. El orden determina Day 1, Day 2, etc.',
       of: [
         {
           type: 'object',
@@ -562,49 +499,7 @@ export const experience = defineType({
       title: 'Vida silvestre',
       type: 'array',
       group: 'wildlife',
-      of: [
-        {
-          type: 'object',
-          name: 'wildlifeItem',
-          fields: [
-            defineField({
-              name: 'name',
-              title: 'Nombre',
-              type: 'string',
-              validation: (Rule) => [Rule.required(), Rule.max(40)],
-            }),
-            defineField({
-              name: 'description',
-              title: 'Subtítulo',
-              type: 'string',
-              validation: (Rule) => Rule.max(50),
-            }),
-            defineField({
-              name: 'iconType',
-              title: 'Icono (legacy)',
-              type: 'string',
-              hidden: true,
-              options: {list: WILDLIFE_ICONS, layout: 'dropdown'},
-              description: 'Deprecated — wildlife cards use photos. Data preserved for legacy documents.',
-            }),
-            defineField({
-              name: 'image',
-              title: 'Foto',
-              type: 'image',
-              options: imgHot,
-              description:
-                'Species photo for the card. Recommended: horizontal ~16:10 or 4:3, min. ~900px wide.',
-            }),
-            defineField({
-              name: 'badge',
-              title: 'Badge (opcional)',
-              type: 'string',
-              description: 'Ej. Rare, Research — aparece sobre el nombre.',
-              validation: (Rule) => Rule.max(28),
-            }),
-          ],
-        },
-      ],
+      of: [{type: 'experienceWildlifeItem'}],
       description: 'Especies que se pueden observar. Máx 10 especies.',
       validation: (Rule) => Rule.max(10),
     }),

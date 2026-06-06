@@ -199,6 +199,15 @@ export const structure = (S) =>
             .title('Content library')
             .items([
               S.listItem()
+                .title('Learning Programmes')
+                .icon(ActivityIcon)
+                .id('learningProgrammes')
+                .child(
+                  S.documentTypeList('learningProgramme')
+                    .id('learningProgrammeList')
+                    .title('Experiential learning programmes'),
+                ),
+              S.listItem()
                 .title('Experiences (contenido del programa)')
                 .icon(ActivityIcon)
                 .id('experiences')

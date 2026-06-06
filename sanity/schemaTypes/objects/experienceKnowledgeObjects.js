@@ -350,6 +350,72 @@ export const experienceItineraryOvernight = defineType({
 
 export {experienceSnapshotHighlight} from './experienceSnapshotHighlight'
 
+const WILDLIFE_ICONS = [
+  {title: 'Bird', value: 'bird'},
+  {title: 'Bear / large mammal', value: 'bear'},
+  {title: 'Cat / puma', value: 'cat'},
+  {title: 'Jaguar / leopard', value: 'jaguar'},
+  {title: 'Monkey / primate', value: 'monkey'},
+  {title: 'Otter / semi-aquatic', value: 'otter'},
+  {title: 'Reptile / amphibian', value: 'reptile'},
+  {title: 'Fish / aquatic', value: 'fish'},
+  {title: 'Plant / flora', value: 'plant'},
+  {title: 'Insect / butterfly', value: 'insect'},
+  {title: 'Generic icon', value: 'generic'},
+]
+
+/** Species card on Experience KC and Learning Programme KC wildlife tabs. */
+export const experienceWildlifeItem = defineType({
+  name: 'experienceWildlifeItem',
+  title: 'Wildlife species',
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'name',
+      title: 'Common name',
+      type: 'string',
+      validation: (Rule) => [Rule.required(), Rule.max(40)],
+    }),
+    defineField({
+      name: 'description',
+      title: 'Subtitle',
+      type: 'string',
+      validation: (Rule) => Rule.max(50),
+      description: 'Short line under the name (e.g. cloud-forest endemic).',
+    }),
+    defineField({
+      name: 'iconType',
+      title: 'Icon (legacy)',
+      type: 'string',
+      hidden: true,
+      options: {list: WILDLIFE_ICONS, layout: 'dropdown'},
+      description: 'Deprecated — wildlife cards use photos. Data preserved for legacy documents.',
+    }),
+    defineField({
+      name: 'image',
+      title: 'Photo',
+      type: 'image',
+      options: imgHot,
+      description: 'Species photo for the card. Recommended: horizontal ~16:10 or 4:3, min. ~900px wide.',
+    }),
+    defineField({
+      name: 'badge',
+      title: 'Badge (optional)',
+      type: 'string',
+      description: 'e.g. Rare, Research — shown above the name.',
+      validation: (Rule) => Rule.max(28),
+    }),
+  ],
+  preview: {
+    select: {title: 'name', subtitle: 'description', media: 'image'},
+    prepare: ({title, subtitle, media}) => ({
+      title: title || 'Species',
+      subtitle: subtitle || undefined,
+      media,
+    }),
+  },
+})
+
 /** Per-lodge editorial modifiers on an experience (lodges tab). */
 export const experienceLodgePresentationRow = defineType({
   name: 'experienceLodgePresentationRow',

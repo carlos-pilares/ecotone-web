@@ -6,6 +6,7 @@ import type {
   RoutesPageListedExperiencePageRow,
   RoutesPagePublishedRouteRow,
 } from '@/lib/routesPageExperiencesSection'
+import { GROQ_LEARNING_PROGRAMME_LISTING_VIA_PAGE } from '@/lib/learningProgrammeGroq'
 import type { ReviewDoc } from '@/lib/queries'
 import type { ReserveCtaSettingsGroq } from '@/lib/reserveCtaGroq'
 import { GROQ_RESERVE_CTA_SETTINGS_FIELDS } from '@/lib/reserveCtaGroq'
@@ -69,6 +70,21 @@ export type RoutesPageSanityDoc = {
   experienceCardCtaLabel?: string | null
   publishedRoutes?: RoutesPagePublishedRouteRow[] | null
   listedExperiencePages?: RoutesPageListedExperiencePageRow[] | null
+  listedLearningProgrammes?: Array<{
+    _id?: string | null
+    title?: string | null
+    experienceSlug?: string | null
+    programType?: string | null
+    routeRefId?: string | null
+    routeSlug?: string | null
+    routeLabel?: string | null
+    shortDescription?: string | null
+    price?: number | null
+    priceLabel?: string | null
+    status?: string | null
+    durationDisplay?: string | null
+    mainImageUrl?: string | null
+  }> | null
   reviewsFeaturedQuotes?: Array<{ quoteHtml?: string | null; attribution?: string | null }> | null
   reviewsSection?: {
     eyebrow?: string | null
@@ -306,6 +322,9 @@ export const routesPageQuery = groq`
       "status": experience->status,
       "mainImageUrl": experience->mainImage.asset->url,
       "lodgeEnquireSmartLink": experience->lodgeEnquireSmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    },
+    "listedLearningProgrammes": *[_type == "experiencePage" && defined(learningProgramme._ref) && learningProgramme->status == "active" && defined(slug.current)] | order(learningProgramme->title asc) {
+      ${GROQ_LEARNING_PROGRAMME_LISTING_VIA_PAGE}
     },
     reviewsFeaturedQuotes[]{ quoteHtml, attribution },
     "reviewsSettings": *[_type == "reviewsSettings"][0] {

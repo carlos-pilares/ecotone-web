@@ -5,6 +5,8 @@ export type FaqItemRow = {
   appliesToAll?: boolean | null
   experienceIds?: string[] | null
   experiences?: Array<{ _id?: string | null }> | null
+  learningProgrammeIds?: string[] | null
+  learningProgrammes?: Array<{ _id?: string | null }> | null
 }
 
 export type FaqsSettingsRow = {
@@ -75,6 +77,41 @@ export type LegacyFaqRow = {
   _key?: string | null
   question?: string | null
   answer?: string | null
+}
+
+function normalizeLearningProgrammeIds(
+  row: { learningProgrammeIds?: string[] | null; learningProgrammes?: Array<{ _id?: string | null }> | null },
+): string[] {
+  if (row.learningProgrammeIds?.length) {
+    return row.learningProgrammeIds.map((id) => id?.trim()).filter(Boolean) as string[]
+  }
+  if (!row.learningProgrammes?.length) return []
+  return row.learningProgrammes.map((e) => e?._id?.trim()).filter(Boolean) as string[]
+}
+
+function faqAppliesToLearningProgramme(item: FaqItemRow, programmeId: string): boolean {
+  if (item.appliesToAll === true) return true
+  const ids = normalizeLearningProgrammeIds(item)
+  return ids.some((id) => experienceIdMatches(id, programmeId))
+}
+
+/** FAQs from central CK applicable to a learning programme (global + assigned). */
+export function centralFaqsForLearningProgramme(
+  settings: FaqsSettingsRow | null | undefined,
+  programmeId: string | null | undefined,
+): CentralFaq[] {
+  if (!settings?.faqItems?.length || !programmeId?.trim()) return []
+  const out: CentralFaq[] = []
+  for (const item of settings.faqItems) {
+    if (!item || !faqAppliesToLearningProgramme(item, programmeId)) continue
+    const title = item.title?.trim() ?? ''
+    const body = item.body?.trim() ?? ''
+    if (!title || !body) continue
+    const key = item._key?.trim()
+    if (!key) continue
+    out.push({ _key: key, title, body })
+  }
+  return out
 }
 
 /** Central FAQs when present; otherwise legacy Experience KC `faqs`. */

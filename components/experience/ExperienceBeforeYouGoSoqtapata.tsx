@@ -132,7 +132,14 @@ function BfygHeaderIcon({ k }: { k: 'entry' | 'luggage' | 'phone' }) {
  * Misma lógica que `toggleBFYG` en el script: una tarjeta abierta; al repetir, todas cerradas.
  * `#before-you-go` — paridad con `ecotone-experience_2.html`.
  */
-export function ExperienceBeforeYouGoSoqtapata({ data }: { data: SoqtapataBeforeYouGo }) {
+export function ExperienceBeforeYouGoSoqtapata({
+  data,
+  sectionId = 'before-you-go',
+}: {
+  data: SoqtapataBeforeYouGo
+  /** Anchor id for in-page nav — `good-to-know` on Experiential Learning pages. */
+  sectionId?: string
+}) {
   const [openId, setOpenId] = useState<string>(() => {
     const d = data.cards.find((c) => 'defaultOpen' in c && c.defaultOpen)
     return d?.id ?? 'bfyg1'
@@ -143,7 +150,7 @@ export function ExperienceBeforeYouGoSoqtapata({ data }: { data: SoqtapataBefore
   }, [])
 
   return (
-    <section className="content-section fade" id="before-you-go">
+    <section className="content-section fade" id={sectionId}>
       <div className="content-inner">
         <div className="eyebrow">{data.eyebrow}</div>
         <h2 className="h2" style={{ marginBottom: data.h2MarginBottom }}>

@@ -2,6 +2,19 @@ import {defineField, defineType} from 'sanity'
 import {StudioSectionTabField} from '../components/experiencePageStudio/StudioSectionTabField'
 import {ExperienceKcOrderInput} from '../components/experiencePage/ExperienceKcOrderInput'
 
+const hasDocRef = (value) => Boolean(value?._ref)
+
+/** Exactly one of Experience KC or Learning Programme KC must be linked. */
+const experiencePageSourceRefValidation = (Rule) =>
+  Rule.custom((value, context) => {
+    const doc = context.document
+    const hasExp = hasDocRef(doc?.experience)
+    const hasLp = hasDocRef(doc?.learningProgramme)
+    if (hasExp && hasLp) return 'Select either Experience or Learning Programme, not both.'
+    if (!hasExp && !hasLp) return 'Link either an Experience or a Learning Programme.'
+    return true
+  })
+
 const previewField = (name, title, group, section, extraOptions = {}) =>
   defineField({
     name,
@@ -24,7 +37,7 @@ export const experiencePage = defineType({
   title: 'Experience page (landing)',
   type: 'document',
   description:
-    'Presentation for a single public experience URL. Linked **Experience** (library) is the product source of truth; this document controls layout, section copy, selection, and overrides.',
+    'Presentation for a single public experience URL. Link **one** source: **Experience** (tourism) or **Learning Programme** (experiential learning). This document controls layout, section copy, selection, and overrides.',
   groups: [
     {name: 'general', title: 'General', default: true},
     {name: 'internalNav', title: 'Internal menu'},
@@ -83,14 +96,27 @@ export const experiencePage = defineType({
     }),
     defineField({
       name: 'experience',
-      title: 'Experiencia vinculada (fuente principal)',
+      title: 'Experience (tourism source)',
       type: 'reference',
       to: [{type: 'experience'}],
       group: 'general',
-      validation: (Rule) => Rule.required(),
+      validation: experiencePageSourceRefValidation,
       options: {disableNew: false},
+      hidden: ({document}) => hasDocRef(document?.learningProgramme),
       description:
-        'Canonical program data (itinerary, price, gallery, etc.) is edited in **Content library → Experiences**. This document controls this URL’s presentation and overrides only.',
+        'Tourism program data (itinerary, price, gallery, etc.) from **Content library → Experiences**. Use this **or** Learning Programme — not both.',
+    }),
+    defineField({
+      name: 'learningProgramme',
+      title: 'Learning Programme (experiential learning source)',
+      type: 'reference',
+      to: [{type: 'learningProgramme'}],
+      group: 'general',
+      validation: experiencePageSourceRefValidation,
+      options: {disableNew: false},
+      hidden: ({document}) => hasDocRef(document?.experience),
+      description:
+        'Experiential learning program data from **Content library → Learning Programmes**. Use this **or** Experience — not both.',
     }),
     defineField({
       name: 'seo',
@@ -144,7 +170,7 @@ export const experiencePage = defineType({
       options: {kcSource: 'snapshotHighlights'},
       validation: (Rule) => Rule.max(6),
       description:
-        'From the linked Experience → tab **Highlights** → **Snapshot highlights**. Order = display order; items not listed are hidden. Empty = first 6 in KC order.',
+        'From the linked Experience → tab **Highlights** → **Snapshot highlights**, or Learning Programme → **Highlights** → **Snapshot highlights**. Order = display order; items not listed are hidden. Empty = first 6 in KC order.',
     }),
     defineField({
       name: 'snapshotStatSelections',
@@ -173,7 +199,7 @@ export const experiencePage = defineType({
       options: {kcSource: 'overviewHighlights'},
       validation: (Rule) => Rule.max(12),
       description:
-        'Lines come from the linked Experience → tab **③ Overview · datos** → **Overview highlight lines**. Order = display order; items not listed are hidden. Empty = show all in KC order.',
+        'From the linked Experience → tab **③ Overview · datos** → **Overview highlight lines**, or Learning Programme → **Overview** → **Overview highlight lines**. Order = display order; items not listed are hidden. Empty = show all in KC order. Not the stats bar under the hero.',
     }),
     defineField({
       name: 'overviewHighlightOrder',
@@ -262,7 +288,7 @@ export const experiencePage = defineType({
       options: {kcSource: 'wildlife'},
       validation: (Rule) => Rule.max(12),
       description:
-        'Pick species from the linked Experience. Order = display order; not listed = hidden. Empty = show all in Knowledge Center order.',
+        'Pick species from the linked Experience or Learning Programme. Order = display order; not listed = hidden. Empty = show all in Knowledge Center order.',
     }),
     defineField({
       name: 'wildlifeDisplayOrder',
@@ -550,10 +576,10 @@ export const experiencePage = defineType({
       group: 'related',
       validation: (Rule) => Rule.max(3),
       options: {
-        filter: 'defined(slug.current) && defined(experience)',
+        filter: 'defined(slug.current) && (defined(experience) || defined(learningProgramme))',
       },
       description:
-        'Pick up to 3 published experience **pages** to show in “Also like”. Only selected pages appear — no automatic suggestions.',
+        'Pick up to 3 published experience **pages** (tourism or Learning Programme) to show in “Also like”. Only selected pages appear — no automatic suggestions.',
     }),
     defineField({
       name: 'showTailorMade',
@@ -688,10 +714,15 @@ export const experiencePage = defineType({
     }),
   ],
   preview: {
-    select: {t: 'internalTitle', slug: 'slug.current', exp: 'experience.name'},
-    prepare: ({t, slug, exp}) => ({
+    select: {
+      t: 'internalTitle',
+      slug: 'slug.current',
+      exp: 'experience.name',
+      lp: 'learningProgramme.title',
+    },
+    prepare: ({t, slug, exp, lp}) => ({
       title: t || 'Experience page',
-      subtitle: [slug && `/${slug}`, exp && `· ${exp}`].filter(Boolean).join(' '),
+      subtitle: [slug && `/${slug}`, exp && `· ${exp}`, lp && `· ${lp}`].filter(Boolean).join(' '),
     }),
   },
 })

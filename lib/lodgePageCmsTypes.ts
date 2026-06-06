@@ -338,8 +338,10 @@ export type LodgeStructuredPageRow = {
   featuredRoomStableId?: string | null
   /** Lodge ref on this page (for reverse experience queries). */
   lodgeRef?: string | null
-  /** Experiences with this lodge in KC → Lodges → `lodgePresentationRows[]`. */
+  /** Tourism experiences with this lodge in KC → Lodges → `lodgePresentationRows[]`. */
   linkedExperiencesFromPresentation?: LodgeCmsExperienceCardRow[] | null
+  /** Learning programmes linked via `experiencePage.learningProgramme` + lodge / field base rows. */
+  linkedLearningProgrammesFromPresentation?: LodgeCmsExperienceCardRow[] | null
   /** @deprecated manual lodge page picks — not used on the public site. */
   experiencesSelection?: LodgeCmsExperienceCardRow[] | null
   /** @deprecated */

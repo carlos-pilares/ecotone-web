@@ -7,6 +7,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AnnouncementBarDoc } from '@/lib/promotionTypes'
 import { refreshInPageNavAnchorMetrics } from '@/lib/inPageNavAnchorMetrics'
 import { resolveAnnouncementBar } from '@/lib/resolveAnnouncementBar'
+import {
+  announcementNameFromMessage,
+  trackAnnouncementClick,
+  trackAnnouncementDismiss,
+} from '@/lib/trackAnnouncementAnalytics'
 import { isWhatsappHref, trackWhatsappClick } from '@/lib/trackWhatsappClick'
 
 type AnnouncementBarProps = {
@@ -74,17 +79,25 @@ export function AnnouncementBar({ settings }: AnnouncementBarProps) {
 
   const onDismiss = useCallback(() => {
     if (!resolved?.dismissible) return
+    trackAnnouncementDismiss({
+      announcement_name: announcementNameFromMessage(resolved.message),
+    })
     try {
       window.localStorage.setItem(resolved.storageKey, '1')
     } catch {
       /* ignore */
     }
     setDismissed(true)
-  }, [resolved?.dismissible, resolved?.storageKey])
+  }, [resolved?.dismissible, resolved?.storageKey, resolved?.message])
 
   if (!resolved?.visible || dismissed) return null
 
   const cta = resolved.cta
+  const announcementName = announcementNameFromMessage(resolved.message)
+
+  const onAnnouncementCtaClick = () => {
+    trackAnnouncementClick({ announcement_name: announcementName })
+  }
 
   return (
     <aside ref={barRef} className="announcement-bar" role="region" aria-label="Site announcement">
@@ -102,6 +115,7 @@ export function AnnouncementBar({ settings }: AnnouncementBarProps) {
               className="announcement-bar__cta"
               target={cta.openInNewTab ? '_blank' : undefined}
               rel={cta.rel || undefined}
+              onClick={onAnnouncementCtaClick}
             >
               {cta.label}
             </Link>
@@ -111,11 +125,12 @@ export function AnnouncementBar({ settings }: AnnouncementBarProps) {
               className="announcement-bar__cta"
               target={cta.openInNewTab ? '_blank' : undefined}
               rel={cta.rel || undefined}
-              onClick={
-                isWhatsappHref(cta.href)
-                  ? () => trackWhatsappClick({ button_location: 'announcement_bar' })
-                  : undefined
-              }
+              onClick={() => {
+                onAnnouncementCtaClick()
+                if (isWhatsappHref(cta.href)) {
+                  trackWhatsappClick({ button_location: 'announcement_bar' })
+                }
+              }}
             >
               {cta.label}
             </a>

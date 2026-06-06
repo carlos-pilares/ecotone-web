@@ -21,6 +21,9 @@ export type ReserveCtaSettingsGroq = {
   eyebrow?: string | null
   title?: string | null
   body?: string | null
+  priceSource?: 'linked' | 'custom' | null
+  priceLinkedExperienceRef?: { _ref?: string | null } | null
+  customPriceText?: string | null
   priceOverrideText?: string | null
   pricePrefixOverride?: string | null
   priceSuffixOverride?: string | null
@@ -42,6 +45,9 @@ export const GROQ_RESERVE_CTA_SETTINGS_FIELDS = `
   eyebrow,
   title,
   body,
+  priceSource,
+  priceLinkedExperienceRef,
+  customPriceText,
   priceOverrideText,
   pricePrefixOverride,
   priceSuffixOverride,

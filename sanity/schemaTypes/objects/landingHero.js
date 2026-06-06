@@ -59,6 +59,39 @@ export const landingHero = defineType({
       description: 'Short suffix after the review count when needed (e.g. Google).',
     }),
     defineField({
+      name: 'heroPricePrefix',
+      title: 'Price prefix',
+      type: 'string',
+      initialValue: 'from',
+      validation: (r) => r.max(24),
+      description: 'Light text before the amount (e.g. “from”). Empty = hide prefix. Default in Studio only — set on this Experience Page.',
+    }),
+    defineField({
+      name: 'heroPriceSuffix',
+      title: 'Price suffix',
+      type: 'string',
+      initialValue: 'per person',
+      validation: (r) => r.max(40),
+      description: 'Line under the amount (e.g. “per person”). Empty = hide suffix. Default in Studio only.',
+    }),
+    defineField({
+      name: 'heroPriceFootnote',
+      title: 'Price footnote',
+      type: 'string',
+      initialValue: 'all inclusive',
+      validation: (r) => r.max(60),
+      description:
+        'Second line under the suffix. Empty or **Hide price footnote** = hidden on the main hero. Default in Studio only.',
+    }),
+    defineField({
+      name: 'hideHeroPriceFootnote',
+      title: 'Hide price footnote',
+      type: 'boolean',
+      initialValue: false,
+      description:
+        'When enabled, the footnote line is hidden on the main hero even if **Price footnote** has text. Use this to reliably remove “all inclusive” (clearing the text field alone may not persist as empty in Sanity).',
+    }),
+    defineField({
       name: 'priceLine',
       title: 'Price line (legacy override)',
       type: 'string',

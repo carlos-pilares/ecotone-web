@@ -7,6 +7,7 @@ import { TailorMadeBand } from '@/components/shared/TailorMadeBand'
 import type { ExperienceCardData } from '@/lib/experienceCardData'
 import type { TailorMadeBandComponentProps } from '@/lib/tailorMadeBand'
 import type { PromotionDoc } from '@/lib/promotionTypes'
+import type { ExperienceCardClickSourceSection } from '@/lib/trackExperienceAnalytics'
 
 import './experience-cards-section.css'
 import '@/app/lodges/lodge-surface.css'
@@ -28,6 +29,7 @@ export type ExperienceCardsSectionProps = {
   gridClassName?: string
   gridId?: string
   promotions?: PromotionDoc[] | null
+  sourceSection?: ExperienceCardClickSourceSection
 }
 
 export function ExperienceCardsSection({
@@ -38,6 +40,7 @@ export function ExperienceCardsSection({
   gridClassName = 'experience-cards-grid',
   gridId,
   promotions,
+  sourceSection,
 }: ExperienceCardsSectionProps) {
   const showEmpty = cards.length === 0 && !tailorMade?.visible
 
@@ -52,7 +55,12 @@ export function ExperienceCardsSection({
           ctaLabel: card.ctaLabel?.trim() || cardCtaLabel,
         }
         const cardEl = (
-          <ExperienceCard card={resolved} dataRoute={dataRoute} promotions={promotions} />
+          <ExperienceCard
+            card={resolved}
+            dataRoute={dataRoute}
+            promotions={promotions}
+            sourceSection={sourceSection}
+          />
         )
         if (filterDataType) {
           return (

@@ -30,6 +30,9 @@ import { buildSoqtapataBookingSummary } from '@/lib/buildSoqtapataBookingSummary
 import { getActivePromotions } from '@/lib/getPromotions'
 import type { PromotionLegalAccordionItem } from '@/lib/promotionTypes'
 import { resolvePromotionLegalItemsForExperience } from '@/lib/promotionPricing'
+
+import type { ExperienceLearningContent } from '@/lib/experienceLearningTypes'
+import { buildLearningPagePayloadFromStructuredRow } from '@/lib/learningProgrammeCms'
 import { mergeInternalNavIntoPageNav } from '@/lib/soqtapataInternalNav'
 import { buildRotatingQuoteItemsFromReviews } from '@/lib/reviewQuoteItems'
 import {
@@ -223,9 +226,13 @@ export type {
  */
 export const SOQTAPATA_LOCAL_FALLBACK_SLUG = 'soqtapata-pristine-immersion' as const
 
-/** Payload merged from Sanity `experiencePage` + KC `experience` + local fallback. */
+/** Payload merged from Sanity `experiencePage` + linked KC + local fallback. */
 export type SoqtapataPageCmsPayload = {
   experience: SoqtapataExperience
+  pageKind: 'tourism' | 'learning'
+  learningContent: ExperienceLearningContent | null
+  /** Experience KC `programType` — informational on tourism pages; `experiential-learning` on learning pages. */
+  programType: string | null
   reviewsLayout: ExperienceReviewsLayoutMutable
   doc: SoqtapataCmsPageDoc
   cmsError: string | null
@@ -244,9 +251,9 @@ export const soqtapataPristineSeoDefault = {
 } as const
 
 /**
- * Loads `experiencePage` by slug, merges KC `experience` with local fallback shape.
+ * Loads `experiencePage` by slug, merges linked KC (`experience` or `learningProgramme`) with local fallback shape.
  *
- * Returns `null` when there is no published page for `slug`, no linked Experience KC (`!row.experience`),
+ * Returns `null` when there is no published page for `slug`, no linked source KC, both sources linked,
  * or `slug` is empty — callers should `notFound()`.
  *
  * Exception: **`soqtapata-pristine-immersion`** may still resolve from **local static data only** when
@@ -261,6 +268,7 @@ export const getSoqtapataPageCms = cache(async (slug: string): Promise<Soqtapata
 
   function finalizePayload(params: {
     experience: SoqtapataExperience
+    programType: string | null
     reviewsLayout: ExperienceReviewsLayoutMutable
     doc: SoqtapataCmsPageDoc
     cmsError: string | null
@@ -284,6 +292,9 @@ export const getSoqtapataPageCms = cache(async (slug: string): Promise<Soqtapata
     )
     return {
       experience: params.experience,
+      pageKind: 'tourism',
+      learningContent: null,
+      programType: params.programType,
       reviewsLayout: params.reviewsLayout,
       doc: params.doc,
       cmsError: params.cmsError,
@@ -302,6 +313,7 @@ export const getSoqtapataPageCms = cache(async (slug: string): Promise<Soqtapata
     const reviewsLayout = reviewsLayoutFromRow(null, defaultsRl)
     return finalizePayload({
       experience,
+      programType: null,
       reviewsLayout,
       doc: null,
       cmsError: cmsErr,
@@ -346,7 +358,26 @@ export const getSoqtapataPageCms = cache(async (slug: string): Promise<Soqtapata
   }
 
   if (!row) return null
-  if (!row.experience) return null
+
+  const programme = row.learningProgramme
+  const exp = row.experience
+  if (programme && exp) return null
+
+  if (programme) {
+    if (programme.status !== 'active') return null
+    return buildLearningPagePayloadFromStructuredRow(
+      row,
+      programme,
+      {
+        faqs: row.faqsSettings ?? null,
+        terms: row.termsConditions ?? null,
+        travellerGuide: row.travellerGuideSettings ?? null,
+      },
+      promotions,
+    )
+  }
+
+  if (!exp) return null
   const soqtapataPartial = soqtapataPartialFromStructuredRow(row, local, promotions)
   const partial: Partial<SoqtapataExperience> = {
     ...soqtapataPartial,
@@ -378,7 +409,6 @@ export const getSoqtapataPageCms = cache(async (slug: string): Promise<Soqtapata
     }
   }
   experience = applyCmsExclusiveExperienceContent(experience, row, local, alsoBook, promotions)
-  const exp = row.experience
   const offerTerms = exp
     ? resolvePromotionLegalItemsForExperience(experiencePromotionTarget(exp), promotions)
     : []
@@ -405,6 +435,7 @@ export const getSoqtapataPageCms = cache(async (slug: string): Promise<Soqtapata
   const seo = seoFromStructuredRow(row, { ...soqtapataPristineSeoDefault })
   return finalizePayload({
     experience,
+    programType: exp?.programType?.trim() ?? null,
     reviewsLayout,
     doc,
     cmsError,

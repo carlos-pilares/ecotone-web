@@ -1,7 +1,5 @@
 import {defineField, defineType} from 'sanity'
-import {MODULE_LIST} from '../../lib/pageModuleShared'
-
-const TARGET_OPTIONS = MODULE_LIST.map((m) => ({title: m.title, value: m.value}))
+import {getExperiencePageInternalNavTargetOptions} from '../../lib/internalNavTargetOptions'
 
 export const internalNavItem = defineType({
   name: 'internalNavItem',
@@ -19,7 +17,10 @@ export const internalNavItem = defineType({
       title: 'Target section',
       type: 'string',
       description: 'Ancla / bloque de destino en la página.',
-      options: {list: TARGET_OPTIONS, layout: 'dropdown'},
+      options: {
+        list: ({document}) => getExperiencePageInternalNavTargetOptions(document),
+        layout: 'dropdown',
+      },
       validation: (Rule) => Rule.required(),
     }),
     defineField({

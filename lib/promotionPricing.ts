@@ -2,6 +2,7 @@ import {
   formatUsdAmountPublic as formatUsdAmount,
   parseUsdAmountFromLabel,
   type ExperiencePriceFields,
+  type ExperiencePricePartsOptions,
 } from '@/lib/formatExperiencePrice'
 import type {
   ExperiencePromotionTarget,
@@ -114,7 +115,7 @@ function applyPromotionToUsd(originalUsd: number | null, promo: PromotionDoc | n
 export function resolvePromotionalPriceDisplay(
   exp: ExperiencePriceFields,
   promo: PromotionDoc | null | undefined,
-  options?: { inclusiveExtra?: string | null },
+  options?: ExperiencePricePartsOptions,
 ): PromotionalPriceDisplay {
   const pl = exp.priceLabel?.trim() ?? ''
   if (pl && isEnquireOnlyLabel(pl) && resolveOriginalExperienceUsd(exp) == null) {
@@ -136,13 +137,25 @@ export function resolvePromotionalPriceDisplay(
 
   const { displayAmount, hasDiscount } = applyPromotionToUsd(originalUsd, promo ?? null)
   const amount = displayAmount ?? formatUsdAmount(originalUsd)
-  const extra = options?.inclusiveExtra?.trim()
+  const prefix =
+    options?.pricePrefix === undefined || options?.pricePrefix === null
+      ? 'from'
+      : options.pricePrefix.trim()
+  const perPerson =
+    options?.priceSuffix === undefined || options?.priceSuffix === null
+      ? PER_PERSON
+      : options.priceSuffix.trim()
+  const footnoteRaw = options?.priceFootnote
+  const extra =
+    footnoteRaw === undefined || footnoteRaw === null
+      ? options?.inclusiveExtra?.trim() ?? 'all inclusive'
+      : footnoteRaw.trim()
 
   return {
     kind: 'priced',
-    from: 'from',
+    from: prefix,
     amount,
-    perPerson: PER_PERSON,
+    perPerson,
     ...(extra ? { suffixExtra: extra } : {}),
     ...(hasDiscount ? { originalAmount: formatUsdAmount(originalUsd) } : {}),
     promoLabel: promo?.promoLabel?.trim() || undefined,
@@ -154,7 +167,7 @@ export function resolvePromotionalPriceDisplay(
 export function resolveExperiencePromotion(
   target: ExperiencePromotionTarget & ExperiencePriceFields,
   promotions: PromotionDoc[] | null | undefined,
-  options?: { inclusiveExtra?: string | null },
+  options?: ExperiencePricePartsOptions,
 ): { promotion: PromotionDoc | null; display: PromotionalPriceDisplay } {
   const promotion = selectBestPromotionForExperience(target, promotions)
   const display = resolvePromotionalPriceDisplay(target, promotion, options)

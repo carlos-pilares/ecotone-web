@@ -20,10 +20,12 @@ import {
   type ResolvedSmartLink,
   type SmartLinkGroq,
 } from '@/lib/resolveSmartLink'
+import { appendLearningProgrammesToNavMap } from '@/lib/headerNavLearningProgrammes'
 import type {
   HeaderNavProgramTypeGroupRow,
   SiteHeaderNavExperiencePageRow,
   SiteHeaderNavExperienceRouteRefRow,
+  SiteHeaderNavLearningProgrammeRow,
   SiteHeaderNavLodgePageRow,
   SiteHeaderNavRouteNavRow,
 } from '@/lib/siteHeaderNavQuery'
@@ -251,6 +253,7 @@ function buildExperiencesDropdown(
   experiencePages: SiteHeaderNavExperiencePageRow[],
   routeNavDocs: SiteHeaderNavRouteNavRow[] | null | undefined,
   promotions?: PromotionDoc[] | null,
+  learningProgrammes?: SiteHeaderNavLearningProgrammeRow[] | null,
 ): NonNullable<ResolvedSiteHeaderNavTab['experiences']> {
   const cfg = tab.experiencesDropdown
   const programGroups = cfg?.programGroups ?? []
@@ -289,6 +292,7 @@ function buildExperiencesDropdown(
     list.push({ it: item, sk, sn: name.toLowerCase() })
     byProgramType.set(programType, list)
   }
+  appendLearningProgrammesToNavMap(byProgramType, learningProgrammes, promotions)
   for (const list of byProgramType.values()) {
     list.sort((a, z) => (a.sk !== z.sk ? a.sk - z.sk : a.sn.localeCompare(z.sn)))
   }
@@ -433,6 +437,7 @@ function resolveNavTab(
   lodgePages: SiteHeaderNavLodgePageRow[],
   routeNavDocs: SiteHeaderNavRouteNavRow[] | null | undefined,
   promotions?: PromotionDoc[] | null,
+  learningProgrammes?: SiteHeaderNavLearningProgrammeRow[] | null,
 ): ResolvedSiteHeaderNavTab | null {
   if (tab.showInHeader === false) return null
   const label = tab.label?.trim() ?? ''
@@ -473,7 +478,7 @@ function resolveNavTab(
       btnId,
       ddId,
       mobAccId,
-      experiences: buildExperiencesDropdown(tab, key, experiencePages, routeNavDocs, promotions),
+      experiences: buildExperiencesDropdown(tab, key, experiencePages, routeNavDocs, promotions, learningProgrammes),
       lodges: null,
     }
   }
@@ -502,6 +507,7 @@ export function resolveSiteHeaderNavFromNavTabs(
   lodgePages: SiteHeaderNavLodgePageRow[] | null | undefined,
   routeNavDocs: SiteHeaderNavRouteNavRow[] | null | undefined,
   promotions?: PromotionDoc[] | null,
+  learningProgrammes?: SiteHeaderNavLearningProgrammeRow[] | null,
 ): ResolvedSiteHeaderNav {
   const tabRows = resolveHeaderNavTabRows(headerDoc)
   const pages = Array.isArray(experiencePages) ? experiencePages : []
@@ -509,7 +515,7 @@ export function resolveSiteHeaderNavFromNavTabs(
 
   const tabs: ResolvedSiteHeaderNavTab[] = []
   tabRows.forEach((row, index) => {
-    const resolved = resolveNavTab(row, index, pages, lodges, routeNavDocs, promotions)
+    const resolved = resolveNavTab(row, index, pages, lodges, routeNavDocs, promotions, learningProgrammes)
     if (resolved) tabs.push(resolved)
   })
 

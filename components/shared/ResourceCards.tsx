@@ -1,3 +1,7 @@
+'use client'
+
+import { resourceTypeFromCard, trackResourceClick } from '@/lib/trackResourceClick'
+
 /** Shape aligned with experience resource cards (e.g. CMS merge); defined here so this module stays route-agnostic. */
 export type ResourceCardsItem = {
   id?: string
@@ -20,6 +24,8 @@ export type ResourceCardsProps = {
   mapPreviewSubtitle?: string
   /** Brochure art: uppercase badge under mark. */
   brochurePreviewBadge?: string
+  /** GA4 context when resources appear on an experience page. */
+  experienceName?: string
 }
 
 function DownloadIcon() {
@@ -162,6 +168,7 @@ export function ResourceCards({
   mapPreviewTitle = '',
   mapPreviewSubtitle = '',
   brochurePreviewBadge = '',
+  experienceName,
 }: ResourceCardsProps) {
   return (
     <div className="downloads-grid">
@@ -192,6 +199,13 @@ export function ResourceCards({
                 className="download-btn"
                 {...termsAttrs}
                 {...(card.openInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                onClick={() =>
+                  trackResourceClick({
+                    resource_name: card.title,
+                    resource_type: resourceTypeFromCard(card.kind, card.downloadHref),
+                    experience_name: experienceName,
+                  })
+                }
               >
                 <DownloadIcon />
                 {card.downloadLabel}

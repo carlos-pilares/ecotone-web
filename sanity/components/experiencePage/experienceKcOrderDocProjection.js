@@ -1,6 +1,7 @@
-/** Shared GROQ projection for ExperienceKcOrderInput (stable `_key`s for pickers). */
+/** Shared GROQ projection for ExperienceKcOrderInput (Experience or Learning Programme KC). */
 export const experienceKcOrderDocProjection = /* groq */ `{
   highlights,
+  overviewHighlights,
   snapshotHighlights[]{ _key, title, subtitle },
   "highlightsKeyed": highlights[] { "_key": _key, "text": @ },
   "includesKeyed": includes[] { "_key": _key, "text": @ },

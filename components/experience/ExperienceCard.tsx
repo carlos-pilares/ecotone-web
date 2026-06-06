@@ -8,6 +8,11 @@ import {
   formatExperienceCardPriceDisplayWithPromotions,
 } from '@/lib/formatExperiencePrice'
 import type { PromotionDoc } from '@/lib/promotionTypes'
+import {
+  parseExperienceSlugFromHref,
+  trackExperienceCardClick,
+  type ExperienceCardClickSourceSection,
+} from '@/lib/trackExperienceAnalytics'
 
 import './experience-card.css'
 import './experience-price-display.css'
@@ -19,6 +24,8 @@ export type ExperienceCardProps = {
   /** Passed to root element for route tab filtering on `/routes`. */
   dataRoute?: string
   promotions?: PromotionDoc[] | null
+  /** GA4 `experience_card_click` source when linking to `/experiences/...`. */
+  sourceSection?: ExperienceCardClickSourceSection
 }
 
 function ExperienceCardPrice({
@@ -60,13 +67,32 @@ function CardArrow() {
   )
 }
 
-export function ExperienceCard({ card, variant = 'standard', className, dataRoute, promotions }: ExperienceCardProps) {
+export function ExperienceCard({
+  card,
+  variant = 'standard',
+  className,
+  dataRoute,
+  promotions,
+  sourceSection,
+}: ExperienceCardProps) {
   const cta = (card.ctaLabel?.trim() || 'View').replace(/\s*→\s*$/, '')
   const rootClass =
     'experience-card' +
     (variant === 'compact' ? ' experience-card--compact' : '') +
     (className ? ` ${className}` : '')
   const isExternal = /^https?:\/\//i.test(card.href)
+  const experienceSlug = !isExternal ? parseExperienceSlugFromHref(card.href) : null
+
+  const onExperienceNavigate = () => {
+    if (!sourceSection || !experienceSlug) return
+    trackExperienceCardClick({
+      experience_name: card.title,
+      experience_slug: experienceSlug,
+      source_section: sourceSection,
+      route: card.routeSlug ?? card.routeLabel,
+      program_type: card.programType ?? undefined,
+    })
+  }
 
   const body = (
     <>
@@ -103,7 +129,12 @@ export function ExperienceCard({ card, variant = 'standard', className, dataRout
   }
 
   return (
-    <Link href={card.href} className={rootClass} data-route={dataRoute ?? card.routeSlug}>
+    <Link
+      href={card.href}
+      className={rootClass}
+      data-route={dataRoute ?? card.routeSlug}
+      onClick={onExperienceNavigate}
+    >
       {body}
     </Link>
   )

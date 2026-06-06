@@ -1,7 +1,13 @@
 import type { SoqtapataResources } from '@/data/soqtapataExperienceLocal'
 import { ResourceCards } from '@/components/shared/ResourceCards'
 
-export function ExperienceResourcesSoqtapata({ data }: { data: SoqtapataResources }) {
+export function ExperienceResourcesSoqtapata({
+  data,
+  experienceName,
+}: {
+  data: SoqtapataResources
+  experienceName?: string
+}) {
   return (
     <section className="content-section bg-warm fade" id="resources">
       <div className="content-inner">
@@ -19,6 +25,7 @@ export function ExperienceResourcesSoqtapata({ data }: { data: SoqtapataResource
           mapPreviewTitle={data.mapPreviewTitle}
           mapPreviewSubtitle={data.mapPreviewSubtitle}
           brochurePreviewBadge={data.brochurePreviewBadge}
+          experienceName={experienceName}
         />
       </div>
     </section>
