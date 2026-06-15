@@ -121,6 +121,61 @@ export const learningProgrammeProject = defineType({
   },
 })
 
+export const learningProgrammeMentor = defineType({
+  name: 'learningProgrammeMentor',
+  title: 'Mentor / programme lead',
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'name',
+      title: 'Name',
+      type: 'string',
+      validation: (Rule) => Rule.max(80),
+    }),
+    defineField({
+      name: 'role',
+      title: 'Role / position',
+      type: 'string',
+      validation: (Rule) => Rule.max(80),
+    }),
+    defineField({
+      name: 'photo',
+      title: 'Photo',
+      type: 'image',
+      options: {hotspot: true},
+    }),
+    defineField({
+      name: 'biography',
+      title: 'Short biography',
+      type: 'text',
+      rows: 5,
+      validation: (Rule) => Rule.max(1200),
+    }),
+    defineField({
+      name: 'achievements',
+      title: 'Key achievements',
+      type: 'array',
+      of: [{type: 'string', validation: (Rule) => Rule.max(120)}],
+      validation: (Rule) => Rule.max(12),
+    }),
+    defineField({
+      name: 'skills',
+      title: 'Skills & experience',
+      type: 'array',
+      of: [{type: 'string', validation: (Rule) => Rule.max(80)}],
+      validation: (Rule) => Rule.max(12),
+    }),
+  ],
+  preview: {
+    select: {title: 'name', subtitle: 'role', media: 'photo'},
+    prepare: ({title, subtitle, media}) => ({
+      title: title || 'Mentor',
+      subtitle: subtitle || 'Programme lead',
+      media,
+    }),
+  },
+})
+
 export const learningProgrammeApplicationStep = defineType({
   name: 'learningProgrammeApplicationStep',
   title: 'Application step',

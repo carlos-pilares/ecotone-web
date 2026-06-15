@@ -6,8 +6,72 @@ import {
 } from '@/data/experienceLearningImages'
 import type { LearningProgrammeCmsRow } from '@/lib/learningProgrammeGroq'
 import { normalizeLearningOutcomeIcon } from '@/lib/learningOutcomeIcons'
-import type { ExperienceLearningContent } from '@/lib/experienceLearningTypes'
+import type {
+  ExperienceLearningContent,
+  ExperienceLearningMentorItem,
+  ExperienceLearningMentorSection,
+} from '@/lib/experienceLearningTypes'
 import { optimizeSanityImageDelivery, SANITY_IMG } from '@/lib/sanity'
+
+function mapMentorItemRow(
+  row: {
+    _key?: string | null
+    name?: string | null
+    role?: string | null
+    photoUrl?: string | null
+    biography?: string | null
+    achievements?: string[] | null
+    skills?: string[] | null
+  },
+  index: number,
+): ExperienceLearningMentorItem | null {
+  const name = row.name?.trim()
+  const biography = row.biography?.trim()
+  if (!name && !biography) return null
+  return {
+    id: row._key?.trim() || `mentor-${index + 1}`,
+    name: name || undefined,
+    role: row.role?.trim() || undefined,
+    photoSrc: row.photoUrl?.trim()
+      ? optimizeSanityImageDelivery(row.photoUrl.trim(), SANITY_IMG.ABOUT_PORTRAIT)
+      : undefined,
+    photoAlt: name || 'Programme mentor',
+    biography: biography || undefined,
+    achievements:
+      row.achievements?.map((item) => item?.trim()).filter((item): item is string => Boolean(item)) ?? [],
+    skills: row.skills?.map((item) => item?.trim()).filter((item): item is string => Boolean(item)) ?? [],
+  }
+}
+
+function resolveMentorItemsFromDoc(doc: LearningProgrammeCmsRow): ExperienceLearningMentorItem[] {
+  const fromArray = (doc.mentors ?? [])
+    .map((row, i) => mapMentorItemRow(row, i))
+    .filter((item): item is ExperienceLearningMentorItem => item != null)
+  if (fromArray.length) return fromArray
+
+  const legacy = mapMentorItemRow(
+    {
+      _key: 'legacy-mentor',
+      name: doc.mentorName,
+      role: doc.mentorRole,
+      photoUrl: doc.mentorPhotoUrl,
+      biography: doc.mentorBiography,
+      achievements: doc.mentorAchievements,
+      skills: doc.mentorSkills,
+    },
+    0,
+  )
+  return legacy ? [legacy] : []
+}
+
+function resolveMentorSection(doc: LearningProgrammeCmsRow): ExperienceLearningMentorSection | null {
+  const mentors = resolveMentorItemsFromDoc(doc)
+  if (!mentors.length) return null
+  return {
+    tabLabel: doc.mentorTabLabel?.trim() || undefined,
+    mentors,
+  }
+}
 
 function pickImage(
   cmsUrl: string | null | undefined,
@@ -138,25 +202,7 @@ export function resolveLearningProgrammeContent(
     intro: doc.fieldBaseOverrideText?.trim() || fallback.fieldBase.intro,
   }
 
-  const mentorName = doc.mentorName?.trim()
-  const mentorBiography = doc.mentorBiography?.trim()
-  const mentor =
-    mentorName || mentorBiography
-      ? {
-          tabLabel: doc.mentorTabLabel?.trim() || undefined,
-          name: mentorName || undefined,
-          role: doc.mentorRole?.trim() || undefined,
-          photoSrc: doc.mentorPhotoUrl?.trim()
-            ? optimizeSanityImageDelivery(doc.mentorPhotoUrl.trim(), SANITY_IMG.ABOUT_PORTRAIT)
-            : undefined,
-          photoAlt: mentorName || 'Programme mentor',
-          biography: mentorBiography || undefined,
-          achievements:
-            doc.mentorAchievements?.map((item) => item?.trim()).filter((item): item is string => Boolean(item)) ??
-            [],
-          skills: doc.mentorSkills?.map((item) => item?.trim()).filter((item): item is string => Boolean(item)) ?? [],
-        }
-      : null
+  const mentor = resolveMentorSection(doc)
 
   const applicationSteps =
     doc.applicationProcessSteps

@@ -133,6 +133,16 @@ export const GROQ_LEARNING_PROGRAMME_DEREF_FIELDS = `
     icon
   },
   "mentorTabLabel": coalesce(mentorTabLabel, mentorSectionTitle),
+  mentors[] {
+    _key,
+    name,
+    role,
+    photo,
+    "photoUrl": photo.asset->url,
+    biography,
+    achievements,
+    skills
+  },
   mentorName,
   mentorRole,
   mentorPhoto,
@@ -266,6 +276,15 @@ export type LearningProgrammeCmsRow = {
   }> | null
   learningOutcomes?: Array<{ _key?: string; title?: string; description?: string; icon?: string | null; iconKey?: string | null }> | null
   mentorTabLabel?: string | null
+  mentors?: Array<{
+    _key?: string
+    name?: string | null
+    role?: string | null
+    photoUrl?: string | null
+    biography?: string | null
+    achievements?: string[] | null
+    skills?: string[] | null
+  }> | null
   mentorName?: string | null
   mentorRole?: string | null
   mentorPhotoUrl?: string | null

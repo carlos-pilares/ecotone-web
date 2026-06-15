@@ -488,6 +488,21 @@
 }
 
 /* Mentor tab — content left, image right (matches Typical day / How it works) */
+.exp-learning-mentor-panel__list {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.exp-learning-mentor-panel__list--solo {
+  gap: 0;
+}
+
+.exp-learning-mentor-panel__item + .exp-learning-mentor-panel__item {
+  padding-top: 28px;
+  border-top: 1px solid var(--n200);
+}
+
 .exp-learning-mentor-panel__grid {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);

@@ -58,8 +58,8 @@ export type ExperienceLearningFieldBaseCopy = {
   intro: string
 }
 
-export type ExperienceLearningMentor = {
-  tabLabel?: string
+export type ExperienceLearningMentorItem = {
+  id: string
   name?: string
   role?: string
   photoSrc?: string
@@ -68,6 +68,15 @@ export type ExperienceLearningMentor = {
   achievements: string[]
   skills: string[]
 }
+
+/** Mentor tab content — pill label + one or more mentors. */
+export type ExperienceLearningMentorSection = {
+  tabLabel?: string
+  mentors: ExperienceLearningMentorItem[]
+}
+
+/** @deprecated Use ExperienceLearningMentorItem */
+export type ExperienceLearningMentor = ExperienceLearningMentorItem & { tabLabel?: string }
 
 export type ExperienceLearningApplicationStep = {
   id: string
@@ -94,6 +103,6 @@ export type ExperienceLearningContent = {
   projects: ExperienceLearningProject[]
   outcomes: ExperienceLearningOutcome[]
   fieldBase: ExperienceLearningFieldBaseCopy
-  mentor: ExperienceLearningMentor | null
+  mentor: ExperienceLearningMentorSection | null
   applicationProcess: ExperienceLearningApplicationProcess | null
 }

@@ -150,6 +150,7 @@ import {announcementBarSettings} from './announcementBarSettings'
 import {learningProgramme} from './learningProgramme'
 import {
   learningProgrammeApplicationStep,
+  learningProgrammeMentor,
   learningProgrammeOutcome,
   learningProgrammeProject,
   learningProgrammeStep,
@@ -269,6 +270,7 @@ const objects = [
   learningProgrammeProject,
   learningProgrammeOutcome,
   learningProgrammeApplicationStep,
+  learningProgrammeMentor,
 ]
 
 const documents = [
