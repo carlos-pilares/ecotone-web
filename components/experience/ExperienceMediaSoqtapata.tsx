@@ -9,7 +9,7 @@ function MediaThumb({ t }: { t: SoqtapataMediaThumb }) {
       tabIndex={0}
       aria-label={t.ariaLabel}
     >
-      <img src={t.imageSrc} alt={t.imageAlt} />
+      <img src={t.imageSrc} alt={t.imageAlt} loading="lazy" decoding="async" />
       {t.kind === 'video' ? (
         <div className="media-overlay" style={t.overlayStyle} />
       ) : (
@@ -83,7 +83,7 @@ export function ExperienceMediaSoqtapata({ data }: { data: SoqtapataMedia }) {
             >
               {data.moreCount.imageSrc ? (
                 <>
-                  <img src={data.moreCount.imageSrc} alt={data.moreCount.imageAlt || ''} />
+                  <img src={data.moreCount.imageSrc} alt={data.moreCount.imageAlt || ''} loading="lazy" decoding="async" />
                   <span className="media-count-mask" aria-hidden />
                 </>
               ) : null}

@@ -44,7 +44,7 @@ export const experienceResourceCard = defineType({
       initialValue: 'custom',
       validation: (Rule) => Rule.required(),
       description:
-        '“Terms & Conditions (central CK)” uses the applicable PDF from Content Library → Terms & Conditions (no upload here).',
+        '“Terms & Conditions (central CK)” uses the applicable PDF from Content Library → Terms & Conditions (no upload here). You can still set a preview image for the card thumbnail.',
     }),
     defineField({
       name: 'visualPreset',

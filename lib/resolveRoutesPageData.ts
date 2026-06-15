@@ -19,6 +19,7 @@ import {
 import { getLowestActiveExperiencePrice, buildReserveRowsForHome } from '@/lib/reserveCtaPricing'
 import { resolveReserveCtaCard } from '@/lib/resolveReserveCtaCard'
 import { resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
+import { optimizeSanityImageDelivery, SANITY_IMG } from '@/lib/sanity'
 import {
   buildRoutesExpCardsFromListedExperiencePages,
   buildRoutesExpFiltersFromPublishedRoutes,
@@ -201,8 +202,9 @@ function mapRouteCards(
   const out: RoutesCardStatic[] = []
   for (const c of cards) {
     const id = c.stableId?.trim()
-    const imageSrc = c.imageUrl?.trim()
-    if (!id || !imageSrc || !c.name?.trim()) continue
+    const imageSrcRaw = c.imageUrl?.trim()
+    if (!id || !imageSrcRaw || !c.name?.trim()) continue
+    const imageSrc = optimizeSanityImageDelivery(imageSrcRaw, SANITY_IMG.ROUTES_CARD)
     const staticCard = fallbackRoutesCards.find((x) => x.id === id)
     const fbCta = staticCard?.cta ?? { label: '', href: '', buttonVariant: 'secondary' as const }
     const resolved = resolveSmartLinkOrLegacy(
@@ -339,7 +341,10 @@ export function resolveRoutesPageData(
   )
 
   const hero: RoutesHeroStatic = {
-    imageSrc: trimOr(fallbackHero.imageSrc, cms?.heroImageUrl),
+    imageSrc: optimizeSanityImageDelivery(
+      trimOr(fallbackHero.imageSrc, cms?.heroImageUrl),
+      SANITY_IMG.HERO,
+    ),
     imageAlt: trimOr(fallbackHero.imageAlt, cms?.heroImageAlt),
     eyebrow: trimOr(fallbackHero.eyebrow, cms?.heroEyebrow),
     titleLine1: trimOr(fallbackHero.titleLine1, cms?.heroTitleLine1),
@@ -382,13 +387,15 @@ export function resolveRoutesPageData(
       return { id, name, meta: ch.meta?.trim() ?? '', variant }
     })
     .filter(Boolean) as RoutesTerritoryStatic['strip']
-  const territoryImageUrl = cms?.territoryImageUrl?.trim() || null
+  const territoryImageUrl = cms?.territoryImageUrl?.trim()
+    ? optimizeSanityImageDelivery(cms.territoryImageUrl.trim(), SANITY_IMG.ROUTES_TERRITORY)
+    : null
   const territory: RoutesTerritoryStatic = {
     sectionId: trimOr(fallbackTerritory.sectionId, cms?.territorySectionId),
     eyebrow: trimOr(fallbackTerritory.eyebrow, cms?.territoryEyebrow),
     h2: trimOr(fallbackTerritory.h2, cms?.territoryH2),
     body: trimOr(fallbackTerritory.body, cms?.territoryBody),
-    imageSrc: territoryImageUrl,
+    imageSrc: territoryImageUrl || fallbackTerritory.imageSrc,
     imageAlt: trimOr(fallbackTerritory.imageAlt, cms?.territoryImageAlt),
     strip: stripFromCms.length ? stripFromCms : fallbackTerritory.strip,
   }

@@ -3,6 +3,7 @@ import { formatExperienceNavPriceMetaWithPromotions } from '@/lib/formatExperien
 import { EXPERIENTIAL_LEARNING_PROGRAM_TYPE } from '@/lib/isExperientialLearningExperience'
 import type { PromotionDoc } from '@/lib/promotionTypes'
 import { resolveExperiencePublicHref } from '@/lib/resolveExperiencePublicHref'
+import { optimizeSanityImageDelivery, SANITY_IMG } from '@/lib/sanity'
 import type { SiteHeaderNavExpItem } from '@/lib/resolveSiteHeaderNavData'
 import type { SiteHeaderNavLearningProgrammeRow } from '@/lib/siteHeaderNavQuery'
 
@@ -46,7 +47,9 @@ export function appendLearningProgrammesToNavMap(
         },
         promotions,
       ),
-      thumbUrl: row.mainImageUrl?.trim() || null,
+      thumbUrl: row.mainImageUrl?.trim()
+        ? optimizeSanityImageDelivery(row.mainImageUrl.trim(), SANITY_IMG.NAV_THUMB)
+        : null,
     }
     const list = byProgramType.get(programType) ?? []
     list.push({ it: item, sk: row.headerNavOrder ?? 999, sn: name.toLowerCase() })

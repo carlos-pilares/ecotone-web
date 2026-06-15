@@ -1,6 +1,24 @@
 import { createClient } from 'next-sanity'
 import { createImageUrlBuilder, type SanityImageSource } from '@sanity/image-url'
 
+import {
+  SANITY_IMAGE_QUALITY,
+  sanityImageUrl,
+  type SanityImageFit,
+} from '@/lib/sanityImageUrls'
+
+export {
+  isSanityCdnImageUrl,
+  optimizeSanityCdnUrl,
+  optimizeSanityImageDelivery,
+  sanityImageUrl,
+  SANITY_IMAGE_QUALITY,
+  SANITY_IMG,
+  type SanityImageFit,
+  type SanityImageUrlInput,
+  type SanityImageUrlOptions,
+} from '@/lib/sanityImageUrls'
+
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET
 const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2025-12-20'
@@ -40,14 +58,16 @@ export function cdnImageUrl(
   source: SanityImageSource | null | undefined,
   width: number,
   fallback: string,
+  opts?: { height?: number; quality?: number; fit?: SanityImageFit },
 ): string {
-  if (!source) return fallback
-  try {
-    const u = urlFor(source).width(width).quality(85).url()
-    return u || fallback
-  } catch {
-    return fallback
-  }
+  return sanityImageUrl({
+    image: source,
+    width,
+    height: opts?.height,
+    quality: opts?.quality ?? SANITY_IMAGE_QUALITY,
+    fit: opts?.fit ?? 'max',
+    fallback,
+  })
 }
 
 /**
@@ -62,11 +82,12 @@ export function partnerLogoCdnUrl(
   const cap = 512
   try {
     const u = urlFor(source)
+      .auto('format')
       .ignoreImageParams()
       .width(cap)
       .height(cap)
       .fit('max')
-      .quality(85)
+      .quality(SANITY_IMAGE_QUALITY)
       .url()
     return u || fallback
   } catch {

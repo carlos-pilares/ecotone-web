@@ -1,5 +1,5 @@
 import {defineField, defineType} from 'sanity'
-import {getExperiencePageInternalNavTargetOptions} from '../../lib/internalNavTargetOptions'
+import {EXPERIENCE_PAGE_ALL_INTERNAL_NAV_TARGETS} from '../../lib/internalNavTargetOptions'
 
 export const internalNavItem = defineType({
   name: 'internalNavItem',
@@ -18,7 +18,7 @@ export const internalNavItem = defineType({
       type: 'string',
       description: 'Ancla / bloque de destino en la página.',
       options: {
-        list: ({document}) => getExperiencePageInternalNavTargetOptions(document),
+        list: EXPERIENCE_PAGE_ALL_INTERNAL_NAV_TARGETS,
         layout: 'dropdown',
       },
       validation: (Rule) => Rule.required(),

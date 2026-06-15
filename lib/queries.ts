@@ -13,6 +13,7 @@ import {
   GROQ_LEARNING_PROGRAMME_DEREF_FIELDS,
   GROQ_LODGE_LINKED_LEARNING_PROGRAMME_VIA_PAGE,
 } from '@/lib/learningProgrammeGroq'
+import { GROQ_REVIEW_DOC_FIELDS } from '@/lib/reviewGroq'
 
 /** Experience card row (homepage + listados). */
 export type ExperienceFromSanity = {
@@ -64,6 +65,11 @@ export type ReviewDoc = {
   authorCountry?: string | null
   experience?: {
     name?: string | null
+    slug?: { current?: string | null } | null
+  } | null
+  learningProgramme?: {
+    _id?: string | null
+    title?: string | null
     slug?: { current?: string | null } | null
   } | null
   /** Legacy manual programme label (schema: `experienceName`). */
@@ -306,51 +312,18 @@ export const homePageQuery = groq`
       title,
       body,
       "rotatingReviews": rotatingReviews[]-> {
-        _id,
-        quote,
-        authorName,
-        authorCity,
-        authorCountry,
-        "experience": experience->{
-          name,
-          slug
-        },
-        experienceName,
-        rating,
-        isFeatured
+        ${GROQ_REVIEW_DOC_FIELDS}
       },
       "reviewCards": reviewCards[]-> {
-        _id,
-        quote,
-        authorName,
-        authorCity,
-        authorCountry,
-        "experience": experience->{
-          name,
-          slug
-        },
-        experienceName,
-        rating,
-        isFeatured
+        ${GROQ_REVIEW_DOC_FIELDS}
       }
     },
     reviewsEyebrow, reviewsHeadline, reviewsBody, reviewsScore,
     reviewsSourceLabel,
     reviewsEmptyMessage,
     "homeSelectedReviews": homeSelectedReviews[]-> {
-      _id,
-      quote,
-      authorName,
-      authorCity,
-      authorCountry,
-      "experience": experience->{
-        name,
-        slug
-      },
-      experienceName,
-      "experienceProgramme": experienceProgramme,
-      rating,
-      isFeatured
+      ${GROQ_REVIEW_DOC_FIELDS},
+      "experienceProgramme": experienceProgramme
     },
     techEyebrow, techHeadline, techBody,
     "homeSelectedTechnologyProducts": homeSelectedTechnologyProducts[]-> {
@@ -426,13 +399,7 @@ export const homePageQuery = groq`
 
 export const reviewsQuery = groq`
   *[_type == "review"] | order(_createdAt asc) {
-    _id, quote, authorName, authorCity, authorCountry,
-    "experience": experience->{
-      name,
-      slug
-    },
-    experienceName,
-    rating, isFeatured
+    ${GROQ_REVIEW_DOC_FIELDS}
   }
 `
 
@@ -594,32 +561,10 @@ export const soqtapataStructuredPageBySlugQuery = groq`
       title,
       body,
       "rotatingReviews": rotatingReviews[]-> {
-        _id,
-        quote,
-        authorName,
-        authorCity,
-        authorCountry,
-        "experience": experience->{
-          name,
-          slug
-        },
-        experienceName,
-        rating,
-        isFeatured
+        ${GROQ_REVIEW_DOC_FIELDS}
       },
       "reviewCards": reviewCards[]-> {
-        _id,
-        quote,
-        authorName,
-        authorCity,
-        authorCountry,
-        "experience": experience->{
-          name,
-          slug
-        },
-        experienceName,
-        rating,
-        isFeatured
+        ${GROQ_REVIEW_DOC_FIELDS}
       }
     },
     "reviewsSettings": *[_type == "reviewsSettings"][0] {
@@ -632,32 +577,10 @@ export const soqtapataStructuredPageBySlugQuery = groq`
     },
     "reviewDocs": select(
       count(coalesce(reviewsSection.reviewCards, [])) > 0 => reviewsSection.reviewCards[]-> {
-        _id,
-        quote,
-        authorName,
-        authorCity,
-        authorCountry,
-        "experience": experience->{
-          name,
-          slug
-        },
-        experienceName,
-        rating,
-        isFeatured
+        ${GROQ_REVIEW_DOC_FIELDS}
       },
       count(coalesce(reviewRefs, [])) > 0 => reviewRefs[]-> {
-        _id,
-        quote,
-        authorName,
-        authorCity,
-        authorCountry,
-        "experience": experience->{
-          name,
-          slug
-        },
-        experienceName,
-        rating,
-        isFeatured
+        ${GROQ_REVIEW_DOC_FIELDS}
       },
       []
     ),
@@ -1050,48 +973,15 @@ export const lodgeStructuredPageBySlugQuery = groq`
       title,
       body,
       "rotatingReviews": rotatingReviews[]-> {
-        _id,
-        quote,
-        authorName,
-        authorCity,
-        authorCountry,
-        "experience": experience->{
-          name,
-          slug
-        },
-        experienceName,
-        rating,
-        isFeatured
+        ${GROQ_REVIEW_DOC_FIELDS}
       },
       "reviewCards": reviewCards[]-> {
-        _id,
-        quote,
-        authorName,
-        authorCity,
-        authorCountry,
-        "experience": experience->{
-          name,
-          slug
-        },
-        experienceName,
-        rating,
-        isFeatured
+        ${GROQ_REVIEW_DOC_FIELDS}
       }
     },
     reviewsSelection[]-> {
-      _id,
-      quote,
-      authorName,
-      authorCity,
-      authorCountry,
-      "experience": experience->{
-        name,
-        slug
-      },
-      experienceName,
-      "experienceProgramme": experienceProgramme,
-      rating,
-      isFeatured
+      ${GROQ_REVIEW_DOC_FIELDS},
+      "experienceProgramme": experienceProgramme
     },
     reserveCtaSettings {
       ${GROQ_RESERVE_CTA_SETTINGS_FIELDS}

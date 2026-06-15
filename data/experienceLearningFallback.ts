@@ -177,4 +177,6 @@ export const EXPERIENCE_LEARNING_FALLBACK: ExperienceLearningContent = {
     title: 'Research station & living environment',
     intro: 'Shared field accommodation adjacent to active research facilities — designed for practical living and daily field access, not resort-style tourism.',
   },
+  mentor: null,
+  applicationProcess: null,
 }

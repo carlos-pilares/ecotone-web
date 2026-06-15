@@ -7,10 +7,17 @@ export const review = defineType({
   fields: [
     defineField({
       name: 'experience',
-      title: 'Experience (product)',
+      title: 'Experience (tourism KC)',
       type: 'reference',
       to: [{type: 'experience'}],
-      description: 'Optional. Links this review to a catalog experience (filters, carousels).',
+      description: 'Tourism Experience Knowledge Center. Use this or Learning Programme below — not both.',
+    }),
+    defineField({
+      name: 'learningProgramme',
+      title: 'Learning Programme (experiential learning KC)',
+      type: 'reference',
+      to: [{type: 'learningProgramme'}],
+      description: 'Experiential Learning Knowledge Center. Use this or Experience above — not both.',
     }),
     defineField({
       name: 'quote',
@@ -51,12 +58,31 @@ export const review = defineType({
       description: 'Rotating quotes are chosen per page in the Reviews section; this field is unused.',
     }),
   ],
+  validation: (Rule) =>
+    Rule.custom((doc) => {
+      const hasExp = Boolean(doc?.experience?._ref)
+      const hasLp = Boolean(doc?.learningProgramme?._ref)
+      if (hasExp && hasLp) {
+        return 'Assign either a tourism Experience or a Learning Programme, not both.'
+      }
+      return true
+    }),
   preview: {
-    select: {title: 'authorName', quote: 'quote', featured: 'isFeatured'},
-    prepare({title, quote, featured}) {
+    select: {
+      title: 'authorName',
+      quote: 'quote',
+      featured: 'isFeatured',
+      expName: 'experience.name',
+      lpTitle: 'learningProgramme.title',
+    },
+    prepare({title, quote, featured, expName, lpTitle}) {
+      const product = lpTitle || expName
+      const subtitleParts = []
+      if (product) subtitleParts.push(product)
+      if (quote) subtitleParts.push(String(quote).slice(0, 72) + (String(quote).length > 72 ? '…' : ''))
       return {
         title: featured ? `★ ${title || 'Guest'}` : (title || 'Guest'),
-        subtitle: quote ? String(quote).slice(0, 80) + (String(quote).length > 80 ? '…' : '') : '—',
+        subtitle: subtitleParts.length ? subtitleParts.join(' · ') : '—',
       }
     },
   },

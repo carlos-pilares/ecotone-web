@@ -8,8 +8,8 @@ import {
   normalizeLodgeRouteKey,
 } from '@/data/lodgeSoqtapataResolverDefaults'
 import { formatExperienceNavPriceMetaWithPromotions } from '@/lib/formatExperiencePrice'
+import { optimizeSanityImageDelivery, SANITY_IMG } from '@/lib/sanity'
 import type { PromotionDoc } from '@/lib/promotionTypes'
-import { resolveExperienceHeroImageUrl } from '@/lib/experienceHeroImage'
 import { resolveExperiencePublicHref } from '@/lib/resolveExperiencePublicHref'
 import type { HeaderNavTabRow } from '@/lib/headerNavTabsAdapter'
 import { resolveHeaderNavTabRows } from '@/lib/headerNavTabsAdapter'
@@ -202,8 +202,14 @@ function trimUrl(s: string | null | undefined): string | null {
   return t || null
 }
 
+function headerNavExperienceThumbUrl(row: SiteHeaderNavExperiencePageRow): string | null {
+  const raw = trimUrl(row.navThumbUrl) || trimUrl(row.experience?.mainImageUrl)
+  return raw ? optimizeSanityImageDelivery(raw, SANITY_IMG.NAV_THUMB) : null
+}
+
 function lodgeMenuImageUrl(row: SiteHeaderNavLodgePageRow): string | null {
-  return trimUrl(row.menuThumbnailImageUrl)
+  const raw = trimUrl(row.menuThumbnailImageUrl)
+  return raw ? optimizeSanityImageDelivery(raw, SANITY_IMG.NAV_LODGE) : null
 }
 
 function lodgeMenuBadges(row: SiteHeaderNavLodgePageRow): { label: string; tone: 'own' | 'alliance' | 'neutral' }[] {
@@ -278,15 +284,7 @@ function buildExperiencesDropdown(
       href,
       routeLine: resolveHeaderExperienceRoutePill(exp, routeBySlug),
       priceMeta: headerNavPriceMetaForExperience(exp, promotions),
-      thumbUrl:
-        resolveExperienceHeroImageUrl({
-          gallery: exp.gallery,
-          galleryOrderKeys: row.galleryOrderKeys,
-          photoCollection: exp.photoCollection,
-          mainImage: exp.mainImage,
-          mainImageUrl: exp.mainImageUrl,
-          width: 600,
-        }) || null,
+      thumbUrl: headerNavExperienceThumbUrl(row),
     }
     const list = byProgramType.get(programType) ?? []
     list.push({ it: item, sk, sn: name.toLowerCase() })
@@ -337,7 +335,9 @@ function buildExperiencesDropdown(
     title: tailorGroup?.title?.trim() ?? '',
     subtitle: tailorGroup?.subtitle?.trim() ?? '',
     body: tailorGroup?.body?.trim() ?? '',
-    imageUrl: tailorGroup?.imageUrl?.trim() || null,
+    imageUrl: tailorGroup?.imageUrl?.trim()
+      ? optimizeSanityImageDelivery(tailorGroup.imageUrl.trim(), SANITY_IMG.NAV_PROGRAM)
+      : null,
     imageAlt: tailorGroup?.imageAlt?.trim() || null,
     cta: resolveTailorCtaFromCms(tailorGroup),
   }

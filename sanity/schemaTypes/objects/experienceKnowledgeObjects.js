@@ -871,14 +871,14 @@ export const experienceKnowledgeResource = defineType({
       initialValue: 'custom',
       validation: (Rule) => Rule.required(),
       description:
-        '“Terms & Conditions” opens the applicable PDF from Content Library → Terms & Conditions (no manual PDF here).',
+        '“Terms & Conditions” opens the applicable PDF from Content Library → Terms & Conditions (no manual PDF here). You can still set a preview image below for the card thumbnail.',
     }),
     defineField({
       name: 'image',
-      title: 'Image',
+      title: 'Preview image',
       type: 'imageWithAlt',
-      description: 'Optional preview image.',
-      hidden: isTermsConditions,
+      description:
+        'Optional thumbnail for the resource card. Independent of the PDF source — required for Terms & Conditions when you want a custom preview instead of the default document art.',
     }),
     defineField({
       name: 'title',

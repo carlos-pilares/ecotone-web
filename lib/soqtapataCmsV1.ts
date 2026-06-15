@@ -3,12 +3,14 @@ import {
   soqtapataExperience,
   soqtapataExperienceReviewsLayout,
 } from '@/data/soqtapataExperienceLocal'
+import {
+  fetchFaqsSettingsCached,
+  fetchTermsConditionsSettingsCached,
+  fetchTravellerGuideSettingsCached,
+} from '@/lib/cachedSanityQueries'
 import type { ReviewDoc, TechnologyProductDoc } from '@/lib/queries'
 import {
-  faqsSettingsQuery,
   soqtapataStructuredPageBySlugQuery,
-  termsConditionsSettingsQuery,
-  travellerGuideSettingsQuery,
 } from '@/lib/queries'
 import type { FaqsSettingsRow } from '@/lib/faqsCms'
 import type { TermsConditionsSettingsRow } from '@/lib/termsConditionsCms'
@@ -338,9 +340,9 @@ export const getSoqtapataPageCms = cache(async (slug: string): Promise<Soqtapata
       clientServer.fetch<SoqtapataStructuredPageRow | null>(soqtapataStructuredPageBySlugQuery, {
         slug: normalized,
       }),
-      clientServer.fetch<TermsConditionsSettingsRow>(termsConditionsSettingsQuery),
-      clientServer.fetch<FaqsSettingsRow>(faqsSettingsQuery),
-      clientServer.fetch<TravellerGuideSettingsRow>(travellerGuideSettingsQuery),
+      fetchTermsConditionsSettingsCached(),
+      fetchFaqsSettingsCached(),
+      fetchTravellerGuideSettingsCached(),
       getActivePromotions(),
     ])
     promotions = promoRows

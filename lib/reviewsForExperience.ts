@@ -1,15 +1,23 @@
 import type { ReviewDoc } from '@/lib/queries'
 
-/** Prefer `review.experience` ref; else legacy manual programme/name text. */
+/** Prefer linked KC refs (`experience`, `learningProgramme`); else legacy manual programme/name text. */
 export function filterReviewsForExperience(
   reviews: ReviewDoc[] | null | undefined,
   experienceName: string,
   slug: string,
+  learningProgrammeId?: string | null,
 ): ReviewDoc[] {
   if (!reviews?.length) return []
   const s = (slug || '').toLowerCase().trim()
   const n = (experienceName || '').toLowerCase().trim()
+  const lpId = learningProgrammeId?.trim() || ''
   return reviews.filter((r) => {
+    if (lpId && r.learningProgramme?._id === lpId) return true
+    const lpTitle = r.learningProgramme?.title?.toLowerCase().trim() || ''
+    const lpSlug = r.learningProgramme?.slug?.current?.toLowerCase().trim() || ''
+    if (n && lpTitle === n) return true
+    if (s && lpSlug === s) return true
+
     const refSlug = r.experience?.slug?.current?.toLowerCase().trim() || ''
     const refName = r.experience?.name?.toLowerCase().trim() || ''
     if (s && refSlug === s) return true

@@ -1,5 +1,6 @@
 import { cache } from 'react'
 
+import { fetchSiteHeaderNavBundleCached } from '@/lib/cachedSanityQueries'
 import { getActivePromotions } from '@/lib/getPromotions'
 import {
   hasHeaderSettingsDoc,
@@ -9,8 +10,6 @@ import {
 } from '@/lib/mergeHeaderSettings'
 import { resolveSiteHeaderNavFromNavTabs } from '@/lib/resolveHeaderNavTabs'
 import { resolveSiteHeaderNavData } from '@/lib/resolveSiteHeaderNavData'
-import { siteHeaderNavBundleQuery, type SiteHeaderNavBundleRow } from '@/lib/siteHeaderNavQuery'
-import { clientServer } from '@/lib/sanity'
 
 export type { ResolvedSiteHeaderNav, ResolvedSiteHeaderNavTab } from '@/lib/resolveSiteHeaderNavData'
 
@@ -23,7 +22,7 @@ export const getSiteHeaderNav = cache(async () => {
   }
   try {
     const [row, promotions] = await Promise.all([
-      clientServer.fetch<SiteHeaderNavBundleRow>(siteHeaderNavBundleQuery),
+      fetchSiteHeaderNavBundleCached(),
       getActivePromotions(),
     ])
     const headerDoc = (row?.headerSettings ?? null) as HeaderSettingsDocumentRow

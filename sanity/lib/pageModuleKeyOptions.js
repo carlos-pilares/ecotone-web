@@ -1,5 +1,6 @@
 import {ABOUT_PAGE_MODULE_LIST} from './aboutPageSectionModules'
 import {HOME_PAGE_MODULE_LIST} from './homePageSectionModules'
+import {LEARNING_PROGRAMME_MODULE_LIST} from './learningProgrammeSectionModules'
 import {MODULE_LIST} from './pageModuleShared'
 import {ROUTES_PAGE_MODULE_LIST} from './routesPageSectionModules'
 
@@ -25,6 +26,7 @@ export const PAGE_MODULE_KEY_LIST = mergeModuleLists(
   ABOUT_PAGE_MODULE_LIST,
   ROUTES_PAGE_MODULE_LIST,
   HOME_PAGE_MODULE_LIST,
+  LEARNING_PROGRAMME_MODULE_LIST,
 )
 
 export const PAGE_MODULE_KEY_SET = new Set(PAGE_MODULE_KEY_LIST.map((m) => m.value))

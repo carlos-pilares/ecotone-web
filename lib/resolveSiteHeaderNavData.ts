@@ -11,8 +11,8 @@ import {
 import { canonicalizeLodgeRouteSlug } from '@/data/lodgeSoqtapataResolverDefaults'
 import { resolveRouteLabel } from '@/data/lodgeSoqtapataResolverDefaults'
 import { formatExperienceNavPriceMetaWithPromotions } from '@/lib/formatExperiencePrice'
+import { optimizeSanityImageDelivery, SANITY_IMG } from '@/lib/sanity'
 import type { PromotionDoc } from '@/lib/promotionTypes'
-import { resolveExperienceHeroImageUrl } from '@/lib/experienceHeroImage'
 import { resolveExperiencePublicHref } from '@/lib/resolveExperiencePublicHref'
 import { appendLearningProgrammesToNavMap } from '@/lib/headerNavLearningProgrammes'
 import {
@@ -545,8 +545,14 @@ function trimUrl(s: string | null | undefined): string | null {
   return t || null
 }
 
+function headerNavExperienceThumbUrl(row: SiteHeaderNavExperiencePageRow): string | null {
+  const raw = trimUrl(row.navThumbUrl) || trimUrl(row.experience?.mainImageUrl)
+  return raw ? optimizeSanityImageDelivery(raw, SANITY_IMG.NAV_THUMB) : null
+}
+
 function lodgeMenuImageUrl(row: SiteHeaderNavLodgePageRow): string | null {
-  return trimUrl(row.menuThumbnailImageUrl) || null
+  const raw = trimUrl(row.menuThumbnailImageUrl)
+  return raw ? optimizeSanityImageDelivery(raw, SANITY_IMG.NAV_LODGE) : null
 }
 
 function lodgeMenuBadges(row: SiteHeaderNavLodgePageRow): { label: string; tone: 'own' | 'alliance' | 'neutral' }[] {
@@ -858,15 +864,7 @@ export function resolveSiteHeaderNavData(
     if (!href) continue
     const sk = (typeof io?.order === 'number' ? io.order : row.headerNavOrder) ?? 999
     const name = io?.label?.trim() || exp.name!.trim()
-    const thumb =
-      resolveExperienceHeroImageUrl({
-        gallery: exp.gallery,
-        galleryOrderKeys: row.galleryOrderKeys,
-        photoCollection: exp.photoCollection,
-        mainImage: exp.mainImage,
-        mainImageUrl: exp.mainImageUrl,
-        width: 600,
-      }) || null
+    const thumb = headerNavExperienceThumbUrl(row)
     const item: SiteHeaderNavExpItem = {
       id: pageId,
       name,
@@ -972,7 +970,9 @@ export function resolveSiteHeaderNavData(
       openInNewTab: true,
     },
   )
-  const tailorImageUrl = tailorGroup?.imageUrl?.trim() || null
+  const tailorImageUrl = tailorGroup?.imageUrl?.trim()
+    ? optimizeSanityImageDelivery(tailorGroup.imageUrl.trim(), SANITY_IMG.NAV_PROGRAM)
+    : null
   base.experiences.tailor = {
     panelId: 'dd-exp-tailor',
     eyebrow: tailorGroup?.eyebrow?.trim() || base.experiences.tailorSidebarLabel,

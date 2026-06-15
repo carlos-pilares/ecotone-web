@@ -5,7 +5,7 @@ import {
   type ExperienceGalleryLikeRow,
   type PhotoCollectionDoc,
 } from '@/lib/photoLibraryResolve'
-import { cdnImageUrl } from '@/lib/sanity'
+import { cdnImageUrl, sanityImageUrl } from '@/lib/sanity'
 
 function pickByKeys<T extends { _key?: string | null }>(
   source: T[] | null | undefined,
@@ -39,21 +39,25 @@ function pickByKeys<T extends { _key?: string | null }>(
 }
 
 function galleryPhotoUrl(g: ExperienceGalleryLikeRow, width: number): string | null {
-  const direct = g.imageUrl?.trim()
-  if (direct) return direct
   if (g.image) {
     const built = cdnImageUrl(g.image, width, '')
-    return built?.trim() ? built : null
+    if (built?.trim()) return built
+  }
+  const direct = g.imageUrl?.trim()
+  if (direct) {
+    return sanityImageUrl({ url: direct, width, fallback: '' }) || null
   }
   return null
 }
 
 function galleryVideoThumbnailUrl(g: ExperienceGalleryLikeRow, width: number): string | null {
-  const direct = g.videoThumbnailUrl?.trim()
-  if (direct) return direct
   if (g.videoThumbnail) {
     const built = cdnImageUrl(g.videoThumbnail, width, '')
-    return built?.trim() ? built : null
+    if (built?.trim()) return built
+  }
+  const direct = g.videoThumbnailUrl?.trim()
+  if (direct) {
+    return sanityImageUrl({ url: direct, width, fallback: '' }) || null
   }
   return galleryPhotoUrl(g, width)
 }
@@ -104,5 +108,7 @@ export function resolveExperienceHeroImageUrl(opts: {
     if (url) return url
   }
 
-  return opts.mainImageUrl?.trim() || cdnImageUrl(opts.mainImage, width, '') || ''
+  return (
+    sanityImageUrl({ url: opts.mainImageUrl, image: opts.mainImage, width, fallback: '' }) || ''
+  )
 }

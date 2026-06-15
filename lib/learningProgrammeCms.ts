@@ -22,10 +22,12 @@ import { resolveExperienceProgramTypeLabel, resolveExperienceRouteLabel } from '
 import type { ExperienceLearningContent } from '@/lib/experienceLearningTypes'
 import { EXPERIENTIAL_LEARNING_PROGRAM_TYPE } from '@/lib/isExperientialLearningExperience'
 import { type LearningProgrammeCmsRow } from '@/lib/learningProgrammeGroq'
+import { learningSectionVisibilityFromModules } from '@/lib/learningSectionVisibility'
 import { resolveLearningProgrammeContent } from '@/lib/resolveLearningProgrammeContent'
 import type { PromotionDoc } from '@/lib/promotionTypes'
 import { resolveSmartLinkOrLegacy, smartLinkIsDisabled, type SmartLinkGroq } from '@/lib/resolveSmartLink'
-import { DEFAULT_REVIEWS_RATING_SUMMARY } from '@/lib/reviewsRatingSummary'
+import { buildRotatingQuoteItemsFromReviews } from '@/lib/reviewQuoteItems'
+import { DEFAULT_REVIEWS_RATING_SUMMARY, normalizeReviewsRatingSummary } from '@/lib/reviewsRatingSummary'
 import type { SoqtapataExperience, SoqtapataPageCmsPayload } from '@/lib/soqtapataCmsV1'
 import { buildExperienceLearningPageNav } from '@/lib/experienceLearningNav'
 import {
@@ -37,12 +39,15 @@ import {
   experienceHasMediaSection,
   resolveExperienceResourcesFromPageRow,
   resolveLearningProgrammeLodgePresentationRows,
+  resolveHeroLodgeNamesForLearningProgramme,
+  reviewsFromRow,
   reviewsLayoutFromRow,
   seoFromStructuredRow,
   type CmsWildlifeItem,
   type ResolvedExperienceMediaItem,
   type SoqtapataStructuredPageRow,
 } from '@/lib/soqtapataStructuredCms'
+import { sanityImageUrl, SANITY_IMG } from '@/lib/sanity'
 import { mergeInternalNavIntoPageNav } from '@/lib/soqtapataInternalNav'
 import {
   applySoqtapataSectionPresentation,
@@ -142,12 +147,15 @@ function resolveGalleryItems(doc: LearningProgrammeCmsRow, title: string): Resol
       title,
       caption: '',
       alt: title,
-      imageSrc: main,
+      imageSrc: sanityImageUrl({ url: main, width: SANITY_IMG.MEDIA_LIGHTBOX, fallback: main }),
     })
   }
   for (const [i, g] of (doc.gallery ?? []).entries()) {
     const isVideo = g.kind?.trim() === 'video' || Boolean(g.videoUrl?.trim())
-    const imageSrc = g.imageUrl?.trim() || g.videoThumbnailUrl?.trim()
+    const rawSrc = g.imageUrl?.trim() || g.videoThumbnailUrl?.trim()
+    const imageSrc = rawSrc
+      ? sanityImageUrl({ url: rawSrc, width: SANITY_IMG.MEDIA_LIGHTBOX, fallback: rawSrc })
+      : ''
     if (!imageSrc) continue
     if (isVideo && g.videoUrl?.trim()) {
       out.push({
@@ -396,6 +404,7 @@ export function buildLearningPagePayloadFromStructuredRow(
   const learningContent = resolveLearningProgrammeContent(programme)
   const lodge = buildLearningProgrammeLodges(pageRow, programme, local)
   const reviewsLayout = reviewsLayoutFromRow(pageRow, soqtapataExperienceReviewsLayout)
+  const heroLodgeName = resolveHeroLodgeNamesForLearningProgramme(programme)
 
   let experience = { ...local, lodge } as SoqtapataExperience
   experience.hero = {
@@ -413,6 +422,7 @@ export function buildLearningPagePayloadFromStructuredRow(
     ratingDivider: false,
     ratingScore: heroRating.ratingScore,
     ratingReviews: heroRating.ratingReviews,
+    lodgeName: heroLodgeName,
   }
 
   let pageBookingSummary = buildSoqtapataBookingSummary(experience.hero, experience.book)
@@ -505,13 +515,22 @@ export function buildLearningPagePayloadFromStructuredRow(
     }
   }
 
+  const curatedReviews = reviewsFromRow(pageRow)
+  if (curatedReviews !== null) {
+    experience = { ...experience, reviews: curatedReviews }
+  }
+
   const pres = applySoqtapataSectionPresentation({
     experience,
     reviewsLayout,
     sectionModules: pageRow.sectionModules ?? null,
     pageReviews: pageRow.reviewsSection ?? null,
   })
-  let sectionVisibility: SoqtapataSectionVisibility = { ...EL_SECTION_VISIBILITY, ...pres.sectionVisibility }
+  let sectionVisibility: SoqtapataSectionVisibility = {
+    ...EL_SECTION_VISIBILITY,
+    ...pres.sectionVisibility,
+    ...learningSectionVisibilityFromModules(pageRow.sectionModules),
+  }
 
   const pageNavFromCms = mergeInternalNavIntoPageNav(pageRow.internalNav, experience.pageNav, sectionVisibility)
   if (pageNavFromCms) {
@@ -539,8 +558,10 @@ export function buildLearningPagePayloadFromStructuredRow(
     seo: seoFromStructuredRow(pageRow, programmeSeoFallback),
     sectionVisibility,
     reviewsSectionLead: pres.reviewsSectionLead,
-    reviewsRatingSummary: { ...DEFAULT_REVIEWS_RATING_SUMMARY },
-    rotatingQuoteItems: [],
+    reviewsRatingSummary: normalizeReviewsRatingSummary(pageRow.reviewsSettings ?? null) ?? {
+      ...DEFAULT_REVIEWS_RATING_SUMMARY,
+    },
+    rotatingQuoteItems: buildRotatingQuoteItemsFromReviews(pageRow.reviewsSection?.rotatingReviews ?? []),
     offerTerms: [],
     learningContent: {
       ...learningContent,

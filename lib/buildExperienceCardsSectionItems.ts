@@ -8,6 +8,7 @@ import {
 import { resolveExperienceHeroImageUrl } from '@/lib/experienceHeroImage'
 import type { ExperienceGalleryLikeRow, PhotoCollectionDoc } from '@/lib/photoLibraryResolve'
 import type { ExperienceFromSanity } from '@/lib/queries'
+import { SANITY_IMG } from '@/lib/sanity'
 
 function dataTypeFromProgram(programType: string | null | undefined): string {
   if (!programType) return 'nature'
@@ -27,7 +28,7 @@ export function experienceCardImageUrl(doc: ExperienceCardImageSource, fallback?
     photoCollection: doc.photoCollection,
     mainImage: doc.mainImage,
     mainImageUrl: doc.mainImageUrl,
-    width: 900,
+    width: SANITY_IMG.CARD_LARGE,
   })
   if (resolved) return resolved
   return fallback?.trim() || ''

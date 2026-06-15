@@ -3,11 +3,9 @@ import { cache } from 'react'
 import {
   DEFAULT_BOOKING_MODAL_COPY,
   type BookingModalCopy,
-  type BookingModalSettingsRow,
   resolveBookingModalCopy,
 } from '@/lib/bookingModalCopy'
-import { bookingModalSettingsQuery } from '@/lib/bookingModalSettingsQuery'
-import { clientServer } from '@/lib/sanity'
+import { fetchBookingModalSettingsCached } from '@/lib/cachedSanityQueries'
 /**
  * Singleton booking modal copy (Plan + Experience). Merges CMS over code defaults.
  * Cached per request (same pattern as `getSiteSettingsShell`).
@@ -17,7 +15,7 @@ export const getBookingModalSettings = cache(async (): Promise<BookingModalCopy>
     return DEFAULT_BOOKING_MODAL_COPY
   }
   try {
-    const row = await clientServer.fetch<BookingModalSettingsRow>(bookingModalSettingsQuery)
+    const row = await fetchBookingModalSettingsCached()
     if (!row) return DEFAULT_BOOKING_MODAL_COPY
     return resolveBookingModalCopy(row)
   } catch {

@@ -10,8 +10,10 @@ import '@/components/experience/learning/experience-learning.css'
 type Props = {
   content: ExperienceLearningContent
   lodge: SoqtapataLodge
-  showFieldBase?: boolean
+  showProgramme?: boolean
+  showProjects?: boolean
   showOutcomes?: boolean
+  showFieldBase?: boolean
 }
 
 /**
@@ -21,22 +23,28 @@ type Props = {
 export function ExperienceLearningPageSections({
   content,
   lodge,
-  showFieldBase = true,
+  showProgramme = true,
+  showProjects = true,
   showOutcomes = true,
+  showFieldBase = true,
 }: Props) {
   return (
     <>
-      <ExperienceLearningProgrammeTabs
-        programmeFlow={content.programmeFlow}
-        typicalDay={content.typicalDay}
-        programmeSectionEyebrow={content.programmeSectionEyebrow}
-        programmeSectionTitle={content.programmeSectionTitle}
-        howItWorksPillTitle={content.howItWorksPillTitle}
-        typicalDayPillTitle={content.typicalDayPillTitle}
-        programmeFlowIntro={content.programmeFlowIntro}
-        typicalDayIntro={content.typicalDayIntro}
-      />
-      <ExperienceLearningProjects projects={content.projects} />
+      {showProgramme ? (
+        <ExperienceLearningProgrammeTabs
+          programmeFlow={content.programmeFlow}
+          typicalDay={content.typicalDay}
+          mentor={content.mentor}
+          applicationProcess={content.applicationProcess}
+          programmeSectionEyebrow={content.programmeSectionEyebrow}
+          programmeSectionTitle={content.programmeSectionTitle}
+          howItWorksPillTitle={content.howItWorksPillTitle}
+          typicalDayPillTitle={content.typicalDayPillTitle}
+          programmeFlowIntro={content.programmeFlowIntro}
+          typicalDayIntro={content.typicalDayIntro}
+        />
+      ) : null}
+      {showProjects ? <ExperienceLearningProjects projects={content.projects} /> : null}
       {showOutcomes ? <ExperienceLearningOutcomes outcomes={content.outcomes} /> : null}
       {showFieldBase && lodge.cards.length > 0 ? (
         <ExperienceLodgeSoqtapata data={lodge} sectionId="field-base" sectionClassName="exp-learning-field-base" />

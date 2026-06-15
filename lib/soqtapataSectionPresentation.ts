@@ -7,6 +7,7 @@ import { isSectionVisibleInMap, visibilityMapFromSectionModules } from '@/lib/pa
 import type {
   ExperiencePresentationSlice,
   LandingSectionOverride,
+  LearningSectionModuleKey,
   ResolvedSectionPresentation,
   SectionModuleKey,
 } from '@/lib/sectionPresentationTypes'
@@ -33,7 +34,8 @@ export type SoqtapataPageModuleRow = {
 export type SoqtapataLayoutSectionKey = 'hero' | 'highlights' | 'internalNav'
 
 export type SoqtapataSectionVisibility = Record<SectionModuleKey, boolean> &
-  Record<SoqtapataLayoutSectionKey, boolean>
+  Record<SoqtapataLayoutSectionKey, boolean> &
+  Partial<Record<LearningSectionModuleKey, boolean>>
 
 export const SOQTAPATA_SECTION_KEYS: SectionModuleKey[] = [
   'overview',

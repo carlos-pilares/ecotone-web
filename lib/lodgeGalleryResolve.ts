@@ -1,14 +1,18 @@
 import type { SanityImageSource } from '@sanity/image-url'
 
 import type { LodgeGalleryItemRow } from '@/lib/lodgePageCmsTypes'
-import { cdnImageUrl } from '@/lib/sanity'
+import { cdnImageUrl, sanityImageUrl } from '@/lib/sanity'
 
 export function galleryRowHasImage(g: LodgeGalleryItemRow): boolean {
   return Boolean(g.imageUrl?.trim() || cdnImageUrl(g.image, 1, ''))
 }
 
 export function galleryRowImageUrl(g: LodgeGalleryItemRow, width: number): string {
-  return g.imageUrl?.trim() || cdnImageUrl(g.image, width, '') || ''
+  if (g.image) {
+    const built = cdnImageUrl(g.image, width, '')
+    if (built) return built
+  }
+  return sanityImageUrl({ url: g.imageUrl, width, fallback: '' }) || ''
 }
 
 export function findGalleryRowByKey(
@@ -100,7 +104,14 @@ export function resolveLodgeIdentityImageUrl(opts: {
     if (galleryUrl) return galleryUrl
   }
 
-  return opts.mainImageUrl?.trim() || cdnImageUrl(opts.mainImage, width, '') || ''
+  return (
+    sanityImageUrl({
+      url: opts.mainImageUrl,
+      image: opts.mainImage,
+      width,
+      fallback: '',
+    }) || ''
+  )
 }
 
 export function resolveMenuThumbnailUrl(

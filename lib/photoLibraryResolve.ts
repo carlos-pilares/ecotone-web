@@ -1,7 +1,7 @@
 import type { SanityImageSource } from '@sanity/image-url'
 
 import type {LodgeGalleryItemRow} from '@/lib/lodgePageCmsTypes'
-import {cdnImageUrl} from '@/lib/sanity'
+import {cdnImageUrl, sanityImageUrl} from '@/lib/sanity'
 
 export type PhotoLibraryItemRow = {
   _key?: string
@@ -71,7 +71,8 @@ export function photoLibraryItemToLodgeGalleryRow(photo: PhotoLibraryItemRow): L
     photoCategory,
     usageSection: photoCategory,
     image: photo.image,
-    imageUrl: photo.imageUrl?.trim() || cdnImageUrl(photo.image, 1200, '') || undefined,
+    imageUrl:
+      sanityImageUrl({ url: photo.imageUrl, image: photo.image, width: 1200, fallback: '' }) || undefined,
   }
 }
 
@@ -101,6 +102,7 @@ export function photoLibraryItemToExperienceGalleryRow(
     caption,
     alt,
     image: photo.image,
-    imageUrl: photo.imageUrl?.trim() || cdnImageUrl(photo.image, 1200, '') || undefined,
+    imageUrl:
+      sanityImageUrl({ url: photo.imageUrl, image: photo.image, width: 1200, fallback: '' }) || undefined,
   }
 }

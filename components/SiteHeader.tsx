@@ -223,7 +223,7 @@ function ExperiencesMega({ tab }: { tab: ResolvedSiteHeaderNavTab }) {
                       route={routeOnly || undefined}
                       className="dd-exp-card"
                     >
-                      <div className="dd-exp-thumb">{it.thumbUrl ? <img src={it.thumbUrl} alt="" width={160} height={112} /> : null}</div>
+                      <div className="dd-exp-thumb">{it.thumbUrl ? <img src={it.thumbUrl} alt="" width={160} height={112} loading="lazy" decoding="async" /> : null}</div>
                       <div className="dd-exp-body">
                         {routeOnly ? (
                           <div className="dd-mega-pills">
@@ -299,7 +299,7 @@ function LodgesMega({ tab }: { tab: ResolvedSiteHeaderNavTab }) {
               <div className="dd-mega-list">
                 {r.lodges.map((L) => (
                   <a key={L.id} href={L.href} className="dd-mega-card dd-mega-card--lodge">
-                    <div className="dd-mega-img">{L.imageUrl ? <img src={L.imageUrl} alt="" width={260} height={180} /> : null}</div>
+                    <div className="dd-mega-img">{L.imageUrl ? <img src={L.imageUrl} alt="" width={260} height={180} loading="lazy" decoding="async" /> : null}</div>
                     <div className="dd-mega-body">
                       {L.badges.length ? (
                         <div className="dd-mega-pills">
@@ -376,7 +376,7 @@ function MobileExperiencesPanel({ tab }: { tab: ResolvedSiteHeaderNavTab }) {
                   route={routeOnly || undefined}
                   className="mob-item mob-item--exp"
                 >
-                  <div className="mob-item-thumb">{it.thumbUrl ? <img src={it.thumbUrl} alt="" width={80} height={60} /> : null}</div>
+                  <div className="mob-item-thumb">{it.thumbUrl ? <img src={it.thumbUrl} alt="" width={80} height={60} loading="lazy" decoding="async" /> : null}</div>
                   <div className="mob-item-text">
                     <div className="mob-item-route">{routeOnly}</div>
                     <div className="mob-item-name">{it.name}</div>
@@ -426,7 +426,7 @@ function MobileLodgesPanel({ tab }: { tab: ResolvedSiteHeaderNavTab }) {
             <div className="mob-cat">{r.eyebrow}</div>
             {r.lodges.map((L) => (
               <a key={L.id} href={L.href} className="mob-item mob-item--lodge">
-                <div className="mob-item-thumb">{L.imageUrl ? <img src={L.imageUrl} alt="" width={80} height={60} /> : null}</div>
+                <div className="mob-item-thumb">{L.imageUrl ? <img src={L.imageUrl} alt="" width={80} height={60} loading="lazy" decoding="async" /> : null}</div>
                 <div className="mob-item-text">
                   <div className="mob-item-name">{L.name}</div>
                   <div className="mob-item-meta">

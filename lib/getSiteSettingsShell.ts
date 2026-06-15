@@ -18,9 +18,9 @@ import {
   type ResolvedFooterShell,
 } from '@/lib/resolveFooterShell'
 import { resolveFloatingWhatsappFromCms, type ResolvedFloatingWhatsapp } from '@/lib/floatingWhatsapp'
-import { siteSettingsShellQuery } from '@/lib/queries'
+import { fetchSiteSettingsShellCached } from '@/lib/cachedSanityQueries'
 import { resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
-import { clientServer, urlFor } from '@/lib/sanity'
+import { cdnImageUrl, SANITY_IMG } from '@/lib/sanity'
 
 export type ShellNavLink = {
   label: string
@@ -43,7 +43,7 @@ export type GlobalSiteSettingsShell = {
   floatingWhatsapp: ResolvedFloatingWhatsapp
 }
 
-type SiteSettingsShellBundleRow = {
+export type SiteSettingsShellBundleRow = {
   headerSettings?: HeaderSettingsDocumentRow
   footerSettings?: FooterSettingsDocumentRow
   siteSettingsDoc?: {
@@ -67,20 +67,12 @@ type SiteSettingsShellBundleRow = {
 
 function toUrl(source: SanityImageSource | null | undefined): string | null {
   if (!source) return null
-  try {
-    return urlFor(source).width(720).quality(90).url() || null
-  } catch {
-    return null
-  }
+  return cdnImageUrl(source, SANITY_IMG.LOGO, '') || null
 }
 
 function toFooterImageUrl(source: unknown): string | null {
   if (!source) return null
-  try {
-    return urlFor(source as SanityImageSource).width(96).height(96).quality(90).url() || null
-  } catch {
-    return null
-  }
+  return cdnImageUrl(source as SanityImageSource, 96, '') || null
 }
 
 function mapLinkList(
@@ -191,7 +183,7 @@ export const getSiteSettingsShell = cache(async (): Promise<GlobalSiteSettingsSh
 
   let bundle: SiteSettingsShellBundleRow
   try {
-    bundle = await clientServer.fetch<SiteSettingsShellBundleRow>(siteSettingsShellQuery)
+    bundle = await fetchSiteSettingsShellCached()
   } catch {
     return empty
   }

@@ -1,5 +1,7 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
 
+import {experiencePageReviewReferenceOptions} from '../../lib/experiencePageReviewRefFilter'
+
 /** Reviews curation on `experiencePage` — section copy lives in Section presentation (`sectionModules`). */
 export const experiencePageReviewsSection = defineType({
   name: 'experiencePageReviewsSection',
@@ -36,6 +38,7 @@ export const experiencePageReviewsSection = defineType({
         defineArrayMember({
           type: 'reference',
           to: [{type: 'review'}],
+          options: experiencePageReviewReferenceOptions,
         }),
       ],
       validation: (Rule) => Rule.max(3).unique(),
@@ -49,6 +52,7 @@ export const experiencePageReviewsSection = defineType({
         defineArrayMember({
           type: 'reference',
           to: [{type: 'review'}],
+          options: experiencePageReviewReferenceOptions,
         }),
       ],
       validation: (Rule) => Rule.max(4).unique(),

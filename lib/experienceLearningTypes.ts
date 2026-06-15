@@ -58,6 +58,29 @@ export type ExperienceLearningFieldBaseCopy = {
   intro: string
 }
 
+export type ExperienceLearningMentor = {
+  tabLabel?: string
+  name?: string
+  role?: string
+  photoSrc?: string
+  photoAlt: string
+  biography?: string
+  achievements: string[]
+  skills: string[]
+}
+
+export type ExperienceLearningApplicationStep = {
+  id: string
+  title: string
+  description?: string
+}
+
+export type ExperienceLearningApplicationProcess = {
+  tabLabel?: string
+  intro?: string
+  steps: ExperienceLearningApplicationStep[]
+}
+
 export type ExperienceLearningContent = {
   purpose: ExperienceLearningPurpose
   programmeSectionEyebrow?: string
@@ -71,4 +94,6 @@ export type ExperienceLearningContent = {
   projects: ExperienceLearningProject[]
   outcomes: ExperienceLearningOutcome[]
   fieldBase: ExperienceLearningFieldBaseCopy
+  mentor: ExperienceLearningMentor | null
+  applicationProcess: ExperienceLearningApplicationProcess | null
 }

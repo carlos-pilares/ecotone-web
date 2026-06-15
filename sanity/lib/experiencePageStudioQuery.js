@@ -73,6 +73,7 @@ export const learningProgrammeStudioPreviewById = /* groq */ `*[_id == $id][0]{
 export const reviewDocsByIds = /* groq */ `*[_id in $ids]{
   _id, quote, authorName, authorCity, authorCountry,
   "experience": experience->{ name, slug },
+  "learningProgramme": learningProgramme->{ _id, title, "slug": slug.current },
   experienceName,
   "experienceProgramme": experienceProgramme,
   rating,

@@ -1,7 +1,9 @@
 import type { ReviewDoc } from '@/lib/queries'
 
-/** Display label: referenced experience name first, then legacy manual fields. */
+/** Display label: linked KC name first, then legacy manual fields. */
 export function getReviewExperienceLabel(r: ReviewDoc): string {
+  const fromLp = r.learningProgramme?.title?.trim()
+  if (fromLp) return fromLp
   const fromRef = r.experience?.name?.trim()
   if (fromRef) return fromRef
   return r.experienceProgramme?.trim() || r.experienceName?.trim() || ''

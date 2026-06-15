@@ -1,6 +1,6 @@
 import { buildTechList, buildTechListAll } from '@/lib/techProductsUtils'
 import type { TechnologyProductDoc } from '@/lib/queries'
-import { cdnImageUrl } from '@/lib/sanity'
+import { cdnImageUrl, SANITY_IMG } from '@/lib/sanity'
 
 type Props = {
   products: TechnologyProductDoc[] | null | undefined
@@ -27,7 +27,7 @@ export function TechProductsGrid({ products, includedProductIds, capAtThree = tr
   return (
     <div className={['tech-grid', className].filter(Boolean).join(' ')}>
       {rows.map(({ doc, imageFallback, idx }) => {
-        const img = cdnImageUrl(doc.image ?? null, 900, imageFallback)
+        const img = cdnImageUrl(doc.image ?? null, SANITY_IMG.TECH, imageFallback)
         const notIn = idSet.size > 0 && doc._id ? dimMissing(doc._id) : false
         return (
           <div
@@ -35,7 +35,7 @@ export function TechProductsGrid({ products, includedProductIds, capAtThree = tr
             key={doc._id || idx}
           >
             <div className="tech-img-wrap">
-              <img src={img} alt={doc.name ?? ''} />
+              <img src={img} alt={doc.name ?? ''} loading="lazy" decoding="async" />
             </div>
             <div className="tech-card-content">
               <div className="tech-num">{doc.number ?? `0${idx + 1}`}</div>

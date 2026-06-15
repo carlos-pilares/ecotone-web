@@ -5,7 +5,7 @@ import type {
 } from '@/data/soqtapataExperienceLocal'
 import type { SanityImageSource } from '@sanity/image-url'
 
-import { urlFor } from '@/lib/sanity'
+import { sanityImageUrl, SANITY_IMG } from '@/lib/sanity'
 
 type CmsItineraryDay = {
   dayNumber?: number | null
@@ -40,12 +40,10 @@ const DAY_IDS: SoqtapataItineraryDayId[] = [
 
 function imgW(src: string | SanityImageSource | null | undefined, w: number): string | null {
   if (!src) return null
-  if (typeof src === 'string') return src
-  try {
-    return urlFor(src).width(w).quality(85).url()
-  } catch {
-    return null
+  if (typeof src === 'string') {
+    return sanityImageUrl({ url: src, width: w, fallback: src })
   }
+  return sanityImageUrl({ image: src, width: w, fallback: '' }) || null
 }
 
 function mapDayByDayDays(
@@ -63,8 +61,8 @@ function mapDayByDayDays(
     const dayNum = String(d.dayNumber ?? i + 1)
     const id: SoqtapataItineraryDayId = DAY_IDS[i] ?? template.id
     const photoSrc =
-      (d.imageUrl && d.imageUrl.trim()) ||
-      imgW(d.image, 960) ||
+      imgW(d.imageUrl, SANITY_IMG.ITINERARY) ||
+      imgW(d.image, SANITY_IMG.ITINERARY) ||
       template.photoSrc
     return {
       id,

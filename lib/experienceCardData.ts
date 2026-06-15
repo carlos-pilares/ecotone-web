@@ -12,6 +12,7 @@ import { isListedExperienceStatus } from '@/lib/reserveCtaPricing'
 import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
 import type { RoutesPageListedExperiencePageRow } from '@/lib/routesPageExperiencesSection'
+import { optimizeSanityImageDelivery, SANITY_IMG } from '@/lib/sanity'
 
 export type ExperienceCardData = {
   imageUrl: string
@@ -67,8 +68,9 @@ export function toExperienceCardData(
   opts?: { href?: string; ctaLabel?: string },
 ): ExperienceCardData | null {
   const title = row.name?.trim()
-  const imageUrl = row.mainImageUrl?.trim()
-  if (!title || !imageUrl) return null
+  const imageUrlRaw = row.mainImageUrl?.trim()
+  if (!title || !imageUrlRaw) return null
+  const imageUrl = optimizeSanityImageDelivery(imageUrlRaw, SANITY_IMG.CARD_LARGE)
 
   const href = opts?.href?.trim() || resolveExperienceCardPublicHref(row)
   if (!href || href === '#') return null

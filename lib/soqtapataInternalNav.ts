@@ -45,9 +45,11 @@ const INTERNAL_NAV_TARGET_META: Record<string, { href: string; dataActiveWhen?: 
   faq: { href: '#faq' },
   related: { href: '#also-camanti', dataActiveWhen: 'also-camanti,book' },
   reserve: { href: '#book', dataActiveWhen: 'also-camanti,book' },
-  /** Experiential Learning only — `ExperienceLearningProjects` / `ExperienceLearningOutcomes`. */
+  /** Experiential Learning only. */
+  programme: { href: '#programme' },
   projects: { href: '#projects' },
   learningOutcomes: { href: '#outcomes' },
+  fieldBase: { href: '#field-base', dataActiveWhen: 'field-base' },
 }
 
 function hasAnyValidVisibleItem(

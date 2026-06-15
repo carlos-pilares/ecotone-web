@@ -21,6 +21,20 @@ export type SectionModuleKey =
   | 'related'
   | 'reserve'
 
+/** Experiential Learning sections — content from Learning Programme KC; visibility via `sectionModules`. */
+export type LearningSectionModuleKey =
+  | 'programme'
+  | 'projects'
+  | 'learningOutcomes'
+  | 'fieldBase'
+
+export const LEARNING_SECTION_MODULE_KEYS: LearningSectionModuleKey[] = [
+  'programme',
+  'projects',
+  'learningOutcomes',
+  'fieldBase',
+]
+
 /** Origen del valor tras aplicar landing → experience → defaults */
 export type PresentationValueSource = 'landing' | 'experience' | 'default'
 

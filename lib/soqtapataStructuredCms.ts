@@ -28,7 +28,7 @@ import type { SoqtapataPageModuleRow } from '@/lib/soqtapataSectionPresentation'
 import { resolveLodgeIdentityImageUrl } from '@/lib/lodgeGalleryResolve'
 import type { LodgeGalleryItemRow } from '@/lib/lodgePageCmsTypes'
 import { mergeLodgeGalleryWithPhotoLibrary, type PhotoCollectionDoc } from '@/lib/photoLibraryResolve'
-import { urlFor } from '@/lib/sanity'
+import { sanityImageUrl, SANITY_IMG } from '@/lib/sanity'
 import { resolveTailorMadeBand } from '@/lib/tailorMadeBand'
 import { formatLodgeAltitudeForSubtitle } from '@/lib/lodgeAltitudeDisplay'
 import { resolveRouteLabel } from '@/data/lodgeSoqtapataResolverDefaults'
@@ -377,6 +377,11 @@ type CmsReviewDoc = {
     name?: string | null
     slug?: { current?: string | null } | null
   } | null
+  learningProgramme?: {
+    _id?: string | null
+    title?: string | null
+    slug?: { current?: string | null } | null
+  } | null
   experienceName?: string | null
   experienceProgramme?: string | null
   rating?: number | null
@@ -666,21 +671,25 @@ export type ResolvedExperienceMediaItem = {
 const MEDIA_VISIBLE_MAX = 6
 
 function galleryPhotoUrl(g: CmsGalleryItem, width: number): string | null {
-  const direct = g.imageUrl?.trim()
-  if (direct) return direct
   if (g.image) {
-    const built = assetToUrl(g.image, width, '')
-    return built?.trim() ? built : null
+    const built = sanityImageUrl({ image: g.image, width, fallback: '' })
+    if (built?.trim()) return built
+  }
+  const direct = g.imageUrl?.trim()
+  if (direct) {
+    return sanityImageUrl({ url: direct, width, fallback: '' }) || null
   }
   return null
 }
 
 function galleryVideoThumbnailUrl(g: CmsGalleryItem, width: number): string | null {
-  const direct = g.videoThumbnailUrl?.trim()
-  if (direct) return direct
   if (g.videoThumbnail) {
-    const built = assetToUrl(g.videoThumbnail, width, '')
-    return built?.trim() ? built : null
+    const built = sanityImageUrl({ image: g.videoThumbnail, width, fallback: '' })
+    if (built?.trim()) return built
+  }
+  const direct = g.videoThumbnailUrl?.trim()
+  if (direct) {
+    return sanityImageUrl({ url: direct, width, fallback: '' }) || null
   }
   return galleryPhotoUrl(g, width)
 }
@@ -702,7 +711,7 @@ function normalizeCmsGalleryItem(g: CmsGalleryItem, idx: number): ResolvedExperi
 
   if (isVideo) {
     const videoUrl = g.videoUrl?.trim()
-    const imageSrc = galleryVideoThumbnailUrl(g, 1200)
+    const imageSrc = galleryVideoThumbnailUrl(g, SANITY_IMG.MEDIA_LIGHTBOX)
     if (!videoUrl || !imageSrc) return null
     return {
       _key: g._key || `media-${idx}`,
@@ -715,7 +724,7 @@ function normalizeCmsGalleryItem(g: CmsGalleryItem, idx: number): ResolvedExperi
     }
   }
 
-  const imageSrc = galleryPhotoUrl(g, 1200)
+  const imageSrc = galleryPhotoUrl(g, SANITY_IMG.MEDIA_LIGHTBOX)
   if (!imageSrc) return null
   return {
     _key: g._key || `media-${idx}`,
@@ -821,12 +830,13 @@ function mediaThumbDisplayTitle(item: ResolvedExperienceMediaItem): string {
 
 function mediaThumbFromItem(item: ResolvedExperienceMediaItem, dataExpLb: string): SoqtapataMediaThumb {
   const label = mediaThumbDisplayTitle(item)
+  const thumbSrc = sizedMediaSrc(item.imageSrc, SANITY_IMG.MEDIA_THUMB)
   if (item.kind === 'video') {
     return {
       kind: 'video',
       dataExpLb,
       ariaLabel: `Open video, ${item.alt}`,
-      imageSrc: item.imageSrc,
+      imageSrc: thumbSrc,
       imageAlt: item.alt,
       overlayStyle: { background: 'rgba(0,0,0,.35)' },
       label,
@@ -837,11 +847,15 @@ function mediaThumbFromItem(item: ResolvedExperienceMediaItem, dataExpLb: string
     kind: 'image',
     dataExpLb,
     ariaLabel: `Open photo, ${item.alt}`,
-    imageSrc: item.imageSrc,
+    imageSrc: thumbSrc,
     imageAlt: item.alt,
     label,
     labelStyle: { background: 'rgba(0,0,0,.55)' },
   }
+}
+
+function sizedMediaSrc(src: string, width: number): string {
+  return sanityImageUrl({ url: src, width, fallback: src }) || src
 }
 
 export function buildHeroGalleryFromItems(items: ResolvedExperienceMediaItem[]): SoqtapataPhase1GalleryCell[] {
@@ -856,7 +870,7 @@ export function buildHeroGalleryFromItems(items: ResolvedExperienceMediaItem[]):
       kind: 'main',
       dataExpLb: String(first.index),
       ariaLabel: 'Open photo gallery, image 1',
-      imageSrc: first.item.imageSrc,
+      imageSrc: sizedMediaSrc(first.item.imageSrc, SANITY_IMG.MEDIA_MAIN),
       imageAlt: first.item.alt,
     },
   ]
@@ -867,7 +881,7 @@ export function buildHeroGalleryFromItems(items: ResolvedExperienceMediaItem[]):
       kind: 'thumb',
       dataExpLb: String(second.index),
       ariaLabel: 'Open photo gallery, image 2',
-      imageSrc: second.item.imageSrc,
+      imageSrc: sizedMediaSrc(second.item.imageSrc, SANITY_IMG.MEDIA_THUMB),
       imageAlt: second.item.alt,
       galleryLabel: (second.item.caption || second.item.title || second.item.alt).slice(0, 40),
     })
@@ -883,7 +897,7 @@ export function buildHeroGalleryFromItems(items: ResolvedExperienceMediaItem[]):
       kind: 'thumb',
       dataExpLb: String(entry.index),
       ariaLabel: `Open photo gallery, image ${photoNumber}`,
-      imageSrc: entry.item.imageSrc,
+      imageSrc: sizedMediaSrc(entry.item.imageSrc, SANITY_IMG.MEDIA_THUMB),
       imageAlt: entry.item.alt,
       stylePositionRelative: true,
       galleryLabel: mediaThumbDisplayTitle(entry.item),
@@ -921,7 +935,7 @@ export function buildMediaFromGalleryItems(
     h2Style: lMedia.h2Style,
     lead: lMedia.lead,
     video: {
-      imageSrc: main.imageSrc,
+      imageSrc: sizedMediaSrc(main.imageSrc, SANITY_IMG.MEDIA_MAIN),
       imageAlt: main.alt,
       filmPill,
       officialPill: lMedia.video.officialPill,
@@ -935,7 +949,12 @@ export function buildMediaFromGalleryItems(
           moreCount: {
             ...moreCount,
             dataExpLb: moreItem ? String(Math.max(0, items.indexOf(moreItem))) : String(mainIndex),
-            ...(moreItem ? { imageSrc: moreItem.imageSrc, imageAlt: moreItem.alt } : {}),
+            ...(moreItem
+              ? {
+                  imageSrc: sizedMediaSrc(moreItem.imageSrc, SANITY_IMG.MEDIA_THUMB),
+                  imageAlt: moreItem.alt,
+                }
+              : {}),
           },
         }
       : {}),
@@ -1120,7 +1139,7 @@ export function buildWildlifeFromKcList(
       ? l.species.find((sp) => (sp.name || '').trim() === (s.name || '').trim())
       : undefined
     const fallback = nameMatch ?? l.species[i] ?? l.species[0]!
-    const cmsImg = s.imageUrl ? imgW(s.imageUrl, 960) : null
+    const cmsImg = s.imageUrl ? imgW(s.imageUrl, SANITY_IMG.WILDLIFE) : null
     const badgeTrim = (s.badge && s.badge.trim()) || fallback?.badge
     const base = {
       name: s.name || fallback?.name || '',
@@ -1512,8 +1531,8 @@ export function buildLodgesFromCms(
 }
 
 function imgW(src: string | null | undefined, w: number): string | null {
-  if (!src) return null
-  return src
+  if (!src?.trim()) return null
+  return sanityImageUrl({ url: src.trim(), width: w, fallback: src.trim() })
 }
 
 function assetToUrl(
@@ -1521,12 +1540,7 @@ function assetToUrl(
   width: number,
   fallback: string,
 ): string {
-  if (!source) return fallback
-  try {
-    return urlFor(source).width(width).quality(85).url() || fallback
-  } catch {
-    return fallback
-  }
+  return sanityImageUrl({ image: source, width, fallback })
 }
 
 function techToDoc(t: CmsTechProduct | null | undefined): TechnologyProductDoc {
@@ -1554,6 +1568,7 @@ function reviewToDoc(r: CmsReviewDoc | null | undefined): ReviewDoc | null {
     authorCity: r.authorCity,
     authorCountry: r.authorCountry,
     experience: r.experience ?? null,
+    learningProgramme: r.learningProgramme ?? null,
     experienceName: r.experienceName,
     experienceProgramme: r.experienceProgramme,
     rating: r.rating,
@@ -1735,12 +1750,50 @@ function resolvePrimaryLodgeForExperience(e: CmsExperience): CmsLodge | null {
   return null
 }
 
-function resolveHeroLodgeNamesForExperience(e: CmsExperience): string {
-  const rowNames = (e.lodgePresentationRows ?? [])
+function uniqueLodgeNamesFromPresentationRows(
+  rows: CmsLodgePresentationRow[] | null | undefined,
+): string[] {
+  const names = (rows ?? [])
     .map((r) => r.lodge?.name?.trim())
     .filter((name): name is string => Boolean(name))
-  const uniqueRowNames = Array.from(new Set(rowNames))
-  if (uniqueRowNames.length > 0) return uniqueRowNames.join(' · ')
+  return Array.from(new Set(names))
+}
+
+/** Tourism hero lodge line — ` · ` between names (unchanged). */
+function formatHeroLodgeLabelDot(names: string[]): string {
+  if (!names.length) return ''
+  return names.join(' · ')
+}
+
+/** Learning / multi-base hero lodge line — `A & B` or `A, B & C`. */
+function formatHeroLodgeLabelAmpersand(names: string[]): string {
+  if (!names.length) return ''
+  if (names.length === 1) return names[0]!
+  if (names.length === 2) return `${names[0]} & ${names[1]}`
+  return `${names.slice(0, -1).join(', ')} & ${names[names.length - 1]}`
+}
+
+export function resolveHeroLodgeLabelFromPresentationRows(
+  rows: CmsLodgePresentationRow[] | null | undefined,
+): string {
+  return formatHeroLodgeLabelDot(uniqueLodgeNamesFromPresentationRows(rows))
+}
+
+/** Hero lodge/field-base label for Learning Programme pages (KC lodges only — no local fallback). */
+export function resolveHeroLodgeNamesForLearningProgramme(programme: {
+  lodgePresentationRows?: CmsLodgePresentationRow[] | null
+  fieldBaseRef?: (CmsLodge & { lodgePage?: CmsLodgePageHero | null; pageSlug?: string | null }) | null
+}): string {
+  const rows = resolveLearningProgrammeLodgePresentationRows(programme)
+  const names = uniqueLodgeNamesFromPresentationRows(rows)
+  if (names.length) return formatHeroLodgeLabelAmpersand(names)
+  if (rows.length > 0) return 'Multiple field bases'
+  return ''
+}
+
+function resolveHeroLodgeNamesForExperience(e: CmsExperience): string {
+  const fromRows = resolveHeroLodgeLabelFromPresentationRows(e.lodgePresentationRows)
+  if (fromRows) return fromRows
 
   return resolvePrimaryLodgeForExperience(e)?.name?.trim() || ''
 }
@@ -1962,6 +2015,8 @@ function mapKnowledgeResourcesRows(
       const label = show
         ? (r.ctaLabel && r.ctaLabel.trim()) || DEFAULT_EXPERIENCE_RESOURCE_DOWNLOAD_CTA_LABEL
         : ''
+      const imgUrl = r.image?.imageUrl?.trim()
+      const imgAlt = (r.image?.alt && r.image.alt.trim()) || title
       cards.push({
         id: r._key || `kr-${idx}`,
         kind: 'termsPdf',
@@ -1971,6 +2026,7 @@ function mapKnowledgeResourcesRows(
         downloadHref: centralPdf,
         downloadLabel: label,
         openInNewTab: true,
+        ...(imgUrl ? { previewImageSrc: imgUrl, previewImageAlt: imgAlt } : {}),
       })
       idx += 1
       continue
@@ -2224,7 +2280,7 @@ export function soqtapataPartialFromStructuredRow(
           ? l.wildlife.species.find((sp) => (sp.name || '').trim() === (s.name || '').trim())
           : undefined
         const fallback = nameMatch ?? l.wildlife.species[i] ?? l.wildlife.species[0]!
-        const cmsImg = s.imageUrl ? imgW(s.imageUrl, 960) : null
+        const cmsImg = s.imageUrl ? imgW(s.imageUrl, SANITY_IMG.WILDLIFE) : null
         const badgeTrim = (s.badge && s.badge.trim()) || fallback?.badge
         const base = {
           name: s.name || fallback?.name || '',
@@ -2388,7 +2444,7 @@ export function soqtapataPartialFromStructuredRow(
  * `null` solo si no aplica override (sin fila / sin experiencia).
  */
 export function reviewsFromRow(row: SoqtapataStructuredPageRow | null | undefined): ReviewDoc[] | null {
-  if (!row?.experience) return null
+  if (!row?.experience && !row?.learningProgramme) return null
   const docs = row.reviewDocs
   if (!docs || docs.length === 0) return []
   return docs.map((d) => reviewToDoc(d)).filter((x): x is ReviewDoc => x != null)

@@ -150,7 +150,10 @@ export default async function ExperienceLandingPage({ params, searchParams }: Pa
             <ExperienceLearningPageSections
               content={learningContent}
               lodge={ex.lodge}
-              showFieldBase={sec.lodge !== false}
+              showProgramme={sec.programme !== false}
+              showProjects={sec.projects !== false}
+              showOutcomes={sec.learningOutcomes !== false}
+              showFieldBase={sec.fieldBase !== false && sec.lodge !== false}
             />
             {sec.wildlife !== false ? <ExperienceWildlifeSoqtapata data={ex.wildlife} /> : null}
             {sec.includes !== false ? <ExperienceIncludesSoqtapata data={ex.includes} /> : null}
@@ -165,6 +168,7 @@ export default async function ExperienceLandingPage({ params, searchParams }: Pa
               <ExperienceResourcesSoqtapata data={ex.resources} experienceName={bookingSummary.experienceName} />
             ) : null}
             {sec.faq !== false ? <ExperienceFaqSoqtapata data={ex.faq} /> : null}
+            {sec.reviews !== false ? <ReviewsSection {...reviewsProps} /> : null}
             {sec.related !== false && (ex.also.cards.length > 0 || ex.also.tailorBand) ? (
               <ExperienceAlsoCamantiSoqtapata data={ex.also} promotions={promotions} />
             ) : null}

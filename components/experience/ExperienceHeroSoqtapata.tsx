@@ -44,7 +44,7 @@ export function ExperienceHeroSoqtapata({
                 tabIndex={0}
                 aria-label={g.ariaLabel}
               >
-                <img src={g.imageSrc} alt={g.imageAlt} decoding="async" />
+                <img src={g.imageSrc} alt={g.imageAlt} decoding="async" fetchPriority="high" />
                 <div
                   style={{
                     position: 'absolute',
@@ -67,7 +67,7 @@ export function ExperienceHeroSoqtapata({
               style={g.stylePositionRelative ? { position: 'relative' } : undefined}
               aria-label={g.ariaLabel}
             >
-              <img src={g.imageSrc} alt={g.imageAlt} decoding="async" />
+              <img src={g.imageSrc} alt={g.imageAlt} decoding="async" loading="lazy" />
               <div className="gallery-thumb-overlay" />
               {g.galleryLabel ? <span className="gallery-label">{g.galleryLabel}</span> : null}
               {g.moreBadge ? (
@@ -135,7 +135,9 @@ export function ExperienceHeroSoqtapata({
               {data.ratingDivider ? (
                 <span style={{ width: 1, height: 12, background: 'rgba(255,255,255,.12)' }} />
               ) : null}
-              <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--b200)' }}>{data.lodgeName}</span>
+              {data.lodgeName?.trim() ? (
+                <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--b200)' }}>{data.lodgeName}</span>
+              ) : null}
             </div>
           </div>
           <div className="exp-price-block">

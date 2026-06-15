@@ -178,7 +178,22 @@ export function StudioPreviewInput(props) {
   const pageHero = useFormValue(['pageHero'])
   const sectionModules = useFormValue(['sectionModules']) || []
   const snapshotStatSelections = useFormValue(['snapshotStatSelections']) || []
-  const reviewRefs = useFormValue(['reviewRefs']) || []
+  const reviewsSection = useFormValue(['reviewsSection'])
+  const legacyReviewRefs = useFormValue(['reviewRefs']) || []
+  const reviewRefs = useMemo(() => {
+    const fromSection = [
+      ...(reviewsSection?.reviewCards || []),
+      ...(reviewsSection?.rotatingReviews || []),
+    ]
+    const merged = fromSection.length ? fromSection : legacyReviewRefs
+    const seen = new Set()
+    return merged.filter((r) => {
+      const id = r?._ref
+      if (!id || seen.has(id)) return false
+      seen.add(id)
+      return true
+    })
+  }, [reviewsSection, legacyReviewRefs])
   const techRefs = useFormValue(['techProductRefs']) || []
   const relatedRefs = useFormValue(['relatedExperienceRefs']) || []
   const reserveBlock = useFormValue(['reserveBlock'])

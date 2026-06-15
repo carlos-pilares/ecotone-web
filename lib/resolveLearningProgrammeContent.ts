@@ -7,6 +7,7 @@ import {
 import type { LearningProgrammeCmsRow } from '@/lib/learningProgrammeGroq'
 import { normalizeLearningOutcomeIcon } from '@/lib/learningOutcomeIcons'
 import type { ExperienceLearningContent } from '@/lib/experienceLearningTypes'
+import { optimizeSanityImageDelivery, SANITY_IMG } from '@/lib/sanity'
 
 function pickImage(
   cmsUrl: string | null | undefined,
@@ -14,7 +15,11 @@ function pickImage(
   alt: string,
 ): { imageSrc: string; imageAlt: string; imageCaption?: string } {
   if (cmsUrl?.trim()) {
-    return { imageSrc: cmsUrl.trim(), imageAlt: alt, imageCaption: fallback.imageCaption }
+    return {
+      imageSrc: optimizeSanityImageDelivery(cmsUrl.trim(), SANITY_IMG.SECTION),
+      imageAlt: alt,
+      imageCaption: fallback.imageCaption,
+    }
   }
   return fallback
 }
@@ -99,7 +104,9 @@ export function resolveLearningProgrammeContent(
               id: project._key?.trim() || `project-${i + 1}`,
               title: project.title?.trim() || '',
               description: project.description?.trim() || '',
-              imageSrc: project.imageUrl?.trim() || fb.imageSrc,
+              imageSrc: project.imageUrl?.trim()
+                ? optimizeSanityImageDelivery(project.imageUrl.trim(), SANITY_IMG.CARD)
+                : fb.imageSrc,
               imageAlt: project.title?.trim() || fb.imageAlt,
             }
           })
@@ -131,6 +138,43 @@ export function resolveLearningProgrammeContent(
     intro: doc.fieldBaseOverrideText?.trim() || fallback.fieldBase.intro,
   }
 
+  const mentorName = doc.mentorName?.trim()
+  const mentorBiography = doc.mentorBiography?.trim()
+  const mentor =
+    mentorName || mentorBiography
+      ? {
+          tabLabel: doc.mentorTabLabel?.trim() || undefined,
+          name: mentorName || undefined,
+          role: doc.mentorRole?.trim() || undefined,
+          photoSrc: doc.mentorPhotoUrl?.trim()
+            ? optimizeSanityImageDelivery(doc.mentorPhotoUrl.trim(), SANITY_IMG.ABOUT_PORTRAIT)
+            : undefined,
+          photoAlt: mentorName || 'Programme mentor',
+          biography: mentorBiography || undefined,
+          achievements:
+            doc.mentorAchievements?.map((item) => item?.trim()).filter((item): item is string => Boolean(item)) ??
+            [],
+          skills: doc.mentorSkills?.map((item) => item?.trim()).filter((item): item is string => Boolean(item)) ?? [],
+        }
+      : null
+
+  const applicationSteps =
+    doc.applicationProcessSteps
+      ?.map((step, i) => ({
+        id: step._key?.trim() || `application-step-${i + 1}`,
+        title: step.title?.trim() || '',
+        description: step.description?.trim() || undefined,
+      }))
+      .filter((step) => step.title) ?? []
+
+  const applicationProcess = applicationSteps.length
+    ? {
+        tabLabel: doc.applicationProcessTabLabel?.trim() || undefined,
+        intro: doc.applicationProcessIntro?.trim() || undefined,
+        steps: applicationSteps,
+      }
+    : null
+
   return {
     purpose,
     howItWorksPillTitle: doc.howItWorksPillTitle?.trim() || undefined,
@@ -142,5 +186,7 @@ export function resolveLearningProgrammeContent(
     projects: projects.length ? projects : fallback.projects,
     outcomes: outcomes.length ? outcomes : fallback.outcomes,
     fieldBase,
+    mentor,
+    applicationProcess,
   }
 }

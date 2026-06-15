@@ -15,10 +15,15 @@ import { filterPublishedPartnerDocs } from '@/lib/partnerDocs'
 import { getLowestActiveExperiencePrice, buildReserveRowsForHome, type ExperiencePriceInput } from '@/lib/reserveCtaPricing'
 import { resolveReserveCtaCard } from '@/lib/resolveReserveCtaCard'
 import { isExternalHref, resolveSmartLinkOrLegacy } from '@/lib/resolveSmartLink'
+import { optimizeSanityImageDelivery, SANITY_IMG } from '@/lib/sanity'
 
 function trimOr(fallback: string, v?: string | null) {
   const t = v?.trim()
   return t ? t : fallback
+}
+
+function aboutImage(cms: string | null | undefined, fallback: string, width: number): string {
+  return optimizeSanityImageDelivery(trimOr(fallback, cms), width)
 }
 
 function splitTitleLines(cms: string | null | undefined, fallback: readonly string[]): string[] {
@@ -195,7 +200,7 @@ export function resolveAboutPageData(
           rel: secondaryResolved.rel || undefined,
         }
       : null,
-    imageUrl: trimOr(fb.hero.imageUrl, c?.heroImageUrl),
+    imageUrl: aboutImage(c?.heroImageUrl, fb.hero.imageUrl, SANITY_IMG.HERO),
     imageAlt: trimOr(fb.hero.imageAlt, c?.heroImageAlt),
   }
 
@@ -204,7 +209,7 @@ export function resolveAboutPageData(
     eyebrow: trimOr(fb.who.eyebrow, c?.whoEyebrow),
     headline: trimOr(fb.who.headline, c?.whoTitle),
     paragraphs: paragraphsFromCms(c?.whoBodyParagraphs, fb.who.paragraphs),
-    imageUrl: trimOr(fb.who.imageUrl, c?.whoImageUrl),
+    imageUrl: aboutImage(c?.whoImageUrl, fb.who.imageUrl, SANITY_IMG.SECTION),
     imageAlt: trimOr(fb.who.imageAlt, c?.whoImageAlt),
     pills: pillsFromCms(c?.whoPills, fb.who.pills),
   }
@@ -248,7 +253,7 @@ export function resolveAboutPageData(
     headline: trimOr(fb.way.headline, c?.wayTitle),
     paragraphs: paragraphsFromCms(c?.wayBodyParagraphs, fb.way.paragraphs),
     pullquote: trimOr(fb.way.pullquote, c?.wayPullquote),
-    imageUrl: trimOr(fb.way.imageUrl, c?.wayImageUrl),
+    imageUrl: aboutImage(c?.wayImageUrl, fb.way.imageUrl, SANITY_IMG.SECTION),
     imageAlt: trimOr(fb.way.imageAlt, c?.wayImageAlt),
   }
 
@@ -282,7 +287,7 @@ export function resolveAboutPageData(
           name,
           role,
           bio,
-          imageUrl,
+          imageUrl: optimizeSanityImageDelivery(imageUrl, SANITY_IMG.ABOUT_PORTRAIT),
           imageAlt,
         }
       })

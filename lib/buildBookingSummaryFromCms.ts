@@ -1,5 +1,6 @@
 import type { ExperienceBookingSummary } from '@/components/booking/types'
 import { formatExperiencePriceParts } from '@/lib/formatExperiencePrice'
+import { optimizeSanityImageDelivery, SANITY_IMG } from '@/lib/sanity'
 
 /** Matches hero / reserve pricing line on experience landings. */
 export const EXPERIENCE_BOOKING_PRICE_SUB = 'per person · all inclusive'
@@ -40,7 +41,9 @@ export function buildBookingSummaryFromCmsExperience(
 
   return {
     experienceName: name,
-    imageSrc: exp.mainImageUrl?.trim() || '',
+    imageSrc: exp.mainImageUrl?.trim()
+      ? optimizeSanityImageDelivery(exp.mainImageUrl.trim(), SANITY_IMG.BOOKING_MODAL)
+      : '',
     imageAlt: name,
     route,
     duration,

@@ -1,11 +1,11 @@
-import type { SanityImageSource } from '@sanity/image-url'
 import { groq } from 'next-sanity'
 
 import type { SmartLinkGroq } from '@/lib/resolveSmartLink'
-import { GROQ_HEADER_NAV_EXPERIENCE_FIELDS } from '@/lib/experienceHeroImageGroq'
-import { GROQ_LODGE_ALTITUDE_AS_ALTITUDE } from '@/lib/lodgeAltitudeGroq'
+import {
+  GROQ_EXPERIENCE_PAGE_NAV_THUMB_URL,
+  GROQ_HEADER_NAV_EXPERIENCE_FIELDS_SLIM,
+} from '@/lib/experienceHeroImageGroq'
 import { GROQ_SMART_LINK_FIELDS } from '@/lib/smartLinkGroq'
-import type { ExperienceGalleryLikeRow, PhotoCollectionDoc } from '@/lib/photoLibraryResolve'
 
 export type HeaderNavProgramGroupRow = {
   label?: string | null
@@ -155,6 +155,7 @@ export type SiteHeaderNavExperiencePageRow = {
   pageSlug?: string | null
   headerNavOrder?: number | null
   galleryOrderKeys?: string[] | null
+  navThumbUrl?: string | null
   experience: {
     _id: string
     name?: string | null
@@ -164,10 +165,7 @@ export type SiteHeaderNavExperiencePageRow = {
     duration?: string | null
     price?: number | null
     priceLabel?: string | null
-    mainImage?: SanityImageSource | null
     mainImageUrl?: string | null
-    gallery?: ExperienceGalleryLikeRow[] | null
-    photoCollection?: PhotoCollectionDoc
   } | null
 }
 
@@ -187,20 +185,11 @@ export type SiteHeaderNavLodgePageRow = {
   heroTitle?: string | null
   heroShortDescription?: string | null
   heroHighlights?: Array<{ text?: string | null } | null> | null
-  heroImageUrl?: string | null
-  heroGalleryOrderKeys?: string[] | null
-  menuThumbnailImage?: string | null
   menuThumbnailImageUrl?: string | null
   lodge: {
     name?: string | null
     route?: string | null
     shortDescription?: string | null
-    location?: string | null
-    altitude?: number | string | null
-    certifications?: Array<{ label?: string | null } | null> | null
-    mainImageUrl?: string | null
-    firstHeroGalleryUrl?: string | null
-    firstGalleryUrl?: string | null
   } | null
 }
 
@@ -326,8 +315,9 @@ export const siteHeaderNavBundleQuery = groq`{
     "pageSlug": slug.current,
     headerNavOrder,
     galleryOrderKeys,
+    ${GROQ_EXPERIENCE_PAGE_NAV_THUMB_URL},
     "experience": experience-> {
-      ${GROQ_HEADER_NAV_EXPERIENCE_FIELDS}
+      ${GROQ_HEADER_NAV_EXPERIENCE_FIELDS_SLIM}
     }
   },
   "learningProgrammes": *[_type == "experiencePage" && defined(learningProgramme._ref) && learningProgramme->status == "active" && defined(slug.current)]
@@ -356,8 +346,6 @@ export const siteHeaderNavBundleQuery = groq`{
     heroTitle,
     heroShortDescription,
     heroHighlights[]{ text },
-    heroGalleryOrderKeys,
-    menuThumbnailImage,
     "menuThumbnailImageUrl": coalesce(
       select(menuThumbnailImage != "" => lodge->gallery[_key == ^.menuThumbnailImage][0].image.asset->url),
       select(count(coalesce(heroGalleryOrderKeys, [])) > 0 => lodge->gallery[_key == ^.heroGalleryOrderKeys[0]][0].image.asset->url),
@@ -367,13 +355,7 @@ export const siteHeaderNavBundleQuery = groq`{
     "lodge": lodge-> {
       name,
       route,
-      shortDescription,
-      location,
-      ${GROQ_LODGE_ALTITUDE_AS_ALTITUDE},
-      certifications[]{ label },
-      "mainImageUrl": mainImage.asset->url,
-      "firstHeroGalleryUrl": gallery[(photoCategory == "hero" || usageSection == "hero") && defined(image.asset)][0].image.asset->url,
-      "firstGalleryUrl": gallery[defined(image.asset)][0].image.asset->url
+      shortDescription
     }
   },
   "routeNavDocs": *[_type == "route" && defined(slug.current)]

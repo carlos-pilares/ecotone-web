@@ -149,6 +149,7 @@ import {promotion} from './promotion'
 import {announcementBarSettings} from './announcementBarSettings'
 import {learningProgramme} from './learningProgramme'
 import {
+  learningProgrammeApplicationStep,
   learningProgrammeOutcome,
   learningProgrammeProject,
   learningProgrammeStep,
@@ -267,6 +268,7 @@ const objects = [
   learningProgrammeTypicalDayRow,
   learningProgrammeProject,
   learningProgrammeOutcome,
+  learningProgrammeApplicationStep,
 ]
 
 const documents = [

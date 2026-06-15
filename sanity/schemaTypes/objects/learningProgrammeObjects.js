@@ -121,6 +121,34 @@ export const learningProgrammeProject = defineType({
   },
 })
 
+export const learningProgrammeApplicationStep = defineType({
+  name: 'learningProgrammeApplicationStep',
+  title: 'Application step',
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'title',
+      title: 'Step title',
+      type: 'string',
+      validation: (Rule) => [Rule.required(), Rule.max(80)],
+    }),
+    defineField({
+      name: 'description',
+      title: 'Step description',
+      type: 'text',
+      rows: 3,
+      validation: (Rule) => Rule.max(400),
+    }),
+  ],
+  preview: {
+    select: {title: 'title', subtitle: 'description'},
+    prepare: ({title, subtitle}) => ({
+      title: title || 'Step',
+      subtitle: subtitle ? `${subtitle.slice(0, 60)}…` : '',
+    }),
+  },
+})
+
 export const learningProgrammeOutcome = defineType({
   name: 'learningProgrammeOutcome',
   title: 'Learning outcome',

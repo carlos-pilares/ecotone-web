@@ -70,7 +70,7 @@ function TailorCard({ tailor }: { tailor: SiteHeaderNavTailor }) {
     <div className="dd-tailor">
       {tailor.imageUrl ? (
         <div className="dd-tailor-thumb">
-          <img src={tailor.imageUrl} alt={tailor.imageAlt || ''} width={160} height={112} decoding="async" />
+          <img src={tailor.imageUrl} alt={tailor.imageAlt || ''} width={160} height={112} loading="lazy" decoding="async" />
         </div>
       ) : (
         <TailorFallbackIcon />

@@ -7,6 +7,7 @@ import type {
   RoutesPagePublishedRouteRow,
 } from '@/lib/routesPageExperiencesSection'
 import { GROQ_LEARNING_PROGRAMME_LISTING_VIA_PAGE } from '@/lib/learningProgrammeGroq'
+import { GROQ_REVIEW_DOC_FIELDS } from '@/lib/reviewGroq'
 import type { ReviewDoc } from '@/lib/queries'
 import type { ReserveCtaSettingsGroq } from '@/lib/reserveCtaGroq'
 import { GROQ_RESERVE_CTA_SETTINGS_FIELDS } from '@/lib/reserveCtaGroq'
@@ -340,62 +341,18 @@ export const routesPageQuery = groq`
       title,
       body,
       "rotatingReviews": rotatingReviews[]-> {
-        _id,
-        quote,
-        authorName,
-        authorCity,
-        authorCountry,
-        "experience": experience->{
-          name,
-          slug
-        },
-        experienceName,
-        rating,
-        isFeatured
+        ${GROQ_REVIEW_DOC_FIELDS}
       },
       "reviewCards": reviewCards[]-> {
-        _id,
-        quote,
-        authorName,
-        authorCity,
-        authorCountry,
-        "experience": experience->{
-          name,
-          slug
-        },
-        experienceName,
-        rating,
-        isFeatured
+        ${GROQ_REVIEW_DOC_FIELDS}
       }
     },
     "reviewsResolved": select(
       count(coalesce(reviewsSection.reviewCards, [])) > 0 => reviewsSection.reviewCards[]-> {
-        _id,
-        quote,
-        authorName,
-        authorCity,
-        authorCountry,
-        "experience": experience->{
-          name,
-          slug
-        },
-        experienceName,
-        rating,
-        isFeatured
+        ${GROQ_REVIEW_DOC_FIELDS}
       },
       count(coalesce(reviewsRefs, [])) > 0 => reviewsRefs[]-> {
-        _id,
-        quote,
-        authorName,
-        authorCity,
-        authorCountry,
-        "experience": experience->{
-          name,
-          slug
-        },
-        experienceName,
-        rating,
-        isFeatured
+        ${GROQ_REVIEW_DOC_FIELDS}
       },
       []
     ),

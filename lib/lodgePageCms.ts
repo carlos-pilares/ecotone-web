@@ -82,7 +82,7 @@ import { formatLodgeAltitudeForSubtitle } from '@/lib/lodgeAltitudeDisplay'
 import { resolveReserveCtaCard } from '@/lib/resolveReserveCtaCard'
 import { resolveSmartLinkOrLegacy, smartLinkIsDisabled } from '@/lib/resolveSmartLink'
 import { resolveHeroGalleryRows } from '@/lib/lodgeGalleryResolve'
-import { cdnImageUrl } from '@/lib/sanity'
+import { cdnImageUrl, sanityImageUrl, SANITY_IMG } from '@/lib/sanity'
 import type { ReviewDoc } from '@/lib/queries'
 import { buildRotatingQuoteItemsFromReviews } from '@/lib/reviewQuoteItems'
 import { normalizeReviewsRatingSummary } from '@/lib/reviewsRatingSummary'
@@ -243,8 +243,10 @@ function roomIdForGalleryItem(g: LodgeGalleryItemRow): string {
 function galleryItemToPhoto(g: LodgeGalleryItemRow, width: number, fallback: string): LodgeGalleryPhoto {
   const alt = (g.altText ?? g.alt ?? g.title ?? '').trim()
   const caption = (g.caption ?? g.description ?? '').trim()
+  const src =
+    sanityImageUrl({ url: g.imageUrl, image: g.image, width, fallback }) || fallback
   return {
-    src: g.imageUrl || cdnImageUrl(g.image, width, fallback),
+    src,
     alt: alt || g.title || '',
     title: g.title || '',
     description: caption,
@@ -257,7 +259,7 @@ function roomGalleryItem(
   fallback: string,
 ): LodgeGalleryPhoto {
   return {
-    src: g.imageUrl || cdnImageUrl(g.image, width, fallback),
+    src: sanityImageUrl({ url: g.imageUrl, image: g.image, width, fallback }) || fallback,
     alt: g.title || '',
     title: g.title || '',
     description: g.description || '',
@@ -293,7 +295,10 @@ function mapRoomsFromLodge(
       }
       let firstSrc = ''
       for (const g of matched) {
-        if (!firstSrc) firstSrc = g.imageUrl || cdnImageUrl(g.image, 500, '') || ''
+        if (!firstSrc) {
+          firstSrc =
+            sanityImageUrl({ url: g.imageUrl, image: g.image, width: SANITY_IMG.LODGE_ROOM, fallback: '' }) || ''
+        }
         galleryPhotos.push(
           galleryItemToPhoto(g, 1200, firstSrc || `https://placehold.co/1200?text=${galleryPhotos.length}`),
         )
@@ -310,7 +315,10 @@ function mapRoomsFromLodge(
           if (!key) continue
           const g = byKey.get(key)
           if (!g) continue
-          if (!firstSrc) firstSrc = g.imageUrl || cdnImageUrl(g.image, 500, '') || ''
+          if (!firstSrc) {
+          firstSrc =
+            sanityImageUrl({ url: g.imageUrl, image: g.image, width: SANITY_IMG.LODGE_ROOM, fallback: '' }) || ''
+        }
           galleryPhotos.push(
             galleryItemToPhoto(g, 1200, firstSrc || `https://placehold.co/1200?text=${galleryPhotos.length}`),
           )
@@ -321,7 +329,13 @@ function mapRoomsFromLodge(
     // Legacy fallback 2: room-local uploaded gallery.
     if (!galleryPhotos.length && r.gallery?.length) {
       const firstLegacy = r.gallery[0]
-      const legImg = firstLegacy?.imageUrl || cdnImageUrl(firstLegacy?.image, 500, '')
+      const legImg =
+        sanityImageUrl({
+          url: firstLegacy?.imageUrl,
+          image: firstLegacy?.image,
+          width: SANITY_IMG.LODGE_ROOM,
+          fallback: '',
+        }) || ''
       galleryPhotos = r.gallery.map((g, j) =>
         roomGalleryItem(g, 1200, legImg || `https://placehold.co/1200?text=${j}`),
       )
@@ -330,7 +344,14 @@ function mapRoomsFromLodge(
       galleryPhotos[0]?.src ||
       (() => {
         const fr = r.gallery?.[0]
-        return fr ? fr.imageUrl || cdnImageUrl(fr.image, 500, '') || '' : ''
+        return fr
+          ? sanityImageUrl({
+              url: fr.imageUrl,
+              image: fr.image,
+              width: SANITY_IMG.LODGE_ROOM,
+              fallback: '',
+            }) || ''
+          : ''
       })()
     const units = r.numberOfRooms ?? 1
     const cap = r.capacity != null ? String(r.capacity) : '?'
@@ -527,7 +548,13 @@ function mapExperienceToCard(
   return toExperienceCardData(
     {
       name: e.name,
-      mainImageUrl: e.mainImageUrl || cdnImageUrl(e.mainImage, 600, ''),
+      mainImageUrl:
+        sanityImageUrl({
+          url: e.mainImageUrl,
+          image: e.mainImage,
+          width: SANITY_IMG.CARD,
+          fallback: '',
+        }) || '',
       programType: e.programType,
       route: e.route,
       routeSlug: e.routeSlug,
@@ -694,7 +721,13 @@ function resolveFacilitiesGalleryFromSelection(
 }
 
 function galleryRowToPrimaryPhoto(g: LodgeGalleryItemRow): LodgePrimaryPhoto {
-  const image = g.imageUrl || cdnImageUrl(g.image, 800, '')
+  const image =
+    sanityImageUrl({
+      url: g.imageUrl,
+      image: g.image,
+      width: SANITY_IMG.LODGE_IDENTITY,
+      fallback: '',
+    }) || ''
   return {
     image,
     imageAlt: (g.altText ?? g.alt ?? g.title ?? '').trim(),
@@ -705,7 +738,13 @@ function galleryRowToPrimaryPhoto(g: LodgeGalleryItemRow): LodgePrimaryPhoto {
 
 function galleryRowToStripPhoto(g: LodgeGalleryItemRow): LodgeStripPhoto {
   return {
-    image: g.imageUrl || cdnImageUrl(g.image, 400, ''),
+    image:
+      sanityImageUrl({
+        url: g.imageUrl,
+        image: g.image,
+        width: SANITY_IMG.LODGE_FACILITY,
+        fallback: '',
+      }) || '',
     imageAlt: (g.altText ?? g.alt ?? g.title ?? '').trim(),
     label: g.title || '',
   }
@@ -915,7 +954,14 @@ export function mergeLodgePageWithFallback(
   const heroRows = resolveHeroGalleryRows(lodge.gallery, row.heroGalleryOrderKeys)
   const galleryPhotos: LodgeGalleryPhoto[] = heroRows.map((g) => galleryItemToPhoto(g, 1400, ''))
   const heroBaseSrc =
-    galleryPhotos[0]?.src?.trim() || cdnImageUrl(lodge.mainImage, 1600, '') || lodge.mainImageUrl?.trim() || ''
+    galleryPhotos[0]?.src?.trim() ||
+    sanityImageUrl({
+      url: lodge.mainImageUrl,
+      image: lodge.mainImage,
+      width: SANITY_IMG.LODGE_HERO,
+      fallback: '',
+    }) ||
+    ''
   const heroTitle = sectionFieldTrim(row.heroTitle) ?? lodge.name?.trim() ?? ''
   const heroTagline =
     sectionFieldTrim(row.heroShortDescription) ?? lodge.shortDescription?.trim() ?? ''
