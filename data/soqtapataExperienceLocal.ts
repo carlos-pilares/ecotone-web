@@ -582,7 +582,8 @@ export type SoqtapataMedia = {
     imageSrc: string
     imageAlt: string
     filmPill: string
-    officialPill: string
+    /** Optional accent pill — only when set explicitly in CMS. */
+    officialPill?: string
     /** Main tile is a KC video item (show play chrome). */
     isVideo?: boolean
     videoUrl?: string
@@ -610,7 +611,6 @@ export const soqtapataPhase4Media: SoqtapataMedia = {
     imageSrc: 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=1200&q=85',
     imageAlt: 'Soqtapata experience film',
     filmPill: 'Soqtapata Pristine Immersion',
-    officialPill: 'Official film',
   },
   thumbs: [
     {

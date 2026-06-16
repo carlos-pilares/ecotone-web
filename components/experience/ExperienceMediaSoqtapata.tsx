@@ -65,10 +65,16 @@ export function ExperienceMediaSoqtapata({ data }: { data: SoqtapataMedia }) {
             ) : (
               <div className="media-overlay" />
             )}
-            <div className="video-meta">
-              <span className="video-meta-pill video-meta-pill--film">{data.video.filmPill}</span>
-              <span className="video-meta-pill video-meta-pill--accent">{data.video.officialPill}</span>
-            </div>
+            {data.video.filmPill?.trim() || data.video.officialPill?.trim() ? (
+              <div className="video-meta">
+                {data.video.filmPill?.trim() ? (
+                  <span className="video-meta-pill video-meta-pill--film">{data.video.filmPill}</span>
+                ) : null}
+                {data.video.officialPill?.trim() ? (
+                  <span className="video-meta-pill video-meta-pill--accent">{data.video.officialPill}</span>
+                ) : null}
+              </div>
+            ) : null}
           </div>
           {data.thumbs.map((t, i) => (
             <MediaThumb key={`${i}-${t.imageAlt}`} t={t} />
