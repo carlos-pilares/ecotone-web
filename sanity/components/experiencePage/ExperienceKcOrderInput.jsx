@@ -67,12 +67,79 @@ function normalizeExpId(id) {
   return (id || '').replace(/^drafts\./, '')
 }
 
+function normalizeLearningProgrammeIds(item) {
+  if (Array.isArray(item?.learningProgrammeIds) && item.learningProgrammeIds.length) {
+    return item.learningProgrammeIds
+  }
+  if (!Array.isArray(item?.learningProgrammes)) return []
+  return item.learningProgrammes.map((ref) => ref?._ref || ref?._id).filter(Boolean)
+}
+
 function termAppliesToExperience(item, experienceId) {
   if (!item || !experienceId) return false
   if (item.appliesToAll === true) return true
   const exp = normalizeExpId(experienceId)
   const ids = Array.isArray(item.experienceIds) ? item.experienceIds : []
   return ids.some((ref) => normalizeExpId(ref) === exp)
+}
+
+function termAppliesToLearningProgramme(item, programmeId) {
+  if (!item || !programmeId) return false
+  if (item.appliesToAll === true) return true
+  const prog = normalizeExpId(programmeId)
+  const ids = normalizeLearningProgrammeIds(item)
+  return ids.some((ref) => normalizeExpId(ref) === prog)
+}
+
+/**
+ * experiencePage links exactly one KC source:
+ * - `learningProgramme` → filter FAQs by learningProgramme._id (not experiencePage id)
+ * - `experience` → filter FAQs by experience._id
+ */
+function resolvePageSource(experienceRef, learningProgrammeRef) {
+  const learningProgrammeId = normalizeRefId(learningProgrammeRef)
+  const experienceId = normalizeRefId(experienceRef)
+  if (learningProgrammeId) {
+    return {
+      mode: 'learningProgramme',
+      filterId: learningProgrammeId,
+      kcId: learningProgrammeId,
+    }
+  }
+  if (experienceId) {
+    return {
+      mode: 'experience',
+      filterId: experienceId,
+      kcId: experienceId,
+    }
+  }
+  return {mode: null, filterId: null, kcId: null}
+}
+
+function readSiblingFormRef(...candidates) {
+  for (const ref of candidates) {
+    const id = normalizeRefId(ref)
+    if (id) return ref
+  }
+  return null
+}
+
+/** Read top-level experiencePage fields from custom inputs (faqOrderKeys lives at document root). */
+function useExperiencePageSiblingRef(fieldName) {
+  const direct = useFormValue([fieldName])
+  const viaParent = useFormValue(['..', fieldName])
+  return readSiblingFormRef(direct, viaParent)
+}
+
+function faqAppliesToPageSource(item, pageSource) {
+  if (!pageSource?.filterId) return false
+  if (pageSource.mode === 'learningProgramme') {
+    return termAppliesToLearningProgramme(item, pageSource.filterId)
+  }
+  if (pageSource.mode === 'experience') {
+    return termAppliesToExperience(item, pageSource.filterId)
+  }
+  return false
 }
 
 function faqMetaCentral(item, idx) {
@@ -87,7 +154,8 @@ function sectionHasApplicableRow(section, experienceId) {
   return section.rows.some((row) => termAppliesToExperience(row, experienceId))
 }
 
-function buildOptions(source, doc, experienceId, termsConditions, faqsSettings, travellerGuideSettings) {
+function buildOptions(source, doc, pageSource, termsConditions, faqsSettings, travellerGuideSettings) {
+  const linkedId = pageSource?.filterId
   if (!doc && source !== 'termsPanels' && source !== 'faq' && source !== 'travellerGuide') return []
   switch (source) {
     case 'overviewHighlights': {
@@ -142,8 +210,8 @@ function buildOptions(source, doc, experienceId, termsConditions, faqsSettings, 
     }
     case 'termsPanels': {
       const central = termsConditions?.termsItems
-      if (Array.isArray(central) && central.length && experienceId) {
-        const applicable = central.filter((item) => termAppliesToExperience(item, experienceId))
+      if (Array.isArray(central) && central.length && linkedId) {
+        const applicable = central.filter((item) => termAppliesToExperience(item, linkedId))
         if (applicable.length) {
           return applicable.map((item, idx) => {
             const key = item?._key || `terms-${idx}`
@@ -178,8 +246,8 @@ function buildOptions(source, doc, experienceId, termsConditions, faqsSettings, 
     }
     case 'travellerGuide': {
       const central = travellerGuideSettings?.travellerGuideSections
-      if (Array.isArray(central) && central.length && experienceId) {
-        const applicable = central.filter((section) => sectionHasApplicableRow(section, experienceId))
+      if (Array.isArray(central) && central.length && linkedId) {
+        const applicable = central.filter((section) => sectionHasApplicableRow(section, linkedId))
         if (applicable.length) {
           return applicable.map((section, idx) => {
             const key = section?._key || `tg-${idx}`
@@ -207,12 +275,14 @@ function buildOptions(source, doc, experienceId, termsConditions, faqsSettings, 
     }
     case 'faq': {
       const central = faqsSettings?.faqItems
-      if (Array.isArray(central) && central.length && experienceId) {
-        const applicable = central.filter((item) => termAppliesToExperience(item, experienceId))
+      if (Array.isArray(central) && central.length && pageSource?.filterId) {
+        const applicable = central.filter((item) => faqAppliesToPageSource(item, pageSource))
         if (applicable.length) {
           return applicable.map((item, idx) => {
             const {key, label: base} = faqMetaCentral(item, idx)
-            const scope = item?.appliesToAll ? ' (all experiences)' : ''
+            let scope = ''
+            if (item?.appliesToAll) scope = ' (all experiences)'
+            else if (pageSource.mode === 'learningProgramme') scope = ' (this learning programme)'
             return {key, label: `${base}${scope}`}
           })
         }
@@ -252,36 +322,80 @@ function buildOptions(source, doc, experienceId, termsConditions, faqsSettings, 
 export function ExperienceKcOrderInput(props) {
   const {value, onChange, schemaType} = props
   const client = useClient({apiVersion: '2024-01-01'})
-  const experienceRef = useFormValue(['experience'])
-  const learningProgrammeRef = useFormValue(['learningProgramme'])
+  const pageIdRaw = readSiblingFormRef(useFormValue(['_id']), useFormValue(['..', '_id']))
+  const experienceRefFromForm = useExperiencePageSiblingRef('experience')
+  const learningProgrammeRefFromForm = useExperiencePageSiblingRef('learningProgramme')
   const source = schemaType?.options?.kcSource
 
   const [doc, setDoc] = useState(null)
   const [termsConditions, setTermsConditions] = useState(null)
   const [faqsSettings, setFaqsSettings] = useState(null)
   const [travellerGuideSettings, setTravellerGuideSettings] = useState(null)
+  const [pageLinks, setPageLinks] = useState(null)
   const [loadErr, setLoadErr] = useState(null)
+  const [loading, setLoading] = useState(false)
 
-  const id = normalizeRefId(experienceRef) || normalizeRefId(learningProgrammeRef)
+  const pageSource = useMemo(() => {
+    const experienceRef = experienceRefFromForm ?? pageLinks?.experience ?? null
+    const learningProgrammeRef = learningProgrammeRefFromForm ?? pageLinks?.learningProgramme ?? null
+    return resolvePageSource(experienceRef, learningProgrammeRef)
+  }, [experienceRefFromForm, learningProgrammeRefFromForm, pageLinks])
+
+  const kcId = pageSource.kcId
+  const pageDocumentId = normalizeRefId(pageIdRaw)
+
+  const faqDebug = useMemo(() => {
+    if (source !== 'faq') return null
+    const items = faqsSettings?.faqItems
+    if (!Array.isArray(items)) return null
+    const applicable = items.filter((item) => faqAppliesToPageSource(item, pageSource))
+    const programmeSpecific = applicable.filter((item) => item?.appliesToAll !== true)
+    return {
+      build: 'faq-picker-lp-v3',
+      pageDocumentId: pageDocumentId || null,
+      sourceMode: pageSource.mode,
+      sourceId: pageSource.filterId,
+      totalFaqs: items.length,
+      applicableCount: applicable.length,
+      programmeSpecificCount: programmeSpecific.length,
+      programmeSpecificTitles: programmeSpecific.map((item) => item?.title).filter(Boolean),
+    }
+  }, [source, faqsSettings, pageSource, pageDocumentId])
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development' && faqDebug) {
+      // eslint-disable-next-line no-console
+      console.info('[ExperienceKcOrderInput FAQ]', faqDebug)
+    }
+  }, [faqDebug])
 
   useEffect(() => {
     let cancelled = false
     async function run() {
-      if (!id) {
+      const pagePub = pageDocumentId ? pageDocumentId.replace(/^drafts\./, '') : ''
+      const pageCandidates = pagePub ? [pagePub, `drafts.${pagePub}`] : []
+
+      if (!pageCandidates.length && !kcId) {
         setDoc(null)
         setTermsConditions(null)
         setFaqsSettings(null)
         setTravellerGuideSettings(null)
+        setPageLinks(null)
         setLoadErr(null)
+        setLoading(false)
         return
       }
-      const pub = id.replace(/^drafts\./, '')
-      const candidates = [pub, `drafts.${pub}`]
+
+      const kcPub = kcId ? kcId.replace(/^drafts\./, '') : ''
+      const kcCandidates = kcPub ? [kcPub, `drafts.${kcPub}`] : []
+
       setLoadErr(null)
+      setLoading(true)
       try {
         const q = `{
-          "kc": *[_id in $ids] | order(_updatedAt desc)[0] ${experienceKcOrderDocProjection},
-          "termsConditions": *[_id == "termsConditionsSettings"][0]{
+          "pageLinks": ${pageCandidates.length ? `*[_id in $pageIds] | order(_updatedAt desc)[0]{ experience, learningProgramme }` : 'null'},
+          "kc": ${kcCandidates.length ? `*[_id in $kcIds] | order(_updatedAt desc)[0] ${experienceKcOrderDocProjection}` : 'null'},
+          "termsConditions": *[_id in ["termsConditionsSettings", "drafts.termsConditionsSettings"]] | order(_updatedAt desc)[0]{
             termsItems[]{
               _key,
               title,
@@ -289,15 +403,17 @@ export function ExperienceKcOrderInput(props) {
               "experienceIds": experiences[]._ref
             }
           },
-          "faqsSettings": *[_id == "faqsSettings"][0]{
+          "faqsSettings": *[_id in ["faqsSettings", "drafts.faqsSettings"]] | order(_updatedAt desc)[0]{
             faqItems[]{
               _key,
               title,
               appliesToAll,
-              "experienceIds": experiences[]._ref
+              "experienceIds": experiences[]._ref,
+              "learningProgrammeIds": learningProgrammes[]._ref,
+              learningProgrammes[]{ _ref }
             }
           },
-          "travellerGuideSettings": *[_id == "travellerGuideSettings"][0]{
+          "travellerGuideSettings": *[_id in ["travellerGuideSettings", "drafts.travellerGuideSettings"]] | order(_updatedAt desc)[0]{
             travellerGuideSections[]{
               _key,
               title,
@@ -310,12 +426,17 @@ export function ExperienceKcOrderInput(props) {
             }
           }
         }`
-        const res = await client.fetch(q, {ids: candidates})
+        const res = await client.fetch(q, {
+          pageIds: pageCandidates,
+          kcIds: kcCandidates,
+        })
         if (!cancelled) {
+          setPageLinks(res?.pageLinks || null)
           setDoc(res?.kc || null)
           setTermsConditions(res?.termsConditions || null)
           setFaqsSettings(res?.faqsSettings || null)
           setTravellerGuideSettings(res?.travellerGuideSettings || null)
+          setLoading(false)
         }
       } catch (e) {
         if (!cancelled) {
@@ -323,7 +444,9 @@ export function ExperienceKcOrderInput(props) {
           setTermsConditions(null)
           setFaqsSettings(null)
           setTravellerGuideSettings(null)
+          setPageLinks(null)
           setLoadErr(e?.message || 'Could not load experience')
+          setLoading(false)
         }
       }
     }
@@ -331,11 +454,11 @@ export function ExperienceKcOrderInput(props) {
     return () => {
       cancelled = true
     }
-  }, [client, id])
+  }, [client, kcId, pageDocumentId])
 
   const options = useMemo(
-    () => buildOptions(source, doc, id, termsConditions, faqsSettings, travellerGuideSettings),
-    [doc, source, id, termsConditions, faqsSettings, travellerGuideSettings],
+    () => buildOptions(source, doc, pageSource, termsConditions, faqsSettings, travellerGuideSettings),
+    [doc, source, pageSource, termsConditions, faqsSettings, travellerGuideSettings],
   )
   const optionMap = useMemo(() => new Map(options.map((o) => [o.key, o])), [options])
 
@@ -389,7 +512,16 @@ export function ExperienceKcOrderInput(props) {
     [move],
   )
 
-  if (!id) {
+  if (!kcId) {
+    if (loading && pageDocumentId) {
+      return (
+        <Card padding={3} radius={2} border tone="transparent">
+          <Text size={1} muted>
+            Loading linked Knowledge Center…
+          </Text>
+        </Card>
+      )
+    }
     return (
       <Card padding={3} radius={2} border tone="transparent">
         <Text size={1} muted>
@@ -412,7 +544,7 @@ export function ExperienceKcOrderInput(props) {
     return (
       <Card padding={3} radius={2} border tone="transparent">
         <Text size={1} muted>
-          No items in the linked Experience for this list yet.
+          No items in the linked {pageSource.mode === 'learningProgramme' ? 'Learning Programme' : 'Experience'} for this list yet.
         </Text>
       </Card>
     )
@@ -420,6 +552,15 @@ export function ExperienceKcOrderInput(props) {
 
   return (
     <Stack space={4}>
+      {source === 'faq' && faqDebug ? (
+        <Card padding={3} radius={2} border tone="transparent">
+          <Text size={1} muted>
+            FAQ picker {faqDebug.build} · mode={faqDebug.sourceMode || '—'} · sourceId=
+            {faqDebug.sourceId || '—'} · programme-specific={faqDebug.programmeSpecificCount}/
+            {faqDebug.applicableCount}
+          </Text>
+        </Card>
+      ) : null}
       <Card padding={3} radius={2} border tone="transparent">
         <Text size={1} weight="semibold" style={{marginBottom: 10}}>
           Selected order (drag or use arrows)

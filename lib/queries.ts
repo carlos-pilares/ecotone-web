@@ -452,7 +452,9 @@ export const faqsSettingsQuery = groq`*[_id == "faqsSettings"][0]{
     title,
     body,
     appliesToAll,
-    "experienceIds": experiences[]._ref
+    "experienceIds": experiences[]._ref,
+    "learningProgrammeIds": learningProgrammes[]._ref,
+    learningProgrammes[]{ _ref }
   }
 }`
 

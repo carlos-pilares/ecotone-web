@@ -6,7 +6,7 @@ export type FaqItemRow = {
   experienceIds?: string[] | null
   experiences?: Array<{ _id?: string | null }> | null
   learningProgrammeIds?: string[] | null
-  learningProgrammes?: Array<{ _id?: string | null }> | null
+  learningProgrammes?: Array<{ _id?: string | null; _ref?: string | null }> | null
 }
 
 export type FaqsSettingsRow = {
@@ -80,13 +80,15 @@ export type LegacyFaqRow = {
 }
 
 function normalizeLearningProgrammeIds(
-  row: { learningProgrammeIds?: string[] | null; learningProgrammes?: Array<{ _id?: string | null }> | null },
+  row: { learningProgrammeIds?: string[] | null; learningProgrammes?: Array<{ _id?: string | null; _ref?: string | null }> | null },
 ): string[] {
   if (row.learningProgrammeIds?.length) {
     return row.learningProgrammeIds.map((id) => id?.trim()).filter(Boolean) as string[]
   }
   if (!row.learningProgrammes?.length) return []
-  return row.learningProgrammes.map((e) => e?._id?.trim()).filter(Boolean) as string[]
+  return row.learningProgrammes
+    .map((e) => e?._ref?.trim() || e?._id?.trim())
+    .filter(Boolean) as string[]
 }
 
 function faqAppliesToLearningProgramme(item: FaqItemRow, programmeId: string): boolean {
