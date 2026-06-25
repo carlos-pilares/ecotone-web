@@ -27,6 +27,7 @@
     "diag:lodge-knowledge": "tsx scripts/diagLodgeKnowledgeBlocking.ts",
     "migrate:partners-cleanup": "tsx scripts/migratePartnersCleanup.ts",
     "cleanup:sanity-legacy-attributes": "tsx scripts/cleanupSanityLegacyAttributes.ts",
+    "optimize:crees-manu-images": "node scripts/optimizeCreesManuImages.mjs",
     "diagnose:sanity-document-attributes": "tsx scripts/diagnoseSanityDocumentAttributes.ts"
   },
   "dependencies": {
