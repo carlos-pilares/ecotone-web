@@ -1,6 +1,8 @@
 # Modal URL & conversion analytics
 
-Internal developer reference for the URL-synchronised booking modals and canonical conversion tracking.
+Production reference for URL-synchronised booking modals and GA4/Google Ads conversion tracking.
+
+**Principle:** The modal is not a page. Query-param History API updates sync UX and browser history only. Analytics treats real navigations (pathname changes) and conversion events separately.
 
 ## Modal URL architecture (stable — do not change)
 
@@ -29,63 +31,89 @@ Query params are synced via the History API (`pushState` / `popstate`). The user
 
 URL builders live in `lib/bookingModalUrl.ts`. All History API sync is owned by `BookingModalContext` — CTAs must not manipulate query params directly.
 
-## Modal lifecycle
+## Final event map
 
-1. **Open** — CTA calls `openPlanJourney(source)` or `openExperienceBooking(summary, source)` from `useBookingModal()`.
-2. **Steps (plan only)** — `onPlanStepAdvance` pushes `step=` URLs; UI Back uses `history.back()`.
-3. **Channel** — selecting Email/WhatsApp pushes `channel=`; Back clears channel before previous step.
-4. **Email success** — modal calls `onEmailThankYou()` → context sets thank-you phase, pushes thank-you URL, fires `trackEmailConversionSuccess()`.
-5. **Close** — `close()` runs `history.go(-n)` to restore the pre-modal URL.
-6. **Browser Back/Forward** — `popstate` → `syncStateFromUrl()` updates modal phase/step/channel.
+| User action | URL change | GA4 events |
+|-------------|------------|------------|
+| Land on a page (e.g. `/`, `/experiences/[slug]`) | Pathname set | **`page_view`** (once per pathname) |
+| Click book-intent CTA | — | **`book_now_click`** |
+| Modal opens (form phase) | `?modal=plan…` or `?modal=book` | **`booking_modal_open`** (once per session) |
+| Advance plan step | `?step=…` | — |
+| Select email / WhatsApp channel | `?channel=…` | — |
+| Click WhatsApp link | — | **`whatsapp_click`** only |
+| Successful email submit | `?modal=thank-you&channel=email` | **`enquiry_submit`** + **`generate_lead`** (once each) |
+| Thank-you visible | (same URL) | — |
+| Browser Back / Forward through modal | Step/channel/thank-you restored | — |
+| Close modal | Params stripped via history | — |
+| Navigate to another route | Pathname changes | **`page_view`** (new pathname only) |
 
-### Thank-you protection
+Query-only changes (`?modal=`, `?step=`, `?channel=`, `?modal=thank-you`) never fire `page_view`.
 
-The thank-you URL is **not** a deep-linkable landing page. If `?modal=thank-you` appears without a successful email submit in the current session (`thankYouEligibleRef`), the context:
-
-- strips modal query params via `history.replaceState`
-- keeps the modal closed
-
-Thank-you is only valid immediately after `trackEmailConversionSuccess` runs in the same session.
-
-## Analytics lifecycle
-
-### Pre-conversion (unchanged events)
+### Pre-conversion helpers
 
 | Event | When | Helper |
 |-------|------|--------|
 | `book_now_click` | Book-intent CTA click | `trackBookNowClick()` |
-| `booking_modal_open` | Modal opens (form phase) | `trackBookingModalOpen()` |
+| `booking_modal_open` | Modal opens (form phase, once) | `trackBookingModalOpen()` |
 | `whatsapp_click` | WhatsApp link click | `trackWhatsappClick()` |
 
-### Canonical conversion (email success only)
+### Conversion (email success only)
 
 **Single entry point:** `trackEmailConversionSuccess()` in `lib/conversionAnalytics.ts`.
 
 Fires exactly once per successful email submission:
 
-1. Virtual `page_view` (current History API URL)
-2. `enquiry_submit`
-3. `generate_lead`
+1. `enquiry_submit`
+2. `generate_lead`
 
-Do not fire these events anywhere else.
+Guarded by `emailConversionFired`; reset via `resetEmailConversionGuard()` on modal open, close, and pathname change.
 
-### Standard conversion payload
+Does **not** fire `page_view`. WhatsApp does **not** fire conversion events.
 
-Built by `buildStandardConversionPayload()`:
+## Page views (real routes only)
 
-| Field | Description |
-|-------|-------------|
-| `conversion_intent` | `plan_journey` \| `book_experience` |
-| `channel` | `email` (success path) |
-| `cta_id` | Stable CTA identifier (from `lib/ctaIds.ts`) |
-| `source` | Placement label; defaults to `button_location` |
-| `page_path` | `pathname + search` |
-| `page_url` | Full current URL |
-| `experience_slug` | When on an experience page or from booking summary |
-| `programme_type` | From experience summary when available |
-| `lodge_slug` | When on a lodge page |
+| Mechanism | Role |
+|-----------|------|
+| `GoogleAnalytics` | `gtag('config', id, { send_page_view: false })` — disables GA auto page_view |
+| `GaRoutePageView` | Fires one `page_view` per Next.js **pathname** change |
+| `lib/gaPageView.ts` | dataLayer guard + `runWithModalHistoryAnalyticsSuppressed()` around modal history mutations |
 
-`generate_lead` also includes `lead_type` (= `conversion_intent`) for GA4 backwards compatibility.
+Modal `pushState` / `replaceState` / `history.go` / `popstate` does not change pathname, so `GaRoutePageView` does not re-fire. The dataLayer guard blocks GA4 Enhanced Measurement auto `page_view` during suppressed modal history operations.
+
+**GA4 Admin (recommended):** Web stream → Enhanced measurement → disable **“Page changes based on browser history events”**.
+
+## Standard conversion payload
+
+Built by `buildStandardConversionPayload()`. Shared by `enquiry_submit` and `generate_lead`.
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `conversion_intent` | Yes | `plan_journey` \| `book_experience` |
+| `channel` | Yes | `email` on success path |
+| `cta_id` | Yes* | Stable CTA identifier from `lib/ctaIds.ts` |
+| `source` | Yes* | Placement label; defaults to `button_location` |
+| `button_location` | Yes* | CTA placement (`header`, `hero`, `sticky_nav`, etc.) |
+| `page_path` | Yes | `pathname + search` at conversion time |
+| `page_url` | Yes | Full current URL at conversion time |
+| `experience_slug` | When applicable | On experience pages or from booking summary |
+| `programme_type` | When applicable | From experience booking summary |
+| `lodge_slug` | When applicable | On lodge pages |
+| `lead_type` | `generate_lead` only | Same value as `conversion_intent` |
+
+\*Always present when modal opened from a wired CTA (`BookNowOpenSource`).
+
+## Modal lifecycle (code)
+
+1. **Open** — CTA calls `openPlanJourney(source)` or `openExperienceBooking(summary, source)`.
+2. **Steps (plan only)** — `onPlanStepAdvance` pushes `step=` URLs; UI Back uses `history.back()`.
+3. **Channel** — selecting Email/WhatsApp pushes `channel=`; Back clears channel before previous step.
+4. **Email success** — modal calls `onEmailThankYou()` → context pushes thank-you URL, fires `trackEmailConversionSuccess()`.
+5. **Close** — `close()` runs `history.go(-n)` to restore the pre-modal URL.
+6. **Browser Back/Forward** — `popstate` → `syncStateFromUrl()` updates modal phase/step/channel.
+
+### Thank-you protection
+
+The thank-you URL is **not** a deep-linkable landing page. If `?modal=thank-you` appears without a successful email submit in the current session (`thankYouEligibleRef`), the context strips modal params and keeps the modal closed.
 
 ## CTA identifiers (`lib/ctaIds.ts`)
 
@@ -97,7 +125,26 @@ Never derive IDs from button labels. Use constants:
 - `experience_reserve_whatsapp`, `footer_whatsapp`, `floating_whatsapp`
 - `booking_modal_whatsapp`
 
-Add new IDs to `CTA_IDS` before wiring a new CTA.
+## Google Ads & GA4
+
+- **Primary conversion:** Import **`generate_lead`** from GA4 into Google Ads (Goals → Conversions → Import).
+- **Secondary / validation:** **`enquiry_submit`** — useful for debugging and cross-checking counts.
+- **Destination URLs are not required.** Success uses History API (`?modal=thank-you&channel=email`), not full document navigation. Event-based conversion import is the supported production path.
+- Mark `generate_lead` as a conversion event in GA4 Admin before importing to Ads.
+
+## Key files
+
+| File | Role |
+|------|------|
+| `lib/bookingModalUrl.ts` | URL parse/build |
+| `lib/conversionAnalytics.ts` | Canonical conversion helper + payload |
+| `lib/ctaIds.ts` | Stable CTA identifiers |
+| `lib/trackBookNowClick.ts` | Pre-conversion book events + `BookNowOpenSource` |
+| `lib/trackWhatsappClick.ts` | WhatsApp click events + page context |
+| `lib/gaPageView.ts` | Route page views + modal history page_view guard |
+| `components/GaRoutePageView.tsx` | Pathname-based page_view tracker |
+| `components/GoogleAnalytics.tsx` | gtag load + `send_page_view: false` |
+| `components/booking/BookingModalContext.tsx` | Modal state, History API, thank-you guard, conversion calls |
 
 ## Integrating a new lead CTA
 
@@ -118,22 +165,3 @@ openExperienceBooking(summary, {
 ```
 
 3. Do **not** touch URL query params or conversion events in the CTA component.
-4. Optionally fire `trackBookNowClick()` on click if the CTA is a link that does not open the modal directly (see `ReserveCtaSection`).
-
-For tailor/reserve bands, pass `ctaId` into `TailorMadeBand` / `SmartLinkCtaAction` / `ReserveCtaCta`.
-
-## Key files
-
-| File | Role |
-|------|------|
-| `lib/bookingModalUrl.ts` | URL parse/build |
-| `lib/conversionAnalytics.ts` | Canonical conversion helper + payload |
-| `lib/ctaIds.ts` | Stable CTA identifiers |
-| `lib/trackBookNowClick.ts` | Pre-conversion book events + `BookNowOpenSource` type |
-| `components/booking/BookingModalContext.tsx` | Modal state, History API, thank-you guard |
-
-## Ad platform notes
-
-- Email success URLs always include `modal=thank-you` and `channel=email`.
-- Prefer importing GA4 `generate_lead` for Google Ads; URL-contains rules depend on tag configuration for History API updates.
-- Payload fields are platform-agnostic for future Meta/LinkedIn GTM mappings.

@@ -1,6 +1,7 @@
-import { GA_MEASUREMENT_ID, trackEvent } from '@/lib/analytics'
+import { trackEvent } from '@/lib/analytics'
 import type { ExperienceBookingSummary } from '@/components/booking/types'
 import type { CtaId } from '@/lib/ctaIds'
+import type { BookNowClickButtonLocation } from '@/lib/trackBookNowClick'
 import { getAnalyticsPageContext } from '@/lib/trackWhatsappClick'
 
 export type ConversionIntent = 'plan_journey' | 'book_experience'
@@ -12,6 +13,7 @@ export type EmailConversionParams = {
   channel?: ConversionChannel
   cta_id?: CtaId
   source?: string
+  button_location?: BookNowClickButtonLocation
   experienceSummary?: ExperienceBookingSummary
 }
 
@@ -22,9 +24,17 @@ export type StandardConversionPayload = {
   page_url: string
   cta_id?: string
   source?: string
+  button_location?: string
   experience_slug?: string
   programme_type?: string
   lodge_slug?: string
+}
+
+let emailConversionFired = false
+
+/** Allow a new conversion when a fresh booking modal session opens. */
+export function resetEmailConversionGuard(): void {
+  emailConversionFired = false
 }
 
 function experienceSlugFromRoute(route: string | undefined): string | undefined {
@@ -60,6 +70,7 @@ export function buildStandardConversionPayload(
 
   if (params.cta_id) payload.cta_id = params.cta_id
   if (params.source) payload.source = params.source
+  if (params.button_location) payload.button_location = params.button_location
 
   if (context.page_type === 'experience') {
     payload.experience_slug = context.page_slug
@@ -78,27 +89,17 @@ export function buildStandardConversionPayload(
   return payload
 }
 
-function trackVirtualConversionPageView(payload: StandardConversionPayload): void {
-  if (!GA_MEASUREMENT_ID || typeof window === 'undefined' || typeof window.gtag !== 'function') return
-
-  window.gtag('event', 'page_view', {
-    page_path: payload.page_path,
-    page_location: payload.page_url,
-    page_title: document.title,
-  })
-}
-
 /**
- * Canonical email conversion helper — the only place that fires success signals:
- * virtual page_view, enquiry_submit, and generate_lead.
+ * Canonical email conversion helper — the only place that fires success events.
+ * Does not emit page_view; modal URLs are not treated as page navigations.
  */
 export function trackEmailConversionSuccess(params: EmailConversionParams): void {
-  if (typeof window === 'undefined') return
+  if (typeof window === 'undefined' || emailConversionFired) return
 
+  emailConversionFired = true
   const payload = buildStandardConversionPayload(params)
   const eventPayload: Record<string, string> = { ...payload }
 
-  trackVirtualConversionPageView(payload)
   trackEvent('enquiry_submit', eventPayload)
   trackEvent('generate_lead', {
     ...eventPayload,

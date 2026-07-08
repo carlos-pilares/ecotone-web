@@ -1,6 +1,7 @@
 import Script from 'next/script'
 
 import { GA_MEASUREMENT_ID } from '@/lib/analytics'
+import { gaModalHistoryGuardScript } from '@/lib/gaPageView'
 
 /** Loads GA4 gtag.js when `NEXT_PUBLIC_GA_MEASUREMENT_ID` is set. No Google Tag Manager. */
 export function GoogleAnalytics() {
@@ -14,8 +15,9 @@ export function GoogleAnalytics() {
         {`
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
+${gaModalHistoryGuardScript()}
 gtag('js', new Date());
-gtag('config', '${id}');
+gtag('config', '${id}', { send_page_view: false });
 `}
       </Script>
     </>

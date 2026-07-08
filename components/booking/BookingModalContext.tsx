@@ -32,8 +32,9 @@ import {
   type ParsedModalUrl,
   type PlanJourneyStepSlug,
 } from '@/lib/bookingModalUrl'
-import { trackEmailConversionSuccess } from '@/lib/conversionAnalytics'
+import { trackEmailConversionSuccess, resetEmailConversionGuard } from '@/lib/conversionAnalytics'
 import { CTA_IDS } from '@/lib/ctaIds'
+import { runWithModalHistoryAnalyticsSuppressed, suppressModalHistoryPageViews } from '@/lib/gaPageView'
 import { defaultWhatsappNumber } from '@/lib/bookingWhatsapp'
 import {
   bookNowContextFromSummary,
@@ -170,9 +171,11 @@ export function BookingModalProvider({
   }, [state])
 
   const stripModalParamsFromUrl = useCallback(() => {
-    const cleared = buildClearModalSearch(window.location.search.replace(/^\?/, ''))
-    const href = hrefFromPathAndSearch(window.location.pathname, cleared)
-    window.history.replaceState(window.history.state, '', href)
+    runWithModalHistoryAnalyticsSuppressed(() => {
+      const cleared = buildClearModalSearch(window.location.search.replace(/^\?/, ''))
+      const href = hrefFromPathAndSearch(window.location.pathname, cleared)
+      window.history.replaceState(window.history.state, '', href)
+    })
   }, [])
 
   const rejectUnauthorizedThankYou = useCallback(
@@ -187,12 +190,14 @@ export function BookingModalProvider({
   )
 
   const pushModalUrl = useCallback((search: string) => {
-    const nextDepth = modalHistoryDepth.current + 1
-    modalHistoryDepth.current = nextDepth
-    modalHistoryPushes.current = nextDepth
-    const href = hrefFromPathAndSearch(window.location.pathname, search)
-    const historyState: ModalHistoryState = { ecotoneBookingModal: true, depth: nextDepth }
-    window.history.pushState(historyState, '', href)
+    runWithModalHistoryAnalyticsSuppressed(() => {
+      const nextDepth = modalHistoryDepth.current + 1
+      modalHistoryDepth.current = nextDepth
+      modalHistoryPushes.current = nextDepth
+      const href = hrefFromPathAndSearch(window.location.pathname, search)
+      const historyState: ModalHistoryState = { ecotoneBookingModal: true, depth: nextDepth }
+      window.history.pushState(historyState, '', href)
+    })
   }, [])
 
   const syncStateFromUrl = useCallback(() => {
@@ -255,19 +260,23 @@ export function BookingModalProvider({
 
   const close = useCallback(() => {
     thankYouEligibleRef.current = false
+    resetEmailConversionGuard()
     const pushes = modalHistoryPushes.current
     modalHistoryDepth.current = 0
     modalHistoryPushes.current = 0
     setState({ kind: 'closed' })
     if (pushes > 0) {
       closingHistorySteps.current = pushes
-      window.history.go(-pushes)
+      runWithModalHistoryAnalyticsSuppressed(() => {
+        window.history.go(-pushes)
+      })
     }
   }, [])
 
   const openPlanJourney = useCallback(
     (source: BookNowOpenSource) => {
       thankYouEligibleRef.current = false
+      resetEmailConversionGuard()
       trackBookNowClick({
         cta_id: source.cta_id,
         source: source.source,
@@ -290,6 +299,7 @@ export function BookingModalProvider({
   const openExperienceBooking = useCallback(
     (summary: ExperienceBookingSummary, source: BookNowOpenSource) => {
       thankYouEligibleRef.current = false
+      resetEmailConversionGuard()
       trackBookNowClick(bookNowContextFromSummary(summary, source))
       setState({ kind: 'experience', summary, source, phase: 'form', channel: null })
       pushModalUrl(buildModalOpenSearch(window.location.pathname, window.location.search, 'experience'))
@@ -355,6 +365,7 @@ export function BookingModalProvider({
       channel: 'email',
       cta_id: active.source.cta_id,
       source: active.source.source ?? active.source.button_location,
+      button_location: active.source.button_location,
     })
   }, [enterThankYouUrl])
 
@@ -369,6 +380,7 @@ export function BookingModalProvider({
       channel: 'email',
       cta_id: active.source.cta_id,
       source: active.source.source ?? active.source.button_location,
+      button_location: active.source.button_location,
       experienceSummary: active.summary,
     })
   }, [enterThankYouUrl])
@@ -420,15 +432,32 @@ export function BookingModalProvider({
 
   useEffect(() => {
     const onPopState = (event: PopStateEvent) => {
-      if (closingHistorySteps.current > 0) {
-        closingHistorySteps.current -= 1
-        return
+      let releaseModalPageViewSuppression: (() => void) | undefined
+      if (
+        closingHistorySteps.current > 0 ||
+        modalHistoryPushes.current > 0 ||
+        activeModalRef.current.kind !== 'closed'
+      ) {
+        releaseModalPageViewSuppression = suppressModalHistoryPageViews()
       }
-      const historyState = event.state as ModalHistoryState | null
-      const depth = typeof historyState?.depth === 'number' ? historyState.depth : 0
-      modalHistoryDepth.current = depth
-      modalHistoryPushes.current = depth
-      syncStateFromUrl()
+
+      try {
+        if (closingHistorySteps.current > 0) {
+          closingHistorySteps.current -= 1
+          return
+        }
+        const historyState = event.state as ModalHistoryState | null
+        const depth = typeof historyState?.depth === 'number' ? historyState.depth : 0
+        modalHistoryDepth.current = depth
+        modalHistoryPushes.current = depth
+        syncStateFromUrl()
+      } finally {
+        if (releaseModalPageViewSuppression) {
+          queueMicrotask(() => {
+            window.setTimeout(releaseModalPageViewSuppression, 50)
+          })
+        }
+      }
     }
     window.addEventListener('popstate', onPopState)
     return () => window.removeEventListener('popstate', onPopState)
@@ -438,6 +467,7 @@ export function BookingModalProvider({
     modalHistoryDepth.current = 0
     modalHistoryPushes.current = 0
     thankYouEligibleRef.current = false
+    resetEmailConversionGuard()
     setState({ kind: 'closed' })
   }, [pathname])
 

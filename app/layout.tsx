@@ -6,6 +6,7 @@ import type { ReactNode } from 'react'
 import { BookingModalProvider } from '@/components/booking/BookingModalContext'
 import { FloatingWhatsappButton } from '@/components/FloatingWhatsappButton'
 import { GoogleAnalytics } from '@/components/GoogleAnalytics'
+import { GaRoutePageView } from '@/components/GaRoutePageView'
 import { getBookingModalSettings } from '@/lib/getBookingModalSettings'
 import { getSiteSettingsShell } from '@/lib/getSiteSettingsShell'
 
@@ -38,6 +39,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <FloatingWhatsappButton config={shell.floatingWhatsapp} />
         </BookingModalProvider>
         <GoogleAnalytics />
+        <GaRoutePageView />
         <Analytics />
       </body>
     </html>
