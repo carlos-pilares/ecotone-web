@@ -5,6 +5,7 @@ import type { KeyboardEvent, ReactNode } from 'react'
 
 import { useBookingModal } from '@/components/booking/BookingModalContext'
 import type { ExperienceBookingSummary } from '@/components/booking/types'
+import type { CtaId } from '@/lib/ctaIds'
 import { isExternalHref } from '@/lib/resolveSmartLink'
 import type { BookNowClickButtonLocation } from '@/lib/trackBookNowClick'
 
@@ -21,6 +22,8 @@ export type SmartLinkCtaActionProps = {
   dataType?: string
   /** Analytics source when this CTA opens a booking modal. */
   bookNowButtonLocation?: BookNowClickButtonLocation
+  /** Stable CTA identifier for conversion attribution (required when `bookingModal` is set). */
+  ctaId?: CtaId
 }
 
 function isInternalAppHref(href: string): boolean {
@@ -42,13 +45,17 @@ export function SmartLinkCtaAction({
   children,
   dataType,
   bookNowButtonLocation = 'reserve_section',
+  ctaId,
 }: SmartLinkCtaActionProps) {
   const { openPlanJourney, openExperienceBooking } = useBookingModal()
   const trimmedHref = href?.trim() ?? ''
   const trimmedLabel = label?.trim() ?? ''
-  const bookSource = { button_location: bookNowButtonLocation }
-
   const onBooking = () => {
+    if (!ctaId) return
+    const bookSource = {
+      cta_id: ctaId,
+      button_location: bookNowButtonLocation,
+    }
     if (bookingModal === 'plan') {
       openPlanJourney(bookSource)
       return

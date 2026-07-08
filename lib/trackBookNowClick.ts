@@ -1,5 +1,6 @@
 import { trackEvent } from '@/lib/analytics'
 import type { ExperienceBookingSummary } from '@/components/booking/types'
+import type { CtaId } from '@/lib/ctaIds'
 import { getAnalyticsPageContext } from '@/lib/trackWhatsappClick'
 
 export type BookNowClickButtonLocation =
@@ -11,7 +12,10 @@ export type BookNowClickButtonLocation =
   | 'booking_modal'
 
 export type BookNowOpenSource = {
+  cta_id: CtaId
   button_location: BookNowClickButtonLocation
+  /** Optional placement/source label for cross-platform reporting. Defaults to `button_location`. */
+  source?: string
   price?: string
   promo_label?: string
 }
@@ -25,6 +29,8 @@ export type BookNowClickParams = BookNowOpenSource & {
 }
 
 export type BookingModalOpenParams = {
+  cta_id?: CtaId
+  source?: string
   button_location: BookNowClickButtonLocation
   page_type?: string
   page_slug?: string
@@ -53,6 +59,8 @@ export function bookNowContextFromSummary(
   source: BookNowOpenSource,
 ): BookNowClickParams {
   return {
+    cta_id: source.cta_id,
+    source: source.source,
     button_location: source.button_location,
     experience_name: summary.experienceName,
     route: summary.route,
@@ -70,6 +78,8 @@ function withPageContext(params: BookNowClickParams | BookingModalOpenParams) {
     page_type: params.page_type ?? context.page_type,
     page_slug: params.page_slug ?? context.page_slug,
     button_location: params.button_location,
+    ...(params.cta_id ? { cta_id: params.cta_id } : {}),
+    ...(params.source ? { source: params.source } : { source: params.button_location }),
     ...('experience_name' in params && params.experience_name
       ? { experience_name: params.experience_name }
       : {}),

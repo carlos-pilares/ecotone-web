@@ -5,6 +5,8 @@ import type { ReactNode } from 'react'
 
 import { useBookingModal } from '@/components/booking/BookingModalContext'
 import type { ExperienceBookingSummary } from '@/components/booking/types'
+import type { CtaId } from '@/lib/ctaIds'
+import { CTA_IDS } from '@/lib/ctaIds'
 import { isWhatsappHref, trackWhatsappClick } from '@/lib/trackWhatsappClick'
 import {
   isBookIntentLabel,
@@ -27,6 +29,7 @@ export type ReserveCtaCta = {
   whatsappIcon?: boolean
   bookingModal?: 'plan' | 'experience'
   bookingSummary?: import('@/components/booking/types').ExperienceBookingSummary
+  ctaId?: CtaId
 }
 
 export type ReserveCtaCardProps = {
@@ -133,6 +136,7 @@ function reserveWhatsappClickHandler(cta: ReserveCtaCta) {
     const summary = cta.bookingSummary
     trackWhatsappClick({
       button_location: 'reserve_section',
+      cta_id: CTA_IDS.EXPERIENCE_RESERVE_WHATSAPP,
       ...(summary
         ? {
             experience_name: summary.experienceName,
@@ -155,6 +159,7 @@ function reserveBookClickHandler(
   return () => {
     const summary = cta.bookingSummary
     trackBookNowClick({
+      cta_id: cta.ctaId ?? CTA_IDS.EXPERIENCE_RESERVE_BOOK,
       button_location: 'reserve_section',
       ...(bookNowTracking?.price ? { price: bookNowTracking.price } : {}),
       ...(bookNowTracking?.promo_label ? { promo_label: bookNowTracking.promo_label } : {}),
@@ -194,6 +199,7 @@ function ReserveCtaLink({
         className={cls}
         onClick={() =>
           openPlanJourney({
+            cta_id: cta.ctaId ?? CTA_IDS.HOME_DESIGN_PROGRAM,
             button_location: 'reserve_section',
             ...(bookNowTracking?.price ? { price: bookNowTracking.price } : {}),
             ...(bookNowTracking?.promo_label ? { promo_label: bookNowTracking.promo_label } : {}),
@@ -212,6 +218,7 @@ function ReserveCtaLink({
         className={cls}
         onClick={() =>
           openExperienceBooking(summary, {
+            cta_id: cta.ctaId ?? CTA_IDS.EXPERIENCE_RESERVE_BOOK,
             button_location: 'reserve_section',
             price: bookNowTracking?.price ?? summary.priceLine,
             ...(bookNowTracking?.promo_label ? { promo_label: bookNowTracking.promo_label } : {}),

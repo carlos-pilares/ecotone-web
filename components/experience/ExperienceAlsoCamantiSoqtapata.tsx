@@ -3,6 +3,7 @@
 import { ExperienceCardsSection } from '@/components/experience/ExperienceCardsSection'
 import { buildRelatedExperienceSectionItems } from '@/lib/buildExperienceCardsSectionItems'
 import { tailorMadeBandFromResolved } from '@/lib/tailorMadeBand'
+import { CTA_IDS } from '@/lib/ctaIds'
 import type { PromotionDoc } from '@/lib/promotionTypes'
 import type { SoqtapataAlsoCamanti } from '@/data/soqtapataExperienceLocal'
 
@@ -14,7 +15,9 @@ export function ExperienceAlsoCamantiSoqtapata({
   promotions?: PromotionDoc[] | null
 }) {
   const sectionCards = buildRelatedExperienceSectionItems(data.cards)
-  const tailorProps = data.tailorBand ? tailorMadeBandFromResolved(data.tailorBand) : null
+  const tailorProps = data.tailorBand
+    ? tailorMadeBandFromResolved(data.tailorBand, { ctaId: CTA_IDS.EXPERIENCE_TAILOR_PROGRAM })
+    : null
 
   return (
     <section className="content-section fade" id="also-camanti">

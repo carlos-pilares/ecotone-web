@@ -4,6 +4,7 @@ import { ExperienceCardsSection } from '@/components/experience/ExperienceCardsS
 import { LodgeSectionHeading } from '@/components/lodge/LodgeSectionHeading'
 import { buildLodgeExperienceSectionItems } from '@/lib/buildExperienceCardsSectionItems'
 import { tailorMadeBandFromResolved } from '@/lib/tailorMadeBand'
+import { CTA_IDS } from '@/lib/ctaIds'
 
 import type { PromotionDoc } from '@/lib/promotionTypes'
 
@@ -35,7 +36,7 @@ export function LodgeExperiences({ data, promotions }: LodgeExperiencesProps) {
       rel: data.tailor.rel,
       bookingModal: data.tailor.bookingModal,
       bookingSummary: data.tailor.bookingSummary,
-    })
+    }, { ctaId: CTA_IDS.LODGE_DESIGN_PROGRAM })
 
   return (
     <section id="experiences" className="content-section">

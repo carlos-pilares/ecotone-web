@@ -2,6 +2,7 @@
 
 import { useBookingModal } from '@/components/booking/BookingModalContext'
 import type { ExperienceBookingSummary } from '@/components/booking/types'
+import { CTA_IDS } from '@/lib/ctaIds'
 import { trackBookNowClick } from '@/lib/trackBookNowClick'
 import type { SoqtapataPhase1Hero } from '@/data/soqtapataExperienceLocal'
 
@@ -18,6 +19,7 @@ export function ExperienceHeroSoqtapata({
   const { openExperienceBooking } = useBookingModal()
   const bookOpensModal = Boolean(bookingSummary) && Boolean(data.bookLabel.trim())
   const bookTracking = {
+    cta_id: CTA_IDS.EXPERIENCE_HERO_BOOK,
     button_location: 'hero' as const,
     price: data.priceAmount?.trim() || undefined,
     promo_label: data.promoLabel?.trim() || undefined,

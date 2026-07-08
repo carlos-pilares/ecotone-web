@@ -5,7 +5,9 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import type { ExperienceBookingSummary } from '@/components/booking/types'
 import type { ExperienceModalCopy } from '@/lib/bookingModalCopy'
 import { effectiveWhatsappNumber } from '@/lib/bookingModalCopy'
+import type { ContactChannelSlug } from '@/lib/bookingModalUrl'
 import { buildWaMeLink } from '@/lib/bookingWhatsapp'
+import { CTA_IDS } from '@/lib/ctaIds'
 import { submitEnquiryInBackground } from '@/lib/submitEnquiry'
 import { trackWhatsappClick } from '@/lib/trackWhatsappClick'
 
@@ -16,6 +18,10 @@ type Props = {
   copy: ExperienceModalCopy
   summary: ExperienceBookingSummary
   onClose: () => void
+  thankYouPhase?: boolean
+  onEmailThankYou?: () => void
+  contactChannel?: ContactChannelSlug | null
+  onContactChannelSelect?: (channel: ContactChannelSlug) => void
 }
 
 function WaGlyph() {
@@ -38,7 +44,16 @@ function MailGlyph() {
   )
 }
 
-export function BookExperienceModal({ waNumber, copy, summary, onClose }: Props) {
+export function BookExperienceModal({
+  waNumber,
+  copy,
+  summary,
+  onClose,
+  thankYouPhase = false,
+  onEmailThankYou,
+  contactChannel = null,
+  onContactChannelSelect,
+}: Props) {
   const titleId = useId()
   const dialogRef = useRef<HTMLDivElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
@@ -85,6 +100,19 @@ export function BookExperienceModal({ waNumber, copy, summary, onClose }: Props)
   useLayoutEffect(() => {
     dialogRef.current?.focus()
   }, [])
+
+  useEffect(() => {
+    setEmailThanks(thankYouPhase)
+  }, [thankYouPhase])
+
+  useEffect(() => {
+    if (!contactChannel) {
+      setSelectedContactIndex(null)
+      return
+    }
+    const idx = contactOptions.findIndex((opt) => opt.type === contactChannel)
+    setSelectedContactIndex(idx >= 0 ? idx : null)
+  }, [contactChannel, contactOptions])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -171,6 +199,7 @@ export function BookExperienceModal({ waNumber, copy, summary, onClose }: Props)
       experienceSummary: summary,
     })
     setEmailErr('')
+    onEmailThankYou?.()
     setEmailThanks(true)
   }, [
     validateCore,
@@ -183,6 +212,7 @@ export function BookExperienceModal({ waNumber, copy, summary, onClose }: Props)
     summary,
     copy.emailInvalidMessage,
     v.emailRequired,
+    onEmailThankYou,
   ])
 
   const handleWaClick = (e: MouseEvent<HTMLAnchorElement>) => {
@@ -196,6 +226,7 @@ export function BookExperienceModal({ waNumber, copy, summary, onClose }: Props)
     }
     trackWhatsappClick({
       button_location: 'booking_modal',
+      cta_id: CTA_IDS.BOOKING_MODAL_WHATSAPP,
       experience_name: summary.experienceName,
       route: summary.route,
       program_type: summary.programType,
@@ -359,9 +390,9 @@ export function BookExperienceModal({ waNumber, copy, summary, onClose }: Props)
                     type="button"
                     className={'ecotone-book-channel' + (selectedContactIndex === idx ? ' on' : '')}
                     onClick={() => {
-                      setSelectedContactIndex(idx)
                       setEmailErr('')
                       setContactErr('')
+                      onContactChannelSelect?.(opt.type)
                     }}
                   >
                     <span className="ecotone-book-channel-ic" style={{ color: selectedContactIndex === idx ? '#fff' : undefined }}>

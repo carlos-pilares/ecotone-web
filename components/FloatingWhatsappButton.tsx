@@ -8,6 +8,7 @@ import {
   type ResolvedFloatingWhatsapp,
 } from '@/lib/floatingWhatsapp'
 import { trackWhatsappClick } from '@/lib/trackWhatsappClick'
+import { CTA_IDS } from '@/lib/ctaIds'
 
 import '@/app/floating-whatsapp.css'
 
@@ -106,7 +107,7 @@ export function FloatingWhatsappButton({ config }: { config: ResolvedFloatingWha
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with Ecotone on WhatsApp"
-      onClick={() => trackWhatsappClick({ button_location: 'floating_whatsapp' })}
+      onClick={() => trackWhatsappClick({ button_location: 'floating_whatsapp', cta_id: CTA_IDS.FLOATING_WHATSAPP })}
     >
       <WaIcon />
       <span className="wa-float__label">{label}</span>

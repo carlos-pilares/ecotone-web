@@ -1,4 +1,5 @@
 import { trackEvent } from '@/lib/analytics'
+import type { CtaId } from '@/lib/ctaIds'
 
 export type WhatsappClickButtonLocation =
   | 'floating_whatsapp'
@@ -10,6 +11,7 @@ export type WhatsappClickButtonLocation =
 
 export type WhatsappClickParams = {
   button_location: WhatsappClickButtonLocation
+  cta_id?: CtaId
   page_type?: string
   page_slug?: string
   experience_name?: string
@@ -51,13 +53,14 @@ export function getAnalyticsPageContext(pathname: string): { page_type: string; 
 export function trackWhatsappClick(params: WhatsappClickParams): void {
   if (typeof window === 'undefined') return
 
-  const { button_location, page_type, page_slug, experience_name, route, program_type } = params
+  const { button_location, cta_id, page_type, page_slug, experience_name, route, program_type } = params
   const context = getAnalyticsPageContext(window.location.pathname)
 
   trackEvent('whatsapp_click', {
     page_type: page_type ?? context.page_type,
     page_slug: page_slug ?? context.page_slug,
     button_location,
+    ...(cta_id ? { cta_id } : {}),
     ...(experience_name ? { experience_name } : {}),
     ...(route ? { route } : {}),
     ...(program_type ? { program_type } : {}),

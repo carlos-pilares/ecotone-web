@@ -4,6 +4,7 @@ import { useCallback } from 'react'
 
 import { useBookingModal } from '@/components/booking/BookingModalContext'
 import type { ExperienceBookingSummary } from '@/components/booking/types'
+import { CTA_IDS } from '@/lib/ctaIds'
 import { ReserveCtaSection, type ReserveCtaCta } from '@/components/shared/ReserveCtaSection'
 import type { SoqtapataBook } from '@/data/soqtapataExperienceLocal'
 
@@ -17,6 +18,7 @@ export function ExperienceBookSoqtapata({
   const { openExperienceBooking } = useBookingModal()
   const onPrimary = useCallback(() => {
     openExperienceBooking(bookingSummary, {
+      cta_id: CTA_IDS.EXPERIENCE_RESERVE_BOOK,
       button_location: 'reserve_section',
       price: data.price,
     })
@@ -30,6 +32,7 @@ export function ExperienceBookSoqtapata({
       variant: 'primary',
       bookingModal: data.primaryBookingModal,
       bookingSummary: data.primaryBookingSummary,
+      ctaId: CTA_IDS.EXPERIENCE_RESERVE_BOOK,
     })
   } else {
     const wt = data.wetravelUrl.trim()
@@ -52,6 +55,7 @@ export function ExperienceBookSoqtapata({
       external: true,
       whatsappIcon: true,
       bookingSummary,
+      ctaId: CTA_IDS.EXPERIENCE_RESERVE_WHATSAPP,
     })
   }
 

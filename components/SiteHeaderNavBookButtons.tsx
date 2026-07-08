@@ -3,6 +3,7 @@
 import type { MouseEvent } from 'react'
 
 import { useBookingModal } from '@/components/booking/BookingModalContext'
+import { CTA_IDS } from '@/lib/ctaIds'
 
 type Props = {
   label: string
@@ -51,7 +52,7 @@ export function SiteHeaderNavBookButtons({ label, href, openInNewTab }: Props) {
 
   const open = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
-    openPlanJourney({ button_location: 'header' })
+    openPlanJourney({ cta_id: CTA_IDS.HEADER_BOOK_NOW, button_location: 'header' })
   }
 
   return (

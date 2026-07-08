@@ -42,6 +42,7 @@ export function TailorMadeBand(props: TailorMadeBandProps) {
     href,
     openInNewTab,
     rel,
+    ctaId,
   } = props
   if (!visible) return null
 
@@ -77,6 +78,7 @@ export function TailorMadeBand(props: TailorMadeBandProps) {
       rel={rel}
       bookingModal={bookingModal}
       bookingSummary={bookingSummary}
+      ctaId={ctaId}
       className={outerClass}
       dataType={dataType}
     >

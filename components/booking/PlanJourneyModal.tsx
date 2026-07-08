@@ -5,7 +5,9 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import type { PlanJourneyDraft } from '@/components/booking/types'
 import type { GeneralModalCopy, TravellerIconKey } from '@/lib/bookingModalCopy'
 import { effectiveWhatsappNumber } from '@/lib/bookingModalCopy'
+import { planStepNumberFromSlug, planStepSlugFromNumber, type ContactChannelSlug, type PlanJourneyStepSlug } from '@/lib/bookingModalUrl'
 import { buildWaMeLink } from '@/lib/bookingWhatsapp'
+import { CTA_IDS } from '@/lib/ctaIds'
 import { submitEnquiryInBackground } from '@/lib/submitEnquiry'
 import { trackWhatsappClick } from '@/lib/trackWhatsappClick'
 
@@ -49,6 +51,13 @@ type Props = {
   waNumber: string
   copy: GeneralModalCopy
   onClose: () => void
+  thankYouPhase?: boolean
+  onEmailThankYou?: () => void
+  planStep?: PlanJourneyStepSlug
+  contactChannel?: ContactChannelSlug | null
+  onPlanStepAdvance?: (step: PlanJourneyStepSlug) => void
+  onPlanStepBack?: () => void
+  onContactChannelSelect?: (channel: ContactChannelSlug) => void
 }
 
 function WaGlyph() {
@@ -77,7 +86,18 @@ function backLabel(raw: string) {
   return `\u2190 ${t}`
 }
 
-export function PlanJourneyModal({ waNumber, copy, onClose }: Props) {
+export function PlanJourneyModal({
+  waNumber,
+  copy,
+  onClose,
+  thankYouPhase = false,
+  onEmailThankYou,
+  planStep = 'travellers',
+  contactChannel = null,
+  onPlanStepAdvance,
+  onPlanStepBack,
+  onContactChannelSelect,
+}: Props) {
   const titleId = useId()
   const dialogRef = useRef<HTMLDivElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
@@ -86,7 +106,7 @@ export function PlanJourneyModal({ waNumber, copy, onClose }: Props) {
   const emailRef = useRef<HTMLInputElement>(null)
   const firstChannelRef = useRef<HTMLButtonElement>(null)
 
-  const [step, setStep] = useState(1)
+  const [step, setStep] = useState(() => planStepNumberFromSlug(planStep))
   const [name, setName] = useState('')
   const [travellerType, setTravellerType] = useState<string | null>(null)
   const [season, setSeason] = useState<string | null>(null)
@@ -149,6 +169,24 @@ export function PlanJourneyModal({ waNumber, copy, onClose }: Props) {
   }, [])
 
   useEffect(() => {
+    setEmailThanks(thankYouPhase)
+  }, [thankYouPhase])
+
+  useEffect(() => {
+    if (thankYouPhase) return
+    setStep(planStepNumberFromSlug(planStep))
+  }, [planStep, thankYouPhase])
+
+  useEffect(() => {
+    if (planStep !== 'contact' || !contactChannel) {
+      setSelectedContactIndex(null)
+      return
+    }
+    const idx = contactOptions.findIndex((opt) => opt.type === contactChannel)
+    setSelectedContactIndex(idx >= 0 ? idx : null)
+  }, [planStep, contactChannel, contactOptions])
+
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
@@ -191,7 +229,7 @@ export function PlanJourneyModal({ waNumber, copy, onClose }: Props) {
         queueMicrotask(() => (nameE ? nameRef.current : firstTravellerRef.current)?.focus())
         return
       }
-      setStep(2)
+      onPlanStepAdvance?.(planStepSlugFromNumber(2))
       return
     }
     if (step === 2) {
@@ -202,9 +240,9 @@ export function PlanJourneyModal({ waNumber, copy, onClose }: Props) {
         queueMicrotask(() => (seasonE ? firstSeasonRef.current : null)?.focus())
         return
       }
-      setStep(3)
+      onPlanStepAdvance?.(planStepSlugFromNumber(3))
     }
-  }, [step, draft.fullName, travellerType, season, partySize, v])
+  }, [step, draft.fullName, travellerType, season, partySize, v, onPlanStepAdvance])
 
   const goBack = useCallback(() => {
     setEmailThanks(false)
@@ -212,11 +250,9 @@ export function PlanJourneyModal({ waNumber, copy, onClose }: Props) {
     setContactErr('')
     if (step === 3) {
       setSelectedContactIndex(null)
-      setStep(2)
-      return
     }
-    setStep((s) => Math.max(1, s - 1))
-  }, [step])
+    onPlanStepBack?.()
+  }, [step, onPlanStepBack])
 
   const submitEmail = useCallback(() => {
     const trimmed = email.trim()
@@ -243,6 +279,7 @@ export function PlanJourneyModal({ waNumber, copy, onClose }: Props) {
       emailMessage: emailMessage.trim(),
     })
     setEmailErr('')
+    onEmailThankYou?.()
     setEmailThanks(true)
   }, [
     email,
@@ -255,6 +292,7 @@ export function PlanJourneyModal({ waNumber, copy, onClose }: Props) {
     partySize,
     travellerTitle,
     seasonLine,
+    onEmailThankYou,
   ])
 
   const segClass = (i: number) => {
@@ -273,7 +311,7 @@ export function PlanJourneyModal({ waNumber, copy, onClose }: Props) {
       e.preventDefault()
       return
     }
-    trackWhatsappClick({ button_location: 'booking_modal' })
+    trackWhatsappClick({ button_location: 'booking_modal', cta_id: CTA_IDS.BOOKING_MODAL_WHATSAPP })
   }
 
   return (
@@ -453,9 +491,9 @@ export function PlanJourneyModal({ waNumber, copy, onClose }: Props) {
                       type="button"
                       className={'ecotone-book-channel' + (selectedContactIndex === idx ? ' on' : '')}
                       onClick={() => {
-                        setSelectedContactIndex(idx)
                         setEmailErr('')
                         setContactErr('')
+                        onContactChannelSelect?.(opt.type)
                       }}
                     >
                       <span className="ecotone-book-channel-ic" style={{ color: selectedContactIndex === idx ? '#fff' : undefined }}>

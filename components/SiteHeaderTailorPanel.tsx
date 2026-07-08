@@ -1,6 +1,7 @@
 'use client'
 
 import { useBookingModal } from '@/components/booking/BookingModalContext'
+import { CTA_IDS } from '@/lib/ctaIds'
 import type { SiteHeaderNavTailor } from '@/lib/resolveSiteHeaderNavData'
 
 function ArrowSeeAll() {
@@ -36,7 +37,7 @@ function TailorCta({ cta }: { cta: NonNullable<SiteHeaderNavTailor['cta']> }) {
 
   if (cta.bookingModal === 'plan') {
     return (
-      <button type="button" className="dd-tailor-cta" onClick={() => openPlanJourney({ button_location: 'header' })}>
+      <button type="button" className="dd-tailor-cta" onClick={() => openPlanJourney({ cta_id: CTA_IDS.HEADER_TAILOR_PROGRAM, button_location: 'header' })}>
         {inner}
       </button>
     )
@@ -46,7 +47,7 @@ function TailorCta({ cta }: { cta: NonNullable<SiteHeaderNavTailor['cta']> }) {
       <button
         type="button"
         className="dd-tailor-cta"
-        onClick={() => openExperienceBooking(cta.bookingSummary!, { button_location: 'header' })}
+        onClick={() => openExperienceBooking(cta.bookingSummary!, { cta_id: CTA_IDS.HEADER_TAILOR_BOOK, button_location: 'header' })}
       >
         {inner}
       </button>
@@ -144,7 +145,7 @@ export function SiteHeaderTailorMobileRow({ tailor }: { tailor: SiteHeaderNavTai
 
   if (cta?.bookingModal === 'plan') {
     return (
-      <button type="button" className="mob-tailor-mobile-row" onClick={() => openPlanJourney({ button_location: 'header' })}>
+      <button type="button" className="mob-tailor-mobile-row" onClick={() => openPlanJourney({ cta_id: CTA_IDS.HEADER_TAILOR_PROGRAM, button_location: 'header' })}>
         {inner}
       </button>
     )
@@ -154,7 +155,7 @@ export function SiteHeaderTailorMobileRow({ tailor }: { tailor: SiteHeaderNavTai
       <button
         type="button"
         className="mob-tailor-mobile-row"
-        onClick={() => openExperienceBooking(cta.bookingSummary!, { button_location: 'header' })}
+        onClick={() => openExperienceBooking(cta.bookingSummary!, { cta_id: CTA_IDS.HEADER_TAILOR_BOOK, button_location: 'header' })}
       >
         {inner}
       </button>

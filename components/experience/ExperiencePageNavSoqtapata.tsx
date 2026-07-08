@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { useBookingModal } from '@/components/booking/BookingModalContext'
 import type { ExperienceBookingSummary } from '@/components/booking/types'
+import { CTA_IDS } from '@/lib/ctaIds'
 import { trackBookNowClick } from '@/lib/trackBookNowClick'
 import { InPageNav } from '@/components/shared/InPageNav'
 import type { SoqtapataPhase1PageNav } from '@/data/soqtapataExperienceLocal'
@@ -102,6 +103,7 @@ export function ExperiencePageNavSoqtapata({
   const canBookLink = Boolean(data.bookHref?.trim())
   const bookOpensModal = Boolean(bookingSummary) && !hideBookCta
   const bookTracking = {
+    cta_id: CTA_IDS.EXPERIENCE_STICKY_BOOK,
     button_location: 'sticky_nav' as const,
     price: data.fromNum?.trim() || undefined,
     promo_label: data.promoLabel?.trim() || undefined,

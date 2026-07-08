@@ -10,6 +10,7 @@ import {
 import { buildHomeExplorerSectionItems } from '@/lib/buildExperienceCardsSectionItems'
 import { ExperienceCardsSection } from '@/components/experience/ExperienceCardsSection'
 import { tailorMadeBandFromResolved } from '@/lib/tailorMadeBand'
+import { CTA_IDS } from '@/lib/ctaIds'
 
 function ExperiencesFallback({ explorer }: { explorer: HomePageDoc | null | undefined }) {
   const e = explorer
@@ -52,6 +53,7 @@ export function ExperiencesExplorer({
   })
   const tailorProps = tailorMadeBandFromResolved(resolveHomeExplorerTailorBand(e), {
     dataType: 'tailor',
+    ctaId: CTA_IDS.HOME_DESIGN_PROGRAM,
   })
 
   return (

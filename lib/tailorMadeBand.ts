@@ -181,11 +181,12 @@ export type TailorMadeBandComponentProps = {
   bookingSummary?: ExperienceBookingSummary
   className?: string
   dataType?: string
+  ctaId?: import('@/lib/ctaIds').CtaId
 }
 
 export function tailorMadeBandFromResolved(
   band: TailorMadeBandResolved | undefined,
-  options?: { className?: string; dataType?: string },
+  options?: { className?: string; dataType?: string; ctaId?: import('@/lib/ctaIds').CtaId },
 ): TailorMadeBandComponentProps | null {
   if (!band) return null
   return {
@@ -201,5 +202,6 @@ export function tailorMadeBandFromResolved(
     bookingSummary: band.bookingSummary,
     className: options?.className,
     dataType: options?.dataType,
+    ctaId: options?.ctaId,
   }
 }
