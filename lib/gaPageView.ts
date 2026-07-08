@@ -1,8 +1,13 @@
 import { GA_MEASUREMENT_ID } from '@/lib/analytics'
 
+/** Delay before releasing per-operation suppression (EM may fire page_view asynchronously). */
+export const MODAL_HISTORY_SUPPRESS_MS = 500
+
 declare global {
   interface Window {
     __ecotoneSuppressModalPageViews?: number
+    __ecotoneAllowRoutePageView?: boolean
+    __ecotoneGaDebug?: boolean
   }
 }
 
@@ -15,17 +20,23 @@ export function suppressModalHistoryPageViews(): () => void {
   }
 }
 
+function releaseModalHistorySuppressionAfterDelay(release: () => void): void {
+  queueMicrotask(() => {
+    window.setTimeout(release, MODAL_HISTORY_SUPPRESS_MS)
+  })
+}
+
 /** Run a History API mutation without GA4 treating it as a page navigation. */
 export function runWithModalHistoryAnalyticsSuppressed(run: () => void): void {
   const release = suppressModalHistoryPageViews()
   try {
     run()
   } finally {
-    queueMicrotask(() => {
-      window.setTimeout(release, 50)
-    })
+    releaseModalHistorySuppressionAfterDelay(release)
   }
 }
+
+export { releaseModalHistorySuppressionAfterDelay }
 
 /**
  * Fire a page_view for real route navigations only (Next.js pathname change).
@@ -35,30 +46,51 @@ export function trackRoutePageView(pathname: string): void {
   if (!GA_MEASUREMENT_ID || typeof window === 'undefined' || typeof window.gtag !== 'function') return
 
   const page_path = `${pathname}${window.location.search}`
-  window.gtag('event', 'page_view', {
-    page_path,
-    page_location: window.location.href,
-    page_title: document.title,
-  })
+  window.__ecotoneAllowRoutePageView = true
+  try {
+    window.gtag('event', 'page_view', {
+      page_path,
+      page_location: window.location.href,
+      page_title: document.title,
+    })
+  } finally {
+    window.__ecotoneAllowRoutePageView = false
+  }
 }
 
 /** Inline script installed before gtag config — filters auto page_view during modal history. */
-export function gaModalHistoryGuardScript(): string {
+export function gaModalHistoryGuardScript(gaDebug: boolean): string {
   return `
 window.dataLayer = window.dataLayer || [];
 window.__ecotoneSuppressModalPageViews = 0;
+window.__ecotoneAllowRoutePageView = false;
+window.__ecotoneGaDebug = ${gaDebug ? 'true' : 'false'};
 (function () {
   var originalPush = window.dataLayer.push.bind(window.dataLayer);
-  function isAutoPageView(entry) {
+  function isPageViewEntry(entry) {
     if (!entry) return false;
-    if (Array.isArray(entry)) return entry[0] === 'event' && entry[1] === 'page_view';
-    if (typeof entry === 'object') return entry.event === 'page_view';
+    // gtag pushes dataLayer.push(arguments) — array-like, not Array.isArray
+    if (entry[0] === 'event' && entry[1] === 'page_view') return true;
+    if (Array.isArray(entry) && entry[0] === 'event' && entry[1] === 'page_view') return true;
+    if (typeof entry === 'object' && entry.event === 'page_view') return true;
     return false;
   }
   window.dataLayer.push = function () {
-    if ((window.__ecotoneSuppressModalPageViews || 0) > 0) {
+    var suppress = window.__ecotoneSuppressModalPageViews || 0;
+    var allowRoute = window.__ecotoneAllowRoutePageView || false;
+    if (window.__ecotoneGaDebug) {
+      for (var d = 0; d < arguments.length; d++) {
+        console.log('[GA4 dataLayer]', arguments[d]);
+      }
+    }
+    if (suppress > 0 && !allowRoute) {
       for (var i = 0; i < arguments.length; i++) {
-        if (isAutoPageView(arguments[i])) return arguments.length;
+        if (isPageViewEntry(arguments[i])) {
+          if (window.__ecotoneGaDebug) {
+            console.log('[GA4] blocked page_view (modal history suppression active)');
+          }
+          return arguments.length;
+        }
       }
     }
     return originalPush.apply(window.dataLayer, arguments);

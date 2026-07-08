@@ -34,7 +34,7 @@ import {
 } from '@/lib/bookingModalUrl'
 import { trackEmailConversionSuccess, resetEmailConversionGuard } from '@/lib/conversionAnalytics'
 import { CTA_IDS } from '@/lib/ctaIds'
-import { runWithModalHistoryAnalyticsSuppressed, suppressModalHistoryPageViews } from '@/lib/gaPageView'
+import { runWithModalHistoryAnalyticsSuppressed, releaseModalHistorySuppressionAfterDelay, suppressModalHistoryPageViews } from '@/lib/gaPageView'
 import { defaultWhatsappNumber } from '@/lib/bookingWhatsapp'
 import {
   bookNowContextFromSummary,
@@ -396,6 +396,12 @@ export function BookingModalProvider({
 
   useEffect(() => {
     if (state.kind === 'closed') return
+    const release = suppressModalHistoryPageViews()
+    return release
+  }, [state.kind])
+
+  useEffect(() => {
+    if (state.kind === 'closed') return
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
@@ -453,9 +459,7 @@ export function BookingModalProvider({
         syncStateFromUrl()
       } finally {
         if (releaseModalPageViewSuppression) {
-          queueMicrotask(() => {
-            window.setTimeout(releaseModalPageViewSuppression, 50)
-          })
+          releaseModalHistorySuppressionAfterDelay(releaseModalPageViewSuppression)
         }
       }
     }

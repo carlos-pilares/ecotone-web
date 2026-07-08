@@ -74,13 +74,19 @@ Does **not** fire `page_view`. WhatsApp does **not** fire conversion events.
 
 | Mechanism | Role |
 |-----------|------|
-| `GoogleAnalytics` | `gtag('config', id, { send_page_view: false })` — disables GA auto page_view |
-| `GaRoutePageView` | Fires one `page_view` per Next.js **pathname** change |
-| `lib/gaPageView.ts` | dataLayer guard + `runWithModalHistoryAnalyticsSuppressed()` around modal history mutations |
+| `GoogleAnalytics` | `gtag('config', id, { send_page_view: false })` — disables GA auto page_view on config |
+| `GaRoutePageView` | Fires one `page_view` per Next.js **pathname** change only (not `useSearchParams`) |
+| `lib/gaPageView.ts` | dataLayer guard + session/per-operation suppression around modal history |
+| Modal session | While modal is open, `__ecotoneSuppressModalPageViews` stays active |
+| Route bypass | `trackRoutePageView()` sets `__ecotoneAllowRoutePageView` so real navigations still count |
 
-Modal `pushState` / `replaceState` / `history.go` / `popstate` does not change pathname, so `GaRoutePageView` does not re-fire. The dataLayer guard blocks GA4 Enhanced Measurement auto `page_view` during suppressed modal history operations.
+Modal `pushState` / `replaceState` / `history.go` / `popstate` does not change pathname, so `GaRoutePageView` does not re-fire.
 
-**GA4 Admin (recommended):** Web stream → Enhanced measurement → disable **“Page changes based on browser history events”**.
+**Why modal URLs appeared in GA4:** GA4 Enhanced Measurement listens to History API changes and fires `page_view` via `dataLayer.push(arguments)`. gtag passes an array-like `arguments` object — the guard must check `entry[0]==='event'` and `entry[1]==='page_view'`, not only `Array.isArray` or `.event`.
+
+**GA4 Admin (required):** Admin → Data collection and modification → Data streams → [web stream] → Enhanced measurement → **Page views** (gear) → Advanced settings → disable **“Page changes based on browser history events”**.
+
+**Debug:** Set `NEXT_PUBLIC_GA_DEBUG=true` or run in development. Console logs `[GA4 gtag]`, `[GA4 dataLayer]`, and `[GA4] blocked page_view` when suppression works.
 
 ## Standard conversion payload
 
