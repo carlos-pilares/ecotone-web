@@ -21,6 +21,7 @@ export const SMART_LINK_WEBSITE_PAGE_EDITOR_OPTIONS = [
   {title: 'Lodges index', value: 'lodgesIndex'},
   {title: 'About', value: 'about'},
   {title: 'Journal', value: 'journal'},
+  {title: 'Privacy & Cookie Policy', value: 'privacyPolicy'},
   {title: 'Experience landing (pick document)', value: 'experiencePage'},
   {title: 'Lodge landing (pick document)', value: 'lodgePage'},
 ]

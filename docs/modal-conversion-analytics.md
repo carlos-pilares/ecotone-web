@@ -74,7 +74,7 @@ Does **not** fire `page_view`. WhatsApp does **not** fire conversion events.
 
 | Mechanism | Role |
 |-----------|------|
-| `GoogleAnalytics` | `gtag('config', id, { send_page_view: false })` — disables GA auto page_view on config |
+| `GoogleAnalytics` | One Google tag (gtag.js) with `gtag('config', id, { send_page_view: false })` for GA4 **and** Google Ads — disables auto page_view on both destinations |
 | `GaRoutePageView` | Fires one `page_view` per Next.js **pathname** change only (not `useSearchParams`) |
 | `lib/gaPageView.ts` | dataLayer guard + session/per-operation suppression around modal history |
 | Modal session | While modal is open, `__ecotoneSuppressModalPageViews` stays active |
@@ -133,10 +133,34 @@ Never derive IDs from button labels. Use constants:
 
 ## Google Ads & GA4
 
-- **Primary conversion:** Import **`generate_lead`** from GA4 into Google Ads (Goals → Conversions → Import).
+**Single Google tag, two destinations.** `GoogleAnalytics` loads one gtag.js and configures both the GA4 measurement ID and the Google Ads ID (`AW-16757365006`, from `GOOGLE_ADS_ID` / `NEXT_PUBLIC_GOOGLE_ADS_ID`). There is **no** second standalone gtag.js and **no** Google Ads event snippet in the app.
+
+- Both destinations use `send_page_view: false`; Google Ads never receives a synthetic page_view. The GA4 route page_view logic and modal history suppression are unchanged.
+- **Conversions are imported from GA4, not hard-coded as Ads snippets.** Because GA4 and Google Ads share the same tag/data stream, existing GA4 key events (e.g. `generate_lead`) can be linked and imported directly — no `gtag('event', 'conversion', { send_to: 'AW-…/label' })` calls are needed.
+- **Primary conversion:** Import **`generate_lead`** from GA4 into Google Ads (Tools → Conversions → Import → Google Analytics 4 → Web).
 - **Secondary / validation:** **`enquiry_submit`** — useful for debugging and cross-checking counts.
 - **Destination URLs are not required.** Success uses History API (`?modal=thank-you&channel=email`), not full document navigation. Event-based conversion import is the supported production path.
-- Mark `generate_lead` as a conversion event in GA4 Admin before importing to Ads.
+- **Setup steps (one-time, in the Google UIs):**
+  1. Link the GA4 property to Google Ads (GA4 Admin → Product links → Google Ads links).
+  2. Mark `generate_lead` as a key event / conversion in GA4 Admin.
+  3. In Google Ads, import it as a conversion (Import → GA4 → Web).
+- **Environment gating:** the default `AW-16757365006` is active in **Vercel production only** (`NEXT_PUBLIC_VERCEL_ENV === 'production'`). Preview/staging/development load no Ads tag unless `NEXT_PUBLIC_GOOGLE_ADS_ID` is set explicitly. Setting `NEXT_PUBLIC_GOOGLE_ADS_ID=""` disables it everywhere, including production.
+
+## Consent Mode v2 (EEA/UK + US/CA)
+
+**Advanced mode with a first-party banner.** The Google tag ships Consent Mode v2 default signals *before* `gtag('js')` and any `config`, so consent state is set before tags fire.
+
+| Region | Default (`ad_storage`, `ad_user_data`, `ad_personalization`, `analytics_storage`) |
+|--------|-----------------------------------------------------------------------------------|
+| EEA + UK (`CONSENT_DENIED_REGIONS`) | **denied** until the visitor accepts (`wait_for_update: 500`) |
+| US / Canada / rest of world | **granted** (opt-out model) |
+
+- **Advanced mode:** the tag still loads while denied and sends cookieless pings, so Google conversion modeling recovers EEA/UK measurement. `ads_data_redaction: true` and `url_passthrough: true` are set.
+- **Banner:** `components/ConsentBanner.tsx` shows until the visitor chooses Accept/Decline, stores the choice in the first-party `ecotone_consent` cookie (180 days), and pushes `gtag('consent', 'update', …)`. Returning visitors are not re-prompted; their stored choice is re-applied on load.
+- **No conflict with the page_view fix:** consent commands are not `page_view` entries, so the dataLayer guard ignores them; route page_view logic is unchanged.
+- **GA4 Admin still required:** in the GA4 web stream, enable **Consent settings / Google signals** as needed, and keep the Enhanced Measurement history-based page-view toggle **off** (see above).
+
+Consent files: `lib/consent.ts` (defaults, regions, cookie + update helpers), `components/ConsentBanner.tsx`, `app/consent-banner.css`.
 
 ## Key files
 

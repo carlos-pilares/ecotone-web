@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 
 import { BookingModalProvider } from '@/components/booking/BookingModalContext'
+import { ConsentBanner } from '@/components/ConsentBanner'
 import { FloatingWhatsappButton } from '@/components/FloatingWhatsappButton'
 import { GoogleAnalytics } from '@/components/GoogleAnalytics'
 import { GaRoutePageView } from '@/components/GaRoutePageView'
@@ -14,6 +15,7 @@ import './globals.css'
 import './announcement-bar.css'
 import './shell-logo-tokens.css'
 import './shell-nav-logo.css'
+import './consent-banner.css'
 import '@/components/partners/partners-wall.css'
 
 const lexend = Lexend({
@@ -40,6 +42,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         </BookingModalProvider>
         <GoogleAnalytics />
         <GaRoutePageView />
+        <ConsentBanner />
         <Analytics />
       </body>
     </html>

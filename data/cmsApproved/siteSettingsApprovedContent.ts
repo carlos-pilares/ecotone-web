@@ -157,13 +157,13 @@ export const FOOTER_CONTACT_LINKS: SiteSettingsApprovedLink[] = [
   { _key: 'fcon0', label: 'WhatsApp', href: 'https://wa.me/51974781094', openInNewTab: true },
   { _key: 'fcon1', label: 'ecotone.eco', href: 'https://www.ecotone.eco', openInNewTab: true },
   { _key: 'fcon2', label: 'Instagram', href: 'https://www.instagram.com', openInNewTab: true },
-  { _key: 'fcon3', label: 'Privacy policy', href: 'https://www.ecotone.eco', openInNewTab: true },
+  { _key: 'fcon3', label: 'Privacy policy', href: '/privacy-policy', openInNewTab: false },
 ]
 
 /** Footer legal row (footer UI may render separately later); URLs align with the Webflow main site. */
 export const FOOTER_LEGAL_LINKS: SiteSettingsApprovedLink[] = [
   { _key: 'fleg0', label: 'Terms & conditions', href: 'https://www.ecotone.eco', openInNewTab: true },
-  { _key: 'fleg1', label: 'Cookie policy', href: 'https://www.ecotone.eco', openInNewTab: true },
+  { _key: 'fleg1', label: 'Cookie policy', href: '/privacy-policy', openInNewTab: false },
 ]
 
 export const FOOTER = {

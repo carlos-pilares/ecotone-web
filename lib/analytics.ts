@@ -1,6 +1,26 @@
 /** GA4 measurement ID from `NEXT_PUBLIC_GA_MEASUREMENT_ID` (inlined at build time). */
 export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim() ?? ''
 
+/**
+ * Google Ads ID (`AW-…`) added as an extra destination on the existing Google tag.
+ * Conversions are imported from GA4 key events (e.g. `generate_lead`), so no
+ * standalone Google Ads event snippets or synthetic page_view are used here.
+ *
+ * Resolution:
+ * - `NEXT_PUBLIC_GOOGLE_ADS_ID` set (any value, incl. `""`) always wins — `""` disables.
+ * - Otherwise the default `AW-16757365006` applies in Vercel **production only**.
+ * - Preview/staging/development get no Ads tag unless the env var is set explicitly.
+ */
+const EXPLICIT_GOOGLE_ADS_ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID
+const IS_VERCEL_PRODUCTION = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
+
+export const GOOGLE_ADS_ID =
+  EXPLICIT_GOOGLE_ADS_ID !== undefined
+    ? EXPLICIT_GOOGLE_ADS_ID.trim()
+    : IS_VERCEL_PRODUCTION
+      ? 'AW-16757365006'
+      : ''
+
 /** Custom event parameters sent to GA4 (`gtag('event', …)`). */
 export type GtagEventParams = Record<string, string | number | boolean | undefined>
 

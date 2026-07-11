@@ -100,6 +100,8 @@ function pagePathFor(
       return '/about'
     case 'journal':
       return '/journal'
+    case 'privacyPolicy':
+      return '/privacy-policy'
     case 'experiencePage': {
       const slug = experiencePageSlug?.trim()
       return slug ? `/experiences/${slug}` : null

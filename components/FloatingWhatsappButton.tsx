@@ -70,6 +70,7 @@ export function FloatingWhatsappButton({ config }: { config: ResolvedFloatingWha
 
   const hidden = useMemo(() => {
     if (!config.href || !config.enabled) return true
+    if (pathname.startsWith('/wonder-beyond-the-wonder')) return true
     if (config.hideOnMobile && isMobile) return true
     if (floatingWhatsappHiddenOnPath(pathname, config.hideOnPages)) return true
     return false
