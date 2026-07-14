@@ -8,12 +8,17 @@ import {
   parseSheetTabFromAppendRange,
   structuredAppendRange,
 } from '@/lib/enquiryGoogleSheets'
-import { formatEnquiryEmailBody, parseEnquiryPayload, type EnquiryPayload } from '@/lib/enquiryPayload'
+import {
+  formatEnquiryEmailBody,
+  getEnquiryEmailSubject,
+  parseEnquiryPayload,
+  type EnquiryPayload,
+} from '@/lib/enquiryPayload'
 
 export const runtime = 'nodejs'
 
 const LOG = '[api/enquiry]'
-const DEFAULT_NOTIFICATION_EMAIL = 'ecotone.experience@gmail.com'
+const DEFAULT_NOTIFICATION_EMAIL = 'info@ecotone.eco'
 
 function serializeSettledReason(reason: unknown): string {
   if (reason instanceof Error) {
@@ -103,16 +108,14 @@ async function sendEnquiryNotification(payload: EnquiryPayload): Promise<void> {
 
   const resend = new Resend(apiKey)
   const from = process.env.RESEND_FROM_EMAIL ?? 'Ecotone <onboarding@resend.dev>'
-  const subject =
-    payload.kind === 'plan_journey'
-      ? 'New enquiry: Plan journey'
-      : `New enquiry: Book experience — ${payload.experienceSummary.experienceName}`
+  const submittedAt = new Date().toISOString()
+  const subject = getEnquiryEmailSubject(payload)
 
   const sent = await resend.emails.send({
     from,
     to: [to],
     subject,
-    text: formatEnquiryEmailBody(payload),
+    text: formatEnquiryEmailBody(payload, submittedAt),
   })
 
   if (sent.error) {

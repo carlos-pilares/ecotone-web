@@ -26,10 +26,44 @@ export type BookExperienceEnquiryPayload = {
   experienceSummary: ExperienceBookingSummary
 }
 
-export type EnquiryPayload = PlanJourneyEnquiryPayload | BookExperienceEnquiryPayload
+/** Wonder Beyond the Wonder campaign modal — WhatsApp / form lead. */
+export type WonderBeyondEnquiryPayload = {
+  kind: 'wonder_beyond_the_wonder'
+  flowType: 'wonder_beyond_the_wonder'
+  flowLabel: 'Wonder Beyond the Wonder'
+  fullName: string
+  email: string
+  phoneCountryCode: string
+  phone: string
+  /** Normalized display phone (`+[code] [number]`) or `Not provided`. */
+  fullPhone: string
+  travelTiming: string
+  groupSize: string
+  interest: string
+  contactChannel: 'whatsapp' | 'form'
+  source: string
+  pageUrl: string
+  utmSource: string
+  utmMedium: string
+  utmCampaign: string
+  utmTerm: string
+  utmContent: string
+  gclid: string
+  gbraid: string
+  wbraid: string
+}
+
+export type EnquiryPayload =
+  | PlanJourneyEnquiryPayload
+  | BookExperienceEnquiryPayload
+  | WonderBeyondEnquiryPayload
 
 function isRecord(x: unknown): x is Record<string, unknown> {
   return typeof x === 'object' && x !== null && !Array.isArray(x)
+}
+
+function asTrimmedString(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : ''
 }
 
 function parseExperienceSummary(sum: unknown): ExperienceBookingSummary | null {
@@ -61,6 +95,39 @@ function parseExperienceSummary(sum: unknown): ExperienceBookingSummary | null {
   if (typeof sum.imageAlt === 'string') out.imageAlt = sum.imageAlt
   if (typeof sum.priceSub === 'string') out.priceSub = sum.priceSub
   return out
+}
+
+/** Display phone as `+[code] [number]`, or `Not provided` when empty. */
+export function formatWonderBeyondPhoneDisplay(
+  phoneCountryCode: string,
+  phone: string,
+): string {
+  const digits = phone.trim().replace(/^\+/, '').replace(/\s+/g, ' ').trim()
+  if (!digits) return 'Not provided'
+
+  const countryCode = phoneCountryCode.trim().replace(/\s+/g, '')
+  if (!countryCode) {
+    return digits.startsWith('+') ? digits : `+${digits}`
+  }
+
+  const normalizedCode = countryCode.startsWith('+') ? countryCode : `+${countryCode}`
+  const prefix = normalizedCode.replace('+', '')
+  const cleaned = digits.startsWith(prefix) ? digits.slice(prefix.length).trim() : digits
+  const number = cleaned || digits
+  return `${normalizedCode} ${number}`.replace(/\s+/g, ' ').trim()
+}
+
+export function buildWonderBeyondSheetNotes(payload: WonderBeyondEnquiryPayload): string {
+  const phone =
+    payload.fullPhone.trim() ||
+    formatWonderBeyondPhoneDisplay(payload.phoneCountryCode, payload.phone)
+  const interest = payload.interest.trim() || 'Not sure yet'
+  return [
+    `Phone: ${phone}`,
+    `Interest: ${interest}`,
+    `Submission method: ${payload.contactChannel}`,
+    'Campaign: Wonder Beyond the Wonder',
+  ].join('\n')
 }
 
 /** Parse and validate POST JSON. Returns null if invalid. */
@@ -107,10 +174,56 @@ export function parseEnquiryPayload(input: unknown): EnquiryPayload | null {
     }
   }
 
+  if (input.kind === 'wonder_beyond_the_wonder') {
+    const contactChannel = input.contactChannel
+    if (contactChannel !== 'whatsapp' && contactChannel !== 'form') return null
+
+    const fullName = asTrimmedString(input.fullName)
+    const email = asTrimmedString(input.email)
+    const travelTiming = asTrimmedString(input.travelTiming)
+    const groupSize = asTrimmedString(input.groupSize)
+    if (!fullName || !email || !travelTiming || !groupSize) return null
+
+    const phoneCountryCode = asTrimmedString(input.phoneCountryCode)
+    const phone = asTrimmedString(input.phone).replace(/[^\d\s]/g, '').replace(/\s+/g, ' ').trim()
+    const fullPhone = formatWonderBeyondPhoneDisplay(phoneCountryCode, phone)
+
+    return {
+      kind: 'wonder_beyond_the_wonder',
+      flowType: 'wonder_beyond_the_wonder',
+      flowLabel: 'Wonder Beyond the Wonder',
+      fullName,
+      email,
+      phoneCountryCode,
+      phone,
+      fullPhone,
+      travelTiming,
+      groupSize,
+      interest: asTrimmedString(input.interest),
+      contactChannel,
+      source: asTrimmedString(input.source) || 'wonder-beyond-the-wonder-landing',
+      pageUrl: asTrimmedString(input.pageUrl),
+      utmSource: asTrimmedString(input.utmSource),
+      utmMedium: asTrimmedString(input.utmMedium),
+      utmCampaign: asTrimmedString(input.utmCampaign),
+      utmTerm: asTrimmedString(input.utmTerm),
+      utmContent: asTrimmedString(input.utmContent),
+      gclid: asTrimmedString(input.gclid),
+      gbraid: asTrimmedString(input.gbraid),
+      wbraid: asTrimmedString(input.wbraid),
+    }
+  }
+
   return null
 }
 
-export function formatEnquiryEmailBody(payload: EnquiryPayload): string {
+export function getEnquiryEmailSubject(payload: EnquiryPayload): string {
+  if (payload.kind === 'plan_journey') return 'New enquiry: Plan journey'
+  if (payload.kind === 'wonder_beyond_the_wonder') return 'New Wonder Beyond the Wonder lead'
+  return `New enquiry: Book experience — ${payload.experienceSummary.experienceName}`
+}
+
+export function formatEnquiryEmailBody(payload: EnquiryPayload, submittedAtIso?: string): string {
   if (payload.kind === 'plan_journey') {
     return [
       'New enquiry — Plan journey (email)',
@@ -123,6 +236,44 @@ export function formatEnquiryEmailBody(payload: EnquiryPayload): string {
       '',
       'Message:',
       payload.emailMessage.trim() || '—',
+    ].join('\n')
+  }
+
+  if (payload.kind === 'wonder_beyond_the_wonder') {
+    const phone =
+      payload.fullPhone.trim() ||
+      formatWonderBeyondPhoneDisplay(payload.phoneCountryCode, payload.phone)
+    const interest = payload.interest.trim() || 'Not sure yet'
+    const submittedAt = submittedAtIso ?? new Date().toISOString()
+    return [
+      'New campaign lead: Wonder Beyond the Wonder',
+      '',
+      'Full name:',
+      payload.fullName,
+      '',
+      'Email:',
+      payload.email,
+      '',
+      'Phone:',
+      phone,
+      '',
+      'Travel timing:',
+      payload.travelTiming,
+      '',
+      'Group size:',
+      payload.groupSize,
+      '',
+      'Interest:',
+      interest,
+      '',
+      'Contact via:',
+      payload.contactChannel,
+      '',
+      'Submitted at:',
+      submittedAt,
+      '',
+      'Page URL:',
+      payload.pageUrl || '—',
     ].join('\n')
   }
 

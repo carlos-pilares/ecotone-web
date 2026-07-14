@@ -1,6 +1,6 @@
 import type { sheets_v4 } from 'googleapis'
 
-import type { EnquiryPayload } from '@/lib/enquiryPayload'
+import { buildWonderBeyondSheetNotes, type EnquiryPayload } from '@/lib/enquiryPayload'
 
 const LOG = '[api/enquiry/sheets]'
 
@@ -124,6 +124,28 @@ export function buildGoogleSheetsRow(submittedAtIso: string, payload: EnquiryPay
       '',
       '',
       payload.emailMessage,
+      raw,
+    ]
+  }
+
+  if (payload.kind === 'wonder_beyond_the_wonder') {
+    return [
+      submittedAtIso,
+      payload.flowType,
+      payload.flowLabel,
+      payload.fullName,
+      payload.email,
+      payload.contactChannel,
+      payload.interest,
+      payload.travelTiming,
+      '',
+      payload.groupSize,
+      'Wonder Beyond the Wonder',
+      'Beyond Machu Picchu / Manu & Tropical Andes',
+      '4-night experience',
+      'Campaign benefit',
+      'Up to 50% off selected 2026 Ecotone Experiences',
+      buildWonderBeyondSheetNotes(payload),
       raw,
     ]
   }

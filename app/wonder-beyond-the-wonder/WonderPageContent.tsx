@@ -111,7 +111,7 @@ function WonderPageInner() {
                 />
               </span>
             </a>
-            <WonderCtaButton variant="nav" className="wbtw-topbar-cta">
+            <WonderCtaButton variant="nav" className="wbtw-topbar-cta" ctaLocation="header">
               Check my travel fit
             </WonderCtaButton>
           </div>
@@ -140,7 +140,9 @@ function WonderPageInner() {
               Tell us about your Peru plans and be considered for exclusive direct-booking benefits on selected 2026
               Ecotone Experiences.
             </p>
-            <WonderCtaButton className="wbtw-hero-cta">Check my travel fit</WonderCtaButton>
+            <WonderCtaButton className="wbtw-hero-cta" ctaLocation="hero">
+              Check my travel fit
+            </WonderCtaButton>
             <p className="wbtw-small-note">For travellers planning Peru in 2026 or early 2027.</p>
             <ul className="wbtw-chips" aria-label="Journey highlights">
               <li>Cloud forest</li>
@@ -208,7 +210,7 @@ function WonderPageInner() {
             ))}
           </ol>
           <div className="wbtw-how-cta">
-            <WonderCtaButton>Check my travel fit</WonderCtaButton>
+            <WonderCtaButton ctaLocation="how_it_works">Check my travel fit</WonderCtaButton>
           </div>
         </div>
       </section>
@@ -242,7 +244,7 @@ function WonderPageInner() {
             ))}
           </ul>
           <div className="wbtw-section-cta">
-            <WonderCtaButton>Check my travel fit</WonderCtaButton>
+            <WonderCtaButton ctaLocation="experience_section">Check my travel fit</WonderCtaButton>
           </div>
         </div>
       </section>
@@ -287,7 +289,9 @@ function WonderPageInner() {
               <p className="wbtw-small-note wbtw-small-note--muted wbtw-benefit-note">
                 Flights are not included. Benefits are subject to availability and campaign conditions.
               </p>
-              <WonderCtaButton className="wbtw-benefit-cta">Check my travel fit</WonderCtaButton>
+              <WonderCtaButton className="wbtw-benefit-cta" ctaLocation="benefit_section">
+                Check my travel fit
+              </WonderCtaButton>
             </div>
           </div>
         </div>
@@ -339,7 +343,9 @@ function WonderPageInner() {
               Tell us about your Peru plans and we&apos;ll help match you with the Ecotone Experience that fits your
               journey — including any 2026 benefit that may apply.
             </p>
-            <WonderCtaButton className="wbtw-close-cta">Check my travel fit</WonderCtaButton>
+            <WonderCtaButton className="wbtw-close-cta" ctaLocation="final_cta">
+              Check my travel fit
+            </WonderCtaButton>
             <p className="wbtw-small-note wbtw-close-trust">
               No commitment required. We&apos;ll only use your answers to follow up with relevant options.
             </p>
