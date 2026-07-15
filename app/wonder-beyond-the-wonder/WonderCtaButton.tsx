@@ -2,7 +2,11 @@
 
 import type { ReactNode } from 'react'
 
-import { trackWbtwCtaClick, type WbtwCtaLocation } from '@/lib/trackWonderBeyondAnalytics'
+import {
+  isWbtwCtaLocation,
+  trackWbtwCtaClick,
+  type WbtwCtaLocation,
+} from '@/lib/trackWonderBeyondAnalytics'
 
 import { useWonderCampaign } from './WonderCampaignContext'
 
@@ -27,6 +31,7 @@ export function WonderCtaButton({
       type="button"
       className={`wbtw-cta wbtw-cta--${variant} ${className}`.trim()}
       onClick={() => {
+        if (!isWbtwCtaLocation(ctaLocation)) return
         trackWbtwCtaClick({
           cta_label: label,
           cta_location: ctaLocation,

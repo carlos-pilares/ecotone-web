@@ -92,6 +92,8 @@ async function main() {
     trackWbtwWhatsappOpen,
     trackWbtwThankYouView,
     resetWbtwLeadConversionGuard,
+    beginWbtwModalSession,
+    clearWbtwModalSession,
   } = await import('../lib/trackWonderBeyondAnalytics')
 
   const { trackRoutePageView } = await import('../lib/gaPageView')
@@ -328,6 +330,71 @@ async function main() {
       leadParams?.utm_source === 'google' &&
       leadParams?.lead_type === 'wonder_beyond_the_wonder',
     JSON.stringify(leadParams),
+  )
+
+  // --- origin_cta_location session attribution ---
+  clearWbtwModalSession()
+  events.length = 0
+  trackWbtwCtaClick({ cta_label: 'Check my travel fit', cta_location: 'hero' })
+  check(
+    'origin.cta_click_no_origin',
+    eventsNamed('wbtw_cta_click')[0]?.origin_cta_location === undefined,
+    'cta_click must not include origin_cta_location before session',
+  )
+
+  events.length = 0
+  trackWbtwModalOpen('hero')
+  trackWbtwFormStart({ first_field: 'fullName', opened_from: 'hero' })
+  trackWbtwFormFieldSelect({ field_name: 'groupSize', field_value: '2' })
+  trackWbtwSubmitAttempt({
+    submission_channel: 'form',
+    travel_timing: 'Early 2027',
+    group_size: '2',
+    interest: 'Nature adventure',
+  })
+  trackWbtwLeadSuccess({
+    submission_channel: 'form',
+    travel_timing: 'Early 2027',
+    group_size: '2',
+    interest: 'Nature adventure',
+  })
+  trackWbtwThankYouView('form')
+  trackWbtwModalClose({
+    close_method: 'thank_you_close',
+    opened_from: 'hero',
+    form_started: true,
+  })
+  const originFunnel = [
+    'wbtw_modal_open',
+    'wbtw_form_start',
+    'wbtw_form_field_select',
+    'wbtw_submit_attempt',
+    'enquiry_submit',
+    'generate_lead',
+    'wbtw_thank_you_view',
+    'wbtw_modal_close',
+  ]
+  const originOk = originFunnel.every((name) => eventsNamed(name)[0]?.origin_cta_location === 'hero')
+  check('origin.session_hero', originOk, 'all funnel events carry origin_cta_location=hero')
+
+  events.length = 0
+  trackWbtwModalOpen('benefit_section')
+  trackWbtwLeadSuccess({
+    submission_channel: 'whatsapp',
+    travel_timing: 'Early 2027',
+    group_size: '1',
+    interest: '',
+  })
+  check(
+    'origin.session_reset',
+    eventsNamed('generate_lead')[0]?.origin_cta_location === 'benefit_section',
+    `origin=${String(eventsNamed('generate_lead')[0]?.origin_cta_location)}`,
+  )
+  check(
+    'origin.reject_invalid',
+    beginWbtwModalSession('' as never) === false &&
+      beginWbtwModalSession('not_a_place' as never) === false,
+    'invalid CTA locations rejected',
   )
 
   // --- 12: Plan Journey / Book Experience helpers still fire generate_lead ---

@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 
 import {
+  isWbtwCtaLocation,
   trackWbtwModalClose,
   trackWbtwModalOpen,
   type WbtwCloseMethod,
@@ -50,6 +51,8 @@ export function WonderCampaignProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const openModal = useCallback((from: WbtwCtaLocation) => {
+    // Require a valid CTA location so origin_cta_location is never empty / "(not set)".
+    if (!isWbtwCtaLocation(from)) return
     openedFromRef.current = from
     formStartedRef.current = false
     setOpenedFrom(from)
