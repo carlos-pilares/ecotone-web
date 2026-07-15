@@ -565,12 +565,46 @@
 }
 
 .wbtw-cinematic-overlay--close {
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 48%, rgba(0, 0, 0, 0.28) 0%, transparent 70%),
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.78) 0%,
+      rgba(0, 0, 0, 0.52) 42%,
+      rgba(0, 0, 0, 0.82) 100%
+    );
+}
+
+.wbtw-cinematic--close .wbtw-responsive-media,
+.wbtw-cinematic--close .wbtw-media {
+  object-position: center 46%;
+}
+
+@media (max-width: 767px) {
+  .wbtw-cinematic--close .wbtw-responsive-media,
+  .wbtw-cinematic--close .wbtw-media {
+    object-position: center 42%;
+  }
+}
+
+.wbtw-close-warm {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
   background: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0.72) 0%,
-    rgba(0, 0, 0, 0.55) 50%,
-    rgba(0, 0, 0, 0.78) 100%
+    160deg,
+    rgba(92, 58, 28, 0.28) 0%,
+    rgba(58, 36, 18, 0.16) 45%,
+    rgba(28, 16, 8, 0.22) 100%
   );
+  mix-blend-mode: multiply;
+}
+
+.wbtw-close-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 38%, rgba(0, 0, 0, 0.55) 100%);
 }
 
 .wbtw-cinematic-glow {
@@ -997,18 +1031,48 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 42%;
+  object-position: center 38%;
+}
+
+@media (max-width: 767px) {
+  .wbtw-benefit-bg .wbtw-responsive-media,
+  .wbtw-benefit-bg .wbtw-media {
+    object-position: center 34%;
+  }
 }
 
 .wbtw-benefit-overlay {
   position: absolute;
   inset: 0;
+  background:
+    radial-gradient(ellipse 55% 70% at 18% 42%, rgba(0, 0, 0, 0.55) 0%, transparent 68%),
+    linear-gradient(
+      108deg,
+      rgba(0, 0, 0, 0.94) 0%,
+      rgba(0, 0, 0, 0.8) 38%,
+      rgba(0, 0, 0, 0.62) 72%,
+      rgba(0, 0, 0, 0.7) 100%
+    );
+}
+
+.wbtw-benefit-warm {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
   background: linear-gradient(
-    108deg,
-    rgba(0, 0, 0, 0.92) 0%,
-    rgba(0, 0, 0, 0.78) 40%,
-    rgba(0, 0, 0, 0.65) 100%
+    120deg,
+    rgba(84, 52, 24, 0.32) 0%,
+    rgba(62, 38, 18, 0.14) 48%,
+    rgba(36, 22, 10, 0.2) 100%
   );
+  mix-blend-mode: multiply;
+}
+
+.wbtw-benefit-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 42%, rgba(0, 0, 0, 0.5) 100%);
 }
 
 .wbtw-benefit-atmosphere {

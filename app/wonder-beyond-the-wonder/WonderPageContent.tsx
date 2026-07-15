@@ -13,6 +13,8 @@ import {
 import { WonderJourneyCardImage, WonderResponsiveImage } from './WonderResponsiveImage'
 import { WonderTravelFitModal } from './WonderTravelFitModal'
 import {
+  WBTW_BENEFIT_IMAGES,
+  WBTW_CLOSE_IMAGES,
   WBTW_EDITORIAL_IMAGES,
   WBTW_HERO_IMAGES,
   WBTW_JOURNEY_CARD_IMAGES,
@@ -252,8 +254,10 @@ function WonderPageInner() {
       {/* Benefit */}
       <section id="wbtw-benefit" className="wbtw-section wbtw-section--benefit">
         <div className="wbtw-benefit-bg" aria-hidden>
-          <WonderResponsiveImage manifest={WBTW_EDITORIAL_IMAGES} sizes="100vw" />
+          <WonderResponsiveImage manifest={WBTW_BENEFIT_IMAGES} sizes="100vw" />
           <div className="wbtw-benefit-overlay" />
+          <div className="wbtw-benefit-warm" aria-hidden />
+          <div className="wbtw-benefit-vignette" aria-hidden />
           <div className="wbtw-benefit-atmosphere" />
         </div>
         <div className="wbtw-container">
@@ -331,8 +335,10 @@ function WonderPageInner() {
       {/* Final CTA */}
       <section className="wbtw-cinematic wbtw-cinematic--close" aria-labelledby="wbtw-close-title">
         <div className="wbtw-cinematic-bg" aria-hidden>
-          <WonderResponsiveImage manifest={WBTW_HERO_IMAGES} sizes="100vw" />
+          <WonderResponsiveImage manifest={WBTW_CLOSE_IMAGES} sizes="100vw" />
           <div className="wbtw-cinematic-overlay wbtw-cinematic-overlay--close" />
+          <div className="wbtw-close-warm" aria-hidden />
+          <div className="wbtw-close-vignette" aria-hidden />
         </div>
         <div className="wbtw-container">
           <div className="wbtw-close-content">

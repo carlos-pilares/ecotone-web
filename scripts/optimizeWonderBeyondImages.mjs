@@ -12,6 +12,25 @@ const ROOT = process.cwd()
 const SOURCES = path.join(ROOT, 'assets/wonder-beyond-the-wonder')
 const PUBLIC = path.join(ROOT, 'public/wonder-beyond-the-wonder')
 
+/**
+ * Mild cinematic grade burned into bitmap so base frames match campaign tone.
+ * Keep grading subtle — CSS overlays provide vignette / warm film / text scrim.
+ */
+function applyCinematicGrade(pipeline) {
+  return pipeline
+    .modulate({
+      brightness: 0.84,
+      saturation: 0.78,
+    })
+    .linear(0.94, -5)
+    // Gentle warm bias without crushing greens into mud.
+    .recomb([
+      [1.02, 0.02, 0.0],
+      [0.0, 0.98, 0.0],
+      [0.0, 0.0, 0.9],
+    ])
+}
+
 /** @type {const} */
 const IMAGE_SETS = [
   {
@@ -35,6 +54,34 @@ const IMAGE_SETS = [
       { name: 'desktop', width: 2000 },
     ],
     quality: { avif: 78, webp: 80 },
+  },
+  {
+    // 50% benefit section — canopy / Tropical Andes mountain
+    id: 'benefit',
+    source: 'benefit-source.png',
+    outDir: path.join(PUBLIC, 'benefit'),
+    sizes: [
+      { name: 'mobile', width: 900 },
+      { name: 'tablet', width: 1024 },
+      { name: 'desktop', width: 1024 },
+    ],
+    quality: { avif: 72, webp: 76 },
+    withoutEnlargement: true,
+    cinematicGrade: true,
+  },
+  {
+    // Final CTA section — river winding toward forested peak
+    id: 'close',
+    source: 'close-source.png',
+    outDir: path.join(PUBLIC, 'close'),
+    sizes: [
+      { name: 'mobile', width: 900 },
+      { name: 'tablet', width: 1024 },
+      { name: 'desktop', width: 1024 },
+    ],
+    quality: { avif: 72, webp: 76 },
+    withoutEnlargement: true,
+    cinematicGrade: true,
   },
   {
     id: 'journey-wonder',
@@ -107,7 +154,7 @@ const IMAGE_SETS = [
   },
 ]
 
-async function writeVariant(input, outputPath, width, format, quality, crop, withoutEnlargement) {
+async function writeVariant(input, outputPath, width, format, quality, crop, withoutEnlargement, cinematicGrade) {
   let pipeline = sharp(input).rotate()
 
   if (crop) {
@@ -128,6 +175,10 @@ async function writeVariant(input, outputPath, width, format, quality, crop, wit
   }
 
   pipeline = pipeline.resize({ width, withoutEnlargement: withoutEnlargement ?? false })
+
+  if (cinematicGrade) {
+    pipeline = applyCinematicGrade(pipeline)
+  }
 
   if (format === 'avif') {
     pipeline = pipeline.avif({ quality, effort: 6 })
@@ -161,13 +212,19 @@ async function optimizeSet(set) {
         set.quality[format],
         set.crop,
         set.withoutEnlargement,
+        set.cinematicGrade,
       )
       console.log(`${path.relative(ROOT, outputPath)} — ${result.kb} KB`)
     }
   }
 }
 
+const only = process.argv.includes('--only')
+  ? process.argv[process.argv.indexOf('--only') + 1]?.split(',').filter(Boolean)
+  : null
+
 for (const set of IMAGE_SETS) {
+  if (only && !only.includes(set.id)) continue
   console.log(`\nOptimizing ${set.id}…`)
   await optimizeSet(set)
 }

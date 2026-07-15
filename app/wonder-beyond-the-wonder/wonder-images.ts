@@ -26,6 +26,26 @@ export const WBTW_EDITORIAL_IMAGES: ResponsiveImageManifest = {
   ],
 }
 
+/** 50% benefit section — canopy / Tropical Andes mountain. */
+export const WBTW_BENEFIT_IMAGES: ResponsiveImageManifest = {
+  basePath: '/wonder-beyond-the-wonder/benefit',
+  sizes: [
+    { name: 'mobile', width: 900 },
+    { name: 'tablet', width: 1024 },
+    { name: 'desktop', width: 1024 },
+  ],
+}
+
+/** Final CTA section — river approaching a forested peak. */
+export const WBTW_CLOSE_IMAGES: ResponsiveImageManifest = {
+  basePath: '/wonder-beyond-the-wonder/close',
+  sizes: [
+    { name: 'mobile', width: 900 },
+    { name: 'tablet', width: 1024 },
+    { name: 'desktop', width: 1024 },
+  ],
+}
+
 export function buildResponsiveSrcSet(
   manifest: ResponsiveImageManifest,
   format: 'avif' | 'webp',
