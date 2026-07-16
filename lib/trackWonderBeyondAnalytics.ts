@@ -1,4 +1,5 @@
 import { trackEvent, type GtagEventParams } from '@/lib/analytics'
+import { trackMetaCustomEvent, trackMetaLead } from '@/lib/metaPixel'
 
 export const WBTW_PAGE_PATH = '/wonder-beyond-the-wonder'
 export const WBTW_CAMPAIGN_PAGE = 'wonder_beyond_the_wonder'
@@ -124,9 +125,15 @@ export function trackWbtwCtaClick(params: {
 }): void {
   // Fires before the modal session starts — no origin_cta_location yet.
   // Keep existing cta_location parameter unchanged.
-  trackWbtwEvent('wbtw_cta_click', {
+  const eventParams = {
     cta_label: params.cta_label,
     cta_location: params.cta_location,
+  }
+  trackWbtwEvent('wbtw_cta_click', eventParams)
+  trackMetaCustomEvent('WBTWCTAClick', {
+    cta_location: params.cta_location,
+    campaign_page: WBTW_CAMPAIGN_PAGE,
+    flow_type: WBTW_FLOW_TYPE,
   })
 }
 
@@ -135,6 +142,12 @@ export function trackWbtwModalOpen(opened_from: WbtwCtaLocation): void {
   trackWbtwEvent('wbtw_modal_open', {
     opened_from,
     origin_cta_location: opened_from,
+  })
+  trackMetaCustomEvent('WBTWModalOpen', {
+    opened_from,
+    origin_cta_location: opened_from,
+    campaign_page: WBTW_CAMPAIGN_PAGE,
+    flow_type: WBTW_FLOW_TYPE,
   })
 }
 
@@ -162,9 +175,17 @@ export function trackWbtwFormStart(params: {
   first_field: string
   opened_from: WbtwCtaLocation | null
 }): void {
+  const openedFrom = params.opened_from ?? sessionOriginCtaLocation ?? undefined
   trackWbtwEvent('wbtw_form_start', {
     first_field: params.first_field,
-    opened_from: params.opened_from ?? sessionOriginCtaLocation ?? undefined,
+    opened_from: openedFrom,
+  })
+  trackMetaCustomEvent('WBTWFormStart', {
+    first_field: params.first_field,
+    opened_from: openedFrom,
+    origin_cta_location: sessionOriginCtaLocation ?? undefined,
+    campaign_page: WBTW_CAMPAIGN_PAGE,
+    flow_type: WBTW_FLOW_TYPE,
   })
 }
 
@@ -238,6 +259,17 @@ export function trackWbtwLeadSuccess(params: {
 
   trackWbtwEvent('enquiry_submit', shared)
   trackWbtwEvent('generate_lead', shared)
+  // Mirror GA conversion → Meta standard Lead (same once-per-session guard).
+  trackMetaLead({
+    submission_channel: params.submission_channel,
+    origin_cta_location: sessionOriginCtaLocation ?? undefined,
+    travel_timing: shared.travel_timing,
+    group_size: shared.group_size,
+    interest: shared.interest,
+    campaign_page: WBTW_CAMPAIGN_PAGE,
+    flow_type: WBTW_FLOW_TYPE,
+    lead_type: WBTW_FLOW_TYPE,
+  })
 }
 
 export function trackWbtwWhatsappOpen(): void {

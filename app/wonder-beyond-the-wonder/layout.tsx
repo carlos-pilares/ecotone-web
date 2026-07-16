@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 
+import { MetaPixel } from '@/components/MetaPixel'
+
 import './wonder-beyond.css'
 
 export const metadata: Metadata = {
@@ -11,5 +13,10 @@ export const metadata: Metadata = {
 }
 
 export default function WonderBeyondLayout({ children }: { children: ReactNode }) {
-  return <div className="wbtw-root">{children}</div>
+  return (
+    <div className="wbtw-root">
+      {children}
+      <MetaPixel />
+    </div>
+  )
 }
