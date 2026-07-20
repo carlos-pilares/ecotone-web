@@ -5,7 +5,7 @@ import { Resend } from 'resend'
 import {
   buildGoogleSheetsRow,
   ensureSheetHeaders,
-  parseSheetTabFromAppendRange,
+  resolveEnquirySheetTabName,
   structuredAppendRange,
 } from '@/lib/enquiryGoogleSheets'
 import {
@@ -20,41 +20,91 @@ export const runtime = 'nodejs'
 const LOG = '[api/enquiry]'
 const DEFAULT_NOTIFICATION_EMAIL = 'info@ecotone.eco'
 
-function serializeSettledReason(reason: unknown): string {
-  if (reason instanceof Error) {
-    const extra = reason as Error & { response?: { status?: number; statusText?: string; data?: unknown } }
-    const parts = [`message: ${reason.message}`, `stack:\n${reason.stack ?? '(no stack)'}`]
-    if (extra.response != null) {
-      parts.push(
-        `httpStatus: ${String(extra.response.status)} ${String(extra.response.statusText ?? '')}`.trim(),
-      )
-      try {
-        parts.push(`response.data: ${JSON.stringify(extra.response.data, null, 2)}`)
-      } catch {
-        parts.push(`response.data: (unserializable)`)
+/**
+ * Safe Google / Gaxios error summary for Vercel logs.
+ * Includes message, HTTP status/code, and Sheets API error code when present.
+ * Does not log credentials, private keys, lead PII, or request payloads.
+ */
+function serializeSheetsError(reason: unknown): string {
+  if (!(reason instanceof Error)) {
+    try {
+      return JSON.stringify(reason)
+    } catch {
+      return String(reason)
+    }
+  }
+
+  const extra = reason as Error & {
+    code?: number | string
+    status?: number | string
+    response?: {
+      status?: number
+      statusText?: string
+      data?: {
+        error?: {
+          code?: number
+          message?: string
+          status?: string
+          errors?: Array<{ message?: string; reason?: string; domain?: string }>
+        }
       }
     }
-    const cause = 'cause' in reason ? (reason as Error & { cause?: unknown }).cause : undefined
-    if (cause !== undefined) {
-      parts.push(`cause: ${serializeSettledReason(cause)}`)
+  }
+
+  const apiError = extra.response?.data?.error
+  const parts = [
+    `message: ${reason.message}`,
+    `httpStatus: ${String(extra.response?.status ?? extra.status ?? extra.code ?? 'unknown')}`,
+  ]
+  if (extra.response?.statusText) {
+    parts.push(`httpStatusText: ${extra.response.statusText}`)
+  }
+  if (apiError?.code != null) parts.push(`apiCode: ${String(apiError.code)}`)
+  if (apiError?.status) parts.push(`apiStatus: ${apiError.status}`)
+  if (apiError?.message) parts.push(`apiMessage: ${apiError.message}`)
+  if (apiError?.errors?.length) {
+    const reasons = apiError.errors
+      .map((e) => e.reason || e.message)
+      .filter(Boolean)
+      .join(', ')
+    if (reasons) parts.push(`apiReasons: ${reasons}`)
+  }
+  return parts.join(' | ')
+}
+
+function serializeSettledReason(reason: unknown): string {
+  if (reason instanceof Error) {
+    // Prefer compact Sheets-safe summary when this looks like a Google API error.
+    const maybeGaxios = reason as Error & { response?: { data?: unknown } }
+    if (maybeGaxios.response?.data != null) {
+      return serializeSheetsError(reason)
     }
-    return parts.join('\n')
+    return `message: ${reason.message}`
   }
   if (typeof reason === 'string') return reason
   try {
-    return JSON.stringify(reason, null, 2)
+    return JSON.stringify(reason)
   } catch {
     return String(reason)
   }
 }
 
-function logSettledOutcome(label: 'google_sheets' | 'resend_email', outcome: PromiseSettledResult<unknown>) {
+function logSettledOutcome(
+  label: 'google_sheets' | 'resend_email',
+  outcome: PromiseSettledResult<unknown>,
+  context?: { sheetTab?: string; appendRange?: string; spreadsheetId?: string },
+) {
   if (outcome.status === 'fulfilled') {
     console.info(`${LOG} ${label}: OK (fulfilled)`)
     return
   }
   console.error(`${LOG} ${label}: FAILED (rejected)`)
-  console.error(`${LOG} ${label} reason:\n${serializeSettledReason(outcome.reason)}`)
+  if (label === 'google_sheets' && context) {
+    console.error(
+      `${LOG} ${label} context: spreadsheetId=${context.spreadsheetId ?? 'unknown'} sheetTab=${JSON.stringify(context.sheetTab ?? '')} appendRange=${JSON.stringify(context.appendRange ?? '')}`,
+    )
+  }
+  console.error(`${LOG} ${label} reason: ${serializeSettledReason(outcome.reason)}`)
 }
 
 function getPrivateKey(): string {
@@ -80,9 +130,12 @@ async function appendEnquiryToSheet(payload: EnquiryPayload): Promise<void> {
 
   const sheets = google.sheets({ version: 'v4', auth })
   const ts = new Date().toISOString()
-  const appendRangeEnv = process.env.GOOGLE_SHEET_APPEND_RANGE ?? 'Sheet1!A:Q'
-  const sheetTab = parseSheetTabFromAppendRange(appendRangeEnv)
+  const sheetTab = resolveEnquirySheetTabName()
   const appendRange = structuredAppendRange(sheetTab)
+
+  console.info(
+    `${LOG} sheets append target: spreadsheetId=${spreadsheetId} sheetTab=${JSON.stringify(sheetTab)} appendRange=${JSON.stringify(appendRange)}`,
+  )
 
   await ensureSheetHeaders(sheets, spreadsheetId, sheetTab)
   const row = buildGoogleSheetsRow(ts, payload)
@@ -136,12 +189,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false }, { status: 400 })
   }
 
+  const sheetTab = resolveEnquirySheetTabName()
+  const appendRange = structuredAppendRange(sheetTab)
+  const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID?.trim() || undefined
+
   const [sheetOutcome, emailOutcome] = await Promise.allSettled([
     appendEnquiryToSheet(payload),
     sendEnquiryNotification(payload),
   ])
 
-  logSettledOutcome('google_sheets', sheetOutcome)
+  logSettledOutcome('google_sheets', sheetOutcome, { sheetTab, appendRange, spreadsheetId })
   logSettledOutcome('resend_email', emailOutcome)
 
   const sheetOk = sheetOutcome.status === 'fulfilled'

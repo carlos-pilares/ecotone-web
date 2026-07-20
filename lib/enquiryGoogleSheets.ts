@@ -27,18 +27,64 @@ export const ENQUIRY_SHEET_HEADERS = [
 
 export const ENQUIRY_SHEET_COLUMN_COUNT = ENQUIRY_SHEET_HEADERS.length
 
-/** Parse sheet tab name from e.g. `Sheet1!A:C` → `Sheet1`. Defaults to `Sheet1`. */
-export function parseSheetTabFromAppendRange(appendRange: string): string {
+/**
+ * Production worksheet title in spreadsheet `Ecotone Enquiries`.
+ * Note the space: Google Sheets default UI title is often "Sheet 1", not "Sheet1".
+ */
+export const DEFAULT_ENQUIRY_SHEET_TAB = 'Sheet 1'
+
+/** Parse sheet tab name from e.g. `Sheet1!A:C` or `'Sheet 1'!A:Q`. */
+export function parseSheetTabFromAppendRange(appendRange: string): string | null {
   const trimmed = appendRange.trim()
+  if (!trimmed) return null
   const bang = trimmed.indexOf('!')
-  if (bang === -1) return 'Sheet1'
-  const tab = trimmed.slice(0, bang).trim()
-  return tab || 'Sheet1'
+  const rawTab = bang === -1 ? trimmed : trimmed.slice(0, bang).trim()
+  if (!rawTab) return null
+  // Strip optional A1 single-quotes: 'Sheet 1' → Sheet 1
+  if (rawTab.startsWith("'") && rawTab.endsWith("'") && rawTab.length >= 2) {
+    return rawTab.slice(1, -1).replace(/''/g, "'")
+  }
+  return rawTab
+}
+
+/**
+ * Resolve the enquiry worksheet tab name.
+ * Precedence:
+ * 1. GOOGLE_SHEETS_TAB_NAME
+ * 2. Tab parsed from GOOGLE_SHEET_APPEND_RANGE (legacy)
+ * 3. DEFAULT_ENQUIRY_SHEET_TAB ("Sheet 1")
+ */
+export function resolveEnquirySheetTabName(env: NodeJS.ProcessEnv = process.env): string {
+  const fromTabEnv = env.GOOGLE_SHEETS_TAB_NAME?.trim()
+  if (fromTabEnv) return fromTabEnv
+
+  const fromRangeEnv = env.GOOGLE_SHEET_APPEND_RANGE?.trim()
+  if (fromRangeEnv) {
+    const parsed = parseSheetTabFromAppendRange(fromRangeEnv)
+    if (parsed) return parsed
+  }
+
+  return DEFAULT_ENQUIRY_SHEET_TAB
+}
+
+/**
+ * Quote a sheet tab for A1 notation when it contains spaces or special characters.
+ * Example: Sheet 1 → 'Sheet 1'
+ */
+export function quoteSheetTabForA1(sheetTab: string): string {
+  const trimmed = sheetTab.trim()
+  if (/^[A-Za-z0-9_]+$/.test(trimmed)) return trimmed
+  return `'${trimmed.replace(/'/g, "''")}'`
 }
 
 /** Append target spanning all enquiry columns (A–Q). */
 export function structuredAppendRange(sheetTab: string): string {
-  return `${sheetTab}!A:Q`
+  return `${quoteSheetTabForA1(sheetTab)}!A:Q`
+}
+
+/** Header read/write range for row 1 across A–Q. */
+export function structuredHeaderRange(sheetTab: string): string {
+  return `${quoteSheetTabForA1(sheetTab)}!A1:${columnLetter(ENQUIRY_SHEET_COLUMN_COUNT)}1`
 }
 
 function isRowAllBlank(row: string[] | undefined): boolean {
@@ -60,7 +106,7 @@ export async function ensureSheetHeaders(
   spreadsheetId: string,
   sheetTab: string,
 ): Promise<void> {
-  const readRange = `${sheetTab}!A1:${columnLetter(ENQUIRY_SHEET_COLUMN_COUNT)}1`
+  const readRange = structuredHeaderRange(sheetTab)
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId,
     range: readRange,
@@ -73,7 +119,7 @@ export async function ensureSheetHeaders(
   }
 
   if (isRowAllBlank(firstRow)) {
-    const writeRange = `${sheetTab}!A1:${columnLetter(ENQUIRY_SHEET_COLUMN_COUNT)}1`
+    const writeRange = structuredHeaderRange(sheetTab)
     await sheets.spreadsheets.values.update({
       spreadsheetId,
       range: writeRange,
