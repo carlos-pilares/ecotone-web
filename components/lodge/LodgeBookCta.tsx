@@ -44,7 +44,7 @@ export function LodgeBookCta({ data }: LodgeBookCtaProps) {
         rows: data.rows.map((r) => ({ label: r.label, value: r.value })),
         ctas,
         termsHref:
-          data.termsHref?.trim() || '/experiences/soqtapata-pristine-immersion#terms',
+          data.termsHref?.trim() || '/experiences/soqtapata-pristine-immersion-3d-2n#terms',
         termsPrefixText: data.termsPrefixText,
         termsLinkLabel: data.termsLinkLabel,
         termsSuffixText: data.termsSuffixText,

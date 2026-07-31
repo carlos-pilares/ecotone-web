@@ -1,6 +1,8 @@
 import path from 'path'
 import type { NextConfig } from 'next'
 
+import { legacyRedirects } from './legacyRedirects'
+
 /**
  * Embedded Studio pulls `sanity.config.js` → schema → app/lib code using `@/…` imports.
  * - Webpack must resolve `@` to the project root (same as `tsconfig` paths `"@/*": ["./*"]`).
@@ -16,6 +18,10 @@ const nextConfig: NextConfig = {
     '@portabletext/markdown',
     'markdown-it',
   ],
+  /** Permanent legacy URL redirects (HTTP 308). See `legacyRedirects.ts`. */
+  async redirects() {
+    return legacyRedirects
+  },
   webpack: (config, { dir }) => {
     const sanityPkg = path.join(dir, 'node_modules', 'sanity')
     const sanityLib = path.join(sanityPkg, 'lib')

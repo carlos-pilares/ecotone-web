@@ -33,6 +33,7 @@ export const defaultHomePageDoc: ResolvedHomePage = {
   heroCta1Link: t.heroCta1Link,
   heroCta2Text: t.heroCta2Text,
   heroCta2Link: t.heroCta2Link,
+  showHeroPricingCard: true,
   heroCardPrice: t.heroCardPrice,
   heroCardPriceSuffix: t.heroCardPriceSuffix,
   heroCardSubprice: t.heroCardSubprice,
@@ -389,6 +390,9 @@ export function mergeHomePageWithDefaults(cms: HomePageDoc | null): ResolvedHome
   }
   if (typeof cms.slideshowAutoplay === 'boolean') {
     ;(out as ResolvedHomePage).slideshowAutoplay = cms.slideshowAutoplay
+  }
+  if (typeof cms.showHeroPricingCard === 'boolean') {
+    ;(out as ResolvedHomePage).showHeroPricingCard = cms.showHeroPricingCard
   }
   if (
     typeof cms.slideshowIntervalMs === 'number' &&

@@ -1335,7 +1335,7 @@ export function mergeLodgePageWithFallback(
       secondaryLabel: reserveFallback.secondaryCta.label,
       secondaryHref: reserveFallback.secondaryCta.href,
     },
-    defaultTermsHref: '/experiences/soqtapata-pristine-immersion#terms',
+    defaultTermsHref: '/experiences/soqtapata-pristine-immersion-3d-2n#terms',
   })
   const prevRowsByLabel = new Map(out.book.rows.map((r) => [r.label, r]))
   const lp = lodgeReserveCard.ctas.find((c) => c.variant === 'primary')

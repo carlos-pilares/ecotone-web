@@ -81,14 +81,20 @@ export const lodgeSoqtapataRoomListDefaults = {
 export const lodgeSoqtapataExperienceCardDefaults = {
   enquireLabel: 'Enquire',
   perPersonLabel: 'per person',
-  defaultExperienceHref: '/experiences/soqtapata-pristine-immersion',
+  defaultExperienceHref: '/experiences/soqtapata-pristine-immersion-3d-2n',
   /** Prefijo precio cuando solo hay número en CMS (`experience.price`). */
   priceCurrencyPrefix: 'USD ',
 } as const
 
-/** Cuando el documento `experience.slug` no coincide con la landing `experiencePage` publicada. */
+/**
+ * When a KC `experience.slug` (or short legacy public slug) does not match the published
+ * `experiencePage.slug`, map to the canonical public landing segment.
+ */
 export const EXPERIENCE_DOCUMENT_SLUG_TO_PUBLIC_SLUG: Record<string, string> = {
-  'soqtapata-pristine-immersion-3d-2n': 'soqtapata-pristine-immersion',
+  'soqtapata-pristine-immersion': 'soqtapata-pristine-immersion-3d-2n',
+  'andean-cloud-forest': 'andean-cloud-forest-3d-2n',
+  'manu-gradient': 'manu-gradient-expedition-3d-2n',
+  'family-discovery': 'family-discovery-quest-5d-4n',
 }
 
 /** Bloque reseñas — alineado a `ReviewsSection` + enlace “ver todas”. */

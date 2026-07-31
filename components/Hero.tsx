@@ -26,6 +26,8 @@ export function Hero({ heroData }: { heroData: ResolvedHomePage }) {
   const h = heroData
   const bgFallback = h.heroImageFallbackUrl?.trim() || HOME_HERO_BACKGROUND_FALLBACK_URL
   const heroMedia = resolveHomeHeroMedia(h, bgFallback)
+  /** Missing CMS value → show card (backwards compatible). */
+  const showPricingCard = h.showHeroPricingCard !== false
   const rows = (h.heroCardRows ?? [])
     .map((r) => ({ label: (r?.label ?? '').trim(), value: (r?.value ?? '').trim() }))
     .filter((r) => r.label && r.value)
@@ -39,7 +41,7 @@ export function Hero({ heroData }: { heroData: ResolvedHomePage }) {
         </svg>
       </div>
       <div className="hero-inner">
-        <div>
+        <div className="hero-copy">
           <div className="hero-eyebrow">{h.heroEyebrow ?? ''}</div>
           <h1 className="hero-h1">
             {h.heroHeadline ?? ''}
@@ -77,29 +79,31 @@ export function Hero({ heroData }: { heroData: ResolvedHomePage }) {
             ) : null}
           </div>
         </div>
-        <div className="hero-right">
-          <div className="hero-card">
-            <div className="hero-card-price">
-              {h.heroCardPrice ?? ''}
-              <small>{h.heroCardPriceSuffix ?? ''}</small>
+        {showPricingCard ? (
+          <div className="hero-right">
+            <div className="hero-card">
+              <div className="hero-card-price">
+                {h.heroCardPrice ?? ''}
+                <small>{h.heroCardPriceSuffix ?? ''}</small>
+              </div>
+              <div className="hero-card-sub">{h.heroCardSubprice ?? ''}</div>
+              <div className="hero-card-div" />
+              <div className="hero-card-rows">
+                {rows.map((row, i) => (
+                  <div className="hero-card-row" key={i}>
+                    <span>{row.label}</span>
+                    <span>{row.value}</span>
+                  </div>
+                ))}
+              </div>
+              {h.heroCardCtaLink?.trim() && h.heroCardCtaText?.trim() ? (
+                <a className="btn-hero-book" href={h.heroCardCtaLink}>
+                  {h.heroCardCtaText}
+                </a>
+              ) : null}
             </div>
-            <div className="hero-card-sub">{h.heroCardSubprice ?? ''}</div>
-            <div className="hero-card-div" />
-            <div className="hero-card-rows">
-              {rows.map((row, i) => (
-                <div className="hero-card-row" key={i}>
-                  <span>{row.label}</span>
-                  <span>{row.value}</span>
-                </div>
-              ))}
-            </div>
-            {h.heroCardCtaLink?.trim() && h.heroCardCtaText?.trim() ? (
-              <a className="btn-hero-book" href={h.heroCardCtaLink}>
-                {h.heroCardCtaText}
-              </a>
-            ) : null}
           </div>
-        </div>
+        ) : null}
       </div>
       <div className="hero-scroll">
         <div className="scroll-line" />

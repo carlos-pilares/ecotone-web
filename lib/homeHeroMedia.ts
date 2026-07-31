@@ -1,5 +1,6 @@
 import type { SanityImageSource } from '@sanity/image-url'
 
+import { HOME_HERO_VIDEO_PUBLIC_PATH } from '@/data/homeHeroUi'
 import { cdnImageUrl } from '@/lib/sanity'
 
 export type HomeHeroMediaMode = 'image' | 'slideshow' | 'video'
@@ -57,12 +58,18 @@ function imageUrlsFromSources(
   return out
 }
 
+/** Use local web MP4 whenever CMS has a hero video configured (never the master CDN file). */
+function resolveHeroVideoSrc(cmsVideoUrl: string | null | undefined): string | null {
+  if (!cmsVideoUrl?.trim()) return null
+  return HOME_HERO_VIDEO_PUBLIC_PATH
+}
+
 function resolveDesktopVideoLayer(
   page: HomeHeroMediaSource,
   imageUrl: string,
   fallbackImageUrl: string,
 ): HeroBackgroundLayer {
-  const videoUrl = page?.heroVideoUrl?.trim() || null
+  const videoUrl = resolveHeroVideoSrc(page?.heroVideoUrl)
   const posterUrl =
     cdnImageUrl(page?.heroVideoPoster ?? null, 1800, '') || imageUrl || fallbackImageUrl
 
@@ -79,7 +86,7 @@ function resolveMobileVideoLayer(
   fallbackImageUrl: string,
   desktop: HeroBackgroundLayer,
 ): HeroBackgroundLayer {
-  const mobileVideoUrl = page?.mobileHeroVideoUrl?.trim() || null
+  const mobileVideoUrl = resolveHeroVideoSrc(page?.mobileHeroVideoUrl)
   const mobileImageUrl = cdnImageUrl(page?.mobileHeroImageFallback ?? null, 1200, '')
   const mobilePosterUrl = cdnImageUrl(page?.mobileHeroPosterImage ?? null, 1200, '')
   const desktopPoster =

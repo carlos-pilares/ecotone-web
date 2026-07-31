@@ -692,7 +692,7 @@ function emptyNav(): LegacyNavBundle {
       smartLink: HEADER_NAV_LODGES_SEE_ALL_BLOCK.smartLink,
     }),
     'All lodges',
-    '/lodges',
+    '/',
   )
   const fbTailor = resolveSmartLinkOrLegacy(undefined, undefined, {
     label: 'Enquire',
@@ -1082,7 +1082,7 @@ export function resolveSiteHeaderNavData(
         label: HEADER_NAV_LODGES_SEE_ALL_BLOCK.label,
         smartLink: HEADER_NAV_LODGES_SEE_ALL_BLOCK.smartLink,
       })
-  base.lodges.seeAll = resolveSeeAllToCta(lodgeSeeBlock, 'All lodges', '/lodges')
+  base.lodges.seeAll = resolveSeeAllToCta(lodgeSeeBlock, 'All lodges', '/')
 
   return legacyNavBundleToTabs(base)
 }

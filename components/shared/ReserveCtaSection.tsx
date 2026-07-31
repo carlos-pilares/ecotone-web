@@ -264,7 +264,7 @@ function ReserveCtaLink({
 export function reserveCtaHrefFromHomeLink(href: string, context: 'home' | 'inner'): string {
   const h = href.trim()
   if (!h || context === 'home') return h
-  if (h === '#experiences') return '/experiences'
+  if (h === '#experiences') return '/#experiences'
   if (h.startsWith('#')) return `/${h}`
   return h
 }

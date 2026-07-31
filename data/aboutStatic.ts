@@ -23,7 +23,7 @@ export const aboutStatic = {
     tagline:
       "Ecotone creates immersive journeys across Peru's Andes–Amazon landscapes, connecting travellers with remarkable places, field knowledge, and conservation stories that are alive on the ground.",
     primaryLabel: 'Explore experiences',
-    primaryHref: '/experiences',
+    primaryHref: '/routes',
     secondaryLabel: 'Our story ↓',
     secondaryHref: '#who',
     imageUrl: 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=1600&q=85',
@@ -178,8 +178,8 @@ export const aboutStatic = {
     headline: 'Whether you travel as a family, university, company, or nature lover.',
     body: 'Ecotone helps you go deeper into the landscapes that make Peru extraordinary. Every journey is all-inclusive from Cusco.',
     ctas: [
-      { label: 'Explore experiences', href: '/experiences', variant: 'primary' as const, external: false },
-      { label: 'Plan your journey', href: '/experiences', variant: 'secondary' as const, external: false },
+      { label: 'Explore experiences', href: '/routes', variant: 'primary' as const, external: false },
+      { label: 'Plan your journey', href: '/routes', variant: 'secondary' as const, external: false },
       {
         label: 'Talk to us on WhatsApp',
         href: DEFAULT_WHATSAPP_URL,

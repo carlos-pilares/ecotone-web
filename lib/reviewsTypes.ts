@@ -48,7 +48,7 @@ export function reviewDocToTestimonial(
 export function soqtapataReviewKey(): { programLabel: string; slug: string; displayName: string } {
   return {
     programLabel: 'Soqtapata 3D/2N',
-    slug: 'soqtapata-pristine-immersion',
+    slug: 'soqtapata-pristine-immersion-3d-2n',
     displayName: 'Soqtapata Pristine Immersion',
   }
 }

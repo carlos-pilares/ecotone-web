@@ -77,7 +77,7 @@ export const routesHero: RoutesHeroStatic = {
   tagline:
     'From cloud forest to deep Amazon — three distinct routes, each with its own ecosystem, lodge, and character. All departure from Cusco.',
   primaryCta: { label: 'Explore the routes ↓', href: '#routes' },
-  secondaryCta: { label: 'See all experiences', href: '/experiences' },
+  secondaryCta: { label: 'See all experiences', href: '/routes' },
 }
 
 export const routesSnapshotStats: RoutesSnapshotStat[] = [
@@ -238,7 +238,7 @@ export const routesExperiencesSection = {
   eyebrow: 'Available experiences',
   h2: 'Start with a program',
   intro: 'All experiences are all-inclusive from Cusco — transport, lodge, meals, guide, and tech pack included.',
-  allExperiencesHref: '/experiences',
+  allExperiencesHref: '/routes',
   allExperiencesLabel: 'See all ~10 experiences →',
   cardCtaLabel: 'View program',
 }
@@ -258,7 +258,7 @@ export const routesExpFilters: RoutesExpFilterPill[] = [
 
 export const routesExpCards: RoutesExpCardStatic[] = [
   {
-    href: '/experiences/soqtapata-pristine-immersion',
+    href: '/experiences/soqtapata-pristine-immersion-3d-2n',
     route: 'camanti',
     routeSlug: 'camanti',
     imageUrl: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=500&q=80',
@@ -271,7 +271,7 @@ export const routesExpCards: RoutesExpCardStatic[] = [
     ctaLabel: 'View',
   },
   {
-    href: '/experiences/andean-cloud-forest',
+    href: '/experiences/andean-cloud-forest-3d-2n',
     route: 'camanti',
     routeSlug: 'camanti',
     imageUrl: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=500&q=80',
@@ -284,7 +284,7 @@ export const routesExpCards: RoutesExpCardStatic[] = [
     ctaLabel: 'View',
   },
   {
-    href: '/experiences/manu-gradient',
+    href: '/experiences/manu-gradient-expedition-3d-2n',
     route: 'manu-road',
     routeSlug: 'manu-road',
     imageUrl: 'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=500&q=80',
@@ -296,7 +296,7 @@ export const routesExpCards: RoutesExpCardStatic[] = [
     ctaLabel: 'View',
   },
   {
-    href: '/experiences/manu-core-frontier',
+    href: '/routes',
     route: 'manu-core',
     routeSlug: 'manu-core',
     imageUrl: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=500&q=80',
@@ -308,7 +308,7 @@ export const routesExpCards: RoutesExpCardStatic[] = [
     ctaLabel: 'View',
   },
   {
-    href: '/experiences/family-discovery',
+    href: '/experiences/family-discovery-quest-5d-4n',
     route: 'manu-core',
     routeSlug: 'manu-core',
     imageUrl: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=500&q=80',
@@ -320,7 +320,7 @@ export const routesExpCards: RoutesExpCardStatic[] = [
     ctaLabel: 'View',
   },
   {
-    href: '/experiences/schools',
+    href: '/crees-manu',
     route: 'camanti',
     routeSlug: 'camanti',
     imageUrl: 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=500&q=80',
@@ -401,7 +401,7 @@ export const routesFinalCta = {
   whatsappHref:
     "https://wa.me/51974781094?text=Hi%21%20I'm%20interested%20in%20an%20Ecotone%20experience.%20Could%20you%20help%20me%20choose%20the%20right%20route%3F",
   whatsappLabel: 'Ask on WhatsApp',
-  secondaryHref: '/experiences',
+  secondaryHref: '/routes',
   secondaryLabel: 'See all experiences',
   trustItems: [
     {

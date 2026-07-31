@@ -40,3 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 sanity-backup-before-cleanup.tar.gz
+
+# Large media masters (web copies live under public/)
+/assets/masters/**/*.mp4
+/assets/masters/**/*.mov
+/assets/masters/**/*.mkv

@@ -122,7 +122,7 @@ export const lodgeSoqtapataHero = {
   reviewCountLabel: '12 reviews',
   secondaryMeta: '3 experiences',
   primaryCta: {
-    href: '/experiences/soqtapata-pristine-immersion',
+    href: '/experiences/soqtapata-pristine-immersion-3d-2n',
     label: 'See experiences',
   },
 } as const
@@ -673,7 +673,7 @@ export const lodgeSoqtapataExperiences = {
       title: 'Soqtapata Pristine Immersion',
       description: 'EcoDroneView® · ForestWhisper® · CIDS visit · Expert naturalist guide',
       price: 986,
-      href: '/experiences/soqtapata-pristine-immersion',
+      href: '/experiences/soqtapata-pristine-immersion-3d-2n',
       ctaLabel: 'View',
     },
     {
@@ -684,7 +684,7 @@ export const lodgeSoqtapataExperiences = {
       title: 'Andean Cloud Forest',
       description: 'Extended trails · Night walks · Full reserve access · All 3 tech products',
       priceLabel: 'USD 1,200',
-      href: '/experiences/soqtapata-pristine-immersion',
+      href: '/experiences/soqtapata-pristine-immersion-3d-2n',
       ctaLabel: 'View',
     },
     {
@@ -694,7 +694,7 @@ export const lodgeSoqtapataExperiences = {
       programTypeLabel: 'Experiential Learning',
       title: 'Schools & Universities',
       description: 'Custom academic program · Research participation · Volunteer · Groups',
-      href: '/experiences/soqtapata-pristine-immersion',
+      href: '/experiences/soqtapata-pristine-immersion-3d-2n',
       ctaLabel: 'View',
     },
   ],
@@ -704,7 +704,7 @@ export const lodgeSoqtapataExperiences = {
     description:
       'Any duration · Any group size · Fully custom itinerary · We build it around your goals',
     ctaLabel: 'Enquire →',
-    href: '/experiences/soqtapata-pristine-immersion',
+    href: '/experiences/soqtapata-pristine-immersion-3d-2n',
   },
   programCardCtaLabel: 'View',
 } as const satisfies LodgeExperiencesData

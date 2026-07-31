@@ -104,7 +104,7 @@ export function HomeStaticSections({
       secondaryLabel: h.bookingCta2Text,
       secondaryHref: h.bookingCta2Link,
     },
-    defaultTermsHref: '/experiences/soqtapata-pristine-immersion#terms',
+    defaultTermsHref: '/experiences/soqtapata-pristine-immersion-3d-2n#terms',
   })
 
   return (

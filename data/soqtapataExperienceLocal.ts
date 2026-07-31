@@ -1227,7 +1227,7 @@ export const soqtapataPhase6Also: SoqtapataAlsoCamanti = {
       title: 'Andean Cloud Forest',
       description: 'Extended trails · Night walks · Deeper forest access',
       priceLabel: 'USD 1,200',
-      href: '/experiences/andean-cloud-forest',
+      href: '/experiences/andean-cloud-forest-3d-2n',
       ctaLabel: 'View',
     },
   ],

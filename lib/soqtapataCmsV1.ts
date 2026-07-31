@@ -226,7 +226,7 @@ export type {
  * When Sanity env vars are missing or the published `experiencePage` / `experience` ref is unavailable,
  * the app can still render this slug using local static `soqtapataExperience` (dev / resilient builds).
  */
-export const SOQTAPATA_LOCAL_FALLBACK_SLUG = 'soqtapata-pristine-immersion' as const
+export const SOQTAPATA_LOCAL_FALLBACK_SLUG = 'soqtapata-pristine-immersion-3d-2n' as const
 
 /** Payload merged from Sanity `experiencePage` + linked KC + local fallback. */
 export type SoqtapataPageCmsPayload = {
@@ -258,7 +258,7 @@ export const soqtapataPristineSeoDefault = {
  * Returns `null` when there is no published page for `slug`, no linked source KC, both sources linked,
  * or `slug` is empty — callers should `notFound()`.
  *
- * Exception: **`soqtapata-pristine-immersion`** may still resolve from **local static data only** when
+ * Exception: **`soqtapata-pristine-immersion-3d-2n`** may still resolve from **local static data only** when
  * Sanity env is not configured or the fetch fails, so offline dev keeps working.
  */
 export const getSoqtapataPageCms = cache(async (slug: string): Promise<SoqtapataPageCmsPayload | null> => {

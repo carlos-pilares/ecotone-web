@@ -89,12 +89,12 @@ function pagePathFor(
     case 'home':
       return '/'
     case 'experiencesIndex':
-      return '/experiences'
+      return '/routes'
     case 'routes':
     case 'routesPage':
       return '/routes'
     case 'lodgesIndex':
-      return '/lodges'
+      return '/'
     case 'about':
     case 'aboutPage':
       return '/about'

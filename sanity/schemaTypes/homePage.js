@@ -363,6 +363,14 @@ export const homePage = defineType({
       group: 'hero',
       description: 'Primary editor control for the second hero button.',
     }),
+    defineField({
+      name: 'showHeroPricingCard',
+      title: 'Show hero pricing card',
+      type: 'boolean',
+      description: 'Controls whether the pricing/availability card is displayed in the Home Hero.',
+      initialValue: true,
+      group: 'hero',
+    }),
     defineField({name: 'heroCardPrice', title: 'Hero card — price', type: 'string', group: 'hero'}),
     defineField({
       name: 'heroCardPriceSuffix',

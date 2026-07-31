@@ -609,7 +609,13 @@ export function ExperiencePage({ experience, reviewsFiltered, featuredQuoteItems
                       </div>
                     ) : null}
                     <Link
-                      href={lodge.slug?.current ? `https://www.ecotone.eco/destinations/${lodge.slug.current}` : 'https://www.ecotone.eco/destinations'}
+                      href={
+                        lodge.slug?.current === 'lodge-soqtapata'
+                          ? '/lodges/soqtapata-lodge'
+                          : lodge.slug?.current
+                            ? `/lodges/${lodge.slug.current}`
+                            : '/'
+                      }
                       className="lodge-card-cta"
                     >
                       View full lodge page

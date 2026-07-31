@@ -317,7 +317,7 @@ export function resolveRoutesPageData(
   }
   const heroFbSecondary = fallbackHero.secondaryCta ?? {
     label: 'See all experiences',
-    href: '/experiences',
+    href: '/routes',
     openInNewTab: false,
   }
 
@@ -554,7 +554,7 @@ export function resolveRoutesPageData(
       secondaryLabel: waResolved?.label ?? cms?.finalCtaWhatsappLabel,
       secondaryHref: waResolved?.href ?? cms?.finalCtaWhatsappHref,
     },
-    defaultTermsHref: '/experiences/soqtapata-pristine-immersion#terms',
+    defaultTermsHref: '/experiences/soqtapata-pristine-immersion-3d-2n#terms',
   })
 
   const finalCta = {

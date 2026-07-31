@@ -74,7 +74,7 @@ function InlineHeaderLogo() {
 
 function ChevSm() {
   return (
-    <svg className="nav-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+    <svg className="nav-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.75" aria-hidden>
       <polyline points="6 9 12 15 18 9" />
     </svg>
   )

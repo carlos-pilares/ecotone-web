@@ -19,7 +19,7 @@
 .nav-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(26, 18, 9, 0.2);
+  background: rgba(26, 18, 9, 0.28);
   z-index: 395;
   opacity: 0;
   pointer-events: none;
@@ -43,8 +43,8 @@
   gap: 4px;
   font-family: var(--font-lexend), var(--f, system-ui), sans-serif;
   font-size: 13px;
-  font-weight: 400;
-  color: rgba(236, 229, 213, 0.82);
+  font-weight: 500;
+  color: rgba(253, 252, 249, 0.96);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -55,9 +55,17 @@
 }
 .top-nav.solid .nav-link-btn {
   color: var(--n700);
+  font-weight: 400;
 }
-.nav-link-btn:hover,
-.nav-link-btn.open {
+.top-nav:not(.solid) .nav-link-btn:hover,
+.top-nav:not(.solid) .nav-link-btn.open,
+.top-nav:not(.solid) .nav-link-btn[aria-expanded='true'] {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff !important;
+}
+.top-nav.solid .nav-link-btn:hover,
+.top-nav.solid .nav-link-btn.open,
+.top-nav.solid .nav-link-btn[aria-expanded='true'] {
   background: var(--n100);
   color: var(--n900) !important;
 }
@@ -65,8 +73,8 @@
 .nav-link-direct {
   font-family: var(--font-lexend), var(--f, system-ui), sans-serif;
   font-size: 13px;
-  font-weight: 400;
-  color: rgba(236, 229, 213, 0.82);
+  font-weight: 500;
+  color: rgba(253, 252, 249, 0.96);
   padding: 7px 12px;
   border-radius: 100px;
   text-decoration: none;
@@ -76,8 +84,13 @@
 }
 .top-nav.solid .nav-link-direct {
   color: var(--n700);
+  font-weight: 400;
 }
-.nav-link-direct:hover {
+.top-nav:not(.solid) .nav-link-direct:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+.top-nav.solid .nav-link-direct:hover {
   background: var(--n100);
   color: var(--n900);
 }
@@ -86,12 +99,26 @@
   width: 10px;
   height: 10px;
   flex-shrink: 0;
-  opacity: 0.55;
+  opacity: 0.88;
+  color: currentColor;
   transition: transform 0.2s, opacity 0.2s;
 }
-.nav-link-btn.open .nav-chev {
-  transform: rotate(180deg);
+.nav-link-btn:hover .nav-chev,
+.nav-link-btn.open .nav-chev,
+.nav-link-btn[aria-expanded='true'] .nav-chev {
   opacity: 1;
+}
+.nav-link-btn.open .nav-chev,
+.nav-link-btn[aria-expanded='true'] .nav-chev {
+  transform: rotate(180deg);
+}
+
+/* Keep Book now as the strongest CTA over translucent hero nav. */
+.top-nav:not(.solid) .nav-book {
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.3);
+}
+.top-nav:not(.solid) .nav-book:hover {
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.36);
 }
 
 .nav-dropdown {
@@ -100,11 +127,16 @@
   left: 0;
   right: 0;
   z-index: 398;
-  background: rgba(253, 252, 249, 0.98);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-bottom: 1px solid var(--n200);
-  box-shadow: 0 12px 40px rgba(26, 18, 9, 0.1);
+  /* Warm ivory surface — slightly more pigmented than page `--w` (#fdfcf9) for clear lift. */
+  background: #faf6ee;
+  backdrop-filter: blur(28px) saturate(1.04);
+  -webkit-backdrop-filter: blur(28px) saturate(1.04);
+  border-bottom: 1px solid #d4cbb8;
+  border-radius: 0 0 16px 16px;
+  box-shadow:
+    0 1px 0 rgba(255, 252, 247, 0.9) inset,
+    0 8px 24px rgba(26, 18, 9, 0.07),
+    0 20px 48px rgba(26, 18, 9, 0.11);
   display: none;
   animation: siteNavDdSlide 0.18s ease;
 }
@@ -131,8 +163,10 @@
 }
 
 .dd-sidebar {
-  background: var(--n50);
-  border-right: 1px solid var(--n200);
+  /* Distinct left panel vs content column — still warm ivory family. */
+  background: #efe9dc;
+  border-right: 1px solid #cfc4b0;
+  box-shadow: inset -1px 0 0 rgba(255, 252, 247, 0.55);
   padding: 14px 0;
 }
 .dd-sb-head {
@@ -160,7 +194,7 @@
   color: inherit;
 }
 .dd-sb-item:hover {
-  background: var(--n100);
+  background: rgba(253, 252, 249, 0.72);
 }
 .dd-sb-item.active {
   background: var(--b50);
@@ -194,7 +228,7 @@
 .dd-sb-footer {
   padding: 10px 13px 0;
   margin-top: 6px;
-  border-top: 0.5px solid var(--n200);
+  border-top: 1px solid #cfc4b0;
 }
 .dd-see-all {
   display: inline-flex;
@@ -210,6 +244,7 @@
 .dd-panel {
   padding: 18px 22px;
   display: none;
+  background: #faf6ee;
 }
 .dd-panel.active {
   display: block;
@@ -257,7 +292,7 @@
   transition: background 0.15s;
 }
 .dd-exp-card:hover {
-  background: var(--n50);
+  background: rgba(239, 233, 220, 0.65);
 }
 .dd-exp-card:hover .dd-exp-title {
   color: var(--brown);
@@ -357,7 +392,7 @@
   margin-top: 0;
 }
 .dd-mega-card:hover {
-  background: var(--n50);
+  background: rgba(239, 233, 220, 0.65);
 }
 .dd-mega-card:hover .dd-mega-title {
   color: var(--brown);
@@ -600,6 +635,11 @@ button.dd-tailor-cta:hover {
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  background: #faf6ee;
+  border-bottom: 1px solid #d4cbb8;
+  box-shadow:
+    0 8px 24px rgba(26, 18, 9, 0.07),
+    0 20px 48px rgba(26, 18, 9, 0.1);
 }
 .mob-acc-btn {
   display: flex;
@@ -611,16 +651,16 @@ button.dd-tailor-cta:hover {
   font-size: 15px;
   font-weight: 600;
   color: var(--n900);
-  background: var(--w, #fdfcf9);
+  background: #faf6ee;
   border: none;
-  border-bottom: 1px solid var(--n200);
+  border-bottom: 1px solid #d4cbb8;
   cursor: pointer;
   width: 100%;
   text-align: left;
   transition: background 0.12s;
 }
 .mob-acc-btn:hover {
-  background: var(--n50);
+  background: #efe9dc;
 }
 .mob-acc-btn.open {
   background: var(--b50);
@@ -650,8 +690,8 @@ button.dd-tailor-cta:hover {
 }
 .mob-acc-content {
   display: none;
-  background: var(--n50);
-  border-bottom: 1px solid var(--n200);
+  background: #efe9dc;
+  border-bottom: 1px solid #cfc4b0;
 }
 .mob-acc-content.open {
   display: block;
@@ -663,8 +703,8 @@ button.dd-tailor-cta:hover {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--brown);
-  border-bottom: 1px solid var(--n100);
-  background: var(--n50);
+  border-bottom: 1px solid #cfc4b0;
+  background: #efe9dc;
 }
 #drawer.site-header-mobile-drawer a.mob-item {
   display: flex;
@@ -679,7 +719,7 @@ button.dd-tailor-cta:hover {
   box-sizing: border-box;
 }
 #drawer.site-header-mobile-drawer a.mob-item:hover {
-  background: var(--n100);
+  background: rgba(253, 252, 249, 0.72);
 }
 .mob-acc-content a.mob-item:last-of-type {
   border-bottom: 1px solid var(--n100);
@@ -815,9 +855,9 @@ button.dd-tailor-cta:hover {
   font-size: 13px;
   font-weight: 600;
   color: var(--brown);
-  border-top: 1px solid var(--n200);
+  border-top: 1px solid #cfc4b0;
   text-decoration: none;
-  background: var(--n50);
+  background: #efe9dc;
 }
 
 @media (max-width: 720px) {
@@ -850,9 +890,11 @@ button.dd-tailor-cta:hover {
     height: 100dvh;
     padding-top: var(--nav-h);
     z-index: 4500;
-    background: var(--w, #fdfcf9);
+    background: #faf6ee;
     border-bottom: none;
-    box-shadow: 0 12px 40px rgba(26, 18, 9, 0.12);
+    box-shadow:
+      0 8px 24px rgba(26, 18, 9, 0.07),
+      0 20px 48px rgba(26, 18, 9, 0.12);
   }
   body.site-header-drawer-open #topNav {
     z-index: 4600;

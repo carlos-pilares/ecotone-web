@@ -32,7 +32,7 @@ export const SITE_DEFAULT_SEO = {
 export const HEADER_MAIN_NAV: SiteSettingsApprovedLink[] = [
   { _key: 'hnav0', label: 'Experiences', href: '/#experiences', openInNewTab: false },
   { _key: 'hnav1', label: 'Routes', href: '/#routes', openInNewTab: false },
-  { _key: 'hnav2', label: 'Lodges', href: 'https://www.ecotone.eco/destinations', openInNewTab: true },
+  { _key: 'hnav2', label: 'Lodges', href: '/', openInNewTab: false },
   { _key: 'hnav3', label: 'Journal', href: '/journal', openInNewTab: false },
   { _key: 'hnav4', label: 'About', href: '/#about', openInNewTab: false },
 ]
@@ -147,9 +147,9 @@ export const HEADER = {
 
 export const FOOTER_EXPLORE_LINKS: SiteSettingsApprovedLink[] = [
   { _key: 'fexp0', label: 'Experiences', href: '/#experiences', openInNewTab: false },
-  { _key: 'fexp1', label: 'Routes', href: 'https://www.ecotone.eco/copy-of-programas', openInNewTab: true },
-  { _key: 'fexp2', label: 'Lodges', href: 'https://www.ecotone.eco/destinations', openInNewTab: true },
-  { _key: 'fexp3', label: 'Programs', href: 'https://www.ecotone.eco/services-4', openInNewTab: true },
+  { _key: 'fexp1', label: 'Routes', href: '/routes', openInNewTab: false },
+  { _key: 'fexp2', label: 'Lodges', href: '/', openInNewTab: false },
+  { _key: 'fexp3', label: 'Programs', href: '/crees-manu', openInNewTab: false },
   { _key: 'fexp4', label: 'Journal', href: '/journal', openInNewTab: false },
 ]
 

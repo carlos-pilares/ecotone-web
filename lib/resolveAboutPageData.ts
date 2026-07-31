@@ -436,7 +436,7 @@ export function resolveAboutPageData(
       secondaryLabel: rawB1?.label ?? fb1.label,
       secondaryHref: rawB1?.href ?? fb1.href,
     },
-    defaultTermsHref: '/experiences/soqtapata-pristine-immersion#terms',
+    defaultTermsHref: '/experiences/soqtapata-pristine-immersion-3d-2n#terms',
   })
 
   const rs = c?.reserveCtaSettings

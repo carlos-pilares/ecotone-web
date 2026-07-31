@@ -92,6 +92,8 @@ export type HomePageDoc = {
   heroCta1Link?: string | null
   heroCta2Text?: string | null
   heroCta2Link?: string | null
+  /** When false, hide the hero pricing/availability card. Missing → treat as true. */
+  showHeroPricingCard?: boolean | null
   heroCardPrice?: string | null
   /** Small label next to hero card price, e.g. `/person`. */
   heroCardPriceSuffix?: string | null
@@ -253,6 +255,7 @@ export const homePageQuery = groq`
     sectionModules[] { key, visible },
     heroHeadline, heroHeadlineLight, heroSubheadline,
     heroPills, heroCta1Text, heroCta1Link, heroCta2Text, heroCta2Link,
+    showHeroPricingCard,
     heroCardPrice, heroCardPriceSuffix, heroCardSubprice, heroCardRows, heroCardCtaText, heroCardCtaLink,
     heroScrollLabel,
     heroImageFallbackUrl,
