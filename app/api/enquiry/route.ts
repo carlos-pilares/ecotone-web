@@ -4,16 +4,21 @@ import { Resend } from 'resend'
 
 import {
   buildGoogleSheetsRow,
+  buildNormalizedGoogleSheetsRow,
+  ensureNormalizedSheetHeaders,
   ensureSheetHeaders,
   resolveEnquirySheetTabName,
+  resolveNormalizedSheetTabName,
   structuredAppendRange,
+  structuredNormalizedAppendRange,
 } from '@/lib/enquiryGoogleSheets'
+import { parseEnquiryPayload, type EnquiryPayload } from '@/lib/enquiryPayload'
 import {
-  formatEnquiryEmailBody,
-  getEnquiryEmailSubject,
-  parseEnquiryPayload,
-  type EnquiryPayload,
-} from '@/lib/enquiryPayload'
+  formatNormalizedLeadEmailBody,
+  getNormalizedLeadEmailSubject,
+  normalizeEnquiryToLead,
+  type NormalizedLead,
+} from '@/lib/normalizedLead'
 
 export const runtime = 'nodejs'
 
@@ -90,7 +95,7 @@ function serializeSettledReason(reason: unknown): string {
 }
 
 function logSettledOutcome(
-  label: 'google_sheets' | 'resend_email',
+  label: 'google_sheets' | 'google_sheets_normalized' | 'resend_email',
   outcome: PromiseSettledResult<unknown>,
   context?: { sheetTab?: string; appendRange?: string; spreadsheetId?: string },
 ) {
@@ -99,7 +104,7 @@ function logSettledOutcome(
     return
   }
   console.error(`${LOG} ${label}: FAILED (rejected)`)
-  if (label === 'google_sheets' && context) {
+  if ((label === 'google_sheets' || label === 'google_sheets_normalized') && context) {
     console.error(
       `${LOG} ${label} context: spreadsheetId=${context.spreadsheetId ?? 'unknown'} sheetTab=${JSON.stringify(context.sheetTab ?? '')} appendRange=${JSON.stringify(context.appendRange ?? '')}`,
     )
@@ -117,7 +122,7 @@ function resolveNotificationRecipient(): string {
   return (process.env.NOTIFICATION_EMAIL?.trim() || DEFAULT_NOTIFICATION_EMAIL).toLowerCase()
 }
 
-async function appendEnquiryToSheet(payload: EnquiryPayload): Promise<void> {
+function createSheetsClient() {
   const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL
   const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID
   if (!clientEmail || !spreadsheetId) throw new Error('Missing Google Sheets credentials')
@@ -128,17 +133,27 @@ async function appendEnquiryToSheet(payload: EnquiryPayload): Promise<void> {
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   })
 
-  const sheets = google.sheets({ version: 'v4', auth })
-  const ts = new Date().toISOString()
+  return {
+    sheets: google.sheets({ version: 'v4', auth }),
+    spreadsheetId,
+  }
+}
+
+/** Legacy tab append — unchanged schema (17 columns). */
+async function appendEnquiryToLegacySheet(
+  payload: EnquiryPayload,
+  dateTimeIso: string,
+): Promise<void> {
+  const { sheets, spreadsheetId } = createSheetsClient()
   const sheetTab = resolveEnquirySheetTabName()
   const appendRange = structuredAppendRange(sheetTab)
 
   console.info(
-    `${LOG} sheets append target: spreadsheetId=${spreadsheetId} sheetTab=${JSON.stringify(sheetTab)} appendRange=${JSON.stringify(appendRange)}`,
+    `${LOG} sheets append target (legacy): spreadsheetId=${spreadsheetId} sheetTab=${JSON.stringify(sheetTab)} appendRange=${JSON.stringify(appendRange)}`,
   )
 
   await ensureSheetHeaders(sheets, spreadsheetId, sheetTab)
-  const row = buildGoogleSheetsRow(ts, payload)
+  const row = buildGoogleSheetsRow(dateTimeIso, payload)
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
@@ -151,7 +166,35 @@ async function appendEnquiryToSheet(payload: EnquiryPayload): Promise<void> {
   })
 }
 
-async function sendEnquiryNotification(payload: EnquiryPayload): Promise<void> {
+/** Canonical Raw_Leads append — 19 normalised columns. */
+async function appendEnquiryToNormalizedSheet(lead: NormalizedLead): Promise<void> {
+  const sheetTab = resolveNormalizedSheetTabName()
+  if (!sheetTab) {
+    throw new Error('Normalized sheet tab not configured')
+  }
+
+  const { sheets, spreadsheetId } = createSheetsClient()
+  const appendRange = structuredNormalizedAppendRange(sheetTab)
+
+  console.info(
+    `${LOG} sheets append target (normalized): spreadsheetId=${spreadsheetId} sheetTab=${JSON.stringify(sheetTab)} appendRange=${JSON.stringify(appendRange)}`,
+  )
+
+  await ensureNormalizedSheetHeaders(sheets, spreadsheetId, sheetTab)
+  const row = buildNormalizedGoogleSheetsRow(lead)
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: appendRange,
+    valueInputOption: 'USER_ENTERED',
+    insertDataOption: 'INSERT_ROWS',
+    requestBody: {
+      values: [row],
+    },
+  })
+}
+
+async function sendEnquiryNotification(lead: NormalizedLead): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY
   const to = resolveNotificationRecipient()
   if (!apiKey) throw new Error('Missing RESEND_API_KEY')
@@ -161,14 +204,13 @@ async function sendEnquiryNotification(payload: EnquiryPayload): Promise<void> {
 
   const resend = new Resend(apiKey)
   const from = process.env.RESEND_FROM_EMAIL ?? 'Ecotone <onboarding@resend.dev>'
-  const submittedAt = new Date().toISOString()
-  const subject = getEnquiryEmailSubject(payload)
+  const subject = getNormalizedLeadEmailSubject(lead)
 
   const sent = await resend.emails.send({
     from,
     to: [to],
     subject,
-    text: formatEnquiryEmailBody(payload, submittedAt),
+    text: formatNormalizedLeadEmailBody(lead),
   })
 
   if (sent.error) {
@@ -189,28 +231,76 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false }, { status: 400 })
   }
 
-  const sheetTab = resolveEnquirySheetTabName()
-  const appendRange = structuredAppendRange(sheetTab)
+  const dateTimeIso = new Date().toISOString()
+  const lead = normalizeEnquiryToLead(payload, { dateTimeIso })
+
+  const legacySheetTab = resolveEnquirySheetTabName()
+  const legacyAppendRange = structuredAppendRange(legacySheetTab)
+  const normalizedSheetTab = resolveNormalizedSheetTabName()
+  const normalizedAppendRange = normalizedSheetTab
+    ? structuredNormalizedAppendRange(normalizedSheetTab)
+    : undefined
   const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID?.trim() || undefined
 
-  const [sheetOutcome, emailOutcome] = await Promise.allSettled([
-    appendEnquiryToSheet(payload),
-    sendEnquiryNotification(payload),
-  ])
+  const tasks: Array<{
+    label: 'google_sheets' | 'google_sheets_normalized' | 'resend_email'
+    promise: Promise<unknown>
+    context?: { sheetTab?: string; appendRange?: string; spreadsheetId?: string }
+  }> = [
+    {
+      label: 'google_sheets',
+      promise: appendEnquiryToLegacySheet(payload, dateTimeIso),
+      context: { sheetTab: legacySheetTab, appendRange: legacyAppendRange, spreadsheetId },
+    },
+    {
+      label: 'resend_email',
+      promise: sendEnquiryNotification(lead),
+    },
+  ]
 
-  logSettledOutcome('google_sheets', sheetOutcome, { sheetTab, appendRange, spreadsheetId })
-  logSettledOutcome('resend_email', emailOutcome)
+  if (normalizedSheetTab) {
+    tasks.push({
+      label: 'google_sheets_normalized',
+      promise: appendEnquiryToNormalizedSheet(lead),
+      context: {
+        sheetTab: normalizedSheetTab,
+        appendRange: normalizedAppendRange,
+        spreadsheetId,
+      },
+    })
+  } else {
+    console.info(`${LOG} normalized sheets dual-write: skipped (GOOGLE_SHEETS_NORMALIZED_TAB_NAME unset)`)
+  }
 
-  const sheetOk = sheetOutcome.status === 'fulfilled'
-  const emailOk = emailOutcome.status === 'fulfilled'
+  const outcomes = await Promise.allSettled(tasks.map((t) => t.promise))
 
-  if (sheetOk && emailOk) {
-    console.info(`${LOG} response: ok=true (both branches succeeded)`)
+  let sheetOk = false
+  let emailOk = false
+  let normalizedOk: boolean | null = normalizedSheetTab ? false : null
+
+  for (let i = 0; i < tasks.length; i++) {
+    const task = tasks[i]!
+    const outcome = outcomes[i]!
+    logSettledOutcome(task.label, outcome, task.context)
+    if (task.label === 'google_sheets') sheetOk = outcome.status === 'fulfilled'
+    if (task.label === 'resend_email') emailOk = outcome.status === 'fulfilled'
+    if (task.label === 'google_sheets_normalized') {
+      normalizedOk = outcome.status === 'fulfilled'
+    }
+  }
+
+  // Dual-write: when normalised tab is enabled, require it too so misconfig is visible.
+  const allSheetsOk = normalizedOk === null ? sheetOk : sheetOk && normalizedOk
+
+  if (allSheetsOk && emailOk) {
+    console.info(
+      `${LOG} response: ok=true (legacySheet=${String(sheetOk)} normalizedSheet=${String(normalizedOk)} email=${String(emailOk)} leadId=${lead.leadId})`,
+    )
     return NextResponse.json({ ok: true })
   }
 
   console.error(
-    `${LOG} response: ok=false status=500 (sheetOk=${String(sheetOk)} emailOk=${String(emailOk)})`,
+    `${LOG} response: ok=false status=500 (legacySheet=${String(sheetOk)} normalizedSheet=${String(normalizedOk)} email=${String(emailOk)} leadId=${lead.leadId})`,
   )
   return NextResponse.json({ ok: false }, { status: 500 })
 }
