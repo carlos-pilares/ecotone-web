@@ -12,6 +12,8 @@ export type PlanJourneyEnquiryPayload = {
   contactChannel: 'email'
   email: string
   emailMessage: string
+  /** Page URL where the lead was submitted (`window.location.href`). */
+  pageUrl: string
 }
 
 /** “Book this experience” modal — email channel submission. */
@@ -24,6 +26,8 @@ export type BookExperienceEnquiryPayload = {
   email: string
   emailMessage: string
   experienceSummary: ExperienceBookingSummary
+  /** Page URL where the lead was submitted (`window.location.href`). */
+  pageUrl: string
 }
 
 /** Wonder Beyond the Wonder campaign modal — WhatsApp / form lead. */
@@ -150,6 +154,7 @@ export function parseEnquiryPayload(input: unknown): EnquiryPayload | null {
       contactChannel: 'email',
       email: input.email,
       emailMessage: typeof input.emailMessage === 'string' ? input.emailMessage : '',
+      pageUrl: asTrimmedString(input.pageUrl),
     }
   }
 
@@ -171,6 +176,7 @@ export function parseEnquiryPayload(input: unknown): EnquiryPayload | null {
       email: input.email,
       emailMessage: typeof input.emailMessage === 'string' ? input.emailMessage : '',
       experienceSummary,
+      pageUrl: asTrimmedString(input.pageUrl),
     }
   }
 

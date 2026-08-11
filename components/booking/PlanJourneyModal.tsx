@@ -277,6 +277,7 @@ export function PlanJourneyModal({
       contactChannel: 'email',
       email: trimmed,
       emailMessage: emailMessage.trim(),
+      pageUrl: typeof window !== 'undefined' ? window.location.href : '',
     })
     setEmailErr('')
     onEmailThankYou?.()

@@ -197,6 +197,7 @@ export function BookExperienceModal({
       email: trimmed,
       emailMessage: emailMessage.trim(),
       experienceSummary: summary,
+      pageUrl: typeof window !== 'undefined' ? window.location.href : '',
     })
     setEmailErr('')
     onEmailThankYou?.()

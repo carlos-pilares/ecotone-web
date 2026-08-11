@@ -310,6 +310,20 @@ export function buildGoogleSheetsRow(submittedAtIso: string, payload: EnquiryPay
   ]
 }
 
+/**
+ * Force PHONE NUMBER to literal text under `valueInputOption: USER_ENTERED`.
+ *
+ * A leading `+` is otherwise treated as a formula start. Prefixing with `'` is the
+ * Sheets text marker: the cell stores/displays the international number (including `+`)
+ * and the apostrophe is not shown in the Sheet UI.
+ */
+export function formatPhoneNumberForSheetsCell(phoneNumber: string): string {
+  const trimmed = phoneNumber.trim()
+  if (!trimmed) return ''
+  if (trimmed.startsWith("'")) return trimmed
+  return `'${trimmed}`
+}
+
 /** One normalised data row (19 columns) for `Raw_Leads`. */
 export function buildNormalizedGoogleSheetsRow(lead: NormalizedLead): string[] {
   return [
@@ -323,7 +337,7 @@ export function buildNormalizedGoogleSheetsRow(lead: NormalizedLead): string[] {
     lead.landingPage,
     lead.fullName,
     lead.email,
-    lead.phoneNumber,
+    formatPhoneNumberForSheetsCell(lead.phoneNumber),
     lead.travellerType,
     lead.seasonPeriod,
     lead.travelDate,

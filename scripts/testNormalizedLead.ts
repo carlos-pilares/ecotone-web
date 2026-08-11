@@ -6,6 +6,7 @@ import assert from 'node:assert/strict'
 
 import {
   buildNormalizedGoogleSheetsRow,
+  formatPhoneNumberForSheetsCell,
   NORMALIZED_SHEET_HEADERS,
   resolveNormalizedSheetTabName,
 } from '../lib/enquiryGoogleSheets'
@@ -30,6 +31,7 @@ function planPayload(): EnquiryPayload {
     contactChannel: 'email',
     email: 'ada@example.com',
     emailMessage: 'Hello',
+    pageUrl: 'https://ecotone.eco/',
   }
 }
 
@@ -51,6 +53,7 @@ function bookPayload(): EnquiryPayload {
       priceLine: 'From $1,200',
       priceSub: 'pp',
     },
+    pageUrl: 'https://ecotone.eco/experiences/manu-gradient-expedition-4d-3n',
   }
 }
 
@@ -100,7 +103,8 @@ function assertBlankFields(lead: ReturnType<typeof normalizeEnquiryToLead>, keys
   assert.equal(lead.typeOfLead, 'General')
   assert.equal(lead.acquisitionChannel, 'Web Form')
   assert.equal(lead.conversationChannel, 'Email')
-  assertBlankFields(lead, ['campaignName', 'experienceName', 'landingPage', 'phoneNumber', 'travelDate', 'duration', 'price'])
+  assertBlankFields(lead, ['campaignName', 'experienceName', 'phoneNumber', 'travelDate', 'duration', 'price'])
+  assert.equal(lead.landingPage, 'https://ecotone.eco/')
   assert.equal(lead.travellerType, 'Couple')
   assert.equal(lead.seasonPeriod, 'Dry season')
   assert.equal(lead.partySize, '2')
@@ -117,7 +121,8 @@ function assertBlankFields(lead: ReturnType<typeof normalizeEnquiryToLead>, keys
   assert.equal(lead.typeOfLead, 'Experience')
   assert.equal(lead.acquisitionChannel, 'Web Form')
   assert.equal(lead.conversationChannel, 'Email')
-  assertBlankFields(lead, ['campaignName', 'landingPage', 'phoneNumber', 'travellerType', 'seasonPeriod'])
+  assertBlankFields(lead, ['campaignName', 'phoneNumber', 'travellerType', 'seasonPeriod'])
+  assert.equal(lead.landingPage, 'https://ecotone.eco/experiences/manu-gradient-expedition-4d-3n')
   assert.equal(lead.experienceName, 'Soqtapata Lodge')
   assert.equal(lead.travelDate, '2026-09')
   assert.equal(lead.duration, '4 nights')
@@ -133,14 +138,15 @@ function assertBlankFields(lead: ReturnType<typeof normalizeEnquiryToLead>, keys
   assert.equal(lead.acquisitionChannel, 'Web Form')
   assert.equal(lead.conversationChannel, 'Email')
   assert.equal(lead.campaignName, 'Wonder Beyond the Wonder')
-  assertBlankFields(lead, ['experienceName', 'travellerType', 'travelDate', 'duration', 'price', 'messageNote'])
+  assertBlankFields(lead, ['experienceName', 'travelDate', 'duration', 'price', 'messageNote'])
+  assert.equal(lead.travellerType, 'Birdwatching')
+  assert.equal(lead.experienceName, '')
   assert.equal(lead.seasonPeriod, 'Within 6 months')
   assert.equal(lead.partySize, '2–4')
   assert.equal(lead.phoneNumber, '+51 999888777')
   assert.equal(lead.landingPage, 'https://ecotone.eco/wonder-beyond-the-wonder')
   assert.ok(lead.rawPayload.includes('"interest":"Birdwatching"'))
   assert.ok(!lead.experienceName.includes('Birdwatching'))
-  assert.ok(!lead.travellerType.includes('Birdwatching'))
 }
 
 // --- WBTW WhatsApp ---
@@ -149,6 +155,7 @@ function assertBlankFields(lead: ReturnType<typeof normalizeEnquiryToLead>, keys
   const lead = normalizeEnquiryToLead(payload, { dateTimeIso: FIXED_TS, leadId: FIXED_ID })
   assert.equal(lead.conversationChannel, 'WhatsApp')
   assert.equal(lead.campaignName, 'Wonder Beyond the Wonder')
+  assert.equal(lead.travellerType, 'Birdwatching')
   assert.equal(lead.experienceName, '')
 }
 
@@ -162,6 +169,24 @@ function assertBlankFields(lead: ReturnType<typeof normalizeEnquiryToLead>, keys
   assert.equal(lead.phoneNumber, '')
 }
 
+// --- International phone writes as Sheets text (leading ' marker; + preserved) ---
+{
+  assert.equal(formatPhoneNumberForSheetsCell('+447856123456'), "'+447856123456")
+  assert.equal(formatPhoneNumberForSheetsCell('+51 999888777'), "'+51 999888777")
+  assert.equal(formatPhoneNumberForSheetsCell(''), '')
+  assert.equal(formatPhoneNumberForSheetsCell("'+447856123456"), "'+447856123456")
+
+  const payload = wonderPayload('form')
+  if (payload.kind !== 'wonder_beyond_the_wonder') throw new Error('expected wonder payload')
+  payload.fullPhone = '+447856123456'
+  const lead = normalizeEnquiryToLead(payload, { dateTimeIso: FIXED_TS, leadId: FIXED_ID })
+  assert.equal(lead.phoneNumber, '+447856123456', 'normalized phone must keep + unchanged')
+  const row = buildNormalizedGoogleSheetsRow(lead)
+  assert.equal(row[10], "'+447856123456", 'Sheets cell must use text marker only at write layer')
+  assert.ok(row[10].startsWith("'"))
+  assert.ok(row[10].includes('+447856123456'))
+}
+
 // --- Sheet row order matches headers ---
 {
   const lead = normalizeEnquiryToLead(planPayload(), { dateTimeIso: FIXED_TS, leadId: FIXED_ID })
@@ -171,6 +196,7 @@ function assertBlankFields(lead: ReturnType<typeof normalizeEnquiryToLead>, keys
   assert.equal(row[0], FIXED_TS)
   assert.equal(row[1], FIXED_ID)
   assert.equal(row[2], 'General')
+  assert.equal(row[7], 'https://ecotone.eco/')
   assert.equal(row[18], lead.rawPayload)
 }
 

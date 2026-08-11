@@ -78,7 +78,7 @@ export function normalizeEnquiryToLead(
       conversationChannel: 'Email',
       campaignName: '',
       experienceName: '',
-      landingPage: '',
+      landingPage: payload.pageUrl.trim(),
       fullName: payload.fullName,
       email: payload.email,
       phoneNumber: '',
@@ -104,7 +104,7 @@ export function normalizeEnquiryToLead(
       conversationChannel: 'Email',
       campaignName: '',
       experienceName: s.experienceName,
-      landingPage: '',
+      landingPage: payload.pageUrl.trim(),
       fullName: payload.name,
       email: payload.email,
       phoneNumber: '',
@@ -119,7 +119,7 @@ export function normalizeEnquiryToLead(
     }
   }
 
-  // wonder_beyond_the_wonder — interest stays in rawPayload only
+  // wonder_beyond_the_wonder — interest maps to traveller type; experience name stays blank
   return {
     leadId,
     dateTimeIso,
@@ -132,7 +132,7 @@ export function normalizeEnquiryToLead(
     fullName: payload.fullName,
     email: payload.email,
     phoneNumber: blankIfNotProvided(payload.fullPhone),
-    travellerType: '',
+    travellerType: payload.interest.trim(),
     seasonPeriod: payload.travelTiming.trim(),
     travelDate: '',
     partySize: payload.groupSize.trim(),
