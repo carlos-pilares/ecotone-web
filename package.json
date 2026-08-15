@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "test:normalized-lead": "tsx scripts/testNormalizedLead.ts",
+    "test:template-variables": "tsx scripts/testApplyTemplateVariables.ts",
     "seed": "tsx scripts/seedHomePage.ts",
     "seed:cms": "tsx scripts/runSeedCmsAll.ts",
     "seed:routes-page": "tsx scripts/seedRoutesPage.ts",

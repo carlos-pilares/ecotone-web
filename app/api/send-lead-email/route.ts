@@ -3,6 +3,8 @@ import { timingSafeEqual } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
+import { applyTemplateVariables } from '@/lib/applyTemplateVariables'
+
 export const runtime = 'nodejs'
 
 const LOG = '[api/send-lead-email]'
@@ -13,6 +15,7 @@ type SendLeadEmailBody = {
   to?: unknown
   subject?: unknown
   body?: unknown
+  variables?: unknown
 }
 
 function asNonEmptyString(value: unknown): string | null {
@@ -74,6 +77,10 @@ export async function POST(request: Request) {
   if (!subject) return errorResponse(400, leadId, 'Missing required field: subject')
   if (!body) return errorResponse(400, leadId, 'Missing required field: body')
 
+  const mergedSubject = applyTemplateVariables(subject, raw.variables)
+  const mergedBody = applyTemplateVariables(body, raw.variables)
+  const didMerge = raw.variables != null && typeof raw.variables === 'object' && !Array.isArray(raw.variables)
+
   const apiKey = process.env.RESEND_API_KEY?.trim()
   if (!apiKey) {
     console.error(`${LOG} misconfigured: RESEND_API_KEY is not set leadId=${leadId}`)
@@ -88,8 +95,8 @@ export async function POST(request: Request) {
     const sent = await resend.emails.send({
       from,
       to: [to],
-      subject,
-      text: body,
+      subject: mergedSubject,
+      text: mergedBody,
     })
 
     if (sent.error) {
@@ -105,7 +112,9 @@ export async function POST(request: Request) {
       return errorResponse(502, leadId, 'Resend returned no message id')
     }
 
-    console.info(`${LOG} sent ok leadId=${leadId} resendMessageId=${resendMessageId}`)
+    console.info(
+      `${LOG} sent ok leadId=${leadId} resendMessageId=${resendMessageId} merge=${didMerge ? 'applied' : 'skipped'}`,
+    )
     return NextResponse.json({
       success: true,
       leadId,
