@@ -13,6 +13,7 @@ import {
 import type { EnquiryPayload } from '../lib/enquiryPayload'
 import {
   generateLeadId,
+  deriveFirstName,
   normalizeEnquiryToLead,
 } from '../lib/normalizedLead'
 
@@ -105,6 +106,8 @@ function assertBlankFields(lead: ReturnType<typeof normalizeEnquiryToLead>, keys
   assert.equal(lead.conversationChannel, 'Email')
   assertBlankFields(lead, ['campaignName', 'experienceName', 'phoneNumber', 'travelDate', 'duration', 'price'])
   assert.equal(lead.landingPage, 'https://ecotone.eco/')
+  assert.equal(lead.fullName, 'Ada Lovelace')
+  assert.equal(lead.firstName, 'Ada')
   assert.equal(lead.travellerType, 'Couple')
   assert.equal(lead.seasonPeriod, 'Dry season')
   assert.equal(lead.partySize, '2')
@@ -123,6 +126,8 @@ function assertBlankFields(lead: ReturnType<typeof normalizeEnquiryToLead>, keys
   assert.equal(lead.conversationChannel, 'Email')
   assertBlankFields(lead, ['campaignName', 'phoneNumber', 'travellerType', 'seasonPeriod'])
   assert.equal(lead.landingPage, 'https://ecotone.eco/experiences/manu-gradient-expedition-4d-3n')
+  assert.equal(lead.fullName, 'Grace Hopper')
+  assert.equal(lead.firstName, 'Grace')
   assert.equal(lead.experienceName, 'Soqtapata Lodge')
   assert.equal(lead.travelDate, '2026-09')
   assert.equal(lead.duration, '4 nights')
@@ -145,6 +150,8 @@ function assertBlankFields(lead: ReturnType<typeof normalizeEnquiryToLead>, keys
   assert.equal(lead.partySize, '2–4')
   assert.equal(lead.phoneNumber, '+51 999888777')
   assert.equal(lead.landingPage, 'https://ecotone.eco/wonder-beyond-the-wonder')
+  assert.equal(lead.fullName, 'Alan Turing')
+  assert.equal(lead.firstName, 'Alan')
   assert.ok(lead.rawPayload.includes('"interest":"Birdwatching"'))
   assert.ok(!lead.experienceName.includes('Birdwatching'))
 }
@@ -169,6 +176,15 @@ function assertBlankFields(lead: ReturnType<typeof normalizeEnquiryToLead>, keys
   assert.equal(lead.phoneNumber, '')
 }
 
+// --- First name derivation ---
+{
+  assert.equal(deriveFirstName('Carlos Test'), 'Carlos')
+  assert.equal(deriveFirstName('Julie'), 'Julie')
+  assert.equal(deriveFirstName('  Sarah Collins  '), 'Sarah')
+  assert.equal(deriveFirstName(''), '')
+  assert.equal(deriveFirstName('   '), '')
+}
+
 // --- International phone writes as Sheets text (leading ' marker; + preserved) ---
 {
   assert.equal(formatPhoneNumberForSheetsCell('+447856123456'), "'+447856123456")
@@ -182,22 +198,26 @@ function assertBlankFields(lead: ReturnType<typeof normalizeEnquiryToLead>, keys
   const lead = normalizeEnquiryToLead(payload, { dateTimeIso: FIXED_TS, leadId: FIXED_ID })
   assert.equal(lead.phoneNumber, '+447856123456', 'normalized phone must keep + unchanged')
   const row = buildNormalizedGoogleSheetsRow(lead)
-  assert.equal(row[10], "'+447856123456", 'Sheets cell must use text marker only at write layer')
-  assert.ok(row[10].startsWith("'"))
-  assert.ok(row[10].includes('+447856123456'))
+  assert.equal(row[11], "'+447856123456", 'Sheets cell must use text marker only at write layer')
+  assert.ok(row[11].startsWith("'"))
+  assert.ok(row[11].includes('+447856123456'))
 }
 
 // --- Sheet row order matches headers ---
 {
   const lead = normalizeEnquiryToLead(planPayload(), { dateTimeIso: FIXED_TS, leadId: FIXED_ID })
   const row = buildNormalizedGoogleSheetsRow(lead)
-  assert.equal(NORMALIZED_SHEET_HEADERS.length, 19)
-  assert.equal(row.length, 19)
+  assert.equal(NORMALIZED_SHEET_HEADERS.length, 20)
+  assert.equal(row.length, 20)
+  assert.equal(NORMALIZED_SHEET_HEADERS[8], 'FULL NAME')
+  assert.equal(NORMALIZED_SHEET_HEADERS[9], 'FIRST NAME')
   assert.equal(row[0], FIXED_TS)
   assert.equal(row[1], FIXED_ID)
   assert.equal(row[2], 'General')
   assert.equal(row[7], 'https://ecotone.eco/')
-  assert.equal(row[18], lead.rawPayload)
+  assert.equal(row[8], 'Ada Lovelace')
+  assert.equal(row[9], 'Ada')
+  assert.equal(row[19], lead.rawPayload)
 }
 
 // --- Env gate for dual-write ---

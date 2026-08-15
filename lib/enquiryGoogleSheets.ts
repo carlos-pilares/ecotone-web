@@ -29,7 +29,7 @@ export const ENQUIRY_SHEET_HEADERS = [
 export const ENQUIRY_SHEET_COLUMN_COUNT = ENQUIRY_SHEET_HEADERS.length
 
 /**
- * Canonical normalised RAW lead table (`Raw_Leads`) — 19 columns A–S.
+ * Canonical normalised RAW lead table (`Raw_Leads`) — 20 columns A–T.
  * Do not add migration/debug columns here.
  */
 export const NORMALIZED_SHEET_HEADERS = [
@@ -42,6 +42,7 @@ export const NORMALIZED_SHEET_HEADERS = [
   'EXPERIENCE NAME',
   'LANDING PAGE',
   'FULL NAME',
+  'FIRST NAME',
   'EMAIL',
   'PHONE NUMBER',
   'TRAVELLER TYPE',
@@ -134,7 +135,7 @@ export function structuredAppendRange(sheetTab: string): string {
   return structuredColumnAppendRange(sheetTab, ENQUIRY_SHEET_COLUMN_COUNT)
 }
 
-/** Append target spanning normalised columns (A–S). */
+/** Append target spanning normalised columns (A–T). */
 export function structuredNormalizedAppendRange(sheetTab: string): string {
   return structuredColumnAppendRange(sheetTab, NORMALIZED_SHEET_COLUMN_COUNT)
 }
@@ -148,7 +149,7 @@ export function structuredHeaderRange(sheetTab: string): string {
   return structuredColumnHeaderRange(sheetTab, ENQUIRY_SHEET_COLUMN_COUNT)
 }
 
-/** Header read/write range for row 1 across normalised A–S. */
+/** Header read/write range for row 1 across normalised A–T. */
 export function structuredNormalizedHeaderRange(sheetTab: string): string {
   return structuredColumnHeaderRange(sheetTab, NORMALIZED_SHEET_COLUMN_COUNT)
 }
@@ -324,7 +325,7 @@ export function formatPhoneNumberForSheetsCell(phoneNumber: string): string {
   return `'${trimmed}`
 }
 
-/** One normalised data row (19 columns) for `Raw_Leads`. */
+/** One normalised data row (20 columns) for `Raw_Leads`. */
 export function buildNormalizedGoogleSheetsRow(lead: NormalizedLead): string[] {
   return [
     lead.dateTimeIso,
@@ -336,6 +337,7 @@ export function buildNormalizedGoogleSheetsRow(lead: NormalizedLead): string[] {
     lead.experienceName,
     lead.landingPage,
     lead.fullName,
+    lead.firstName,
     lead.email,
     formatPhoneNumberForSheetsCell(lead.phoneNumber),
     lead.travellerType,

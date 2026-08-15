@@ -11,6 +11,8 @@ export type NormalizedLead = {
   experienceName: string
   landingPage: string
   fullName: string
+  /** First non-empty token of `fullName` (before first space). */
+  firstName: string
   email: string
   phoneNumber: string
   travellerType: string
@@ -57,6 +59,13 @@ function blankIfNotProvided(value: string): string {
   return trimmed
 }
 
+/** First non-empty token before the first space; blank if full name is missing. */
+export function deriveFirstName(fullName: string): string {
+  const trimmed = fullName.trim()
+  if (!trimmed) return ''
+  return trimmed.split(/\s+/)[0] ?? ''
+}
+
 /**
  * Map a validated EnquiryPayload into the canonical normalised lead.
  * Does not mutate the original payload; RAW PAYLOAD is a fresh JSON snapshot.
@@ -70,6 +79,7 @@ export function normalizeEnquiryToLead(
   const rawPayload = JSON.stringify(payload)
 
   if (payload.kind === 'plan_journey') {
+    const fullName = payload.fullName
     return {
       leadId,
       dateTimeIso,
@@ -79,7 +89,8 @@ export function normalizeEnquiryToLead(
       campaignName: '',
       experienceName: '',
       landingPage: payload.pageUrl.trim(),
-      fullName: payload.fullName,
+      fullName,
+      firstName: deriveFirstName(fullName),
       email: payload.email,
       phoneNumber: '',
       travellerType: (payload.travellerTypeTitle ?? payload.travellerType ?? '').trim(),
@@ -96,6 +107,7 @@ export function normalizeEnquiryToLead(
   if (payload.kind === 'book_experience') {
     const s = payload.experienceSummary
     const price = [s.priceLine, s.priceSub].filter((x) => x && String(x).trim()).join(' ')
+    const fullName = payload.name
     return {
       leadId,
       dateTimeIso,
@@ -105,7 +117,8 @@ export function normalizeEnquiryToLead(
       campaignName: '',
       experienceName: s.experienceName,
       landingPage: payload.pageUrl.trim(),
-      fullName: payload.name,
+      fullName,
+      firstName: deriveFirstName(fullName),
       email: payload.email,
       phoneNumber: '',
       travellerType: '',
@@ -120,6 +133,7 @@ export function normalizeEnquiryToLead(
   }
 
   // wonder_beyond_the_wonder — interest maps to traveller type; experience name stays blank
+  const fullName = payload.fullName
   return {
     leadId,
     dateTimeIso,
@@ -129,7 +143,8 @@ export function normalizeEnquiryToLead(
     campaignName: WONDER_CAMPAIGN_NAME,
     experienceName: '',
     landingPage: payload.pageUrl.trim(),
-    fullName: payload.fullName,
+    fullName,
+    firstName: deriveFirstName(fullName),
     email: payload.email,
     phoneNumber: blankIfNotProvided(payload.fullPhone),
     travellerType: payload.interest.trim(),
