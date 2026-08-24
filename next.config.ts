@@ -10,6 +10,16 @@ import { legacyRedirects } from './legacyRedirects'
  * - `sanity` ships ESM-heavy deps; transpile so webpack can bundle Studio correctly.
  */
 const nextConfig: NextConfig = {
+  /**
+   * Next 16 defaults `images.qualities` to `[75]` only — any other `quality`
+   * prop is silently coerced to 75. Allow high-quality heroes.
+   */
+  images: {
+    qualities: [75, 90, 100],
+    formats: ['image/avif', 'image/webp'],
+    /** Ensure full-bleed Retina heroes can select up to 3840w from large masters. */
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 2880, 3840],
+  },
   transpilePackages: [
     'sanity',
     '@sanity/vision',

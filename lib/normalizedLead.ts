@@ -30,6 +30,7 @@ export type NormalizedLead = {
 const LEAD_ID_ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'
 
 const WONDER_CAMPAIGN_NAME = 'Wonder Beyond the Wonder'
+const MANU_VOLUNTEER_CAMPAIGN_NAME = 'Manu Conservation Volunteer'
 
 /**
  * Generate `ECO-YYMMDD-XXXX` once per enquiry (server-side).
@@ -132,22 +133,48 @@ export function normalizeEnquiryToLead(
     }
   }
 
-  // wonder_beyond_the_wonder — interest maps to traveller type; experience name stays blank
+  if (payload.kind === 'wonder_beyond_the_wonder') {
+    const fullName = payload.fullName
+    return {
+      leadId,
+      dateTimeIso,
+      typeOfLead: 'Campaign',
+      acquisitionChannel: 'Web Form',
+      conversationChannel: payload.contactChannel === 'whatsapp' ? 'WhatsApp' : 'Email',
+      campaignName: WONDER_CAMPAIGN_NAME,
+      experienceName: '',
+      landingPage: payload.pageUrl.trim(),
+      fullName,
+      firstName: deriveFirstName(fullName),
+      email: payload.email,
+      phoneNumber: blankIfNotProvided(payload.fullPhone),
+      travellerType: payload.interest.trim(),
+      seasonPeriod: payload.travelTiming.trim(),
+      travelDate: '',
+      partySize: payload.groupSize.trim(),
+      duration: '',
+      price: '',
+      messageNote: '',
+      rawPayload,
+    }
+  }
+
+  // manu_conservation_volunteer
   const fullName = payload.fullName
   return {
     leadId,
     dateTimeIso,
     typeOfLead: 'Campaign',
     acquisitionChannel: 'Web Form',
-    conversationChannel: payload.contactChannel === 'whatsapp' ? 'WhatsApp' : 'Email',
-    campaignName: WONDER_CAMPAIGN_NAME,
+    conversationChannel: 'Email',
+    campaignName: MANU_VOLUNTEER_CAMPAIGN_NAME,
     experienceName: '',
     landingPage: payload.pageUrl.trim(),
     fullName,
     firstName: deriveFirstName(fullName),
     email: payload.email,
     phoneNumber: blankIfNotProvided(payload.fullPhone),
-    travellerType: payload.interest.trim(),
+    travellerType: '',
     seasonPeriod: payload.travelTiming.trim(),
     travelDate: '',
     partySize: payload.groupSize.trim(),
@@ -163,6 +190,9 @@ export function getNormalizedLeadEmailSubject(lead: NormalizedLead): string {
     return `New enquiry: Plan journey [${lead.leadId}]`
   }
   if (lead.typeOfLead === 'Campaign') {
+    if (lead.campaignName === MANU_VOLUNTEER_CAMPAIGN_NAME) {
+      return `New Manu Conservation Volunteer lead [${lead.leadId}]`
+    }
     return `New Wonder Beyond the Wonder lead [${lead.leadId}]`
   }
   const name = lead.experienceName.trim() || 'Experience'

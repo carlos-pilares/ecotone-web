@@ -43,13 +43,14 @@ export function WonderResponsiveImage({
 export function WonderJourneyCardImage({
   image,
   className = 'wbtw-journey-img',
+  sizes = '(min-width: 900px) 420px, (min-width: 768px) 33vw, 100vw',
 }: {
   image: JourneyCardImage
   className?: string
+  sizes?: string
 }) {
   const avifSrcSet = buildResponsiveSrcSet(image, 'avif')
   const webpSrcSet = buildResponsiveSrcSet(image, 'webp')
-  const sizes = '(min-width: 900px) 420px, (min-width: 768px) 33vw, 100vw'
 
   return (
     <picture>

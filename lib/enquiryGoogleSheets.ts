@@ -1,6 +1,6 @@
 import type { sheets_v4 } from 'googleapis'
 
-import { buildWonderBeyondSheetNotes, type EnquiryPayload } from '@/lib/enquiryPayload'
+import { buildManuVolunteerSheetNotes, buildWonderBeyondSheetNotes, type EnquiryPayload } from '@/lib/enquiryPayload'
 import type { NormalizedLead } from '@/lib/normalizedLead'
 
 const LOG = '[api/enquiry/sheets]'
@@ -283,6 +283,28 @@ export function buildGoogleSheetsRow(submittedAtIso: string, payload: EnquiryPay
       'Campaign benefit',
       'Up to 50% off selected 2026 Ecotone Experiences',
       buildWonderBeyondSheetNotes(payload),
+      raw,
+    ]
+  }
+
+  if (payload.kind === 'manu_conservation_volunteer') {
+    return [
+      submittedAtIso,
+      payload.flowType,
+      payload.flowLabel,
+      payload.fullName,
+      payload.email,
+      payload.contactChannel,
+      '',
+      payload.travelTiming,
+      '',
+      payload.groupSize,
+      'Manu Conservation Volunteer',
+      'Manu Field Crew',
+      '4-week conservation volunteer',
+      'Campaign benefit',
+      'Up to 30% off selected 2026 Conservation Volunteer places',
+      buildManuVolunteerSheetNotes(payload),
       raw,
     ]
   }

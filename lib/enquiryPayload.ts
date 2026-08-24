@@ -57,10 +57,38 @@ export type WonderBeyondEnquiryPayload = {
   wbraid: string
 }
 
+/** Manu Conservation Volunteer campaign modal — form lead. */
+export type ManuConservationVolunteerEnquiryPayload = {
+  kind: 'manu_conservation_volunteer'
+  flowType: 'manu_conservation_volunteer'
+  flowLabel: 'Manu Conservation Volunteer'
+  fullName: string
+  email: string
+  phoneCountryCode: string
+  phone: string
+  fullPhone: string
+  /** When they would like to join, e.g. September 2026 / Early 2027 */
+  travelTiming: string
+  /** Party size: Just me / 2 / 3–4 / 5+ */
+  groupSize: string
+  contactChannel: 'form'
+  source: string
+  pageUrl: string
+  utmSource: string
+  utmMedium: string
+  utmCampaign: string
+  utmTerm: string
+  utmContent: string
+  gclid: string
+  gbraid: string
+  wbraid: string
+}
+
 export type EnquiryPayload =
   | PlanJourneyEnquiryPayload
   | BookExperienceEnquiryPayload
   | WonderBeyondEnquiryPayload
+  | ManuConservationVolunteerEnquiryPayload
 
 function isRecord(x: unknown): x is Record<string, unknown> {
   return typeof x === 'object' && x !== null && !Array.isArray(x)
@@ -131,6 +159,19 @@ export function buildWonderBeyondSheetNotes(payload: WonderBeyondEnquiryPayload)
     `Interest: ${interest}`,
     `Submission method: ${payload.contactChannel}`,
     'Campaign: Wonder Beyond the Wonder',
+  ].join('\n')
+}
+
+export function buildManuVolunteerSheetNotes(payload: ManuConservationVolunteerEnquiryPayload): string {
+  const phone =
+    payload.fullPhone.trim() ||
+    formatWonderBeyondPhoneDisplay(payload.phoneCountryCode, payload.phone)
+  return [
+    `Phone: ${phone}`,
+    `Join timing: ${payload.travelTiming}`,
+    `Group size: ${payload.groupSize}`,
+    `Submission method: ${payload.contactChannel}`,
+    'Campaign: Manu Conservation Volunteer',
   ].join('\n')
 }
 
@@ -220,12 +261,51 @@ export function parseEnquiryPayload(input: unknown): EnquiryPayload | null {
     }
   }
 
+  if (input.kind === 'manu_conservation_volunteer') {
+    if (input.contactChannel !== 'form') return null
+
+    const fullName = asTrimmedString(input.fullName)
+    const email = asTrimmedString(input.email)
+    const travelTiming = asTrimmedString(input.travelTiming)
+    const groupSize = asTrimmedString(input.groupSize)
+    if (!fullName || !email || !travelTiming || !groupSize) return null
+
+    const phoneCountryCode = asTrimmedString(input.phoneCountryCode)
+    const phone = asTrimmedString(input.phone).replace(/[^\d\s]/g, '').replace(/\s+/g, ' ').trim()
+    const fullPhone = formatWonderBeyondPhoneDisplay(phoneCountryCode, phone)
+
+    return {
+      kind: 'manu_conservation_volunteer',
+      flowType: 'manu_conservation_volunteer',
+      flowLabel: 'Manu Conservation Volunteer',
+      fullName,
+      email,
+      phoneCountryCode,
+      phone,
+      fullPhone,
+      travelTiming,
+      groupSize,
+      contactChannel: 'form',
+      source: asTrimmedString(input.source) || 'manu-conservation-volunteer-landing',
+      pageUrl: asTrimmedString(input.pageUrl),
+      utmSource: asTrimmedString(input.utmSource),
+      utmMedium: asTrimmedString(input.utmMedium),
+      utmCampaign: asTrimmedString(input.utmCampaign),
+      utmTerm: asTrimmedString(input.utmTerm),
+      utmContent: asTrimmedString(input.utmContent),
+      gclid: asTrimmedString(input.gclid),
+      gbraid: asTrimmedString(input.gbraid),
+      wbraid: asTrimmedString(input.wbraid),
+    }
+  }
+
   return null
 }
 
 export function getEnquiryEmailSubject(payload: EnquiryPayload): string {
   if (payload.kind === 'plan_journey') return 'New enquiry: Plan journey'
   if (payload.kind === 'wonder_beyond_the_wonder') return 'New Wonder Beyond the Wonder lead'
+  if (payload.kind === 'manu_conservation_volunteer') return 'New Manu Conservation Volunteer lead'
   return `New enquiry: Book experience — ${payload.experienceSummary.experienceName}`
 }
 
@@ -271,6 +351,40 @@ export function formatEnquiryEmailBody(payload: EnquiryPayload, submittedAtIso?:
       '',
       'Interest:',
       interest,
+      '',
+      'Contact via:',
+      payload.contactChannel,
+      '',
+      'Submitted at:',
+      submittedAt,
+      '',
+      'Page URL:',
+      payload.pageUrl || '—',
+    ].join('\n')
+  }
+
+  if (payload.kind === 'manu_conservation_volunteer') {
+    const phone =
+      payload.fullPhone.trim() ||
+      formatWonderBeyondPhoneDisplay(payload.phoneCountryCode, payload.phone)
+    const submittedAt = submittedAtIso ?? new Date().toISOString()
+    return [
+      'New campaign lead: Manu Conservation Volunteer',
+      '',
+      'Full name:',
+      payload.fullName,
+      '',
+      'Email:',
+      payload.email,
+      '',
+      'Phone:',
+      phone,
+      '',
+      'Join timing:',
+      payload.travelTiming,
+      '',
+      'Group size:',
+      payload.groupSize,
       '',
       'Contact via:',
       payload.contactChannel,
