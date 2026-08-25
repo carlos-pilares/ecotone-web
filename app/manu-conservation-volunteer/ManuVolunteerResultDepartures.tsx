@@ -15,8 +15,6 @@ import {
 export type ManuVolunteerResultDeparturesProps = {
   departures: McvResultDeparture[]
   travelTiming?: string
-  originalPrice: string
-  promoPrice: string
   discountPercent: number
   programmeHeadline: string
   programmeSupport: string
@@ -27,8 +25,6 @@ export type ManuVolunteerResultDeparturesProps = {
 export function ManuVolunteerResultDepartures({
   departures,
   travelTiming,
-  originalPrice,
-  promoPrice,
   discountPercent,
   programmeHeadline,
   programmeSupport,
@@ -43,6 +39,7 @@ export function ManuVolunteerResultDepartures({
   const selected = departures.find((d) => d.key === selectedKey) ?? departures[0]
   const matchedIsOther = matched?.kind === 'other'
   const selectedIsOther = selected?.kind === 'other'
+  const selectedBookingUrl = selected?.bookingUrl?.trim() ?? ''
 
   return (
     <section className="mcv-result-departures" aria-labelledby="mcv-result-departures-title">
@@ -91,8 +88,6 @@ export function ManuVolunteerResultDepartures({
                 <ManuVolunteerResultDepartureCard
                   key={item.key}
                   departure={item}
-                  originalPrice={originalPrice}
-                  promoPrice={promoPrice}
                   discountPercent={discountPercent}
                   selected={item.key === selectedKey}
                   matched={matched?.key === item.key}
@@ -103,27 +98,62 @@ export function ManuVolunteerResultDepartures({
 
             {selected ? (
               <div className="mcv-result-continue">
-                <button type="button" className="mcv-cta mcv-cta--prominent mcv-result-continue__cta">
-                  {selectedIsOther
-                    ? 'Enquire about other dates'
-                    : 'Explore this fixed departure'}
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.75"
-                    aria-hidden
+                {selectedIsOther ? (
+                  <button
+                    type="button"
+                    className="mcv-cta mcv-cta--prominent mcv-result-continue__cta"
                   >
-                    <line x1="2" y1="6" x2="10" y2="6" />
-                    <polyline points="7 3 10 6 7 9" />
-                  </svg>
-                </button>
+                    Enquire about other dates
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.75"
+                      aria-hidden
+                    >
+                      <line x1="2" y1="6" x2="10" y2="6" />
+                      <polyline points="7 3 10 6 7 9" />
+                    </svg>
+                  </button>
+                ) : selectedBookingUrl ? (
+                  <a
+                    href={selectedBookingUrl}
+                    className="mcv-cta mcv-cta--prominent mcv-result-continue__cta"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Explore this fixed departure
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.75"
+                      aria-hidden
+                    >
+                      <line x1="2" y1="6" x2="10" y2="6" />
+                      <polyline points="7 3 10 6 7 9" />
+                    </svg>
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    className="mcv-cta mcv-cta--prominent mcv-result-continue__cta"
+                    disabled
+                    aria-disabled="true"
+                  >
+                    Explore this fixed departure
+                  </button>
+                )}
                 <p className="mcv-result-continue__note">
                   {selectedIsOther
-                    ? 'Availability must be confirmed. We will help you check alternative field dates.'
-                    : "See the full programme, what's included and how to join on WeTravel."}
+                    ? 'Standard rate applies. Availability must be confirmed before any booking can proceed.'
+                    : selectedBookingUrl
+                      ? "See the full programme, what's included and how to join on WeTravel."
+                      : 'WeTravel booking link for this departure is being finalised. Your field offer details are saved.'}
                 </p>
               </div>
             ) : null}

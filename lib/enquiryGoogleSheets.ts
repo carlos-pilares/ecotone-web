@@ -103,21 +103,40 @@ export function resolveEnquirySheetTabName(
 }
 
 /**
- * Resolve the normalised RAW tab name when dual-write is enabled.
- * Returns null when dual-write should be skipped (env unset/empty).
+ * Resolve the normalised RAW tab name for dual-write.
  *
  * Env: GOOGLE_SHEETS_NORMALIZED_TAB_NAME
- * - unset / empty → dual-write off
- * - any non-empty value → that tab name (typically `Raw_Leads`)
+ * - unset / empty → DEFAULT_NORMALIZED_SHEET_TAB (`Raw_Leads`)
+ * - any non-empty value → that tab name
  */
 export function resolveNormalizedSheetTabName(
   env: Record<string, string | undefined> = process.env,
-): string | null {
+): string {
   const raw = env.GOOGLE_SHEETS_NORMALIZED_TAB_NAME
-  if (raw === undefined) return null
+  if (raw === undefined) return DEFAULT_NORMALIZED_SHEET_TAB
   const trimmed = raw.trim()
-  if (!trimmed) return null
+  if (!trimmed) return DEFAULT_NORMALIZED_SHEET_TAB
   return trimmed
+}
+
+/** Safe routing diagnostics — no secrets, no PII. */
+export function describeNormalizedSheetTabResolution(
+  env: Record<string, string | undefined> = process.env,
+): {
+  resolvedTab: string
+  envVarPresent: boolean
+  envVarNonEmpty: boolean
+  usedDefault: boolean
+} {
+  const raw = env.GOOGLE_SHEETS_NORMALIZED_TAB_NAME
+  const trimmed = raw?.trim() ?? ''
+  const resolvedTab = resolveNormalizedSheetTabName(env)
+  return {
+    resolvedTab,
+    envVarPresent: raw !== undefined,
+    envVarNonEmpty: trimmed.length > 0,
+    usedDefault: resolvedTab === DEFAULT_NORMALIZED_SHEET_TAB && trimmed.length === 0,
+  }
 }
 
 /**

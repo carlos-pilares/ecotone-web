@@ -30,7 +30,25 @@ export type NormalizedLead = {
 const LEAD_ID_ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'
 
 const WONDER_CAMPAIGN_NAME = 'Wonder Beyond the Wonder'
-const MANU_VOLUNTEER_CAMPAIGN_NAME = 'Manu Conservation Volunteer'
+const MANU_VOLUNTEER_CAMPAIGN_NAME = 'Volunteer Q4 2026'
+const MANU_VOLUNTEER_EXPERIENCE_NAME = 'Volunteer Conservation'
+const MANU_VOLUNTEER_LANDING_PATH = '/manu-conservation-volunteer'
+const MANU_VOLUNTEER_PRICE_DISPLAY = 'US$1,540'
+const MANU_VOLUNTEER_DURATION = '4 weeks'
+
+function resolveManuVolunteerLandingPage(pageUrl: string): string {
+  const trimmed = pageUrl.trim()
+  if (!trimmed) return MANU_VOLUNTEER_LANDING_PATH
+  try {
+    const pathname = new URL(trimmed, 'https://www.ecotone.eco').pathname.replace(/\/$/, '')
+    if (pathname.startsWith('/manu-conservation-volunteer')) {
+      return MANU_VOLUNTEER_LANDING_PATH
+    }
+    return pathname || MANU_VOLUNTEER_LANDING_PATH
+  } catch {
+    return MANU_VOLUNTEER_LANDING_PATH
+  }
+}
 
 /**
  * Generate `ECO-YYMMDD-XXXX` once per enquiry (server-side).
@@ -168,8 +186,8 @@ export function normalizeEnquiryToLead(
     acquisitionChannel: 'Web Form',
     conversationChannel: 'Email',
     campaignName: MANU_VOLUNTEER_CAMPAIGN_NAME,
-    experienceName: '',
-    landingPage: payload.pageUrl.trim(),
+    experienceName: MANU_VOLUNTEER_EXPERIENCE_NAME,
+    landingPage: resolveManuVolunteerLandingPage(payload.pageUrl),
     fullName,
     firstName: deriveFirstName(fullName),
     email: payload.email,
@@ -178,8 +196,8 @@ export function normalizeEnquiryToLead(
     seasonPeriod: payload.travelTiming.trim(),
     travelDate: '',
     partySize: payload.groupSize.trim(),
-    duration: '',
-    price: '',
+    duration: payload.duration.trim() || MANU_VOLUNTEER_DURATION,
+    price: MANU_VOLUNTEER_PRICE_DISPLAY,
     messageNote: '',
     rawPayload,
   }

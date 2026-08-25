@@ -220,15 +220,70 @@ function assertBlankFields(lead: ReturnType<typeof normalizeEnquiryToLead>, keys
   assert.equal(row[19], lead.rawPayload)
 }
 
-// --- Env gate for dual-write ---
+// --- Normalised tab resolution ---
 {
-  assert.equal(resolveNormalizedSheetTabName({}), null)
-  assert.equal(resolveNormalizedSheetTabName({ GOOGLE_SHEETS_NORMALIZED_TAB_NAME: '' }), null)
-  assert.equal(resolveNormalizedSheetTabName({ GOOGLE_SHEETS_NORMALIZED_TAB_NAME: '   ' }), null)
+  assert.equal(resolveNormalizedSheetTabName({}), 'Raw_Leads')
+  assert.equal(resolveNormalizedSheetTabName({ GOOGLE_SHEETS_NORMALIZED_TAB_NAME: '' }), 'Raw_Leads')
+  assert.equal(resolveNormalizedSheetTabName({ GOOGLE_SHEETS_NORMALIZED_TAB_NAME: '   ' }), 'Raw_Leads')
   assert.equal(
     resolveNormalizedSheetTabName({ GOOGLE_SHEETS_NORMALIZED_TAB_NAME: 'Raw_Leads' }),
     'Raw_Leads',
   )
+}
+
+// --- MCV form ---
+{
+  const payload: EnquiryPayload = {
+    kind: 'manu_conservation_volunteer',
+    flowType: 'manu_conservation_volunteer',
+    flowLabel: 'Manu Conservation Volunteer',
+    fullName: 'MCV Test Lead',
+    email: 'info+mcv-test@ecotone.eco',
+    phoneCountryCode: '+44',
+    phone: '7856123456',
+    fullPhone: '+44 7856123456',
+    travelTiming: 'September 2026',
+    groupSize: 'Just me',
+    contactChannel: 'form',
+    source: 'manu-conservation-volunteer-landing',
+    pageUrl: 'http://localhost:3000/manu-conservation-volunteer',
+    utmSource: '',
+    utmMedium: '',
+    utmCampaign: '',
+    utmTerm: '',
+    utmContent: '',
+    gclid: '',
+    gbraid: '',
+    wbraid: '',
+    basePrice: 2200,
+    discountPercent: 30,
+    offerPrice: 1540,
+    duration: '4 weeks',
+    privacyNoticeVersion: '2026-08-24',
+    privacyNoticeShownAt: FIXED_TS,
+  }
+  const lead = normalizeEnquiryToLead(payload, { dateTimeIso: FIXED_TS, leadId: FIXED_ID })
+  assert.equal(lead.typeOfLead, 'Campaign')
+  assert.equal(lead.acquisitionChannel, 'Web Form')
+  assert.equal(lead.conversationChannel, 'Email')
+  assert.equal(lead.campaignName, 'Volunteer Q4 2026')
+  assert.equal(lead.experienceName, 'Volunteer Conservation')
+  assert.equal(lead.landingPage, '/manu-conservation-volunteer')
+  assert.equal(lead.fullName, 'MCV Test Lead')
+  assert.equal(lead.firstName, 'MCV')
+  assert.equal(lead.email, 'info+mcv-test@ecotone.eco')
+  assert.equal(lead.phoneNumber, '+44 7856123456')
+  assert.equal(lead.travellerType, '')
+  assert.equal(lead.seasonPeriod, 'September 2026')
+  assert.equal(lead.travelDate, '')
+  assert.equal(lead.partySize, 'Just me')
+  assert.equal(lead.duration, '4 weeks')
+  assert.equal(lead.price, 'US$1,540')
+  assert.equal(lead.messageNote, '')
+  assert.ok(lead.rawPayload.includes('"basePrice":2200'))
+  assert.ok(lead.rawPayload.includes('"privacyNoticeVersion":"2026-08-24"'))
+  const row = buildNormalizedGoogleSheetsRow(lead)
+  assert.equal(row[11], "'+44 7856123456")
 }
 
 console.log('testNormalizedLead: all assertions passed')

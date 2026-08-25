@@ -5,6 +5,7 @@ import { Resend } from 'resend'
 import {
   buildGoogleSheetsRow,
   buildNormalizedGoogleSheetsRow,
+  describeNormalizedSheetTabResolution,
   ensureNormalizedSheetHeaders,
   ensureSheetHeaders,
   resolveEnquirySheetTabName,
@@ -166,12 +167,9 @@ async function appendEnquiryToLegacySheet(
   })
 }
 
-/** Canonical Raw_Leads append — 19 normalised columns. */
+/** Canonical Raw_Leads append — 20 normalised columns. */
 async function appendEnquiryToNormalizedSheet(lead: NormalizedLead): Promise<void> {
   const sheetTab = resolveNormalizedSheetTabName()
-  if (!sheetTab) {
-    throw new Error('Normalized sheet tab not configured')
-  }
 
   const { sheets, spreadsheetId } = createSheetsClient()
   const appendRange = structuredNormalizedAppendRange(sheetTab)
@@ -236,11 +234,14 @@ export async function POST(request: Request) {
 
   const legacySheetTab = resolveEnquirySheetTabName()
   const legacyAppendRange = structuredAppendRange(legacySheetTab)
-  const normalizedSheetTab = resolveNormalizedSheetTabName()
-  const normalizedAppendRange = normalizedSheetTab
-    ? structuredNormalizedAppendRange(normalizedSheetTab)
-    : undefined
+  const normalizedRouting = describeNormalizedSheetTabResolution()
+  const normalizedSheetTab = normalizedRouting.resolvedTab
+  const normalizedAppendRange = structuredNormalizedAppendRange(normalizedSheetTab)
   const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID?.trim() || undefined
+
+  console.info(
+    `${LOG} sheets routing: legacyTab=${JSON.stringify(legacySheetTab)} normalizedTab=${JSON.stringify(normalizedSheetTab)} normalizedEnvPresent=${String(normalizedRouting.envVarPresent)} normalizedEnvNonEmpty=${String(normalizedRouting.envVarNonEmpty)} normalizedUsedDefault=${String(normalizedRouting.usedDefault)}`,
+  )
 
   const tasks: Array<{
     label: 'google_sheets' | 'google_sheets_normalized' | 'resend_email'
@@ -256,10 +257,7 @@ export async function POST(request: Request) {
       label: 'resend_email',
       promise: sendEnquiryNotification(lead),
     },
-  ]
-
-  if (normalizedSheetTab) {
-    tasks.push({
+    {
       label: 'google_sheets_normalized',
       promise: appendEnquiryToNormalizedSheet(lead),
       context: {
@@ -267,16 +265,14 @@ export async function POST(request: Request) {
         appendRange: normalizedAppendRange,
         spreadsheetId,
       },
-    })
-  } else {
-    console.info(`${LOG} normalized sheets dual-write: skipped (GOOGLE_SHEETS_NORMALIZED_TAB_NAME unset)`)
-  }
+    },
+  ]
 
   const outcomes = await Promise.allSettled(tasks.map((t) => t.promise))
 
   let sheetOk = false
   let emailOk = false
-  let normalizedOk: boolean | null = normalizedSheetTab ? false : null
+  let normalizedOk = false
 
   for (let i = 0; i < tasks.length; i++) {
     const task = tasks[i]!
@@ -289,14 +285,13 @@ export async function POST(request: Request) {
     }
   }
 
-  // Dual-write: when normalised tab is enabled, require it too so misconfig is visible.
-  const allSheetsOk = normalizedOk === null ? sheetOk : sheetOk && normalizedOk
+  const allSheetsOk = sheetOk && normalizedOk
 
   if (allSheetsOk && emailOk) {
     console.info(
       `${LOG} response: ok=true (legacySheet=${String(sheetOk)} normalizedSheet=${String(normalizedOk)} email=${String(emailOk)} leadId=${lead.leadId})`,
     )
-    return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true, leadId: lead.leadId })
   }
 
   console.error(

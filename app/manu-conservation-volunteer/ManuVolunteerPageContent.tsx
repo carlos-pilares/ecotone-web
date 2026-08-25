@@ -31,7 +31,7 @@ const REASONS = [
   {
     num: '02',
     title: 'Live somewhere wild.',
-    body: 'Spend two weeks immersed in the Manu rainforest.',
+    body: 'Spend four weeks immersed in the Manu rainforest.',
   },
   {
     num: '03',
@@ -178,7 +178,7 @@ function ManuVolunteerPageInner() {
             </h1>
             <div className="mcv-hero-action">
               <p className="mcv-hero-lead">
-                Two weeks of conservation, rainforest life and people who care about nature as much as you
+                Four weeks of conservation, rainforest life and people who care about nature as much as you
                 do.
               </p>
               <ManuVolunteerCtaButton className="mcv-hero-cta" ctaLocation="hero" ariaLabel={CTA_ARIA}>
@@ -274,7 +274,7 @@ function ManuVolunteerPageInner() {
             <h2 id="mcv-enjoy-title" className="mcv-display-title mcv-display-title--dark mcv-display-title--large">
               <span className="mcv-display-line">It&apos;s serious work.</span>
               <span className="mcv-display-line mcv-display-line--accent">
-                It&apos;s also an incredible way to spend two weeks.
+                It&apos;s also an incredible way to spend four weeks.
               </span>
             </h2>
             <p className="mcv-section-body">

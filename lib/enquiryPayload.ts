@@ -82,6 +82,12 @@ export type ManuConservationVolunteerEnquiryPayload = {
   gclid: string
   gbraid: string
   wbraid: string
+  basePrice: number
+  discountPercent: number
+  offerPrice: number
+  duration: string
+  privacyNoticeVersion: string
+  privacyNoticeShownAt: string
 }
 
 export type EnquiryPayload =
@@ -274,6 +280,23 @@ export function parseEnquiryPayload(input: unknown): EnquiryPayload | null {
     const phone = asTrimmedString(input.phone).replace(/[^\d\s]/g, '').replace(/\s+/g, ' ').trim()
     const fullPhone = formatWonderBeyondPhoneDisplay(phoneCountryCode, phone)
 
+    const basePrice = Number(input.basePrice)
+    const discountPercent = Number(input.discountPercent)
+    const offerPrice = Number(input.offerPrice)
+    const duration = asTrimmedString(input.duration)
+    const privacyNoticeVersion = asTrimmedString(input.privacyNoticeVersion)
+    const privacyNoticeShownAt = asTrimmedString(input.privacyNoticeShownAt)
+    if (
+      !Number.isFinite(basePrice) ||
+      !Number.isFinite(discountPercent) ||
+      !Number.isFinite(offerPrice) ||
+      !duration ||
+      !privacyNoticeVersion ||
+      !privacyNoticeShownAt
+    ) {
+      return null
+    }
+
     return {
       kind: 'manu_conservation_volunteer',
       flowType: 'manu_conservation_volunteer',
@@ -296,6 +319,12 @@ export function parseEnquiryPayload(input: unknown): EnquiryPayload | null {
       gclid: asTrimmedString(input.gclid),
       gbraid: asTrimmedString(input.gbraid),
       wbraid: asTrimmedString(input.wbraid),
+      basePrice,
+      discountPercent,
+      offerPrice,
+      duration,
+      privacyNoticeVersion,
+      privacyNoticeShownAt,
     }
   }
 

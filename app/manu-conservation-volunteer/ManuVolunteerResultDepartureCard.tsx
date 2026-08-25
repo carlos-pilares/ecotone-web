@@ -2,8 +2,6 @@ import type { McvResultDeparture } from './mcv-result-shell'
 
 export type ManuVolunteerResultDepartureCardProps = {
   departure: McvResultDeparture
-  originalPrice: string
-  promoPrice: string
   discountPercent: number
   selected: boolean
   matched: boolean
@@ -12,8 +10,6 @@ export type ManuVolunteerResultDepartureCardProps = {
 
 export function ManuVolunteerResultDepartureCard({
   departure,
-  originalPrice,
-  promoPrice,
   discountPercent,
   selected,
   matched,
@@ -78,20 +74,21 @@ export function ManuVolunteerResultDepartureCard({
           </>
         ) : null}
 
-        {departure.hasPromoOffer ? (
+        {departure.hasPromoOffer && departure.offerPrice ? (
           <span
             className="mcv-result-date__pricing"
-            aria-label={`${promoPrice}, with your ${discountPercent}% field offer`}
+            aria-label={`${departure.offerPrice}, with your ${discountPercent}% field offer`}
           >
-            <span className="mcv-result-date__price-was">{originalPrice}</span>
-            <span className="mcv-result-date__price-now">{promoPrice}</span>
+            <span className="mcv-result-date__price-was">{departure.basePrice}</span>
+            <span className="mcv-result-date__price-now">{departure.offerPrice}</span>
             <span className="mcv-result-date__price-context">
               with your {discountPercent}% field offer
             </span>
           </span>
         ) : (
           <span className="mcv-result-date__pricing mcv-result-date__pricing--standard">
-            <span className="mcv-result-date__price-now">Standard rate applies</span>
+            <span className="mcv-result-date__price-now">{departure.basePrice}</span>
+            <span className="mcv-result-date__price-context">Standard rate · no campaign discount</span>
             <span className="mcv-result-date__price-context">*Subject to availability</span>
           </span>
         )}

@@ -43,8 +43,9 @@ function parseQualification(raw: string | null): McvQualificationData | null {
     const record = parsed as Record<string, unknown>
     const travelTiming = typeof record.travelTiming === 'string' ? record.travelTiming.trim() : ''
     const groupSize = typeof record.groupSize === 'string' ? record.groupSize.trim() : ''
+    const leadId = typeof record.leadId === 'string' ? record.leadId.trim() : ''
     if (!travelTiming && !groupSize) return null
-    return { travelTiming, groupSize }
+    return { travelTiming, groupSize, ...(leadId ? { leadId } : {}) }
   } catch {
     return null
   }
@@ -72,8 +73,6 @@ export function ManuVolunteerResult() {
         key={qualification?.travelTiming || 'no-timing'}
         departures={MCV_RESULT_DEPARTURES}
         travelTiming={qualification?.travelTiming}
-        originalPrice={shell.originalPrice}
-        promoPrice={shell.promoPrice}
         discountPercent={shell.discountPercent}
         programmeHeadline={shell.programmeHeadline}
         programmeSupport={shell.programmeSupport}

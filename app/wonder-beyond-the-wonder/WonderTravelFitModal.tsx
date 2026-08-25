@@ -417,8 +417,8 @@ export function WonderTravelFitModal() {
     setIsSubmitting(true)
 
     try {
-      const ok = await submitEnquiry(buildLeadPayload(form, contactChannel))
-      if (!ok) {
+      const result = await submitEnquiry(buildLeadPayload(form, contactChannel))
+      if (!result.ok) {
         setSubmitError(SAVE_ERROR_MESSAGE)
         trackWbtwSubmitError({
           submission_channel: contactChannel,

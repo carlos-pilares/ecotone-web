@@ -10,6 +10,14 @@ import { submitEnquiry } from '@/lib/submitEnquiry'
 import { readWbtwCampaignQueryParams } from '@/lib/trackWonderBeyondAnalytics'
 
 import { useManuVolunteerCampaign } from './ManuVolunteerCampaignContext'
+import {
+  MCV_BASE_PRICE,
+  MCV_DISCOUNT_PERCENT,
+  MCV_DURATION,
+  MCV_LANDING_PATH,
+  MCV_OFFER_PRICE,
+  MCV_PRIVACY_NOTICE_VERSION,
+} from './mcv-campaign'
 import { MCV_HERO_IMAGES } from './manu-volunteer-images'
 import { MCV_QUALIFICATION_STORAGE_KEY } from './mcv-result-shell'
 import { WonderResponsiveImage } from '../wonder-beyond-the-wonder/WonderResponsiveImage'
@@ -71,11 +79,17 @@ const EMPTY_FORM: FormState = {
   groupSize: '',
 }
 
-/** PROTOTYPE: skip lead persistence until volunteer result UX is final. Restore submitEnquiry before launch. */
-const MCV_PROTOTYPE_BYPASS_LEAD_SUBMIT = true
-
 const SAVE_ERROR_MESSAGE =
   'We couldn’t save your details. Please try again in a moment.'
+
+function resolveMcvLandingPageUrl(): string {
+  if (typeof window === 'undefined') return MCV_LANDING_PATH
+  try {
+    return new URL(MCV_LANDING_PATH, window.location.origin).href
+  } catch {
+    return MCV_LANDING_PATH
+  }
+}
 
 function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
@@ -103,7 +117,10 @@ function countPhoneDigits(phone: string): number {
   return phone.replace(/\D/g, '').length
 }
 
-function buildLeadPayload(form: FormState): ManuConservationVolunteerEnquiryPayload {
+function buildLeadPayload(
+  form: FormState,
+  privacyNoticeShownAt: string,
+): ManuConservationVolunteerEnquiryPayload {
   const phone = sanitizePhoneInput(form.phone).trim()
   const phoneCountryCode = dialCodeForForm(form)
   const campaign = readWbtwCampaignQueryParams()
@@ -120,7 +137,7 @@ function buildLeadPayload(form: FormState): ManuConservationVolunteerEnquiryPayl
     groupSize: form.groupSize,
     contactChannel: 'form',
     source: 'manu-conservation-volunteer-landing',
-    pageUrl: typeof window !== 'undefined' ? window.location.href : '',
+    pageUrl: resolveMcvLandingPageUrl(),
     utmSource: campaign.utm_source,
     utmMedium: campaign.utm_medium,
     utmCampaign: campaign.utm_campaign,
@@ -129,6 +146,12 @@ function buildLeadPayload(form: FormState): ManuConservationVolunteerEnquiryPayl
     gclid: campaign.gclid,
     gbraid: campaign.gbraid,
     wbraid: campaign.wbraid,
+    basePrice: MCV_BASE_PRICE,
+    discountPercent: MCV_DISCOUNT_PERCENT,
+    offerPrice: MCV_OFFER_PRICE,
+    duration: MCV_DURATION,
+    privacyNoticeVersion: MCV_PRIVACY_NOTICE_VERSION,
+    privacyNoticeShownAt,
   }
 }
 
@@ -242,12 +265,14 @@ function CountryCodeSelect({
 function persistQualificationAndGo(
   router: ReturnType<typeof useRouter>,
   form: FormState,
+  leadId: string,
   closeModal: (method: 'backdrop' | 'close_button' | 'escape') => void,
 ) {
   try {
     sessionStorage.setItem(
       MCV_QUALIFICATION_STORAGE_KEY,
       JSON.stringify({
+        leadId,
         travelTiming: form.travelTiming,
         groupSize: form.groupSize,
       }),
@@ -276,10 +301,17 @@ function ManuVolunteerQualificationModalInner({
   const customCodeId = useId()
   const dialogRef = useRef<HTMLDivElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
+  const privacyNoticeShownAtRef = useRef<string | null>(null)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [errors, setErrors] = useState<FieldErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+
+  useEffect(() => {
+    if (!privacyNoticeShownAtRef.current) {
+      privacyNoticeShownAtRef.current = new Date().toISOString()
+    }
+  }, [])
 
   useEffect(() => {
     const t = window.setTimeout(() => closeRef.current?.focus(), 0)
@@ -330,20 +362,17 @@ function ManuVolunteerQualificationModalInner({
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) return
 
-    if (MCV_PROTOTYPE_BYPASS_LEAD_SUBMIT) {
-      persistQualificationAndGo(router, form, closeModal)
-      return
-    }
+    const privacyNoticeShownAt = privacyNoticeShownAtRef.current ?? new Date().toISOString()
 
     setIsSubmitting(true)
     setSubmitError('')
     try {
-      const ok = await submitEnquiry(buildLeadPayload(form))
-      if (!ok) {
+      const result = await submitEnquiry(buildLeadPayload(form, privacyNoticeShownAt))
+      if (!result.ok) {
         setSubmitError(SAVE_ERROR_MESSAGE)
         return
       }
-      persistQualificationAndGo(router, form, closeModal)
+      persistQualificationAndGo(router, form, result.leadId, closeModal)
     } catch {
       setSubmitError(SAVE_ERROR_MESSAGE)
     } finally {

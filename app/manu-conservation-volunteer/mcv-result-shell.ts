@@ -1,22 +1,27 @@
 /**
  * Configurable shell data for `/manu-conservation-volunteer/result`.
  *
- * PLACEHOLDER — not live WeTravel / inventory logic.
- * Replace promotional date ranges in `MCV_RESULT_DEPARTURES` when real 2026
- * field dates are confirmed.
+ * Fixed promotional departures use per-departure `bookingUrl` values once supplied.
+ * `Other dates` is handled separately (no WeTravel URL).
  */
+
+import {
+  MCV_DISCOUNT_PERCENT,
+  MCV_DURATION,
+  MCV_PRICE_DISPLAY,
+} from './mcv-campaign'
 
 /** sessionStorage key written by the qualification modal, read by the result page. */
 export const MCV_QUALIFICATION_STORAGE_KEY = 'mcv-qualification'
 
 export const MCV_RESULT_SHELL = {
-  discountPercent: 30,
-  discountLabel: '30% OFF',
+  discountPercent: MCV_DISCOUNT_PERCENT,
+  discountLabel: `${MCV_DISCOUNT_PERCENT}% OFF`,
   voucherCode: 'MANU30',
-  durationLabel: '4 weeks',
+  durationLabel: MCV_DURATION,
   availabilityLabel: 'Limited places',
-  originalPrice: 'US$ 1,250',
-  promoPrice: 'US$ 875',
+  originalPrice: MCV_PRICE_DISPLAY.base,
+  promoPrice: MCV_PRICE_DISPLAY.offer,
   programmeName: '4-week conservation volunteer',
   programmeHeadline: '4 weeks in the Peruvian Amazon',
   programmeSupport:
@@ -24,7 +29,7 @@ export const MCV_RESULT_SHELL = {
   inclusionsLine: 'Accommodation · Meals · Field activities · Programme support',
   placesNote: 'Limited places per departure',
   offerScopeLine:
-    'Your 30% field offer applies to the selected fixed 2026 Manu Field Crew departures below.',
+    'Your 30% field offer applies only to the selected fixed 2026 Manu Field Crew departures below.',
 } as const
 
 /** Matches modal timing option strings exactly (`travelTiming` in mcv-qualification). */
@@ -44,13 +49,21 @@ export type McvResultDeparture = {
   duration: string
   /** Whether this option receives the 30% field offer. */
   hasPromoOffer: boolean
+  basePrice: string
+  /** Promotional price — omitted for Other dates. */
+  offerPrice?: string
+  /**
+   * Per-departure WeTravel booking URL.
+   * Leave unset until the real URL is supplied for that departure.
+   */
+  bookingUrl?: string
   /** Optional supporting copy (used by Other dates). */
   supportText?: string
 }
 
 /**
  * Fixed promotional departures + flexible “Other dates”.
- * Exact start/end dates TBD — edit this array only when dates are confirmed.
+ * Add each departure's `bookingUrl` when WeTravel links are confirmed.
  */
 export const MCV_RESULT_DEPARTURES: McvResultDeparture[] = [
   {
@@ -58,36 +71,51 @@ export const MCV_RESULT_DEPARTURES: McvResultDeparture[] = [
     kind: 'promotional',
     departureLabel: 'Departure 01',
     dateRange: '13 September – 10 October 2026',
-    duration: '4 weeks',
+    duration: MCV_DURATION,
     hasPromoOffer: true,
+    basePrice: MCV_PRICE_DISPLAY.base,
+    offerPrice: MCV_PRICE_DISPLAY.offer,
+    // bookingUrl: pending — Departure 01 WeTravel URL required
   },
   {
     key: 'dep-02',
     kind: 'promotional',
     departureLabel: 'Departure 02',
     dateRange: '8 November – 5 December 2026',
-    duration: '4 weeks',
+    duration: MCV_DURATION,
     hasPromoOffer: true,
+    basePrice: MCV_PRICE_DISPLAY.base,
+    offerPrice: MCV_PRICE_DISPLAY.offer,
+    // bookingUrl: pending — Departure 02 WeTravel URL required
   },
   {
     key: 'dep-03',
     kind: 'promotional',
     departureLabel: 'Departure 03',
     dateRange: 'Dates TBC — December 2026',
-    duration: '4 weeks',
+    duration: MCV_DURATION,
     hasPromoOffer: true,
+    basePrice: MCV_PRICE_DISPLAY.base,
+    offerPrice: MCV_PRICE_DISPLAY.offer,
+    // bookingUrl: pending — Departure 03 WeTravel URL required
   },
   {
     key: 'other-dates',
     kind: 'other',
     departureLabel: 'Other dates',
     dateRange: 'Flexible',
-    duration: '4 weeks',
+    duration: MCV_DURATION,
     hasPromoOffer: false,
+    basePrice: MCV_PRICE_DISPLAY.base,
     supportText:
-      'Prefer a different time? We may be able to arrange alternative dates subject to availability.',
+      'Prefer a different time? Standard rate applies. We may be able to arrange alternative dates subject to availability.',
   },
 ]
+
+/** Departure keys still awaiting real WeTravel booking URLs. */
+export const MCV_DEPARTURES_AWAITING_BOOKING_URL = MCV_RESULT_DEPARTURES.filter(
+  (d) => d.kind === 'promotional' && !d.bookingUrl?.trim(),
+).map((d) => d.key)
 
 /**
  * Maps modal preferred timing → closest fixed departure (or Other dates).
@@ -102,6 +130,7 @@ export const MCV_TIMING_TO_DEPARTURE_KEY: Record<McvTimingKey, string> = {
 }
 
 export type McvQualificationData = {
+  leadId?: string
   travelTiming: string
   groupSize: string
 }
