@@ -16,6 +16,11 @@ export type ManuVolunteerResultDeparturesProps = {
   departures: McvResultDeparture[]
   travelTiming?: string
   discountPercent: number
+  voucherCode: string
+  durationLabel: string
+  availabilityLabel: string
+  originalPrice: string
+  promoPrice: string
   programmeHeadline: string
   programmeSupport: string
   inclusionsLine: string
@@ -26,6 +31,11 @@ export function ManuVolunteerResultDepartures({
   departures,
   travelTiming,
   discountPercent,
+  voucherCode,
+  durationLabel,
+  availabilityLabel,
+  originalPrice,
+  promoPrice,
   programmeHeadline,
   programmeSupport,
   inclusionsLine,
@@ -88,7 +98,12 @@ export function ManuVolunteerResultDepartures({
                 <ManuVolunteerResultDepartureCard
                   key={item.key}
                   departure={item}
+                  durationLabel={durationLabel}
+                  availabilityLabel={availabilityLabel}
+                  originalPrice={originalPrice}
+                  promoPrice={promoPrice}
                   discountPercent={discountPercent}
+                  voucherCode={voucherCode}
                   selected={item.key === selectedKey}
                   matched={matched?.key === item.key}
                   onSelect={() => setSelectedKey(item.key)}
@@ -152,7 +167,7 @@ export function ManuVolunteerResultDepartures({
                   {selectedIsOther
                     ? 'Standard rate applies. Availability must be confirmed before any booking can proceed.'
                     : selectedBookingUrl
-                      ? "See the full programme, what's included and how to join on WeTravel."
+                      ? `Enter code ${voucherCode} on WeTravel to apply your ${discountPercent}% field offer.`
                       : 'WeTravel booking link for this departure is being finalised. Your field offer details are saved.'}
                 </p>
               </div>

@@ -663,7 +663,7 @@
 .mcv-result-date__content {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
 }
 
@@ -708,24 +708,10 @@
   font-size: clamp(1.05rem, 2vw, 1.2rem);
 }
 
-.mcv-result-date__period {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--ecotone-brown);
-}
-
-.mcv-result-date__offer-note {
+.mcv-result-date__meta {
   font-size: 13px;
-  font-weight: 600;
-  line-height: 1.35;
-  color: var(--ecotone-n700);
-}
-
-.mcv-result-date__places {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.45;
+  font-weight: 500;
+  line-height: 1.4;
   color: var(--ecotone-n700);
 }
 
@@ -740,8 +726,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 8px 10px;
-  margin-top: 8px;
+  gap: 6px 10px;
+  margin-top: 4px;
 }
 
 .mcv-result-date__pricing--standard {
@@ -759,6 +745,20 @@
 .mcv-result-date__price-now {
   font-size: 18px;
   font-weight: 700;
+  color: var(--ecotone-brown-xdk);
+}
+
+.mcv-result-date__promo-line {
+  flex-basis: 100%;
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ecotone-n700);
+}
+
+.mcv-result-date__code-value {
+  font-weight: 700;
+  letter-spacing: 0.04em;
   color: var(--ecotone-brown-xdk);
 }
 

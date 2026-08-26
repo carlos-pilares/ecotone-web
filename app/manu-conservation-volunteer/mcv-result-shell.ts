@@ -1,8 +1,9 @@
 /**
  * Configurable shell data for `/manu-conservation-volunteer/result`.
  *
- * Fixed promotional departures use per-departure `bookingUrl` values once supplied.
- * `Other dates` is handled separately (no WeTravel URL).
+ * Shared promotional offer (all fixed departures): price, 30% discount, CREW30.
+ * Per departure: dates + optional bookingUrl.
+ * `Other dates` is separate — no discount, no CREW30.
  */
 
 import {
@@ -17,7 +18,7 @@ export const MCV_QUALIFICATION_STORAGE_KEY = 'mcv-qualification'
 export const MCV_RESULT_SHELL = {
   discountPercent: MCV_DISCOUNT_PERCENT,
   discountLabel: `${MCV_DISCOUNT_PERCENT}% OFF`,
-  voucherCode: 'MANU30',
+  voucherCode: 'CREW30',
   durationLabel: MCV_DURATION,
   availabilityLabel: 'Limited places',
   originalPrice: MCV_PRICE_DISPLAY.base,
@@ -46,12 +47,6 @@ export type McvResultDeparture = {
   departureLabel: string
   /** Primary fixed date range shown on the card */
   dateRange: string
-  duration: string
-  /** Whether this option receives the 30% field offer. */
-  hasPromoOffer: boolean
-  basePrice: string
-  /** Promotional price — omitted for Other dates. */
-  offerPrice?: string
   /**
    * Per-departure WeTravel booking URL.
    * Leave unset until the real URL is supplied for that departure.
@@ -63,6 +58,7 @@ export type McvResultDeparture = {
 
 /**
  * Fixed promotional departures + flexible “Other dates”.
+ * Shared offer (price / CREW30 / duration) lives on MCV_RESULT_SHELL.
  * Add each departure's `bookingUrl` when WeTravel links are confirmed.
  */
 export const MCV_RESULT_DEPARTURES: McvResultDeparture[] = [
@@ -71,32 +67,21 @@ export const MCV_RESULT_DEPARTURES: McvResultDeparture[] = [
     kind: 'promotional',
     departureLabel: 'Departure 01',
     dateRange: '13 September – 10 October 2026',
-    duration: MCV_DURATION,
-    hasPromoOffer: true,
-    basePrice: MCV_PRICE_DISPLAY.base,
-    offerPrice: MCV_PRICE_DISPLAY.offer,
     // bookingUrl: pending — Departure 01 WeTravel URL required
   },
   {
     key: 'dep-02',
     kind: 'promotional',
     departureLabel: 'Departure 02',
-    dateRange: '8 November – 5 December 2026',
-    duration: MCV_DURATION,
-    hasPromoOffer: true,
-    basePrice: MCV_PRICE_DISPLAY.base,
-    offerPrice: MCV_PRICE_DISPLAY.offer,
-    // bookingUrl: pending — Departure 02 WeTravel URL required
+    dateRange: '2 Nov – 4 Dec 2026',
+    bookingUrl:
+      'https://www.wetravel.com/trips/volunteer-program-4-weeks-ecotone-6488939184#overview',
   },
   {
     key: 'dep-03',
     kind: 'promotional',
     departureLabel: 'Departure 03',
     dateRange: 'Dates TBC — December 2026',
-    duration: MCV_DURATION,
-    hasPromoOffer: true,
-    basePrice: MCV_PRICE_DISPLAY.base,
-    offerPrice: MCV_PRICE_DISPLAY.offer,
     // bookingUrl: pending — Departure 03 WeTravel URL required
   },
   {
@@ -104,9 +89,6 @@ export const MCV_RESULT_DEPARTURES: McvResultDeparture[] = [
     kind: 'other',
     departureLabel: 'Other dates',
     dateRange: 'Flexible',
-    duration: MCV_DURATION,
-    hasPromoOffer: false,
-    basePrice: MCV_PRICE_DISPLAY.base,
     supportText:
       'Prefer a different time? Standard rate applies. We may be able to arrange alternative dates subject to availability.',
   },

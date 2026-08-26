@@ -33,7 +33,7 @@ const WONDER_CAMPAIGN_NAME = 'Wonder Beyond the Wonder'
 const MANU_VOLUNTEER_CAMPAIGN_NAME = 'Volunteer Q4 2026'
 const MANU_VOLUNTEER_EXPERIENCE_NAME = 'Volunteer Conservation'
 const MANU_VOLUNTEER_LANDING_PATH = '/manu-conservation-volunteer'
-const MANU_VOLUNTEER_PRICE_DISPLAY = 'US$1,540'
+const MANU_VOLUNTEER_PRICE_DISPLAY = 'US$2,200 | 30% off | US$1,540'
 const MANU_VOLUNTEER_DURATION = '4 weeks'
 
 function resolveManuVolunteerLandingPage(pageUrl: string): string {

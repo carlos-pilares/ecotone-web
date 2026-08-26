@@ -2,7 +2,12 @@ import type { McvResultDeparture } from './mcv-result-shell'
 
 export type ManuVolunteerResultDepartureCardProps = {
   departure: McvResultDeparture
+  durationLabel: string
+  availabilityLabel: string
+  originalPrice: string
+  promoPrice: string
   discountPercent: number
+  voucherCode: string
   selected: boolean
   matched: boolean
   onSelect: () => void
@@ -10,7 +15,12 @@ export type ManuVolunteerResultDepartureCardProps = {
 
 export function ManuVolunteerResultDepartureCard({
   departure,
+  durationLabel,
+  availabilityLabel,
+  originalPrice,
+  promoPrice,
   discountPercent,
+  voucherCode,
   selected,
   matched,
   onSelect,
@@ -38,59 +48,51 @@ export function ManuVolunteerResultDepartureCard({
       </span>
 
       <span className="mcv-result-date__content">
-        {(matched || !isOther) ? (
-          <span className="mcv-result-date__title-row">
-            {!isOther ? (
-              <span className="mcv-result-date__label">{departure.departureLabel}</span>
-            ) : null}
-            {matched ? (
-              <span className="mcv-result-date__badge">Best match for your timing</span>
-            ) : null}
-          </span>
-        ) : null}
-
         {isOther ? (
           <>
+            {matched ? (
+              <span className="mcv-result-date__title-row">
+                <span className="mcv-result-date__badge">Best match for your timing</span>
+              </span>
+            ) : null}
             <span className="mcv-result-date__dates">{departure.departureLabel}</span>
             {departure.supportText ? (
               <span className="mcv-result-date__support">{departure.supportText}</span>
             ) : null}
+            <span className="mcv-result-date__meta">
+              {durationLabel} · *Subject to availability
+            </span>
+            <span className="mcv-result-date__pricing mcv-result-date__pricing--standard">
+              <span className="mcv-result-date__price-now">{originalPrice}</span>
+              <span className="mcv-result-date__price-context">
+                Standard rate · no campaign discount
+              </span>
+            </span>
           </>
         ) : (
           <>
+            <span className="mcv-result-date__title-row">
+              <span className="mcv-result-date__label">{departure.departureLabel}</span>
+              {matched ? (
+                <span className="mcv-result-date__badge">Best match for your timing</span>
+              ) : null}
+            </span>
             <span className="mcv-result-date__dates">{departure.dateRange}</span>
-            <span className="mcv-result-date__period">Fixed 4-week departure</span>
-            <span className="mcv-result-date__offer-note">
-              30% field offer applies to these fixed dates
+            <span className="mcv-result-date__meta">
+              {durationLabel} · {availabilityLabel}
             </span>
-            <span className="mcv-result-date__places">Limited places</span>
-          </>
-        )}
-
-        {isOther ? (
-          <>
-            <span className="mcv-result-date__duration">{departure.duration}</span>
-            <span className="mcv-result-date__places">*Subject to availability</span>
-          </>
-        ) : null}
-
-        {departure.hasPromoOffer && departure.offerPrice ? (
-          <span
-            className="mcv-result-date__pricing"
-            aria-label={`${departure.offerPrice}, with your ${discountPercent}% field offer`}
-          >
-            <span className="mcv-result-date__price-was">{departure.basePrice}</span>
-            <span className="mcv-result-date__price-now">{departure.offerPrice}</span>
-            <span className="mcv-result-date__price-context">
-              with your {discountPercent}% field offer
+            <span
+              className="mcv-result-date__pricing"
+              aria-label={`${promoPrice}, ${discountPercent}% off with code ${voucherCode}`}
+            >
+              <span className="mcv-result-date__price-was">{originalPrice}</span>
+              <span className="mcv-result-date__price-now">{promoPrice}</span>
+              <span className="mcv-result-date__promo-line">
+                {discountPercent}% off with code{' '}
+                <span className="mcv-result-date__code-value">{voucherCode}</span>
+              </span>
             </span>
-          </span>
-        ) : (
-          <span className="mcv-result-date__pricing mcv-result-date__pricing--standard">
-            <span className="mcv-result-date__price-now">{departure.basePrice}</span>
-            <span className="mcv-result-date__price-context">Standard rate · no campaign discount</span>
-            <span className="mcv-result-date__price-context">*Subject to availability</span>
-          </span>
+          </>
         )}
       </span>
     </button>

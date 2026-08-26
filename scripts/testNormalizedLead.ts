@@ -278,7 +278,7 @@ function assertBlankFields(lead: ReturnType<typeof normalizeEnquiryToLead>, keys
   assert.equal(lead.travelDate, '')
   assert.equal(lead.partySize, 'Just me')
   assert.equal(lead.duration, '4 weeks')
-  assert.equal(lead.price, 'US$1,540')
+  assert.equal(lead.price, 'US$2,200 | 30% off | US$1,540')
   assert.equal(lead.messageNote, '')
   assert.ok(lead.rawPayload.includes('"basePrice":2200'))
   assert.ok(lead.rawPayload.includes('"privacyNoticeVersion":"2026-08-24"'))

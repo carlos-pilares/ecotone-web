@@ -74,6 +74,11 @@ export function ManuVolunteerResult() {
         departures={MCV_RESULT_DEPARTURES}
         travelTiming={qualification?.travelTiming}
         discountPercent={shell.discountPercent}
+        voucherCode={shell.voucherCode}
+        durationLabel={shell.durationLabel}
+        availabilityLabel={shell.availabilityLabel}
+        originalPrice={shell.originalPrice}
+        promoPrice={shell.promoPrice}
         programmeHeadline={shell.programmeHeadline}
         programmeSupport={shell.programmeSupport}
         inclusionsLine={shell.inclusionsLine}
