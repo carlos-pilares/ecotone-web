@@ -352,6 +352,102 @@ export async function updateNormalizedLeadTravelDate(
   return { ok: true, rowNumber }
 }
 
+export type UpdateNormalizedOtherDatesResult =
+  | { ok: true; rowNumber: number }
+  | { ok: false; reason: 'not_found' | 'duplicate_lead_id' | 'missing_headers' | 'sheets_error'; message?: string }
+
+/**
+ * Update only TRAVEL DATE + MESSAGE / NOTE for the Raw_Leads row whose LEAD ID matches exactly.
+ * Used by MCV “Other dates”. Does not append rows. Does not touch any other columns.
+ */
+export async function updateNormalizedLeadOtherDates(
+  sheets: sheets_v4.Sheets,
+  spreadsheetId: string,
+  sheetTab: string,
+  leadId: string,
+  travelDate: string,
+  message: string,
+): Promise<UpdateNormalizedOtherDatesResult> {
+  const trimmedLeadId = leadId.trim()
+  const trimmedTravelDate = travelDate.trim()
+  const trimmedMessage = message.trim()
+  if (!trimmedLeadId || !trimmedTravelDate) {
+    return { ok: false, reason: 'sheets_error', message: 'leadId and travelDate are required' }
+  }
+
+  const readRange = structuredNormalizedAppendRange(sheetTab)
+  let values: string[][] = []
+  try {
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: readRange,
+    })
+    values = (res.data.values as string[][] | undefined) ?? []
+  } catch (error) {
+    const errMessage = error instanceof Error ? error.message : 'Failed to read normalized sheet'
+    console.error(`${LOG} update other dates read failed: ${errMessage}`)
+    return { ok: false, reason: 'sheets_error', message: errMessage }
+  }
+
+  if (values.length === 0) {
+    return { ok: false, reason: 'missing_headers' }
+  }
+
+  const headers = values[0] ?? []
+  const leadIdCol = findHeaderColumnIndex(headers, 'LEAD ID')
+  const travelDateCol = findHeaderColumnIndex(headers, 'TRAVEL DATE')
+  const messageCol = findHeaderColumnIndex(headers, 'MESSAGE / NOTE')
+  if (leadIdCol < 0 || travelDateCol < 0 || messageCol < 0) {
+    console.error(
+      `${LOG} update other dates missing headers leadIdCol=${leadIdCol} travelDateCol=${travelDateCol} messageCol=${messageCol}`,
+    )
+    return { ok: false, reason: 'missing_headers' }
+  }
+
+  const matchingRowNumbers: number[] = []
+  for (let i = 1; i < values.length; i++) {
+    const cell = String(values[i]?.[leadIdCol] ?? '').trim()
+    if (cell === trimmedLeadId) matchingRowNumbers.push(i + 1)
+  }
+
+  if (matchingRowNumbers.length === 0) {
+    return { ok: false, reason: 'not_found' }
+  }
+  if (matchingRowNumbers.length > 1) {
+    console.error(
+      `${LOG} update other dates duplicate leadId matches=${matchingRowNumbers.length} (leadId redacted)`,
+    )
+    return { ok: false, reason: 'duplicate_lead_id' }
+  }
+
+  const rowNumber = matchingRowNumbers[0]!
+  const quotedTab = quoteSheetTabForA1(sheetTab)
+  const travelDateRange = `${quotedTab}!${columnLetter(travelDateCol + 1)}${rowNumber}`
+  const messageRange = `${quotedTab}!${columnLetter(messageCol + 1)}${rowNumber}`
+
+  try {
+    await sheets.spreadsheets.values.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        valueInputOption: 'USER_ENTERED',
+        data: [
+          { range: travelDateRange, values: [[trimmedTravelDate]] },
+          { range: messageRange, values: [[trimmedMessage]] },
+        ],
+      },
+    })
+  } catch (error) {
+    const errMessage = error instanceof Error ? error.message : 'Failed to update other dates'
+    console.error(`${LOG} update other dates write failed: ${errMessage}`)
+    return { ok: false, reason: 'sheets_error', message: errMessage }
+  }
+
+  console.info(
+    `${LOG} updated TRAVEL DATE + MESSAGE / NOTE for lead row=${rowNumber} tab=${JSON.stringify(sheetTab)}`,
+  )
+  return { ok: true, rowNumber }
+}
+
 /** One legacy data row (17 columns) for `values.append`. */
 export function buildGoogleSheetsRow(submittedAtIso: string, payload: EnquiryPayload): string[] {
   const raw = JSON.stringify(payload)

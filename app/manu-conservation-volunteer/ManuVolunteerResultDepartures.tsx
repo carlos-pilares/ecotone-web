@@ -4,6 +4,7 @@ import { useRef, useState, type MouseEvent } from 'react'
 
 import { WonderJourneyCardImage } from '../wonder-beyond-the-wonder/WonderResponsiveImage'
 
+import { ManuVolunteerOtherDatesForm } from './ManuVolunteerOtherDatesForm'
 import { ManuVolunteerResultDepartureCard } from './ManuVolunteerResultDepartureCard'
 import { MCV_FIELDWORK_FEATURED } from './manu-volunteer-images'
 import {
@@ -62,7 +63,6 @@ export function ManuVolunteerResultDepartures({
   )
   const [isUpdating, setIsUpdating] = useState(false)
   const [updateError, setUpdateError] = useState('')
-  const [syncedTravelDate, setSyncedTravelDate] = useState('')
   const syncedTravelDateRef = useRef('')
   const inFlightKeyRef = useRef<string | null>(null)
   const inFlightPromiseRef = useRef<Promise<boolean> | null>(null)
@@ -108,7 +108,6 @@ export function ManuVolunteerResultDepartures({
           return false
         }
         syncedTravelDateRef.current = travelDate
-        setSyncedTravelDate(travelDate)
         return true
       } catch {
         setUpdateError('We couldn’t save your selected dates. Please try again.')
@@ -129,6 +128,11 @@ export function ManuVolunteerResultDepartures({
   async function onSelectDeparture(departure: McvResultDeparture) {
     setSelectedKey(departure.key)
     setUpdateError('')
+    if (departure.kind === 'other') {
+      // Clear fixed sync cache so a later fixed re-select re-persists TRAVEL DATE.
+      syncedTravelDateRef.current = ''
+      return
+    }
     if (!canPersistFixedTravelDate(departure)) return
     await syncFixedDepartureTravelDate(departure)
   }
@@ -207,24 +211,7 @@ export function ManuVolunteerResultDepartures({
             {selected ? (
               <div className="mcv-result-continue">
                 {selectedIsOther ? (
-                  <button
-                    type="button"
-                    className="mcv-cta mcv-cta--prominent mcv-result-continue__cta"
-                  >
-                    Enquire about other dates
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 12 12"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.75"
-                      aria-hidden
-                    >
-                      <line x1="2" y1="6" x2="10" y2="6" />
-                      <polyline points="7 3 10 6 7 9" />
-                    </svg>
-                  </button>
+                  <ManuVolunteerOtherDatesForm leadId={leadId} />
                 ) : selectedBookingUrl ? (
                   <a
                     href={selectedBookingUrl}
@@ -262,18 +249,18 @@ export function ManuVolunteerResultDepartures({
                     Explore this fixed departure
                   </button>
                 )}
-                <p className="mcv-result-continue__note">
-                  {selectedIsOther
-                    ? 'Standard rate applies. Availability must be confirmed before any booking can proceed.'
-                    : !selectedCanPersist
+                {!selectedIsOther ? (
+                  <p className="mcv-result-continue__note">
+                    {!selectedCanPersist
                       ? 'Exact dates for this departure are still being confirmed. TRAVEL DATE is not saved until dates are final.'
                       : selectedBookingUrl
                         ? isUpdating
                           ? 'Saving your selected field dates…'
                           : `Enter code ${voucherCode} on WeTravel to apply your ${discountPercent}% field offer.`
                         : 'WeTravel booking link for this departure is being finalised. Your field offer details are saved.'}
-                </p>
-                {updateError ? (
+                  </p>
+                ) : null}
+                {!selectedIsOther && updateError ? (
                   <p className="mcv-result-continue__error" role="alert">
                     {updateError}{' '}
                     {selected && canPersistFixedTravelDate(selected) ? (
