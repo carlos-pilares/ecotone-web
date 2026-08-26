@@ -48,6 +48,11 @@ export type McvResultDeparture = {
   /** Primary fixed date range shown on the card */
   dateRange: string
   /**
+   * True when the departure has exact confirmed dates that may be written to Raw_Leads.
+   * TBC / placeholder dates must remain false.
+   */
+  datesConfirmed: boolean
+  /**
    * Per-departure WeTravel booking URL.
    * Leave unset until the real URL is supplied for that departure.
    */
@@ -67,6 +72,7 @@ export const MCV_RESULT_DEPARTURES: McvResultDeparture[] = [
     kind: 'promotional',
     departureLabel: 'Departure 01',
     dateRange: '13 September – 10 October 2026',
+    datesConfirmed: true,
     // bookingUrl: pending — Departure 01 WeTravel URL required
   },
   {
@@ -74,6 +80,7 @@ export const MCV_RESULT_DEPARTURES: McvResultDeparture[] = [
     kind: 'promotional',
     departureLabel: 'Departure 02',
     dateRange: '2 Nov – 4 Dec 2026',
+    datesConfirmed: true,
     bookingUrl:
       'https://www.wetravel.com/trips/volunteer-program-4-weeks-ecotone-6488939184#overview',
   },
@@ -82,6 +89,7 @@ export const MCV_RESULT_DEPARTURES: McvResultDeparture[] = [
     kind: 'promotional',
     departureLabel: 'Departure 03',
     dateRange: 'Dates TBC — December 2026',
+    datesConfirmed: false,
     // bookingUrl: pending — Departure 03 WeTravel URL required
   },
   {
@@ -89,10 +97,21 @@ export const MCV_RESULT_DEPARTURES: McvResultDeparture[] = [
     kind: 'other',
     departureLabel: 'Other dates',
     dateRange: 'Flexible',
+    datesConfirmed: false,
     supportText:
       'Prefer a different time? Standard rate applies. We may be able to arrange alternative dates subject to availability.',
   },
 ]
+
+/** Confirmed fixed departure date ranges allowed in Raw_Leads TRAVEL DATE. */
+export const MCV_CONFIRMED_FIXED_TRAVEL_DATES = MCV_RESULT_DEPARTURES.filter(
+  (d) => d.kind === 'promotional' && d.datesConfirmed,
+).map((d) => d.dateRange.trim())
+
+/** Whether this departure may persist TRAVEL DATE / open booking. */
+export function canPersistFixedTravelDate(departure: McvResultDeparture): boolean {
+  return departure.kind === 'promotional' && departure.datesConfirmed
+}
 
 /** Departure keys still awaiting real WeTravel booking URLs. */
 export const MCV_DEPARTURES_AWAITING_BOOKING_URL = MCV_RESULT_DEPARTURES.filter(

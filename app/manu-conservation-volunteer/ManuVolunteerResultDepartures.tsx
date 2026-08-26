@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useRef, useState, type MouseEvent } from 'react'
+import { useRef, useState, type MouseEvent } from 'react'
 
 import { WonderJourneyCardImage } from '../wonder-beyond-the-wonder/WonderResponsiveImage'
 
 import { ManuVolunteerResultDepartureCard } from './ManuVolunteerResultDepartureCard'
 import { MCV_FIELDWORK_FEATURED } from './manu-volunteer-images'
 import {
+  canPersistFixedTravelDate,
   defaultSelectedDepartureKey,
   matchDepartureForTiming,
   type McvResultDeparture,
@@ -55,6 +56,7 @@ export function ManuVolunteerResultDepartures({
   placesNote,
 }: ManuVolunteerResultDeparturesProps) {
   const matched = matchDepartureForTiming(travelTiming, departures)
+  // Visual default only — must not trigger Raw_Leads persistence.
   const [selectedKey, setSelectedKey] = useState(() =>
     defaultSelectedDepartureKey(travelTiming, departures),
   )
@@ -68,13 +70,19 @@ export function ManuVolunteerResultDepartures({
   const selected = departures.find((d) => d.key === selectedKey) ?? departures[0]
   const matchedIsOther = matched?.kind === 'other'
   const selectedIsOther = selected?.kind === 'other'
-  const selectedBookingUrl = selected?.bookingUrl?.trim() ?? ''
-  const selectedTravelDate = selected?.kind === 'promotional' ? selected.dateRange.trim() : ''
-  const selectedTravelDateSynced =
-    Boolean(selectedTravelDate) && selectedTravelDate === syncedTravelDate
+  const selectedCanPersist = selected ? canPersistFixedTravelDate(selected) : false
+  const selectedBookingUrl =
+    selectedCanPersist && selected?.bookingUrl?.trim() ? selected.bookingUrl.trim() : ''
 
+  /**
+   * Persist TRAVEL DATE only after an explicit user action
+   * (card click / booking CTA / retry). Never from mount or visual preselect.
+   */
   async function syncFixedDepartureTravelDate(departure: McvResultDeparture): Promise<boolean> {
-    if (departure.kind !== 'promotional') return true
+    if (!canPersistFixedTravelDate(departure)) {
+      setUpdateError('')
+      return false
+    }
     const travelDate = departure.dateRange.trim()
     if (!travelDate) return false
 
@@ -118,26 +126,17 @@ export function ManuVolunteerResultDepartures({
     return promise
   }
 
-  // Persist preselected fixed departure (from timing match) once leadId is available.
-  useEffect(() => {
-    const initial = departures.find((d) => d.key === selectedKey)
-    if (!initial || initial.kind !== 'promotional' || !leadId?.trim()) return
-    void syncFixedDepartureTravelDate(initial)
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once for initial selection
-  }, [leadId])
-
   async function onSelectDeparture(departure: McvResultDeparture) {
     setSelectedKey(departure.key)
-    if (departure.kind !== 'promotional') {
-      setUpdateError('')
-      return
-    }
+    setUpdateError('')
+    if (!canPersistFixedTravelDate(departure)) return
     await syncFixedDepartureTravelDate(departure)
   }
 
   async function onBookingClick(event: MouseEvent<HTMLAnchorElement>) {
-    if (!selected || selected.kind !== 'promotional' || !selectedBookingUrl) return
+    if (!selected || !selectedBookingUrl || !canPersistFixedTravelDate(selected)) return
     event.preventDefault()
+    // CTA click is an explicit user action even if the card was only visually preselected.
     const ok = await syncFixedDepartureTravelDate(selected)
     if (!ok) return
     window.open(selectedBookingUrl, '_blank', 'noopener,noreferrer')
@@ -266,18 +265,18 @@ export function ManuVolunteerResultDepartures({
                 <p className="mcv-result-continue__note">
                   {selectedIsOther
                     ? 'Standard rate applies. Availability must be confirmed before any booking can proceed.'
-                    : selectedBookingUrl
-                      ? selectedTravelDateSynced
-                        ? `Enter code ${voucherCode} on WeTravel to apply your ${discountPercent}% field offer.`
-                        : isUpdating
+                    : !selectedCanPersist
+                      ? 'Exact dates for this departure are still being confirmed. TRAVEL DATE is not saved until dates are final.'
+                      : selectedBookingUrl
+                        ? isUpdating
                           ? 'Saving your selected field dates…'
                           : `Enter code ${voucherCode} on WeTravel to apply your ${discountPercent}% field offer.`
-                      : 'WeTravel booking link for this departure is being finalised. Your field offer details are saved.'}
+                        : 'WeTravel booking link for this departure is being finalised. Your field offer details are saved.'}
                 </p>
                 {updateError ? (
                   <p className="mcv-result-continue__error" role="alert">
                     {updateError}{' '}
-                    {selected.kind === 'promotional' ? (
+                    {selected && canPersistFixedTravelDate(selected) ? (
                       <button
                         type="button"
                         className="mcv-result-continue__retry"

@@ -5,7 +5,7 @@ import {
   resolveNormalizedSheetTabName,
   updateNormalizedLeadTravelDate,
 } from '@/lib/enquiryGoogleSheets'
-import { MCV_RESULT_DEPARTURES } from '@/app/manu-conservation-volunteer/mcv-result-shell'
+import { MCV_CONFIRMED_FIXED_TRAVEL_DATES } from '@/app/manu-conservation-volunteer/mcv-result-shell'
 
 export const runtime = 'nodejs'
 
@@ -14,9 +14,7 @@ const LOG = '[api/enquiry/update-travel-date]'
 /** Lead IDs are generated as ECO-YYMMDD-XXXX (Crockford-like alphabet). */
 const LEAD_ID_PATTERN = /^ECO-\d{6}-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{4}$/
 
-const ALLOWED_FIXED_TRAVEL_DATES = new Set(
-  MCV_RESULT_DEPARTURES.filter((d) => d.kind === 'promotional').map((d) => d.dateRange.trim()),
-)
+const ALLOWED_FIXED_TRAVEL_DATES = new Set(MCV_CONFIRMED_FIXED_TRAVEL_DATES)
 
 function getPrivateKey(): string {
   const k = process.env.GOOGLE_PRIVATE_KEY
