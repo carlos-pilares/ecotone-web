@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState, type MouseEvent } from 'react'
 
 import { WonderJourneyCardImage } from '../wonder-beyond-the-wonder/WonderResponsiveImage'
 
@@ -15,6 +15,7 @@ import {
 export type ManuVolunteerResultDeparturesProps = {
   departures: McvResultDeparture[]
   travelTiming?: string
+  leadId?: string
   discountPercent: number
   voucherCode: string
   durationLabel: string
@@ -27,9 +28,21 @@ export type ManuVolunteerResultDeparturesProps = {
   placesNote: string
 }
 
+async function updateTravelDate(leadId: string, travelDate: string): Promise<boolean> {
+  const res = await fetch('/api/enquiry/update-travel-date', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ leadId, travelDate }),
+  })
+  if (!res.ok) return false
+  const data = (await res.json()) as { ok?: boolean }
+  return data.ok === true
+}
+
 export function ManuVolunteerResultDepartures({
   departures,
   travelTiming,
+  leadId,
   discountPercent,
   voucherCode,
   durationLabel,
@@ -45,11 +58,90 @@ export function ManuVolunteerResultDepartures({
   const [selectedKey, setSelectedKey] = useState(() =>
     defaultSelectedDepartureKey(travelTiming, departures),
   )
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [updateError, setUpdateError] = useState('')
+  const [syncedTravelDate, setSyncedTravelDate] = useState('')
+  const syncedTravelDateRef = useRef('')
+  const inFlightKeyRef = useRef<string | null>(null)
+  const inFlightPromiseRef = useRef<Promise<boolean> | null>(null)
 
   const selected = departures.find((d) => d.key === selectedKey) ?? departures[0]
   const matchedIsOther = matched?.kind === 'other'
   const selectedIsOther = selected?.kind === 'other'
   const selectedBookingUrl = selected?.bookingUrl?.trim() ?? ''
+  const selectedTravelDate = selected?.kind === 'promotional' ? selected.dateRange.trim() : ''
+  const selectedTravelDateSynced =
+    Boolean(selectedTravelDate) && selectedTravelDate === syncedTravelDate
+
+  async function syncFixedDepartureTravelDate(departure: McvResultDeparture): Promise<boolean> {
+    if (departure.kind !== 'promotional') return true
+    const travelDate = departure.dateRange.trim()
+    if (!travelDate) return false
+
+    if (!leadId?.trim()) {
+      setUpdateError('Your field dates could not be saved because this session is missing a lead ID.')
+      return false
+    }
+
+    if (syncedTravelDateRef.current === travelDate) return true
+    if (inFlightKeyRef.current === departure.key && inFlightPromiseRef.current) {
+      return inFlightPromiseRef.current
+    }
+
+    inFlightKeyRef.current = departure.key
+    setIsUpdating(true)
+    setUpdateError('')
+
+    const promise = (async () => {
+      try {
+        const ok = await updateTravelDate(leadId.trim(), travelDate)
+        if (!ok) {
+          setUpdateError('We couldn’t save your selected dates. Please try again.')
+          return false
+        }
+        syncedTravelDateRef.current = travelDate
+        setSyncedTravelDate(travelDate)
+        return true
+      } catch {
+        setUpdateError('We couldn’t save your selected dates. Please try again.')
+        return false
+      } finally {
+        if (inFlightKeyRef.current === departure.key) {
+          inFlightKeyRef.current = null
+          inFlightPromiseRef.current = null
+        }
+        setIsUpdating(false)
+      }
+    })()
+
+    inFlightPromiseRef.current = promise
+    return promise
+  }
+
+  // Persist preselected fixed departure (from timing match) once leadId is available.
+  useEffect(() => {
+    const initial = departures.find((d) => d.key === selectedKey)
+    if (!initial || initial.kind !== 'promotional' || !leadId?.trim()) return
+    void syncFixedDepartureTravelDate(initial)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once for initial selection
+  }, [leadId])
+
+  async function onSelectDeparture(departure: McvResultDeparture) {
+    setSelectedKey(departure.key)
+    if (departure.kind !== 'promotional') {
+      setUpdateError('')
+      return
+    }
+    await syncFixedDepartureTravelDate(departure)
+  }
+
+  async function onBookingClick(event: MouseEvent<HTMLAnchorElement>) {
+    if (!selected || selected.kind !== 'promotional' || !selectedBookingUrl) return
+    event.preventDefault()
+    const ok = await syncFixedDepartureTravelDate(selected)
+    if (!ok) return
+    window.open(selectedBookingUrl, '_blank', 'noopener,noreferrer')
+  }
 
   return (
     <section className="mcv-result-departures" aria-labelledby="mcv-result-departures-title">
@@ -106,7 +198,9 @@ export function ManuVolunteerResultDepartures({
                   voucherCode={voucherCode}
                   selected={item.key === selectedKey}
                   matched={matched?.key === item.key}
-                  onSelect={() => setSelectedKey(item.key)}
+                  onSelect={() => {
+                    void onSelectDeparture(item)
+                  }}
                 />
               ))}
             </div>
@@ -138,20 +232,26 @@ export function ManuVolunteerResultDepartures({
                     className="mcv-cta mcv-cta--prominent mcv-result-continue__cta"
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-disabled={isUpdating}
+                    onClick={(event) => {
+                      void onBookingClick(event)
+                    }}
                   >
-                    Explore this fixed departure
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 12 12"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.75"
-                      aria-hidden
-                    >
-                      <line x1="2" y1="6" x2="10" y2="6" />
-                      <polyline points="7 3 10 6 7 9" />
-                    </svg>
+                    {isUpdating ? 'Saving your dates…' : 'Explore this fixed departure'}
+                    {!isUpdating ? (
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 12 12"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.75"
+                        aria-hidden
+                      >
+                        <line x1="2" y1="6" x2="10" y2="6" />
+                        <polyline points="7 3 10 6 7 9" />
+                      </svg>
+                    ) : null}
                   </a>
                 ) : (
                   <button
@@ -167,9 +267,29 @@ export function ManuVolunteerResultDepartures({
                   {selectedIsOther
                     ? 'Standard rate applies. Availability must be confirmed before any booking can proceed.'
                     : selectedBookingUrl
-                      ? `Enter code ${voucherCode} on WeTravel to apply your ${discountPercent}% field offer.`
+                      ? selectedTravelDateSynced
+                        ? `Enter code ${voucherCode} on WeTravel to apply your ${discountPercent}% field offer.`
+                        : isUpdating
+                          ? 'Saving your selected field dates…'
+                          : `Enter code ${voucherCode} on WeTravel to apply your ${discountPercent}% field offer.`
                       : 'WeTravel booking link for this departure is being finalised. Your field offer details are saved.'}
                 </p>
+                {updateError ? (
+                  <p className="mcv-result-continue__error" role="alert">
+                    {updateError}{' '}
+                    {selected.kind === 'promotional' ? (
+                      <button
+                        type="button"
+                        className="mcv-result-continue__retry"
+                        onClick={() => {
+                          void syncFixedDepartureTravelDate(selected)
+                        }}
+                      >
+                        Retry
+                      </button>
+                    ) : null}
+                  </p>
+                ) : null}
               </div>
             ) : null}
           </div>

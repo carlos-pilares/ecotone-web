@@ -246,7 +246,7 @@ export async function ensureNormalizedSheetHeaders(
 }
 
 /** 1-based column index → Excel column letters (1→A, 26→Z, 27→AA). */
-function columnLetter(n: number): string {
+export function columnLetter(n: number): string {
   if (n < 1) return 'A'
   let result = ''
   let num = n
@@ -256,6 +256,100 @@ function columnLetter(n: number): string {
     num = Math.floor(num / 26)
   }
   return result
+}
+
+/** 0-based header index for an exact header label, or -1 if missing. */
+export function findHeaderColumnIndex(headers: string[] | undefined, headerName: string): number {
+  if (!headers?.length) return -1
+  const target = headerName.trim()
+  return headers.findIndex((cell) => String(cell ?? '').trim() === target)
+}
+
+export type UpdateNormalizedTravelDateResult =
+  | { ok: true; rowNumber: number }
+  | { ok: false; reason: 'not_found' | 'duplicate_lead_id' | 'missing_headers' | 'sheets_error'; message?: string }
+
+/**
+ * Update only the TRAVEL DATE cell for the Raw_Leads row whose LEAD ID matches exactly.
+ * Does not append rows. Finds LEAD ID and TRAVEL DATE columns from the header row.
+ */
+export async function updateNormalizedLeadTravelDate(
+  sheets: sheets_v4.Sheets,
+  spreadsheetId: string,
+  sheetTab: string,
+  leadId: string,
+  travelDate: string,
+): Promise<UpdateNormalizedTravelDateResult> {
+  const trimmedLeadId = leadId.trim()
+  const trimmedTravelDate = travelDate.trim()
+  if (!trimmedLeadId || !trimmedTravelDate) {
+    return { ok: false, reason: 'sheets_error', message: 'leadId and travelDate are required' }
+  }
+
+  const readRange = structuredNormalizedAppendRange(sheetTab)
+  let values: string[][] = []
+  try {
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: readRange,
+    })
+    values = (res.data.values as string[][] | undefined) ?? []
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to read normalized sheet'
+    console.error(`${LOG} update travel date read failed: ${message}`)
+    return { ok: false, reason: 'sheets_error', message }
+  }
+
+  if (values.length === 0) {
+    return { ok: false, reason: 'missing_headers' }
+  }
+
+  const headers = values[0] ?? []
+  const leadIdCol = findHeaderColumnIndex(headers, 'LEAD ID')
+  const travelDateCol = findHeaderColumnIndex(headers, 'TRAVEL DATE')
+  if (leadIdCol < 0 || travelDateCol < 0) {
+    console.error(
+      `${LOG} update travel date missing headers leadIdCol=${leadIdCol} travelDateCol=${travelDateCol}`,
+    )
+    return { ok: false, reason: 'missing_headers' }
+  }
+
+  const matchingRowNumbers: number[] = []
+  for (let i = 1; i < values.length; i++) {
+    const cell = String(values[i]?.[leadIdCol] ?? '').trim()
+    if (cell === trimmedLeadId) matchingRowNumbers.push(i + 1) // 1-based sheet row
+  }
+
+  if (matchingRowNumbers.length === 0) {
+    return { ok: false, reason: 'not_found' }
+  }
+  if (matchingRowNumbers.length > 1) {
+    console.error(
+      `${LOG} update travel date duplicate leadId matches=${matchingRowNumbers.length} (leadId redacted)`,
+    )
+    return { ok: false, reason: 'duplicate_lead_id' }
+  }
+
+  const rowNumber = matchingRowNumbers[0]!
+  const cellRange = `${quoteSheetTabForA1(sheetTab)}!${columnLetter(travelDateCol + 1)}${rowNumber}`
+
+  try {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: cellRange,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: { values: [[trimmedTravelDate]] },
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update travel date'
+    console.error(`${LOG} update travel date write failed: ${message}`)
+    return { ok: false, reason: 'sheets_error', message }
+  }
+
+  console.info(
+    `${LOG} updated TRAVEL DATE for lead row=${rowNumber} tab=${JSON.stringify(sheetTab)}`,
+  )
+  return { ok: true, rowNumber }
 }
 
 /** One legacy data row (17 columns) for `values.append`. */

@@ -786,6 +786,31 @@
   color: var(--ecotone-n700);
 }
 
+.mcv-result-continue__error {
+  margin: 0 !important;
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: center;
+  color: #8a2f2f;
+}
+
+.mcv-result-continue__retry {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  color: var(--ecotone-brown);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.mcv-result-continue__retry:hover {
+  color: var(--ecotone-brown-xdk);
+}
+
 /* ── Why / pillars ── */
 
 .mcv-result-why.mcv-section {

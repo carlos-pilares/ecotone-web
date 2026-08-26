@@ -73,6 +73,7 @@ export function ManuVolunteerResult() {
         key={qualification?.travelTiming || 'no-timing'}
         departures={MCV_RESULT_DEPARTURES}
         travelTiming={qualification?.travelTiming}
+        leadId={qualification?.leadId}
         discountPercent={shell.discountPercent}
         voucherCode={shell.voucherCode}
         durationLabel={shell.durationLabel}
