@@ -1,6 +1,8 @@
 'use client'
 
-import { useSyncExternalStore } from 'react'
+import { useEffect, useRef, useSyncExternalStore } from 'react'
+
+import { trackMcvResultView } from '@/lib/trackMcvAnalytics'
 
 import { ManuVolunteerCampaignFooter } from './ManuVolunteerCampaignFooter'
 import { ManuVolunteerResultDepartures } from './ManuVolunteerResultDepartures'
@@ -59,6 +61,16 @@ export function ManuVolunteerResult() {
     getServerQualificationRaw,
   )
   const qualification = parseQualification(raw)
+  const resultViewTrackedRef = useRef(false)
+
+  useEffect(() => {
+    if (resultViewTrackedRef.current) return
+    resultViewTrackedRef.current = true
+    trackMcvResultView({
+      travel_timing: qualification?.travelTiming,
+      group_size: qualification?.groupSize,
+    })
+  }, [qualification?.travelTiming, qualification?.groupSize])
 
   return (
     <div className="mcv-page mcv-result-page">

@@ -2,6 +2,12 @@
 
 import { useRef, useState, type MouseEvent } from 'react'
 
+import {
+  trackMcvFixedDepartureSelect,
+  trackMcvOtherDatesSelect,
+  trackMcvWetravelClick,
+} from '@/lib/trackMcvAnalytics'
+
 import { WonderJourneyCardImage } from '../wonder-beyond-the-wonder/WonderResponsiveImage'
 
 import { ManuVolunteerOtherDatesForm } from './ManuVolunteerOtherDatesForm'
@@ -129,9 +135,15 @@ export function ManuVolunteerResultDepartures({
     setSelectedKey(departure.key)
     setUpdateError('')
     if (departure.kind === 'other') {
-      // Clear fixed sync cache so a later fixed re-select re-persists TRAVEL DATE.
+      trackMcvOtherDatesSelect()
       syncedTravelDateRef.current = ''
       return
+    }
+    if (canPersistFixedTravelDate(departure)) {
+      trackMcvFixedDepartureSelect({
+        departure_key: departure.key,
+        departure_dates: departure.dateRange,
+      })
     }
     if (!canPersistFixedTravelDate(departure)) return
     await syncFixedDepartureTravelDate(departure)
@@ -140,7 +152,10 @@ export function ManuVolunteerResultDepartures({
   async function onBookingClick(event: MouseEvent<HTMLAnchorElement>) {
     if (!selected || !selectedBookingUrl || !canPersistFixedTravelDate(selected)) return
     event.preventDefault()
-    // CTA click is an explicit user action even if the card was only visually preselected.
+    trackMcvWetravelClick({
+      departure_key: selected.key,
+      departure_dates: selected.dateRange,
+    })
     const ok = await syncFixedDepartureTravelDate(selected)
     if (!ok) return
     window.open(selectedBookingUrl, '_blank', 'noopener,noreferrer')

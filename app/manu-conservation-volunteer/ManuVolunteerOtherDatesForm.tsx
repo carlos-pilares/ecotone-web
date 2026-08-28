@@ -1,6 +1,8 @@
 'use client'
 
-import { useId, useState, type FormEvent } from 'react'
+import { useId, useRef, useState, type FormEvent } from 'react'
+
+import { trackMcvOtherDatesSubmit } from '@/lib/trackMcvAnalytics'
 
 export type ManuVolunteerOtherDatesFormProps = {
   leadId?: string
@@ -30,6 +32,7 @@ export function ManuVolunteerOtherDatesForm({ leadId }: ManuVolunteerOtherDatesF
   const [submitError, setSubmitError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [saved, setSaved] = useState(false)
+  const submitTrackedRef = useRef(false)
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -60,6 +63,10 @@ export function ManuVolunteerOtherDatesForm({ leadId }: ManuVolunteerOtherDatesF
         setSubmitError('We couldn’t save your preferred dates. Please try again.')
         setSaved(false)
         return
+      }
+      if (!submitTrackedRef.current) {
+        submitTrackedRef.current = true
+        trackMcvOtherDatesSubmit()
       }
       setSaved(true)
     } catch {

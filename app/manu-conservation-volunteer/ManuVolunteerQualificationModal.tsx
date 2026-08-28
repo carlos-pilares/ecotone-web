@@ -7,7 +7,16 @@ import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import type { ManuConservationVolunteerEnquiryPayload } from '@/lib/enquiryPayload'
 import { formatWonderBeyondPhoneDisplay } from '@/lib/enquiryPayload'
 import { submitEnquiry } from '@/lib/submitEnquiry'
-import { readWbtwCampaignQueryParams } from '@/lib/trackWonderBeyondAnalytics'
+import {
+  classifyMcvValidationErrors,
+  readMcvCampaignQueryParams,
+  trackMcvFormFieldSelect,
+  trackMcvFormStart,
+  trackMcvFormValidationError,
+  trackMcvLeadSuccess,
+  trackMcvSubmitAttempt,
+  trackMcvSubmitError,
+} from '@/lib/trackMcvAnalytics'
 
 import { useManuVolunteerCampaign } from './ManuVolunteerCampaignContext'
 import {
@@ -123,7 +132,7 @@ function buildLeadPayload(
 ): ManuConservationVolunteerEnquiryPayload {
   const phone = sanitizePhoneInput(form.phone).trim()
   const phoneCountryCode = dialCodeForForm(form)
-  const campaign = readWbtwCampaignQueryParams()
+  const campaign = readMcvCampaignQueryParams()
   return {
     kind: 'manu_conservation_volunteer',
     flowType: 'manu_conservation_volunteer',
@@ -285,15 +294,25 @@ function persistQualificationAndGo(
 }
 
 export function ManuVolunteerQualificationModal() {
-  const { isModalOpen, closeModal } = useManuVolunteerCampaign()
+  const { isModalOpen, closeModal, openedFrom, markFormStarted } = useManuVolunteerCampaign()
   if (!isModalOpen) return null
-  return <ManuVolunteerQualificationModalInner closeModal={closeModal} />
+  return (
+    <ManuVolunteerQualificationModalInner
+      closeModal={closeModal}
+      openedFrom={openedFrom}
+      markFormStarted={markFormStarted}
+    />
+  )
 }
 
 function ManuVolunteerQualificationModalInner({
   closeModal,
+  openedFrom,
+  markFormStarted,
 }: {
   closeModal: (method: 'backdrop' | 'close_button' | 'escape') => void
+  openedFrom: ReturnType<typeof useManuVolunteerCampaign>['openedFrom']
+  markFormStarted: () => void
 }) {
   const router = useRouter()
   const titleId = useId()
@@ -306,6 +325,18 @@ function ManuVolunteerQualificationModalInner({
   const [errors, setErrors] = useState<FieldErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  const formStartTrackedRef = useRef(false)
+
+  useEffect(() => {
+    formStartTrackedRef.current = false
+  }, [])
+
+  const noteFormStart = () => {
+    if (formStartTrackedRef.current) return
+    formStartTrackedRef.current = true
+    markFormStarted()
+    trackMcvFormStart({ opened_from: openedFrom })
+  }
 
   useEffect(() => {
     if (!privacyNoticeShownAtRef.current) {
@@ -344,6 +375,7 @@ function ManuVolunteerQualificationModalInner({
   }, [])
 
   const updateField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
+    noteFormStart()
     setForm((prev) => ({ ...prev, [key]: value }))
     setErrors((prev) => {
       if (!prev[key]) return prev
@@ -360,9 +392,21 @@ function ManuVolunteerQualificationModalInner({
 
     const nextErrors = validateForm(form)
     setErrors(nextErrors)
-    if (Object.keys(nextErrors).length > 0) return
+    if (Object.keys(nextErrors).length > 0) {
+      const classified = classifyMcvValidationErrors(nextErrors)
+      if (classified) {
+        trackMcvFormValidationError(classified)
+      }
+      return
+    }
 
     const privacyNoticeShownAt = privacyNoticeShownAtRef.current ?? new Date().toISOString()
+
+    trackMcvSubmitAttempt({
+      travel_timing: form.travelTiming,
+      group_size: form.groupSize,
+      opened_from: openedFrom,
+    })
 
     setIsSubmitting(true)
     setSubmitError('')
@@ -370,11 +414,18 @@ function ManuVolunteerQualificationModalInner({
       const result = await submitEnquiry(buildLeadPayload(form, privacyNoticeShownAt))
       if (!result.ok) {
         setSubmitError(SAVE_ERROR_MESSAGE)
+        trackMcvSubmitError({ error_type: 'api_error' })
         return
       }
+      trackMcvLeadSuccess({
+        travel_timing: form.travelTiming,
+        group_size: form.groupSize,
+        opened_from: openedFrom,
+      })
       persistQualificationAndGo(router, form, result.leadId, closeModal)
     } catch {
       setSubmitError(SAVE_ERROR_MESSAGE)
+      trackMcvSubmitError({ error_type: 'network_error' })
     } finally {
       setIsSubmitting(false)
     }
@@ -551,7 +602,13 @@ function ManuVolunteerQualificationModalInner({
                     className="mcv-field-input"
                     name="travelTiming"
                     value={form.travelTiming}
-                    onChange={(e) => updateField('travelTiming', e.target.value)}
+                    onChange={(e) => {
+                      updateField('travelTiming', e.target.value)
+                      trackMcvFormFieldSelect({
+                        field_name: 'travel_timing',
+                        field_value: e.target.value,
+                      })
+                    }}
                     aria-invalid={Boolean(errors.travelTiming)}
                     disabled={isSubmitting}
                     required
@@ -578,7 +635,13 @@ function ManuVolunteerQualificationModalInner({
                     className="mcv-field-input"
                     name="groupSize"
                     value={form.groupSize}
-                    onChange={(e) => updateField('groupSize', e.target.value)}
+                    onChange={(e) => {
+                      updateField('groupSize', e.target.value)
+                      trackMcvFormFieldSelect({
+                        field_name: 'group_size',
+                        field_value: e.target.value,
+                      })
+                    }}
                     aria-invalid={Boolean(errors.groupSize)}
                     disabled={isSubmitting}
                     required
