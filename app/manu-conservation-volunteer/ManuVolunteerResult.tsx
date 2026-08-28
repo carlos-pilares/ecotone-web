@@ -77,9 +77,8 @@ export function ManuVolunteerResult() {
       <ManuVolunteerResultHero
         discountPercent={shell.discountPercent}
         couponCode={shell.voucherCode}
-        durationLabel={shell.durationLabel}
-        availabilityLabel={shell.availabilityLabel}
-        offerScopeLine={shell.offerScopeLine}
+        originalPrice={shell.originalPrice}
+        promoPrice={shell.promoPrice}
       />
       <ManuVolunteerResultDepartures
         key={qualification?.travelTiming || 'no-timing'}

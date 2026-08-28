@@ -17,11 +17,10 @@ export function ManuVolunteerResultWhy() {
     <section className="mcv-result-why mcv-section mcv-section--warm" aria-labelledby="mcv-result-why-title">
       <div className="mcv-container">
         <header className="mcv-result-why-head">
-          <p className="mcv-section-kicker">Why Ecotone</p>
-          <h2 id="mcv-result-why-title" className="mcv-section-title">
+          <h2 id="mcv-result-why-title" className="mcv-section-title mcv-result-why-title">
             More than a volunteering placement
           </h2>
-          <p className="mcv-section-body mcv-result-why-intro">
+          <p className="mcv-result-why-intro">
             Spend four weeks living close to the conservation work protecting Manu, sharing field
             days, learning from the people behind the research, and experiencing the rainforest as
             part of the team.
@@ -32,7 +31,7 @@ export function ManuVolunteerResultWhy() {
       <div className="mcv-result-why-rail">
         <div className="mcv-container">
           <ManuVolunteerMobileCardRail
-            controlsLabel="Why Ecotone"
+            controlsLabel="Stay, Contribute, and Learn"
             listClassName="mcv-result-why-grid"
             listAriaLabel="Stay, Contribute, and Learn"
             titleClassName="mcv-fieldwork-title mcv-result-why-term"

@@ -5,17 +5,15 @@ import { WonderResponsiveImage } from '../wonder-beyond-the-wonder/WonderRespons
 export type ManuVolunteerResultHeroProps = {
   discountPercent: number
   couponCode: string
-  durationLabel: string
-  availabilityLabel: string
-  offerScopeLine: string
+  originalPrice: string
+  promoPrice: string
 }
 
 export function ManuVolunteerResultHero({
   discountPercent,
   couponCode,
-  durationLabel,
-  availabilityLabel,
-  offerScopeLine,
+  originalPrice,
+  promoPrice,
 }: ManuVolunteerResultHeroProps) {
   return (
     <div className="mcv-result-hero-block">
@@ -34,42 +32,32 @@ export function ManuVolunteerResultHero({
         <div className="mcv-result-hero-shell">
           <div className="mcv-result-hero-content">
             <div className="mcv-result-hero-reward">
-              <p className="mcv-result-hero-eyebrow">
-                Your field offer
-                <span className="mcv-result-hero-eyebrow-mark" aria-hidden />
-              </p>
-              <p
-                className="mcv-result-hero-discount"
-                aria-label={`${discountPercent}% OFF`}
-              >
-                <span className="mcv-result-hero-discount-pct">{discountPercent}%</span>
-                <span className="mcv-result-hero-discount-off">OFF</span>
-              </p>
-              <h1 id="mcv-result-hero-title" className="mcv-result-hero-headline">
-                Your Manu Field Crew place is unlocked.
+              <p className="mcv-result-hero-eyebrow">Your field offer</p>
+
+              <h1 id="mcv-result-hero-title" className="mcv-result-hero-lockup">
+                <span className="mcv-result-hero-lockup__lead">You unlocked</span>
+                <span className="mcv-result-hero-lockup__discount">
+                  <span className="mcv-result-hero-lockup__pct">{discountPercent}%</span>
+                  <span className="mcv-result-hero-lockup__off">OFF</span>
+                </span>
+                <span className="mcv-result-hero-lockup__for">
+                  for your Manu Field Crew experience.
+                </span>
               </h1>
-              <p className="mcv-result-hero-support">{offerScopeLine}</p>
-              <p className="mcv-result-hero-support mcv-result-hero-support--secondary">
-                Choose the field dates that work for you and explore the full programme.
-              </p>
-            </div>
 
-            <div className="mcv-result-hero-details mcv-result-hero-details--desktop">
-              <div className="mcv-result-hero-meta">
-                <div className="mcv-result-hero-meta-item">
-                  <p className="mcv-result-hero-meta-label">Duration</p>
-                  <p className="mcv-result-hero-meta-value">{durationLabel}</p>
-                </div>
-                <div className="mcv-result-hero-meta-item">
-                  <p className="mcv-result-hero-meta-label">Availability</p>
-                  <p className="mcv-result-hero-meta-value">{availabilityLabel}</p>
-                </div>
-              </div>
-
-              <div className="mcv-result-hero-code" aria-label="Your booking code">
-                <p className="mcv-result-hero-code-label">Your booking code</p>
-                <div className="mcv-result-hero-code-row">
-                  <p className="mcv-result-hero-code-value">{couponCode}</p>
+              <div className="mcv-result-hero-facts" aria-label="Offer pricing and code">
+                <p className="mcv-result-hero-facts__price">
+                  <span className="mcv-result-hero-facts__was">{originalPrice}</span>
+                  <span className="mcv-result-hero-facts__arrow" aria-hidden>
+                    →
+                  </span>
+                  <span className="mcv-result-hero-facts__now">{promoPrice}</span>
+                </p>
+                <div className="mcv-result-hero-facts__code-line">
+                  <p className="mcv-result-hero-facts__meta">
+                    {discountPercent}% off · Code{' '}
+                    <span className="mcv-result-hero-accent">{couponCode}</span>
+                  </p>
                   <ManuVolunteerCopyCodeButton
                     code={couponCode}
                     label="Copy"
@@ -77,39 +65,15 @@ export function ManuVolunteerResultHero({
                   />
                 </div>
               </div>
+
+              <p className="mcv-result-hero-support">
+                Choose one of the selected 4-week 2026 departures below and use code{' '}
+                <span className="mcv-result-hero-accent">{couponCode}</span> on WeTravel.
+              </p>
             </div>
           </div>
         </div>
       </section>
-
-      <div className="mcv-result-hero-info-strip" aria-label="Offer details">
-        <div className="mcv-container">
-          <div className="mcv-result-hero-info-inner">
-            <div className="mcv-result-hero-info-meta">
-              <div className="mcv-result-hero-info-item">
-                <p className="mcv-result-hero-info-value">{durationLabel}</p>
-                <p className="mcv-result-hero-info-label">Duration</p>
-              </div>
-              <div className="mcv-result-hero-info-item">
-                <p className="mcv-result-hero-info-value">{availabilityLabel}</p>
-                <p className="mcv-result-hero-info-label">Availability</p>
-              </div>
-            </div>
-
-            <div className="mcv-result-hero-info-code" aria-label="Your booking code">
-              <div className="mcv-result-hero-info-code-row">
-                <p className="mcv-result-hero-info-code-value">{couponCode}</p>
-                <ManuVolunteerCopyCodeButton
-                  code={couponCode}
-                  label="Copy"
-                  className="mcv-result-hero-info-copy"
-                />
-              </div>
-              <p className="mcv-result-hero-info-code-label">Your booking code</p>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }
