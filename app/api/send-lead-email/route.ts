@@ -16,12 +16,38 @@ type SendLeadEmailBody = {
   subject?: unknown
   body?: unknown
   variables?: unknown
+  /** Defaults to `"text"` so existing Make/plain-text callers stay unchanged. */
+  contentType?: unknown
 }
+
+type EmailContentType = 'text' | 'html'
 
 function asNonEmptyString(value: unknown): string | null {
   if (typeof value !== 'string') return null
   const trimmed = value.trim()
   return trimmed ? trimmed : null
+}
+
+function resolveContentType(value: unknown): EmailContentType | null {
+  if (value == null || value === '') return 'text'
+  if (value === 'text' || value === 'html') return value
+  return null
+}
+
+/** Minimal plaintext companion for HTML sends — never send raw HTML as `text`. */
+function htmlToPlainTextFallback(html: string): string {
+  return html
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 function secretsMatch(provided: string | null, expected: string): boolean {
@@ -71,11 +97,15 @@ export async function POST(request: Request) {
   const to = asNonEmptyString(raw.to)
   const subject = asNonEmptyString(raw.subject)
   const body = asNonEmptyString(raw.body)
+  const contentType = resolveContentType(raw.contentType)
 
   if (!leadId) return errorResponse(400, leadId, 'Missing required field: leadId')
   if (!to) return errorResponse(400, leadId, 'Missing required field: to')
   if (!subject) return errorResponse(400, leadId, 'Missing required field: subject')
   if (!body) return errorResponse(400, leadId, 'Missing required field: body')
+  if (!contentType) {
+    return errorResponse(400, leadId, 'Invalid contentType: expected "text" or "html"')
+  }
 
   const mergedSubject = applyTemplateVariables(subject, raw.variables)
   const mergedBody = applyTemplateVariables(body, raw.variables)
@@ -92,12 +122,23 @@ export async function POST(request: Request) {
 
   try {
     const resend = new Resend(apiKey)
-    const sent = await resend.emails.send({
-      from,
-      to: [to],
-      subject: mergedSubject,
-      text: mergedBody,
-    })
+    const payload =
+      contentType === 'html'
+        ? {
+            from,
+            to: [to],
+            subject: mergedSubject,
+            html: mergedBody,
+            text: htmlToPlainTextFallback(mergedBody),
+          }
+        : {
+            from,
+            to: [to],
+            subject: mergedSubject,
+            text: mergedBody,
+          }
+
+    const sent = await resend.emails.send(payload)
 
     if (sent.error) {
       console.error(
@@ -113,7 +154,7 @@ export async function POST(request: Request) {
     }
 
     console.info(
-      `${LOG} sent ok leadId=${leadId} resendMessageId=${resendMessageId} merge=${didMerge ? 'applied' : 'skipped'}`,
+      `${LOG} sent ok leadId=${leadId} resendMessageId=${resendMessageId} contentType=${contentType} merge=${didMerge ? 'applied' : 'skipped'}`,
     )
     return NextResponse.json({
       success: true,
