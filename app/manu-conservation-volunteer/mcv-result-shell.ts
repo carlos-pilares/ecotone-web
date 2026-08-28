@@ -71,9 +71,10 @@ export const MCV_RESULT_DEPARTURES: McvResultDeparture[] = [
     key: 'dep-01',
     kind: 'promotional',
     departureLabel: 'Departure 01',
-    dateRange: '13 September – 10 October 2026',
+    dateRange: '30 Sep – 31 Oct 2026',
     datesConfirmed: true,
-    // bookingUrl: pending — Departure 01 WeTravel URL required
+    bookingUrl:
+      'https://www.wetravel.com/trips/volunteer-program-4-weeks-sep-oct-ecotone-8890177620',
   },
   {
     key: 'dep-02',
@@ -83,14 +84,6 @@ export const MCV_RESULT_DEPARTURES: McvResultDeparture[] = [
     datesConfirmed: true,
     bookingUrl:
       'https://www.wetravel.com/trips/volunteer-program-4-weeks-ecotone-6488939184#overview',
-  },
-  {
-    key: 'dep-03',
-    kind: 'promotional',
-    departureLabel: 'Departure 03',
-    dateRange: 'Dates TBC — December 2026',
-    datesConfirmed: false,
-    // bookingUrl: pending — Departure 03 WeTravel URL required
   },
   {
     key: 'other-dates',
@@ -126,7 +119,7 @@ export const MCV_TIMING_TO_DEPARTURE_KEY: Record<McvTimingKey, string> = {
   'September 2026': 'dep-01',
   'October 2026': 'dep-01',
   'November 2026': 'dep-02',
-  'December 2026': 'dep-03',
+  'December 2026': 'dep-02',
   'Early 2027': 'other-dates',
 }
 
