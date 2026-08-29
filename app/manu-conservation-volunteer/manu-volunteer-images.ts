@@ -255,3 +255,76 @@ export const MCV_ENJOY_COLLAGE: McvCollageImage[] = [
     height: 800,
   },
 ]
+
+const STORY_SIZES = [
+  { name: 'mobile' as const, width: 900 },
+  { name: 'tablet' as const, width: 1400 },
+  { name: 'desktop' as const, width: 2200 },
+]
+
+export type McvVolunteerStory = {
+  name: string
+  quoteHeadline: string
+  quoteBody: string
+  descriptor: string
+  image: JourneyCardImage
+  /** Desktop: text left / image right when true */
+  textFirst: boolean
+}
+
+/**
+ * Volunteer stories — masters in `assets/manu-conservation-volunteer/`
+ * (`Story 1.jpg`, `Story 2.jpg`). Derivatives in `public/manu-conservation-volunteer/story-*`.
+ */
+export const MCV_VOLUNTEER_STORIES: McvVolunteerStory[] = [
+  {
+    name: 'Sofia Holmgren',
+    quoteHeadline: "I've already learned so much.",
+    quoteBody:
+      'The ID and jungle skills workshops have been incredible. My favourite part is the easy access to the rainforest and spotting wildlife on the trails, especially at night.',
+    descriptor: 'Volunteer · Manu Learning Centre · Peru',
+    textFirst: true,
+    image: {
+      basePath: '/manu-conservation-volunteer/story-1',
+      sizes: STORY_SIZES,
+      width: 2200,
+      height: 1467,
+      alt: 'Volunteer at a rainforest waterfall near the Manu Learning Centre',
+      objectPosition: 'center 42%',
+    },
+  },
+  {
+    name: 'Amelia Gaskell',
+    quoteHeadline: 'The connections made this experience unforgettable.',
+    quoteBody:
+      'It was really special to share this with everyone, including the staff. They were amazing and kind. One time we played a soccer match — staff vs students — and that became one of my favourite memories.',
+    descriptor: 'Volunteer · Manu Learning Centre · Peru',
+    textFirst: false,
+    image: {
+      basePath: '/manu-conservation-volunteer/story-2',
+      sizes: STORY_SIZES,
+      width: 2200,
+      height: 1467,
+      alt: 'Volunteers hiking a rainforest trail near the Manu Learning Centre',
+      objectPosition: 'center 48%',
+    },
+  },
+]
+
+export const MCV_TRIPADVISOR_PROFILE_URL =
+  'https://www.tripadvisor.com.pe/Hotel_Review-g318879-d2398419-Reviews-Manu_Learning_Centre-Manu_National_Park_Madre_de_Dios_Region.html'
+
+export const MCV_TRIPADVISOR_EXCERPTS = [
+  {
+    quote: 'The wildlife was unbelievable and we were truly immersed in the rainforest.',
+    author: 'Luke B.',
+  },
+  {
+    quote: 'Visiting the Manu Learning Centre was an exceptionally fulfilling experience.',
+    author: 'Asher C.',
+  },
+  {
+    quote: 'An authentic experience of pristine nature.',
+    author: 'Anne K.',
+  },
+] as const

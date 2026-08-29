@@ -19,6 +19,11 @@ export type SiteFooterViewProps = {
   footerLogoUrl: string | null
   brandIsotipoUrl: string | null
   logoLinkHref: string
+  /**
+   * `campaign` — brand + social + bottom bar only (no Explores / Lodges / Company columns).
+   * Used by Manu Conservation Volunteer landing/result.
+   */
+  variant?: 'default' | 'campaign'
 }
 
 function FooterOptionalLink({ item }: { item: FooterShellLink }) {
@@ -166,18 +171,22 @@ export function SiteFooterView({
   footerLogoUrl,
   brandIsotipoUrl,
   logoLinkHref,
+  variant = 'default',
 }: SiteFooterViewProps) {
   const { brand, columns, bottomBar, socialMedia } = footer
   const baseId = useId()
+  const showNavigation = variant !== 'campaign'
 
   const decDivider = { width: 1, height: 12, background: 'rgba(236,229,213,.15)' } as const
 
-  const linkColumns = columns
-    .map((column, index) => ({ column, index }))
-    .filter(({ column }) => column.links.length > 0)
+  const linkColumns = showNavigation
+    ? columns
+        .map((column, index) => ({ column, index }))
+        .filter(({ column }) => column.links.length > 0)
+    : []
 
   return (
-    <footer className="footer">
+    <footer className={variant === 'campaign' ? 'footer footer--campaign' : 'footer'}>
       {brand.showBrandDeco && (
         <div className="footer-brand-deco" aria-hidden>
           {brandIsotipoUrl ? (
@@ -245,12 +254,16 @@ export function SiteFooterView({
           )}
           <FooterSocialIcons items={socialMedia} />
         </div>
-        <div className="foot-cols-desktop">
-          {linkColumns.map(({ column, index }) => (
-            <FooterLinksColumnDesktop key={`col-${index}`} column={column} colKey={`col-${index}`} />
-          ))}
-        </div>
-        <FooterMobileAccordions linkColumns={linkColumns} baseId={baseId} />
+        {showNavigation ? (
+          <>
+            <div className="foot-cols-desktop">
+              {linkColumns.map(({ column, index }) => (
+                <FooterLinksColumnDesktop key={`col-${index}`} column={column} colKey={`col-${index}`} />
+              ))}
+            </div>
+            <FooterMobileAccordions linkColumns={linkColumns} baseId={baseId} />
+          </>
+        ) : null}
       </div>
       <div className="foot-bottom">
         {bottomBar.leftText ? <p className="foot-copy">{bottomBar.leftText}</p> : null}

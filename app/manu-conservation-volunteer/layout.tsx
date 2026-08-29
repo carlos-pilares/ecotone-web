@@ -3,6 +3,9 @@ import type { ReactNode } from 'react'
 
 import { MetaPixel } from '@/components/MetaPixel'
 
+import { ManuVolunteerCampaignFooter } from './ManuVolunteerCampaignFooter'
+
+import '../site-footer.css'
 import './manu-volunteer.css'
 
 export const metadata: Metadata = {
@@ -16,6 +19,7 @@ export default function ManuConservationVolunteerLayout({ children }: { children
   return (
     <div className="mcv-root">
       {children}
+      <ManuVolunteerCampaignFooter />
       <MetaPixel />
     </div>
   )

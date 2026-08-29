@@ -305,6 +305,10 @@
     gap: clamp(32px, 5vw, 96px);
   }
 
+  .footer--campaign .footer-inner {
+    grid-template-columns: 1fr;
+  }
+
   .foot-cols-mobile {
     display: none;
   }

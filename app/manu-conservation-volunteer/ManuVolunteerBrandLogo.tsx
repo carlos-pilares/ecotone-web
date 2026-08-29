@@ -1,6 +1,7 @@
-const LOGO = '/brand/logo-full-horizontal-ece5d5.svg'
+const LOGO_CREAM = '/brand/logo-full-horizontal-ece5d5.svg'
+const LOGO_GOLD = '/brand/logo-full-horizontal-906730.svg'
 
-/** Intrinsic lockup size of `logo-full-horizontal-ece5d5.svg`. */
+/** Intrinsic lockup size of `logo-full-horizontal-*.svg`. */
 export const MCV_LOGO_INTRINSIC = { width: 184, height: 57 } as const
 
 export type ManuVolunteerBrandLogoProps = {
@@ -10,6 +11,8 @@ export type ManuVolunteerBrandLogoProps = {
   wrapClassName?: string
   /** Decorative when parent already labels the link. */
   decorative?: boolean
+  /** Cream mark for dark/hero surfaces; gold for light campaign chrome. */
+  tone?: 'cream' | 'gold'
 }
 
 /**
@@ -20,7 +23,10 @@ export function ManuVolunteerBrandLogo({
   className = '',
   wrapClassName = '',
   decorative = false,
+  tone = 'cream',
 }: ManuVolunteerBrandLogoProps) {
+  const src = tone === 'gold' ? LOGO_GOLD : LOGO_CREAM
+
   return (
     <a
       href="https://www.ecotone.eco/"
@@ -31,7 +37,7 @@ export function ManuVolunteerBrandLogo({
     >
       <span className={`mcv-logo-wrap ${wrapClassName}`.trim()}>
         <img
-          src={LOGO}
+          src={src}
           alt={decorative ? '' : 'Ecotone'}
           className="mcv-logo-img"
           width={MCV_LOGO_INTRINSIC.width}

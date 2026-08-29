@@ -2,11 +2,19 @@ import { getSiteSettingsShell } from '@/lib/getSiteSettingsShell'
 
 import { SiteFooterView } from '@/components/SiteFooterView'
 
+export type SiteFooterProps = {
+  /**
+   * `campaign` omits Explores / Lodges / Company link columns.
+   * Default keeps the full site footer.
+   */
+  variant?: 'default' | 'campaign'
+}
+
 /**
  * Site-wide footer (same markup on every page).
  * Content from `footerSettings` when present; legacy `siteSettings.footer` only if that document is missing.
  */
-export async function SiteFooter() {
+export async function SiteFooter({ variant = 'default' }: SiteFooterProps = {}) {
   const shell = await getSiteSettingsShell()
   const { footerLogoUrl, brandIsotipoUrl, homePath, footer } = shell
   const rawHome = (homePath || '/').trim()
@@ -22,6 +30,7 @@ export async function SiteFooter() {
       footerLogoUrl={footerLogoUrl}
       brandIsotipoUrl={brandIsotipoUrl}
       logoLinkHref={logoLinkHref}
+      variant={variant}
     />
   )
 }

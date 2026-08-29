@@ -5,8 +5,6 @@ import type { PartnerDoc } from '@/lib/queries'
 
 import { WonderJourneyCardImage } from '../wonder-beyond-the-wonder/WonderResponsiveImage'
 
-import { ManuVolunteerBrandLogo } from './ManuVolunteerBrandLogo'
-import { ManuVolunteerCampaignFooter } from './ManuVolunteerCampaignFooter'
 import { ManuVolunteerCampaignProvider } from './ManuVolunteerCampaignContext'
 import { ManuVolunteerCtaButton } from './ManuVolunteerCtaButton'
 import { ManuVolunteerHeroImage } from './ManuVolunteerHeroImage'
@@ -14,6 +12,8 @@ import { ManuVolunteerMobileCardRail } from './ManuVolunteerMobileCardRail'
 import { ManuVolunteerMobileHScrollRail } from './ManuVolunteerMobileHScrollRail'
 import { ManuVolunteerPhotoCredit } from './ManuVolunteerPhotoCredit'
 import { ManuVolunteerQualificationModal } from './ManuVolunteerQualificationModal'
+import { ManuVolunteerStickyHeader } from './ManuVolunteerStickyHeader'
+import { ManuVolunteerStories } from './ManuVolunteerStories'
 import type { McvCollageImage, McvFieldworkCard, McvStaticImage } from './manu-volunteer-images'
 import {
   MCV_ENJOY_COLLAGE,
@@ -153,22 +153,10 @@ function ManuVolunteerPageInner({ partnersBand }: { partnersBand: ManuVolunteerP
 
   return (
     <main className="mcv-page">
+      <ManuVolunteerStickyHeader />
+
       {/* 01 — Hero */}
       <section className="mcv-hero" aria-labelledby="mcv-hero-title">
-        <header className="mcv-topbar">
-          <div className="mcv-container mcv-topbar-inner">
-            <ManuVolunteerBrandLogo />
-            <ManuVolunteerCtaButton
-              variant="nav"
-              className="mcv-topbar-cta"
-              ctaLocation="header"
-              ariaLabel={CTA_ARIA}
-            >
-              {CTA_VISIBLE}
-            </ManuVolunteerCtaButton>
-          </div>
-        </header>
-
         <div className="mcv-hero-bg" aria-hidden>
           <ManuVolunteerHeroImage />
           <div className="mcv-hero-overlay" />
@@ -325,7 +313,10 @@ function ManuVolunteerPageInner({ partnersBand }: { partnersBand: ManuVolunteerP
         </div>
       </section>
 
-      {/* 05 — Real science. Real impact. */}
+      {/* 05 — Volunteer stories + TripAdvisor */}
+      <ManuVolunteerStories />
+
+      {/* 06 — Real science. Real impact. */}
       <section className="mcv-section mcv-section--parchment mcv-science" aria-labelledby="mcv-science-title">
         <div className="mcv-container mcv-science-shell">
           <div className="mcv-science-copy">
@@ -380,7 +371,7 @@ function ManuVolunteerPageInner({ partnersBand }: { partnersBand: ManuVolunteerP
         </div>
       </section>
 
-      {/* 06 — 2026 opportunity */}
+      {/* 07 — 2026 opportunity */}
       <section className="mcv-section mcv-section--cream mcv-opportunity" aria-labelledby="mcv-opportunity-title">
         <div className="mcv-container">
           <div className="mcv-opportunity-band">
@@ -420,7 +411,7 @@ function ManuVolunteerPageInner({ partnersBand }: { partnersBand: ManuVolunteerP
         </div>
       </section>
 
-      {/* 07 — How it works */}
+      {/* 10 — How it works */}
       <section className="mcv-section mcv-section--warm mcv-how" aria-labelledby="mcv-how-title">
         <div className="mcv-container">
           <h2 id="mcv-how-title" className="mcv-section-title mcv-section-title--center mcv-section-title--large">
@@ -447,7 +438,6 @@ function ManuVolunteerPageInner({ partnersBand }: { partnersBand: ManuVolunteerP
         </div>
       </section>
 
-      <ManuVolunteerCampaignFooter />
       <ManuVolunteerQualificationModal />
     </main>
   )

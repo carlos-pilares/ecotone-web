@@ -1,48 +1,8 @@
-import { ManuVolunteerBrandLogo } from './ManuVolunteerBrandLogo'
+import { SiteFooter } from '@/components/SiteFooter'
 
-const SOCIAL_LINKS = [
-  { label: 'Instagram', href: 'https://www.instagram.com/ecotone.eco/', ariaLabel: 'Ecotone on Instagram' },
-  { label: 'YouTube', href: 'https://www.youtube.com/@Ecotone-Nature', ariaLabel: 'Ecotone on YouTube' },
-  {
-    label: 'LinkedIn',
-    href: 'https://www.linkedin.com/company/ecotone-eco/posts/?feedView=all',
-    ariaLabel: 'Ecotone on LinkedIn',
-  },
-] as const
-
-export function ManuVolunteerCampaignFooter() {
-  return (
-    <footer className="mcv-footer">
-      <div className="mcv-container">
-        <div className="mcv-footer-inner">
-          <div className="mcv-footer-brand">
-            <ManuVolunteerBrandLogo
-              className="mcv-footer-logo-link"
-              wrapClassName="mcv-logo-wrap--footer"
-              decorative
-            />
-            <p className="mcv-footer-tagline">Ecotone — Beyond Travel</p>
-          </div>
-          <nav className="mcv-footer-socials" aria-label="Social media">
-            <ul className="mcv-footer-social-list">
-              {SOCIAL_LINKS.map((item) => (
-                <li key={item.href}>
-                  <a
-                    href={item.href}
-                    className="mcv-footer-social-link"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={item.ariaLabel}
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </div>
-        <p className="mcv-footer-copy">© Ecotone. All rights reserved.</p>
-      </div>
-    </footer>
-  )
+/**
+ * MCV landing/result footer — same Ecotone footer shell, without site nav columns.
+ */
+export async function ManuVolunteerCampaignFooter() {
+  return <SiteFooter variant="campaign" />
 }

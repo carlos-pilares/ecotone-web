@@ -4,7 +4,6 @@ import { useEffect, useRef, useSyncExternalStore } from 'react'
 
 import { trackMcvResultView } from '@/lib/trackMcvAnalytics'
 
-import { ManuVolunteerCampaignFooter } from './ManuVolunteerCampaignFooter'
 import { ManuVolunteerResultDepartures } from './ManuVolunteerResultDepartures'
 import { ManuVolunteerResultHeader } from './ManuVolunteerResultHeader'
 import { ManuVolunteerResultHero } from './ManuVolunteerResultHero'
@@ -101,7 +100,6 @@ export function ManuVolunteerResult() {
       <ManuVolunteerResultWhy />
       <ManuVolunteerResultReady couponCode={shell.voucherCode} />
       <ManuVolunteerResultTerms />
-      <ManuVolunteerCampaignFooter />
     </div>
   )
 }
