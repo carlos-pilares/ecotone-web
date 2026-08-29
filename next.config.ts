@@ -8,6 +8,8 @@ import { legacyRedirects } from './legacyRedirects'
  * - Webpack must resolve `@` to the project root (same as `tsconfig` paths `"@/*": ["./*"]`).
  * - The repo has a `sanity/` CMS folder; pin the `sanity` npm package so it is not shadowed.
  * - `sanity` ships ESM-heavy deps; transpile so webpack can bundle Studio correctly.
+ * - Next 16 `next dev` uses Turbopack; absolute webpack aliases are ignored there, so local
+ *   CMS files must not reuse npm subpaths like `sanity/structure` (see `sanity/deskStructure.js`).
  */
 const nextConfig: NextConfig = {
   /**
@@ -28,6 +30,25 @@ const nextConfig: NextConfig = {
     '@portabletext/markdown',
     'markdown-it',
   ],
+  /**
+   * Next 16 defaults to Turbopack for `next dev`. An empty object is required when a
+   * custom `webpack` config exists; relative aliases pin npm `sanity/*` subpaths.
+   */
+  turbopack: {
+    resolveAlias: {
+      sanity: './node_modules/sanity/lib/index.js',
+      'sanity/_internal': './node_modules/sanity/lib/_internal.js',
+      'sanity/_singletons': './node_modules/sanity/lib/_singletons.js',
+      'sanity/_createContext': './node_modules/sanity/lib/_createContext.js',
+      'sanity/cli': './node_modules/sanity/lib/cli.js',
+      'sanity/desk': './node_modules/sanity/lib/desk.js',
+      'sanity/presentation': './node_modules/sanity/lib/presentation.js',
+      'sanity/router': './node_modules/sanity/lib/router.js',
+      'sanity/structure': './node_modules/sanity/lib/structure.js',
+      'sanity/media-library': './node_modules/sanity/lib/media-library.js',
+      'sanity/migrate': './node_modules/sanity/lib/migrate.js',
+    },
+  },
   /** Permanent legacy URL redirects (HTTP 308). See `legacyRedirects.ts`. */
   async redirects() {
     return legacyRedirects
