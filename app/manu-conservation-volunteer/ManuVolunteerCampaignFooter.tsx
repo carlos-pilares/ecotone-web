@@ -1,4 +1,4 @@
-const LOGO = '/brand/logo-full-horizontal-ece5d5.svg'
+import { ManuVolunteerBrandLogo } from './ManuVolunteerBrandLogo'
 
 const SOCIAL_LINKS = [
   { label: 'Instagram', href: 'https://www.instagram.com/ecotone.eco/', ariaLabel: 'Ecotone on Instagram' },
@@ -16,15 +16,11 @@ export function ManuVolunteerCampaignFooter() {
       <div className="mcv-container">
         <div className="mcv-footer-inner">
           <div className="mcv-footer-brand">
-            <a
-              href="https://www.ecotone.eco/"
+            <ManuVolunteerBrandLogo
               className="mcv-footer-logo-link"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Ecotone home"
-            >
-              <img src={LOGO} alt="" className="mcv-footer-logo" width={184} height={57} decoding="async" />
-            </a>
+              wrapClassName="mcv-logo-wrap--footer"
+              decorative
+            />
             <p className="mcv-footer-tagline">Ecotone — Beyond Travel</p>
           </div>
           <nav className="mcv-footer-socials" aria-label="Social media">

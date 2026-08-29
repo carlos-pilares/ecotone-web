@@ -6,6 +6,7 @@ import { trackMcvResultView } from '@/lib/trackMcvAnalytics'
 
 import { ManuVolunteerCampaignFooter } from './ManuVolunteerCampaignFooter'
 import { ManuVolunteerResultDepartures } from './ManuVolunteerResultDepartures'
+import { ManuVolunteerResultHeader } from './ManuVolunteerResultHeader'
 import { ManuVolunteerResultHero } from './ManuVolunteerResultHero'
 import { ManuVolunteerResultReady } from './ManuVolunteerResultReady'
 import { ManuVolunteerResultTerms } from './ManuVolunteerResultTerms'
@@ -74,6 +75,7 @@ export function ManuVolunteerResult() {
 
   return (
     <div className="mcv-page mcv-result-page">
+      <ManuVolunteerResultHeader />
       <ManuVolunteerResultHero
         discountPercent={shell.discountPercent}
         couponCode={shell.voucherCode}

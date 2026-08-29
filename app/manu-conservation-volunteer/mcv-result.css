@@ -1,7 +1,29 @@
 /* Manu Conservation Volunteer — result page (scoped under .mcv-root) */
 
 .mcv-result-page {
+  position: relative;
   background: var(--ecotone-white);
+}
+
+/* Minimal logo-only header — sits over the result hero */
+.mcv-result-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  height: var(--mcv-topbar-h);
+  pointer-events: none;
+}
+
+.mcv-result-topbar-inner {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.mcv-result-topbar .mcv-logo-link {
+  pointer-events: auto;
 }
 
 .mcv-section-title--on-dark {

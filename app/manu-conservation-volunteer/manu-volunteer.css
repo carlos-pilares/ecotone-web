@@ -188,8 +188,8 @@
 
 .mcv-logo-link {
   display: block;
-  flex: 0 1 auto;
-  min-width: 0;
+  flex: 0 0 auto;
+  line-height: 0;
   border-radius: 4px;
 }
 
@@ -198,10 +198,31 @@
   outline-offset: var(--mcv-focus-offset);
 }
 
-.mcv-logo {
+/**
+ * Safari-safe logo box (mirrors shell nav pattern).
+ * Fixed height + max-width from 184×57 aspect; img uses contain — never cover.
+ */
+.mcv-logo-wrap {
   display: block;
-  width: auto;
   height: clamp(36px, 8vw, 46px);
+  width: auto;
+  max-width: min(calc(184 / 57 * clamp(36px, 8vw, 46px)), 46vw);
+  overflow: hidden;
+  line-height: 0;
+}
+
+.mcv-logo-wrap--footer {
+  height: 44px;
+  max-width: min(calc(184 / 57 * 44px), 85vw);
+}
+
+.mcv-logo-img {
+  display: block;
+  width: auto !important;
+  max-width: 100%;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: left center;
 }
 
 .mcv-topbar-cta {
@@ -911,6 +932,53 @@
   color: var(--mcv-text-on-light);
 }
 
+/* ── Partners & Certifications (homepage PartnersBand reuse) ── */
+
+.mcv-root .mcv-partners-band.partners-band {
+  background: var(--ecotone-white);
+  border-top: 1px solid var(--ecotone-n100);
+  border-bottom: 1px solid var(--ecotone-n100);
+  padding: var(--space-5) var(--page-pad);
+  /* PartnersBand hardcodes `.fade`; MCV has no EcotoneV2Client observer — keep visible. */
+  opacity: 1;
+  transform: none;
+}
+
+.mcv-root .mcv-partners-band .partners-inner {
+  max-width: var(--page-max);
+  margin: 0 auto;
+}
+
+.mcv-root .mcv-partners-band .eyebrow {
+  justify-content: center;
+  color: var(--ecotone-gold);
+  margin-bottom: var(--space-2);
+}
+
+.mcv-root .mcv-partners-band .partners-label {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--mcv-text-muted-on-light);
+  margin-bottom: 22px;
+}
+
+.mcv-root .mcv-partners-band .partners-body {
+  max-width: 700px;
+  margin: 0 auto 18px;
+  text-align: center;
+  color: var(--mcv-text-on-light);
+}
+
+.mcv-root .mcv-partners-band .partners-wall .partner-logo-img,
+.mcv-root .mcv-partners-band .partners-wall .partner-logo-svg-wrap svg {
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain !important;
+}
+
 /* ── Three reasons ── */
 
 .mcv-reasons {
@@ -1442,18 +1510,13 @@
 
 .mcv-footer-logo-link {
   display: inline-block;
+  line-height: 0;
 }
 
 .mcv-footer-logo-link:focus-visible {
   outline: var(--mcv-focus-ring);
   outline-offset: var(--mcv-focus-offset);
   border-radius: 4px;
-}
-
-.mcv-footer-logo {
-  display: block;
-  width: auto;
-  height: 44px;
 }
 
 .mcv-footer-tagline {

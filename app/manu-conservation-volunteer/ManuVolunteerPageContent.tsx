@@ -1,7 +1,11 @@
 'use client'
 
+import { PartnersBand } from '@/components/shared/PartnersBand'
+import type { PartnerDoc } from '@/lib/queries'
+
 import { WonderJourneyCardImage } from '../wonder-beyond-the-wonder/WonderResponsiveImage'
 
+import { ManuVolunteerBrandLogo } from './ManuVolunteerBrandLogo'
 import { ManuVolunteerCampaignFooter } from './ManuVolunteerCampaignFooter'
 import { ManuVolunteerCampaignProvider } from './ManuVolunteerCampaignContext'
 import { ManuVolunteerCtaButton } from './ManuVolunteerCtaButton'
@@ -20,7 +24,13 @@ import {
   MCV_SCIENCE_SUPPORT,
 } from './manu-volunteer-images'
 
-const LOGO = '/brand/logo-full-horizontal-ece5d5.svg'
+export type ManuVolunteerPartnersBandData = {
+  eyebrow?: string | null
+  title?: string | null
+  body?: string | null
+  emptyMessage?: string | null
+  partners: PartnerDoc[]
+}
 
 const REASONS = [
   {
@@ -137,22 +147,17 @@ function ScienceMedia({
   )
 }
 
-function ManuVolunteerPageInner() {
+function ManuVolunteerPageInner({ partnersBand }: { partnersBand: ManuVolunteerPartnersBandData }) {
+  const showPartners =
+    partnersBand.partners.length > 0 || Boolean(partnersBand.emptyMessage?.trim())
+
   return (
     <main className="mcv-page">
       {/* 01 — Hero */}
       <section className="mcv-hero" aria-labelledby="mcv-hero-title">
         <header className="mcv-topbar">
           <div className="mcv-container mcv-topbar-inner">
-            <a
-              href="https://www.ecotone.eco/"
-              className="mcv-logo-link"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Ecotone home"
-            >
-              <img src={LOGO} alt="Ecotone" className="mcv-logo" width={184} height={57} decoding="async" />
-            </a>
+            <ManuVolunteerBrandLogo />
             <ManuVolunteerCtaButton
               variant="nav"
               className="mcv-topbar-cta"
@@ -248,6 +253,17 @@ function ManuVolunteerPageInner() {
           </div>
         </div>
       </section>
+
+      {showPartners ? (
+        <PartnersBand
+          className="mcv-partners-band"
+          eyebrow={partnersBand.eyebrow}
+          title={partnersBand.title}
+          body={partnersBand.body}
+          partners={partnersBand.partners}
+          emptyMessage={partnersBand.emptyMessage}
+        />
+      ) : null}
 
       {/* 03 — Three reasons */}
       <section className="mcv-section mcv-section--dark mcv-reasons" aria-labelledby="mcv-reasons-title">
@@ -437,10 +453,14 @@ function ManuVolunteerPageInner() {
   )
 }
 
-export function ManuVolunteerPageContent() {
+export function ManuVolunteerPageContent({
+  partnersBand,
+}: {
+  partnersBand: ManuVolunteerPartnersBandData
+}) {
   return (
     <ManuVolunteerCampaignProvider>
-      <ManuVolunteerPageInner />
+      <ManuVolunteerPageInner partnersBand={partnersBand} />
     </ManuVolunteerCampaignProvider>
   )
 }
