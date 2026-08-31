@@ -1,0 +1,601 @@
+/* WBTW volunteer result prototype — one programme, three departures.
+   Extends tourism result visual system without modifying tourism styles. */
+
+.wbtw-vol-result {
+  background: var(--cream, #ece5d5);
+}
+
+/* ── Departures section ── */
+
+.wbtw-vol-departures {
+  padding: 24px var(--page-pad) 36px;
+  background: var(--cream, #ece5d5);
+}
+
+@media (min-width: 768px) {
+  .wbtw-vol-departures {
+    padding: 28px var(--page-pad) 44px;
+  }
+}
+
+.wbtw-vol-departures-head {
+  max-width: var(--page-max);
+  margin: 0 auto 20px;
+}
+
+.wbtw-vol-departures-title {
+  margin: 0 0 8px;
+  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--n900, #1a1209);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.wbtw-vol-departures-intro {
+  margin: 0 !important;
+  max-width: 34rem;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--n700, #4a3e30);
+}
+
+.wbtw-vol-departures-layout {
+  max-width: var(--page-max);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+@media (min-width: 900px) {
+  .wbtw-vol-departures-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+}
+
+/* Shared programme visual */
+
+.wbtw-vol-departures-visual {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  min-height: 260px;
+  background: #ede7da;
+}
+
+@media (min-width: 900px) {
+  .wbtw-vol-departures-visual {
+    min-height: 620px;
+  }
+}
+
+.wbtw-vol-departures-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 280px;
+  object-fit: cover;
+  object-position: center 48%;
+}
+
+@media (min-width: 900px) {
+  .wbtw-vol-departures-img {
+    position: absolute;
+    inset: 0;
+    min-height: 0;
+  }
+}
+
+.wbtw-vol-departures-visual-copy {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 32px 20px 20px;
+  background: linear-gradient(180deg, transparent 0%, rgba(12, 8, 4, 0.72) 42%, rgba(12, 8, 4, 0.9) 100%);
+  color: rgba(255, 250, 240, 0.96);
+}
+
+.wbtw-vol-departures-visual-eyebrow {
+  margin: 0 0 4px !important;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #f0d48a;
+}
+
+.wbtw-vol-departures-visual-title {
+  margin: 0 0 10px !important;
+  font-size: clamp(1.15rem, 2.1vw, 1.45rem);
+  font-weight: 700;
+  line-height: 1.2;
+  color: #fffaf0;
+}
+
+.wbtw-vol-departures-visual-support {
+  margin: 0 0 14px !important;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: rgba(236, 229, 213, 0.88);
+  max-width: 28rem;
+}
+
+.wbtw-vol-departures-visual-inclusive {
+  margin: 0 0 6px !important;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #f0d48a;
+}
+
+.wbtw-vol-departures-visual-pillars {
+  margin: 0 0 12px !important;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: rgba(255, 250, 240, 0.88);
+}
+
+.wbtw-vol-departures-visual-note {
+  margin: 0 !important;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: rgba(240, 212, 138, 0.78);
+}
+
+/* Departure choices column */
+
+.wbtw-vol-departures-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.wbtw-vol-departures-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+@media (max-width: 899px) {
+  .wbtw-vol-departures-item--recommended {
+    order: -1;
+  }
+}
+
+/* ── Selectable date cards (compact) ── */
+
+.wbtw-vol-date {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 11px 14px;
+  border: 1px solid #ddd4c4;
+  border-radius: 10px;
+  background: #fdfcf9;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
+}
+
+.wbtw-vol-date:hover {
+  border-color: #c9b896;
+}
+
+.wbtw-vol-date--recommended:not(.wbtw-vol-date--selected) {
+  border-color: #d4c4a0;
+  background:
+    linear-gradient(180deg, rgba(240, 212, 138, 0.06) 0%, transparent 42%),
+    #fdfcf9;
+}
+
+.wbtw-vol-date--selected {
+  border-color: #906730;
+  background:
+    linear-gradient(180deg, rgba(240, 212, 138, 0.16) 0%, rgba(253, 252, 249, 0.98) 48%),
+    #fdfcf9;
+  box-shadow: 0 4px 18px rgba(144, 103, 48, 0.1);
+}
+
+.wbtw-vol-date:focus-visible {
+  outline: 2px solid #906730;
+  outline-offset: 2px;
+}
+
+.wbtw-vol-date__indicator {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  border: 1.5px solid #c9b896;
+  border-radius: 50%;
+  background: #fff;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.wbtw-vol-date--selected .wbtw-vol-date__indicator {
+  border-color: #906730;
+  background: #906730;
+}
+
+.wbtw-vol-date__indicator-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: transparent;
+  transition: background 0.2s;
+}
+
+.wbtw-vol-date--selected .wbtw-vol-date__indicator-dot {
+  background: #fffaf0;
+}
+
+.wbtw-vol-date__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.wbtw-vol-date__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 4px;
+}
+
+.wbtw-vol-date__label {
+  margin: 0 !important;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8a7d6c;
+}
+
+.wbtw-vol-date__badge {
+  flex: 0 0 auto;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b5230;
+  background: rgba(240, 212, 138, 0.4);
+  border: 1px solid rgba(201, 165, 106, 0.35);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.wbtw-vol-date__month {
+  display: block;
+  margin: 0 0 4px;
+  font-size: clamp(1.15rem, 1.8vw, 1.35rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: #1a1209;
+}
+
+.wbtw-vol-date__range {
+  display: block;
+  margin: 0 0 5px !important;
+  font-size: clamp(0.95rem, 1.35vw, 1.05rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  color: #563b12;
+}
+
+.wbtw-vol-date__duration {
+  display: block;
+  margin: 0 0 3px !important;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: #6b5a45;
+}
+
+.wbtw-vol-date__places {
+  display: block;
+  margin: 0 0 2px !important;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a7d6c;
+  line-height: 1.3;
+}
+
+.wbtw-vol-date__reason {
+  display: block;
+  margin: 0 0 2px !important;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: #6b5230;
+}
+
+.wbtw-vol-date__pricing {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 8px 0 0;
+}
+
+.wbtw-vol-date__price-was {
+  margin: 0 !important;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.25;
+  color: #8a7d6c;
+  text-decoration: line-through;
+}
+
+.wbtw-vol-date__price-now {
+  margin: 0 !important;
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: #1a1209;
+}
+
+.wbtw-vol-date__price-context {
+  margin: 1px 0 0 !important;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: #6b5a45;
+}
+
+/* Shared continue CTA */
+
+.wbtw-vol-continue {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 2px;
+}
+
+.wbtw-vol-continue__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 12px 22px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--brown, #906730);
+  color: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.15s;
+}
+
+.wbtw-vol-continue__cta:hover {
+  background: var(--brown-dk, #563b12);
+  transform: translateY(-1px);
+}
+
+.wbtw-vol-continue__cta:focus-visible {
+  outline: 2px solid #906730;
+  outline-offset: 2px;
+}
+
+.wbtw-vol-continue__note {
+  margin: 0 !important;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.45;
+  text-align: center;
+  color: #6b5a45;
+}
+
+/* ── Why Ecotone (volunteer hierarchy) ── */
+
+.wbtw-vol-why {
+  padding-top: 36px;
+  padding-bottom: 40px;
+}
+
+@media (min-width: 768px) {
+  .wbtw-vol-why {
+    padding-top: 44px;
+    padding-bottom: 48px;
+  }
+}
+
+.wbtw-vol-why-head {
+  max-width: 40rem;
+  margin: 0 auto 28px;
+}
+
+.wbtw-vol-why-eyebrow {
+  margin: 0 0 10px !important;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #906730;
+}
+
+.wbtw-vol-why-title {
+  margin: 0 0 12px !important;
+  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: #1a1209;
+}
+
+.wbtw-vol-why-copy {
+  margin: 0 !important;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: #4a3e30;
+}
+
+/* ── Ready to join (volunteer hierarchy) ── */
+
+.wbtw-vol-how {
+  padding-top: 32px;
+  padding-bottom: 16px;
+}
+
+@media (min-width: 768px) {
+  .wbtw-vol-how {
+    padding-top: 40px;
+    padding-bottom: 18px;
+  }
+}
+
+.wbtw-vol-how-head {
+  max-width: 38rem;
+  margin: 0 0 22px;
+}
+
+.wbtw-vol-how-title {
+  margin: 0 0 10px !important;
+  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.15;
+  color: #1a1209;
+}
+
+.wbtw-vol-how-lead {
+  margin: 0 0 8px !important;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #1a1209;
+}
+
+.wbtw-vol-how-intro {
+  margin: 0 !important;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #4a3e30;
+}
+
+/* Light-surface overrides inside WBTW page (ivory body colour elsewhere) */
+
+.wbtw-page .wbtw-vol-result p.wbtw-vol-departures-intro,
+.wbtw-vol-result p.wbtw-vol-departures-intro {
+  color: #4a3e30;
+  opacity: 1;
+}
+
+.wbtw-page .wbtw-vol-result p.wbtw-vol-date__label,
+.wbtw-vol-result p.wbtw-vol-date__label,
+.wbtw-page .wbtw-vol-result .wbtw-vol-date__label,
+.wbtw-vol-result .wbtw-vol-date__label,
+.wbtw-page .wbtw-vol-result .wbtw-vol-date__places,
+.wbtw-vol-result .wbtw-vol-date__places,
+.wbtw-page .wbtw-vol-result .wbtw-vol-date__duration,
+.wbtw-vol-result .wbtw-vol-date__duration,
+.wbtw-page .wbtw-vol-result p.wbtw-vol-date__price-was,
+.wbtw-vol-result p.wbtw-vol-date__price-was,
+.wbtw-page .wbtw-vol-result .wbtw-vol-date__price-was,
+.wbtw-vol-result .wbtw-vol-date__price-was,
+.wbtw-page .wbtw-vol-result p.wbtw-vol-date__price-context,
+.wbtw-vol-result p.wbtw-vol-date__price-context,
+.wbtw-page .wbtw-vol-result .wbtw-vol-date__price-context,
+.wbtw-vol-result .wbtw-vol-date__price-context {
+  color: #8a7d6c;
+  opacity: 1;
+}
+
+.wbtw-page .wbtw-vol-result .wbtw-vol-date__duration,
+.wbtw-vol-result .wbtw-vol-date__duration {
+  color: #6b5a45;
+  opacity: 1;
+}
+
+.wbtw-page .wbtw-vol-result .wbtw-vol-date__range,
+.wbtw-vol-result .wbtw-vol-date__range {
+  color: #563b12;
+  opacity: 1;
+}
+
+.wbtw-page .wbtw-vol-result p.wbtw-vol-date__reason,
+.wbtw-vol-result p.wbtw-vol-date__reason,
+.wbtw-page .wbtw-vol-result .wbtw-vol-date__reason,
+.wbtw-vol-result .wbtw-vol-date__reason {
+  color: #6b5230;
+  opacity: 1;
+}
+
+.wbtw-page .wbtw-vol-result p.wbtw-vol-date__price-now,
+.wbtw-vol-result p.wbtw-vol-date__price-now,
+.wbtw-page .wbtw-vol-result .wbtw-vol-date__price-now,
+.wbtw-vol-result .wbtw-vol-date__price-now {
+  color: #1a1209;
+  opacity: 1;
+}
+
+.wbtw-page .wbtw-vol-result p.wbtw-vol-continue__note,
+.wbtw-vol-result p.wbtw-vol-continue__note {
+  color: #6b5a45;
+  opacity: 1;
+}
+
+.wbtw-page .wbtw-vol-result p.wbtw-vol-why-eyebrow,
+.wbtw-vol-result p.wbtw-vol-why-eyebrow {
+  color: #906730;
+  opacity: 1;
+}
+
+.wbtw-page .wbtw-vol-result p.wbtw-vol-why-copy,
+.wbtw-vol-result p.wbtw-vol-why-copy,
+.wbtw-page .wbtw-vol-result p.wbtw-vol-how-intro,
+.wbtw-vol-result p.wbtw-vol-how-intro {
+  color: #4a3e30;
+  opacity: 1;
+}
+
+.wbtw-page .wbtw-vol-result p.wbtw-vol-how-lead,
+.wbtw-vol-result p.wbtw-vol-how-lead {
+  color: #1a1209;
+  opacity: 1;
+}

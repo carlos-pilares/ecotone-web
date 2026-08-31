@@ -1,0 +1,570 @@
+/* WBTW result — curated journey selection (featured + alternatives). */
+
+.wbtw-journey-curation {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wbtw-journey-curation__featured,
+.wbtw-journey-curation__alternatives {
+  min-width: 0;
+}
+
+.wbtw-journey-curation__featured {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.wbtw-journey-curation__alternatives {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 1024px) {
+  .wbtw-journey-curation {
+    display: grid;
+    grid-template-columns: minmax(0, 11fr) minmax(0, 9fr);
+    gap: 20px;
+    align-items: start;
+  }
+
+  .wbtw-journey-curation__alternatives {
+    gap: 18px;
+  }
+}
+
+/* ── Card shell ── */
+
+.wbtw-journey-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ddd4c4;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fdfcf9;
+  text-decoration: none;
+  color: #1a1209;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.wbtw-journey-card:hover {
+  border-color: #c9b896;
+  box-shadow: 0 8px 32px rgba(26, 18, 9, 0.08);
+}
+
+.wbtw-journey-card--featured {
+  border-color: #cfc4ae;
+  box-shadow: 0 4px 24px rgba(26, 18, 9, 0.06);
+}
+
+/* ── Photography ── */
+
+.wbtw-journey-card__media {
+  position: relative;
+  flex: 0 0 auto;
+  overflow: hidden;
+  background: #ede7da;
+}
+
+.wbtw-journey-card--featured .wbtw-journey-card__media {
+  aspect-ratio: 3 / 2;
+}
+
+.wbtw-journey-card--compact .wbtw-journey-card__media {
+  aspect-ratio: 16 / 9;
+}
+
+.wbtw-journey-card__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 42%;
+  transition: transform 0.55s ease;
+}
+
+.wbtw-journey-card:hover .wbtw-journey-card__img {
+  transform: scale(1.04);
+}
+
+.wbtw-journey-card__badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 1;
+  max-width: calc(100% - 28px);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: rgba(26, 18, 9, 0.72);
+  padding: 6px 12px;
+  border-radius: 4px;
+  backdrop-filter: blur(4px);
+}
+
+/* ── Body ── */
+
+.wbtw-journey-card__body {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  padding: 16px 18px 18px;
+}
+
+.wbtw-journey-card--featured .wbtw-journey-card__body {
+  padding: 18px 20px 20px;
+}
+
+.wbtw-journey-card--compact .wbtw-journey-card__body {
+  padding: 14px 16px 16px;
+}
+
+.wbtw-journey-card__title {
+  margin: 0 0 8px;
+  font-size: 1.12rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #1a1209;
+}
+
+.wbtw-journey-card--featured .wbtw-journey-card__title {
+  font-size: clamp(1.3rem, 2vw, 1.6rem);
+  margin-bottom: 10px;
+}
+
+.wbtw-journey-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 10px;
+}
+
+.wbtw-journey-card__duration {
+  margin: 0 !important;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #906730;
+}
+
+.wbtw-journey-card__best-for {
+  margin: 0 !important;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.35;
+  color: #6b5a45;
+}
+
+.wbtw-journey-card__proposition {
+  margin: 0 0 14px !important;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #4a3e30;
+}
+
+.wbtw-journey-card--compact .wbtw-journey-card__proposition {
+  font-size: 12px;
+  margin-bottom: 12px !important;
+}
+
+/* ── Pricing — promo price is the strong signal ── */
+
+.wbtw-journey-card__pricing {
+  margin-bottom: 10px;
+}
+
+.wbtw-journey-card__price-now {
+  margin: 0 0 4px !important;
+  font-size: 1.55rem;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: #1a1209;
+}
+
+.wbtw-journey-card--featured .wbtw-journey-card__price-now {
+  font-size: clamp(1.65rem, 2.2vw, 1.9rem);
+}
+
+.wbtw-journey-card__price-pp {
+  margin-left: 0.2em;
+  font-size: 0.68em;
+  font-weight: 500;
+  color: #4a3e30;
+}
+
+.wbtw-journey-card__price-quiet {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+}
+
+.wbtw-journey-card__price-was {
+  margin: 0 !important;
+  font-size: 12px;
+  font-weight: 400;
+  color: #8a7d6c;
+  text-decoration: line-through;
+}
+
+.wbtw-journey-card__price-context {
+  margin: 0 !important;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: #6b5a45;
+}
+
+/* ── All-inclusive — tertiary reassurance ── */
+
+.wbtw-journey-card__inclusive-block {
+  margin-bottom: 14px;
+}
+
+.wbtw-journey-card__inclusive {
+  margin: 0 0 2px !important;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #8a7d6c;
+}
+
+.wbtw-journey-card__inclusive-detail {
+  margin: 0 !important;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: #9a8d7c;
+}
+
+/* ── CTA — medium Ecotone button, closes the card ── */
+
+.wbtw-journey-card__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 42px;
+  padding: 10px 20px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--brown, #906730);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition:
+    background 0.2s,
+    transform 0.15s;
+}
+
+.wbtw-journey-card--featured .wbtw-journey-card__cta {
+  min-height: 44px;
+  font-size: 11px;
+}
+
+.wbtw-journey-card:hover .wbtw-journey-card__cta {
+  background: var(--brown-dk, #563b12);
+  transform: translateY(-1px);
+}
+
+.wbtw-journey-card__cta svg {
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.wbtw-journey-card:hover .wbtw-journey-card__cta svg {
+  transform: translateX(3px);
+}
+
+/* ── Journey offer pass (desktop under featured / mobile after all cards) ── */
+
+.wbtw-journey-offer--desktop {
+  display: none;
+}
+
+.wbtw-journey-offer--mobile {
+  display: block;
+  max-width: var(--page-max);
+  margin: 6px auto 0;
+}
+
+.wbtw-journey-offer__pass {
+  --wbtw-pass-bg: rgba(20, 28, 22, 0.88);
+  --wbtw-pass-bg-soft: rgba(28, 40, 32, 0.78);
+  --wbtw-pass-ivory: rgba(255, 250, 240, 0.94);
+  --wbtw-pass-ivory-muted: rgba(236, 229, 213, 0.72);
+  --wbtw-pass-gold: #f0d48a;
+  --wbtw-pass-gold-dk: #e8d5a3;
+  --wbtw-pass-lilac: rgba(209, 163, 221, 0.12);
+
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgba(240, 212, 138, 0.18);
+  background:
+    radial-gradient(ellipse 90% 80% at 88% 8%, var(--wbtw-pass-lilac) 0%, transparent 52%),
+    radial-gradient(ellipse 70% 60% at 12% 92%, rgba(144, 103, 48, 0.1) 0%, transparent 55%),
+    linear-gradient(152deg, var(--wbtw-pass-bg-soft) 0%, var(--wbtw-pass-bg) 55%, rgba(16, 22, 18, 0.9) 100%);
+  backdrop-filter: blur(10px);
+  box-shadow:
+    0 6px 22px rgba(12, 8, 4, 0.12),
+    inset 0 1px 0 rgba(240, 212, 138, 0.06);
+}
+
+.wbtw-journey-offer--mobile .wbtw-journey-offer__pass {
+  padding: 18px 18px 16px;
+}
+
+.wbtw-journey-offer__discount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 0.82;
+  margin-bottom: 16px;
+}
+
+.wbtw-journey-offer__discount--mobile {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.22em;
+  margin-bottom: 10px;
+}
+
+.wbtw-journey-offer__discount-pct {
+  font-weight: 700;
+  font-size: clamp(2.35rem, 4.8vw, 2.85rem);
+  letter-spacing: -0.06em;
+  color: var(--wbtw-pass-gold);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.22);
+}
+
+.wbtw-journey-offer--desktop .wbtw-journey-offer__discount-pct {
+  font-size: clamp(3.25rem, 5.2vw, 4.25rem);
+}
+
+.wbtw-journey-offer__discount-off {
+  font-weight: 700;
+  font-size: clamp(1rem, 2.2vw, 1.35rem);
+  letter-spacing: 0.16em;
+  color: var(--wbtw-pass-ivory);
+}
+
+.wbtw-journey-offer--desktop .wbtw-journey-offer__discount-off {
+  font-size: clamp(1.15rem, 1.7vw, 1.45rem);
+  margin-top: -0.04em;
+}
+
+.wbtw-journey-offer__discount--mobile .wbtw-journey-offer__discount-off {
+  margin-top: 0;
+}
+
+.wbtw-journey-offer__message {
+  margin: 0 0 12px !important;
+  font-size: clamp(1rem, 1.5vw, 1.15rem);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--wbtw-pass-ivory);
+}
+
+.wbtw-journey-offer__message--mobile {
+  margin-bottom: 6px !important;
+  font-size: 0.95rem;
+}
+
+.wbtw-journey-offer__context {
+  margin: 0 !important;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--wbtw-pass-ivory-muted);
+}
+
+.wbtw-journey-offer--mobile .wbtw-journey-offer__context {
+  margin-bottom: 14px !important;
+  font-size: 13px;
+}
+
+.wbtw-journey-offer__layout {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.wbtw-journey-offer__primary {
+  min-width: 0;
+}
+
+.wbtw-journey-offer__divider {
+  display: none;
+}
+
+.wbtw-journey-offer__coupon {
+  min-width: 0;
+}
+
+.wbtw-journey-offer__coupon-label {
+  margin: 0 0 10px !important;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--wbtw-pass-gold-dk);
+}
+
+.wbtw-journey-offer__coupon-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.wbtw-journey-offer__code {
+  font-size: clamp(1.35rem, 2.1vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--wbtw-pass-ivory);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.18);
+}
+
+.wbtw-journey-offer--mobile .wbtw-journey-offer__code {
+  font-size: 1.35rem;
+  letter-spacing: 0.1em;
+}
+
+.wbtw-journey-offer__coupon--mobile {
+  padding-top: 2px;
+  margin-bottom: 10px;
+}
+
+.wbtw-journey-offer__copy {
+  width: auto;
+  min-height: 38px;
+  padding: 0 1.15rem;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  border-color: rgba(240, 212, 138, 0.65);
+  background: rgba(236, 229, 213, 0.95);
+  color: #1a1209;
+}
+
+.wbtw-journey-offer__copy .wbtw-result-copy-icon {
+  color: #563b12;
+}
+
+.wbtw-journey-offer__copy:hover {
+  background: #f0d48a;
+  border-color: #f0d48a;
+  color: #1a1209;
+}
+
+.wbtw-journey-offer__copy:hover .wbtw-result-copy-icon {
+  color: #1a1209;
+}
+
+.wbtw-journey-offer--mobile .wbtw-journey-offer__copy {
+  min-height: 36px;
+  padding: 0 1rem;
+}
+
+.wbtw-journey-offer--mobile .wbtw-journey-offer__coupon-label {
+  margin-bottom: 8px !important;
+}
+
+.wbtw-journey-offer__footer {
+  margin: 0 !important;
+  padding-top: 16px;
+  border-top: 1px solid rgba(240, 212, 138, 0.14);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--wbtw-pass-ivory-muted);
+}
+
+.wbtw-journey-offer__footer--mobile {
+  padding-top: 0;
+  border-top: none;
+  font-size: 12px;
+}
+
+@media (min-width: 1024px) {
+  .wbtw-journey-offer--desktop {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .wbtw-journey-offer--mobile {
+    display: none;
+  }
+
+  .wbtw-journey-offer--desktop .wbtw-journey-offer__pass {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 220px;
+    padding: 28px 32px 24px;
+  }
+
+  .wbtw-journey-offer__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) 1px minmax(0, 0.85fr);
+    gap: 0 32px;
+    align-items: center;
+    flex: 1 1 auto;
+  }
+
+  .wbtw-journey-offer__divider {
+    display: block;
+    align-self: stretch;
+    width: 1px;
+    min-height: 100%;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(240, 212, 138, 0.28) 18%,
+      rgba(209, 163, 221, 0.22) 50%,
+      rgba(240, 212, 138, 0.28) 82%,
+      transparent 100%
+    );
+  }
+
+  .wbtw-journey-offer__primary {
+    padding-right: 8px;
+  }
+
+  .wbtw-journey-offer__coupon {
+    padding-left: 4px;
+  }
+
+  .wbtw-journey-offer__message {
+    max-width: 16rem;
+    margin-bottom: 14px !important;
+    font-size: clamp(1.05rem, 1.35vw, 1.2rem);
+  }
+
+  .wbtw-journey-offer__footer {
+    margin-top: 22px !important;
+    padding-top: 18px;
+  }
+}

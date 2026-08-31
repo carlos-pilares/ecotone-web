@@ -86,9 +86,15 @@ export const legacyRedirects: LegacyRedirect[] = [
     destination: '/lodges/manu-learning-centre',
     permanent: true,
   },
-  { source: '/copy-of-soqtapata-3d-2n', destination: '/', permanent: true },
+  { source: '/copy-of-soqtapata-3d-2n', destination: '/experiences/andean-cloud-forest-3d-2n', permanent: true },
+  {
+    source: '/copy-of-soqtapata-3d-2n-1',
+    destination: '/experiences/andean-cloud-forest-3d-2n',
+    permanent: true,
+  },
 
-  // ── Wix programmes / services ───────────────────────────────────────
+  // ── Wix contact / about ─────────────────────────────────────────────
+  { source: '/contact-4', destination: '/about', permanent: true },
   { source: '/copy-of-programas', destination: '/', permanent: true },
   { source: '/programas', destination: '/routes', permanent: true },
   { source: '/services-4', destination: '/', permanent: true },

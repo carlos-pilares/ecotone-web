@@ -74,7 +74,7 @@ export function ExperiencePriceDisplay({
         <span className="experience-price-display__promo-label">{display.promoLabel}</span>
       ) : null}
       <span className="experience-price-display__price-row">
-        <span className="experience-card__price-from">{display.from} </span>
+        {display.from ? <span className="experience-card__price-from">{display.from} </span> : null}
         <span className="experience-card__price-amount">{display.amount}</span>
         {display.hasDiscount && display.originalAmount ? (
           <span className="experience-price-display__original">{display.originalAmount}</span>

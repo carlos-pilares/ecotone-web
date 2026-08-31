@@ -40,6 +40,20 @@
   transform: scale(1.05);
 }
 
+.experience-card__promo-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: var(--brown);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 100px;
+}
+
 .experience-card__route-pill {
   position: absolute;
   bottom: 10px;

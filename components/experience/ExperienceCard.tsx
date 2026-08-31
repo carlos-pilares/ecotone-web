@@ -6,6 +6,7 @@ import { ExperiencePriceDisplay } from '@/components/experience/ExperiencePriceD
 import type { ExperienceCardData } from '@/lib/experienceCardData'
 import {
   formatExperienceCardPriceDisplayWithPromotions,
+  type ExperienceCardPriceDisplay,
 } from '@/lib/formatExperiencePrice'
 import type { PromotionDoc } from '@/lib/promotionTypes'
 import {
@@ -24,6 +25,10 @@ export type ExperienceCardProps = {
   /** Passed to root element for route tab filtering on `/routes`. */
   dataRoute?: string
   promotions?: PromotionDoc[] | null
+  /** Visual-only price row. When set, skips promotion / price formatting. */
+  priceDisplay?: ExperienceCardPriceDisplay
+  /** Optional media overlay (e.g. a promotional badge). */
+  mediaBadge?: string
   /** GA4 `experience_card_click` source when linking to `/experiences/...`. */
   sourceSection?: ExperienceCardClickSourceSection
 }
@@ -31,21 +36,25 @@ export type ExperienceCardProps = {
 function ExperienceCardPrice({
   card,
   promotions,
+  priceDisplay,
 }: {
   card: ExperienceCardData
   promotions?: PromotionDoc[] | null
+  priceDisplay?: ExperienceCardPriceDisplay
 }) {
-  const display = formatExperienceCardPriceDisplayWithPromotions(
-    {
-      price: card.price,
-      priceLabel: card.priceLabel,
-      experienceId: card.experienceId,
-      routeRefId: card.routeRefId,
-      routeSlug: card.routeSlug,
-      programType: card.programType,
-    },
-    promotions,
-  )
+  const display =
+    priceDisplay ??
+    formatExperienceCardPriceDisplayWithPromotions(
+      {
+        price: card.price,
+        priceLabel: card.priceLabel,
+        experienceId: card.experienceId,
+        routeRefId: card.routeRefId,
+        routeSlug: card.routeSlug,
+        programType: card.programType,
+      },
+      promotions,
+    )
   if (display.kind === 'enquire') {
     return (
       <ExperiencePriceDisplay
@@ -73,6 +82,8 @@ export function ExperienceCard({
   className,
   dataRoute,
   promotions,
+  priceDisplay,
+  mediaBadge,
   sourceSection,
 }: ExperienceCardProps) {
   const cta = (card.ctaLabel?.trim() || 'View').replace(/\s*→\s*$/, '')
@@ -98,14 +109,15 @@ export function ExperienceCard({
     <>
       <div className="experience-card__media">
         <img src={card.imageUrl} alt={card.imageAlt} loading="lazy" width={600} height={400} />
+        {mediaBadge ? <span className="experience-card__promo-badge">{mediaBadge}</span> : null}
         {card.routeLabel ? <span className="experience-card__route-pill">{card.routeLabel}</span> : null}
       </div>
       <div className="experience-card__content">
-        <p className="experience-card__program">{card.programTypeLabel}</p>
+        {card.programTypeLabel ? <p className="experience-card__program">{card.programTypeLabel}</p> : null}
         <h3 className="experience-card__title">{card.title}</h3>
         {card.description ? <p className="experience-card__desc">{card.description}</p> : null}
         <div className="experience-card__foot">
-          <ExperienceCardPrice card={card} promotions={promotions} />
+          <ExperienceCardPrice card={card} promotions={promotions} priceDisplay={priceDisplay} />
           <span className="experience-card__cta">
             {cta} <CardArrow />
           </span>

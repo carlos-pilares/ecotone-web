@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="supported-color-schemes" content="light dark" />
   <title>You unlocked 30% OFF your Manu Field Crew experience</title>
   <!--[if mso]>
   <noscript>
@@ -60,10 +62,22 @@
         box-sizing: border-box !important;
       }
       .stack-pad { padding-left: 0 !important; padding-right: 0 !important; padding-bottom: 12px !important; }
-      .hero-pad { padding: 32px 20px 36px !important; }
       .section-pad { padding-left: 20px !important; padding-right: 20px !important; }
-      .hero-discount { font-size: 64px !important; line-height: 0.92 !important; }
-      .hero-discount-off { font-size: 28px !important; }
+      .hero-img-cell { height: 200px !important; max-height: 200px !important; overflow: hidden !important; }
+      .hero-img { height: 200px !important; max-height: 200px !important; }
+      .hero-overlay-wrap { margin-top: -200px !important; }
+      .hero-overlay-pad { padding: 16px 16px 0 16px !important; }
+      .hero-overlay-badge { padding: 10px 14px 12px 14px !important; }
+      .hero-overlay-eyebrow { font-size: 9px !important; letter-spacing: 0.18em !important; }
+      .hero-overlay-discount { font-size: 52px !important; }
+      .hero-overlay-off { font-size: 24px !important; }
+      .hero-band-col { padding: 18px 6px !important; }
+      .hero-band-price { font-size: 18px !important; }
+      .hero-band-code { font-size: 16px !important; letter-spacing: 0.1em !important; }
+      .hero-band-dates-main { font-size: 11px !important; }
+      .hero-band-dates-sub { font-size: 11px !important; }
+      .hero-band-label { font-size: 9px !important; }
+      .greeting-pad { padding: 20px 20px 24px 20px !important; }
       .dep-card-col { height: auto !important; }
       .dep-card-inner, .dep-card-body-table { height: auto !important; }
       .dep-card-body-cell { height: auto !important; min-height: 0 !important; }
@@ -112,72 +126,77 @@
                       style="display:block;width:140px;max-width:140px;height:auto;border:0;"
                     />
                   </td>
-                  <td align="right" valign="middle" style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.3;color:#ffffff;letter-spacing:0.1em;font-weight:500;">
-                    <span style="color:#ffffff;opacity:0.55;">Manu Field Crew</span>
+                  <td align="right" valign="middle" style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.3;color:#b8b0a8;letter-spacing:0.1em;font-weight:500;">
+                    <span style="color:#b8b0a8;">Manu Field Crew</span>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
 
-          <!-- HERO -->
+          <!-- HERO IMAGE -->
           <tr>
-            <td
-              class="hero-pad"
-              background="https://www.ecotone.eco/manu-conservation-volunteer/hero/desktop.webp"
-              bgcolor="#281608"
-              style="background-color:#281608;background-image:linear-gradient(to bottom, rgba(40,22,8,0.55) 0%, rgba(30,16,4,0.82) 100%), url('https://www.ecotone.eco/manu-conservation-volunteer/hero/desktop.webp');background-size:cover;background-position:center;background-repeat:no-repeat;padding:52px 40px 56px;"
-            >
-              <!--[if gte mso 9]>
-              <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:620px;">
-                <v:fill type="frame" src="https://www.ecotone.eco/manu-conservation-volunteer/hero/desktop.webp" color="#281608" />
-                <v:textbox style="mso-fit-shape-to-text:true" inset="0,0,0,0">
-              <![endif]-->
-              <div>
-                <p style="margin:0 0 18px 0;font-family:Arial,Helvetica,sans-serif;font-size:10px;line-height:1.4;text-transform:uppercase;letter-spacing:0.22em;color:#c8a96e;font-weight:700;">
-                  Your Manu Field Offer
-                </p>
-                <p style="margin:0 0 6px 0;font-family:Arial,Helvetica,sans-serif;font-size:28px;line-height:1.1;color:#ffffff;font-weight:700;">
-                  You unlocked
-                </p>
-                <p style="margin:0;font-family:Arial,Helvetica,sans-serif;line-height:0.9;">
-                  <span class="hero-discount" style="font-size:88px;font-weight:800;color:#ffffff;letter-spacing:-0.02em;">30%</span><span class="hero-discount-off" style="font-size:36px;font-weight:700;color:#ffffff;">&nbsp;OFF</span>
-                </p>
-                <p style="margin:8px 0 28px 0;font-family:Arial,Helvetica,sans-serif;font-size:18px;line-height:1.3;color:#ffffff;font-weight:600;">
-                  your Manu Field Crew experience.
-                </p>
+            <td bgcolor="#281608" style="padding:0;background-color:#281608;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td class="hero-img-cell" height="220" style="padding:0;font-size:0;line-height:0;vertical-align:top;height:220px;max-height:220px;overflow:hidden;">
+                    <img
+                      src="https://www.ecotone.eco/manu-conservation-volunteer/hero/desktop.webp"
+                      alt="Manu rainforest"
+                      width="620"
+                      height="220"
+                      class="hero-img"
+                      style="display:block;width:100%;max-width:620px;height:220px;border:0;"
+                    />
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="hero-overlay-wrap" style="margin-top:-220px;">
+                      <tr>
+                        <td align="left" valign="top" class="hero-overlay-pad" style="padding:20px 20px 0 20px;">
+                          <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td bgcolor="#281608" class="hero-overlay-badge" style="background-color:#281608;padding:12px 16px 14px 16px;border-radius:4px;">
+                                <p class="hero-overlay-eyebrow" style="margin:0 0 8px 0;font-family:Arial,Helvetica,sans-serif;font-size:10px;line-height:1.4;text-transform:uppercase;letter-spacing:0.22em;color:#c8a96e;font-weight:700;">
+                                  Your Manu Field Offer
+                                </p>
+                                <p style="margin:0;font-family:Arial,Helvetica,sans-serif;line-height:0.92;">
+                                  <span class="hero-overlay-discount" style="font-size:64px;font-weight:800;color:#ffffff;letter-spacing:-0.02em;">30%</span><span class="hero-overlay-off" style="font-size:30px;font-weight:700;color:#ffffff;">&nbsp;OFF</span>
+                                </p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-                <p style="margin:0 0 18px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.4;color:#ffffff;">
-                  <span style="color:rgba(255,255,255,0.45);text-decoration:line-through;">US$2,200</span>
-                  <span style="color:rgba(255,255,255,0.4);">&nbsp;→&nbsp;</span>
-                  <span style="font-size:22px;font-weight:700;color:#c8a96e;">US$1,540</span>
-                </p>
-
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px 0;">
-                  <tr>
-                    <td valign="middle" style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.3;color:rgba(255,255,255,0.6);padding-right:10px;">
-                      30% off &nbsp;•&nbsp; Code
-                    </td>
-                    <td valign="middle" style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.2;font-weight:700;color:#c8a96e;letter-spacing:0.14em;background-color:rgba(200,169,110,0.2);border:1.5px solid rgba(200,169,110,0.6);border-radius:6px;padding:8px 18px;">
-                      CREW30
-                    </td>
-                  </tr>
-                </table>
-
-                <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:rgba(255,255,255,0.5);font-weight:400;">
-                  Choose one of the selected 4-week 2026 departures below and use code <strong style="color:#c8a96e;font-weight:600;">CREW30</strong> on WeTravel.
-                </p>
-              </div>
-              <!--[if gte mso 9]>
-                </v:textbox>
-              </v:rect>
-              <![endif]-->
+          <!-- HERO OFFER BAND -->
+          <tr>
+            <td bgcolor="#3B2A1F" style="padding:0;background-color:#3B2A1F;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="hero-offer-band" style="background-color:#3B2A1F;">
+                <tr>
+                  <td width="33%" align="center" valign="middle" class="hero-band-col" style="width:33%;padding:20px 10px;border-right:1px solid #5a4a3a;font-family:Arial,Helvetica,sans-serif;">
+                    <p class="hero-band-price" style="margin:0;font-size:22px;line-height:1.15;font-weight:700;color:#F7F4EE;">US$1,540</p>
+                    <p class="hero-band-label" style="margin:4px 0 0 0;font-size:10px;line-height:1.3;text-transform:uppercase;letter-spacing:0.1em;color:#C59A58;font-weight:600;">Total price</p>
+                  </td>
+                  <td width="34%" align="center" valign="middle" class="hero-band-col" style="width:34%;padding:20px 10px;border-right:1px solid #5a4a3a;font-family:Arial,Helvetica,sans-serif;">
+                    <p class="hero-band-code" style="margin:0;font-size:18px;line-height:1.15;font-weight:700;color:#C59A58;letter-spacing:0.12em;">CREW30</p>
+                    <p class="hero-band-label" style="margin:4px 0 0 0;font-size:10px;line-height:1.3;text-transform:uppercase;letter-spacing:0.1em;color:#F7F4EE;font-weight:600;">Use this code</p>
+                  </td>
+                  <td width="33%" align="center" valign="middle" class="hero-band-col" style="width:33%;padding:20px 10px;font-family:Arial,Helvetica,sans-serif;">
+                    <p class="hero-band-dates-main" style="margin:0;font-size:12px;line-height:1.35;font-weight:700;color:#F7F4EE;">Selected 4-week</p>
+                    <p class="hero-band-dates-sub" style="margin:2px 0 0 0;font-size:12px;line-height:1.35;font-weight:700;color:#F7F4EE;">2026 departures</p>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 
           <!-- GREETING / BODY -->
           <tr>
-            <td class="section-pad" style="background-color:#f0ebe3;padding:36px 36px 24px 36px;">
+            <td class="section-pad greeting-pad" style="background-color:#f0ebe3;padding:24px 36px 24px 36px;">
               <p style="margin:0 0 14px 0;font-family:Georgia,'Times New Roman',serif;font-size:22px;line-height:1.3;color:#2c2118;font-weight:700;">
                 Hi [[firstName]],
               </p>
