@@ -96,7 +96,27 @@ export type AboutPageResolved = {
     sectionId: string
     eyebrow: string
     headline: string
+    intro: string
+    imageUrl: string
+    imageAlt: string
     cards: Array<{ key: string; title: string; description: string }>
+  }
+  crees: {
+    sectionId: string
+    eyebrow: string
+    title: string
+    subtitle: string
+    paragraphs: string[]
+    imageUrl: string
+    imageAlt: string
+    lockupUrl: string
+    lockupAlt: string
+    cta: {
+      label: string
+      href: string
+      openInNewTab: boolean
+      rel?: string
+    } | null
   }
   way: {
     sectionId: string
@@ -112,14 +132,38 @@ export type AboutPageResolved = {
     eyebrow: string
     headline: string
     intro: string
+    initialVisibleCount: number
     members: Array<{
       key: string
       name: string
       role: string
+      affiliation?: string
       bio: string
       imageUrl: string
       imageAlt: string
+      /** Optional LinkedIn profile URL — omit when absent. */
+      linkedinUrl?: string
     }>
+  }
+  bcorp: {
+    sectionId: string
+    eyebrow: string
+    title: string
+    paragraphs: string[]
+    logoMaskUrl: string
+    logoAlt: string
+    primaryCta: {
+      label: string
+      href: string
+      openInNewTab: boolean
+      rel?: string
+    } | null
+    secondaryCta: {
+      label: string
+      href: string
+      openInNewTab: boolean
+      rel?: string
+    } | null
   }
   proof: {
     sectionId: string
@@ -229,11 +273,11 @@ export function resolveAboutPageData(
   }))
   if (Array.isArray(diffCardsCms) && diffCardsCms.length > 0) {
     const mapped = diffCardsCms
-      .map((row) => {
-        const key = row.iconKey?.trim()
+      .map((row, i) => {
         const title = row.title?.trim()
         const description = row.description?.trim() || ''
-        if (!key || !title) return null
+        const key = row.iconKey?.trim() || `principle-${i + 1}`
+        if (!title) return null
         return { key, title, description }
       })
       .filter((x): x is NonNullable<typeof x> => x != null)
@@ -244,7 +288,36 @@ export function resolveAboutPageData(
     sectionId: trimOr(fb.difference.sectionId, c?.diffSectionId),
     eyebrow: trimOr(fb.difference.eyebrow, c?.diffEyebrow),
     headline: trimOr(fb.difference.headline, c?.diffTitle),
+    intro: trimOr(fb.difference.intro, c?.diffIntro),
+    imageUrl: aboutImage(c?.diffImageUrl, fb.difference.imageUrl, SANITY_IMG.SECTION),
+    imageAlt: trimOr(fb.difference.imageAlt, c?.diffImageAlt),
     cards,
+  }
+
+  const creesCtaResolved = resolveSmartLinkOrLegacy(
+    c?.creesCtaSmartLink,
+    { label: c?.creesCtaLabel, href: c?.creesCtaHref, openInNewTab: false },
+    { label: fb.crees.ctaLabel, href: fb.crees.ctaHref, openInNewTab: false },
+  )
+
+  const crees = {
+    sectionId: trimOr(fb.crees.sectionId, c?.creesSectionId),
+    eyebrow: trimOr(fb.crees.eyebrow, c?.creesEyebrow),
+    title: trimOr(fb.crees.title, c?.creesTitle),
+    subtitle: trimOr(fb.crees.subtitle, c?.creesSubtitle),
+    paragraphs: paragraphsFromCms(c?.creesBodyParagraphs, fb.crees.paragraphs),
+    imageUrl: aboutImage(c?.creesImageUrl, fb.crees.imageUrl, SANITY_IMG.SECTION),
+    imageAlt: trimOr(fb.crees.imageAlt, c?.creesImageAlt),
+    lockupUrl: trimOr(fb.crees.lockupUrl, c?.creesLockupUrl),
+    lockupAlt: trimOr(fb.crees.lockupAlt, c?.creesLockupAlt),
+    cta: creesCtaResolved
+      ? {
+          label: creesCtaResolved.label,
+          href: creesCtaResolved.href,
+          openInNewTab: creesCtaResolved.openInNewTab,
+          rel: creesCtaResolved.rel || undefined,
+        }
+      : null,
   }
 
   const way = {
@@ -261,9 +334,11 @@ export function resolveAboutPageData(
     key: string
     name: string
     role: string
+    affiliation?: string
     bio: string
     imageUrl: string
     imageAlt: string
+    linkedinUrl?: string
   }> = fb.people.members.map((m) => ({
     key: m.key,
     name: m.name,
@@ -279,8 +354,10 @@ export function resolveAboutPageData(
         const name = p.name?.trim()
         const role = p.role?.trim()
         const bio = p.bio?.trim() || ''
+        const affiliation = p.affiliation?.trim() || undefined
         const imageUrl = p.imageUrl?.trim()
         const imageAlt = p.imageAlt?.trim()
+        const linkedinUrl = p.linkedinUrl?.trim() || undefined
         if (!name || !role || !imageUrl || !imageAlt) return null
         return {
           key: `person-${i}`,
@@ -289,18 +366,64 @@ export function resolveAboutPageData(
           bio,
           imageUrl: optimizeSanityImageDelivery(imageUrl, SANITY_IMG.ABOUT_PORTRAIT),
           imageAlt,
+          ...(affiliation ? { affiliation } : {}),
+          ...(linkedinUrl ? { linkedinUrl } : {}),
         }
       })
       .filter((x): x is NonNullable<typeof x> => x != null)
     if (mapped.length > 0) members = mapped
   }
 
+  const initialFromCms =
+    typeof c?.peopleInitialVisibleCount === 'number' &&
+    Number.isFinite(c.peopleInitialVisibleCount) &&
+    c.peopleInitialVisibleCount > 0
+      ? Math.floor(c.peopleInitialVisibleCount)
+      : null
+
   const people = {
     sectionId: trimOr(fb.people.sectionId, c?.peopleSectionId),
     eyebrow: trimOr(fb.people.eyebrow, c?.peopleEyebrow),
     headline: trimOr(fb.people.headline, c?.peopleTitle),
     intro: trimOr(fb.people.intro, c?.peopleBody),
+    initialVisibleCount: initialFromCms ?? fb.people.initialVisibleCount,
     members,
+  }
+
+  const bcorpPrimaryResolved = resolveSmartLinkOrLegacy(
+    c?.bcorpPrimarySmartLink,
+    { label: c?.bcorpPrimaryCtaLabel, href: c?.bcorpPrimaryCtaHref, openInNewTab: true },
+    { label: fb.bcorp.primaryCtaLabel, href: fb.bcorp.primaryCtaHref, openInNewTab: false },
+  )
+  const bcorpSecondaryResolved = resolveSmartLinkOrLegacy(
+    c?.bcorpSecondarySmartLink,
+    { label: c?.bcorpSecondaryCtaLabel, href: c?.bcorpSecondaryCtaHref, openInNewTab: true },
+    { label: fb.bcorp.secondaryCtaLabel, href: fb.bcorp.secondaryCtaHref, openInNewTab: false },
+  )
+
+  const bcorp = {
+    sectionId: trimOr(fb.bcorp.sectionId, c?.bcorpSectionId),
+    eyebrow: trimOr(fb.bcorp.eyebrow, c?.bcorpEyebrow),
+    title: trimOr(fb.bcorp.title, c?.bcorpTitle),
+    paragraphs: paragraphsFromCms(c?.bcorpBodyParagraphs, fb.bcorp.paragraphs),
+    logoMaskUrl: trimOr(fb.bcorp.logoMaskUrl, c?.bcorpLogoUrl),
+    logoAlt: trimOr(fb.bcorp.logoAlt, c?.bcorpLogoAlt),
+    primaryCta: bcorpPrimaryResolved
+      ? {
+          label: bcorpPrimaryResolved.label,
+          href: bcorpPrimaryResolved.href,
+          openInNewTab: bcorpPrimaryResolved.openInNewTab,
+          rel: bcorpPrimaryResolved.rel || undefined,
+        }
+      : null,
+    secondaryCta: bcorpSecondaryResolved
+      ? {
+          label: bcorpSecondaryResolved.label,
+          href: bcorpSecondaryResolved.href,
+          openInNewTab: bcorpSecondaryResolved.openInNewTab,
+          rel: bcorpSecondaryResolved.rel || undefined,
+        }
+      : null,
   }
 
   let stats: Array<{ number: string; label: string; description: string }> = fb.proof.stats.map((s) => ({
@@ -470,9 +593,11 @@ export function resolveAboutPageData(
     hero,
     who,
     why,
+    crees,
     difference,
     way,
     people,
+    bcorp,
     proof,
     finalCta,
     partnersBand,

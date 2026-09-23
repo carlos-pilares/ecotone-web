@@ -41,8 +41,9 @@ export const aboutPageDiffCard = defineType({
   fields: [
     defineField({
       name: 'iconKey',
-      title: 'Icon',
+      title: 'Icon key (legacy)',
       type: 'string',
+      description: 'Legacy field — not used by current About page design.',
       options: {
         list: [
           {title: 'Immersive (home)', value: 'immersive'},
@@ -52,14 +53,13 @@ export const aboutPageDiffCard = defineType({
         ],
         layout: 'dropdown',
       },
-      validation: (Rule) => Rule.required(),
     }),
     defineField({name: 'title', title: 'Title', type: 'string', validation: (Rule) => Rule.required()}),
     defineField({name: 'description', title: 'Description', type: 'text', rows: 4}),
   ],
   preview: {
     select: {title: 'title', iconKey: 'iconKey'},
-    prepare: ({title, iconKey}) => ({title: title || 'Card', subtitle: iconKey}),
+    prepare: ({title, iconKey}) => ({title: title || 'Card', subtitle: iconKey || 'Principle'}),
   },
 })
 
@@ -78,7 +78,18 @@ export const aboutPagePerson = defineType({
     defineField({name: 'imageAlt', title: 'Image alt', type: 'string', validation: (Rule) => Rule.required()}),
     defineField({name: 'name', title: 'Name', type: 'string', validation: (Rule) => Rule.required()}),
     defineField({name: 'role', title: 'Role', type: 'string', validation: (Rule) => Rule.required()}),
+    defineField({
+      name: 'affiliation',
+      title: 'Affiliation / organization (optional)',
+      type: 'string',
+    }),
     defineField({name: 'bio', title: 'Bio', type: 'text', rows: 3}),
+    defineField({
+      name: 'linkedinUrl',
+      title: 'LinkedIn URL (optional)',
+      type: 'url',
+      description: 'When set, a subtle LinkedIn link appears on the person card.',
+    }),
   ],
   preview: {
     select: {name: 'name', role: 'role'},

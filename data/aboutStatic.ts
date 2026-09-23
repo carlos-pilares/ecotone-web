@@ -51,7 +51,11 @@ export const aboutStatic = {
   difference: {
     sectionId: 'different',
     eyebrow: 'What makes us different',
-    headline: 'Four things that shape every journey we create.',
+    headline: 'Four principles behind every Ecotone journey.',
+    intro:
+      'More than places, our journeys are built on people, purpose and a deep respect for the natural world. These four principles guide everything we do.',
+    imageUrl: '/wonder-beyond-the-wonder/editorial/desktop.webp',
+    imageAlt: 'Andes–Amazon landscape — Ecotone journey',
     cards: [
       {
         key: 'immersive',
@@ -61,7 +65,7 @@ export const aboutStatic = {
       },
       {
         key: 'guides',
-        title: 'Guided by field knowledge',
+        title: 'Led by local knowledge',
         description:
           'Travellers are accompanied by people who know the landscape deeply: naturalist guides, field teams, hosts, and conservation practitioners who live here year-round.',
       },
@@ -78,6 +82,40 @@ export const aboutStatic = {
           'We work with families, universities, companies, specialist groups, and independent travellers looking for more than a standard tour. No two programs are identical.',
       },
     ],
+  },
+  crees: {
+    sectionId: 'ecotone-crees',
+    eyebrow: 'A stronger future together',
+    title: 'Ecotone + CREES',
+    subtitle: 'One team. A bigger impact.',
+    paragraphs: [
+      "CREES Manu and Ecotone have joined forces. Building on CREES' decades of conservation, research and field-learning experience in Manu, this new chapter brings our work together under one shared platform for greater impact.",
+      'For years, CREES Manu has helped connect people with conservation in one of the most biodiverse places on Earth. Together with Ecotone, that experience now becomes part of a wider platform for conservation-led learning, science and regenerative travel.',
+    ],
+    imageUrl: '/crees-manu/hero/desktop.webp',
+    imageAlt: 'Manu landscape — CREES Manu and Ecotone',
+    lockupUrl: '/brand/ecotone-crees-lockup.svg',
+    lockupAlt: 'Ecotone and CREES Manu',
+    ctaLabel: 'Our story of integration →',
+    ctaHref: '/crees-manu',
+  },
+  bcorp: {
+    sectionId: 'bcorp',
+    eyebrow: 'A business for a better tomorrow',
+    title: 'B Corp certified',
+    paragraphs: [
+      'For Ecotone, B Corp is not a badge added after the fact. It is a reflection of how we were built. Before Ecotone, our founders were already leading Soqtapata — a conservation company rooted in protecting biodiversity and supporting local development. In 2020, Soqtapata became a certified B Corp as a natural expression of that purpose.',
+      'When Ecotone was created, following the same path was a natural step. B Corp does not define our values; it helps formalise and reinforce them. It confirms our long-standing commitment to conservation, responsible enterprise, and the people who care for extraordinary places.',
+      'In that sense, B Corp is not about claiming we are good. It is about holding ourselves to a standard that matches the reason Ecotone exists in the first place.',
+    ],
+    logoMaskUrl: '/brand/b-corp-logo-black-rgb.svg',
+    logoAlt: 'Certified B Corporation',
+    primaryCtaLabel: 'Ecotone on B Corp',
+    /** PLACEHOLDER until official Ecotone B Corp directory URL is configured in Studio. */
+    primaryCtaHref: '#bcorp-ecotone-directory-placeholder',
+    secondaryCtaLabel: 'Learn more about B Corp',
+    /** PLACEHOLDER until general B Corp explainer URL is configured in Studio. */
+    secondaryCtaHref: '#bcorp-learn-more-placeholder',
   },
   way: {
     sectionId: 'way',
@@ -97,6 +135,7 @@ export const aboutStatic = {
     headline: 'Real people, real field experience.',
     intro:
       "The people you'll meet aren't tour operators. They are field researchers, naturalist guides, and conservationists who live and work in these landscapes year-round.",
+    initialVisibleCount: 4,
     members: [
       {
         key: 'carlos',

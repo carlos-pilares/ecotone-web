@@ -2,60 +2,48 @@ import type { AboutPageResolved } from '@/lib/resolveAboutPageData'
 
 type DiffData = AboutPageResolved['difference']
 
-const sw = 1.8
+const MANIFESTO_INTRO_FALLBACK =
+  'More than places, our journeys are built on people, purpose and a deep respect for the natural world. These four principles guide everything we do.'
 
-function DiffIcon({ kind }: { kind: string }) {
-  if (kind === 'immersive') {
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" strokeWidth={sw} />
-        <polyline points="9 22 9 12 15 12 15 22" stroke="currentColor" strokeWidth={sw} />
-      </svg>
-    )
-  }
-  if (kind === 'guides') {
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <circle cx="12" cy="8" r="5" stroke="currentColor" strokeWidth={sw} />
-        <path d="M8 13c-3 1-5 4-5 7h18c0-3-2-6-5-7" stroke="currentColor" strokeWidth={sw} />
-      </svg>
-    )
-  }
-  if (kind === 'conservation') {
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth={sw} />
-      </svg>
-    )
-  }
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth={sw} />
-      <path
-        d="M12 2v3m0 14v3M4.22 4.22l2.12 2.12m11.32 11.32 2.12 2.12M2 12h3m14 0h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"
-        stroke="currentColor"
-        strokeWidth={sw}
-      />
-    </svg>
-  )
-}
-
+/**
+ * What makes us different — editorial manifesto (approved production treatment).
+ * Icon card layout retained only via unused `default` path for reference; production uses manifesto.
+ */
 export function AboutDifference({ data }: { data: DiffData }) {
+  const intro = data.intro?.trim() || MANIFESTO_INTRO_FALLBACK
+  const imageUrl = data.imageUrl
+  const imageAlt = data.imageAlt
+
   return (
     <section className="content-section bg-warm fade" id={data.sectionId}>
       <div className="content-inner">
-        <div className="eyebrow">{data.eyebrow}</div>
-        <h2 className="h2 about-diff-h2">{data.headline}</h2>
-        <div className="diff-grid">
-          {data.cards.map((c) => (
-            <div key={c.key} className="diff-card">
-              <div className="diff-icon">
-                <DiffIcon kind={c.key} />
-              </div>
-              <div className="diff-title">{c.title}</div>
-              <p className="diff-desc">{c.description}</p>
+        <div className="diff-manifesto">
+          <div className="diff-manifesto-lead">
+            <div className="eyebrow">{data.eyebrow}</div>
+            <h2 className="h2 diff-manifesto-title">{data.headline}</h2>
+            <p className="body diff-manifesto-intro">{intro}</p>
+            <div className="diff-manifesto-media">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={imageUrl}
+                alt={imageAlt}
+                loading="lazy"
+                decoding="async"
+              />
             </div>
-          ))}
+          </div>
+          <div className="diff-manifesto-principles">
+            {data.cards.map((c, i) => (
+              <article key={c.key} className="diff-panel">
+                <p className="diff-panel-num" aria-hidden="true">
+                  {String(i + 1).padStart(2, '0')}
+                </p>
+                <span className="diff-panel-rule" aria-hidden="true" />
+                <h3 className="diff-panel-title">{c.title}</h3>
+                <p className="diff-panel-body">{c.description}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </div>
     </section>

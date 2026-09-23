@@ -39,9 +39,24 @@ export type AboutPageSanityDoc = {
   whyEyebrow?: string | null
   whyTitle?: string | null
   whyBody?: string | null
+  creesSectionId?: string | null
+  creesEyebrow?: string | null
+  creesTitle?: string | null
+  creesSubtitle?: string | null
+  creesBodyParagraphs?: Array<{ text?: string | null }> | null
+  creesImageUrl?: string | null
+  creesImageAlt?: string | null
+  creesLockupUrl?: string | null
+  creesLockupAlt?: string | null
+  creesCtaLabel?: string | null
+  creesCtaHref?: string | null
+  creesCtaSmartLink?: SmartLinkGroq | null
   diffSectionId?: string | null
   diffEyebrow?: string | null
   diffTitle?: string | null
+  diffIntro?: string | null
+  diffImageUrl?: string | null
+  diffImageAlt?: string | null
   diffCards?: Array<{
     iconKey?: string | null
     title?: string | null
@@ -58,13 +73,28 @@ export type AboutPageSanityDoc = {
   peopleEyebrow?: string | null
   peopleTitle?: string | null
   peopleBody?: string | null
+  peopleInitialVisibleCount?: number | null
   peopleCards?: Array<{
     imageUrl?: string | null
     imageAlt?: string | null
     name?: string | null
     role?: string | null
+    affiliation?: string | null
     bio?: string | null
+    linkedinUrl?: string | null
   }> | null
+  bcorpSectionId?: string | null
+  bcorpEyebrow?: string | null
+  bcorpTitle?: string | null
+  bcorpBodyParagraphs?: Array<{ text?: string | null }> | null
+  bcorpLogoUrl?: string | null
+  bcorpLogoAlt?: string | null
+  bcorpPrimaryCtaLabel?: string | null
+  bcorpPrimaryCtaHref?: string | null
+  bcorpSecondaryCtaLabel?: string | null
+  bcorpSecondaryCtaHref?: string | null
+  bcorpPrimarySmartLink?: SmartLinkGroq | null
+  bcorpSecondarySmartLink?: SmartLinkGroq | null
   proofSectionId?: string | null
   proofEyebrow?: string | null
   proofTitle?: string | null
@@ -134,9 +164,24 @@ export const aboutPageQuery = groq`
     whyEyebrow,
     whyTitle,
     whyBody,
+    creesSectionId,
+    creesEyebrow,
+    creesTitle,
+    creesSubtitle,
+    creesBodyParagraphs[]{ text },
+    "creesImageUrl": creesImage.asset->url,
+    creesImageAlt,
+    "creesLockupUrl": creesLockup.asset->url,
+    creesLockupAlt,
+    creesCtaLabel,
+    creesCtaHref,
+    creesCtaSmartLink { ${GROQ_SMART_LINK_FIELDS} },
     diffSectionId,
     diffEyebrow,
     diffTitle,
+    diffIntro,
+    "diffImageUrl": diffImage.asset->url,
+    diffImageAlt,
     diffCards[]{ iconKey, title, description },
     waySectionId,
     "wayImageUrl": wayImage.asset->url,
@@ -149,13 +194,28 @@ export const aboutPageQuery = groq`
     peopleEyebrow,
     peopleTitle,
     peopleBody,
+    peopleInitialVisibleCount,
     peopleCards[]{
       "imageUrl": image.asset->url,
       imageAlt,
       name,
       role,
-      bio
+      affiliation,
+      bio,
+      linkedinUrl
     },
+    bcorpSectionId,
+    bcorpEyebrow,
+    bcorpTitle,
+    bcorpBodyParagraphs[]{ text },
+    "bcorpLogoUrl": bcorpLogo.asset->url,
+    bcorpLogoAlt,
+    bcorpPrimaryCtaLabel,
+    bcorpPrimaryCtaHref,
+    bcorpSecondaryCtaLabel,
+    bcorpSecondaryCtaHref,
+    bcorpPrimarySmartLink { ${GROQ_SMART_LINK_FIELDS} },
+    bcorpSecondarySmartLink { ${GROQ_SMART_LINK_FIELDS} },
     proofSectionId,
     proofEyebrow,
     proofTitle,
@@ -199,6 +259,8 @@ export const aboutPageDiagnosticsQuery = groq`
     "heroImage": defined(heroImage),
     "whoImage": defined(whoImage),
     "wayImage": defined(wayImage),
+    "creesImage": defined(creesImage),
+    "bcorpLogo": defined(bcorpLogo),
     "whoBodyCount": count(whoBodyParagraphs),
     "whoPillsCount": count(whoPills),
     "diffCardsCount": count(diffCards),

@@ -1,4 +1,7 @@
 import type { Metadata } from 'next'
+
+import { AboutBcorp } from '@/components/about/AboutBcorp'
+import { AboutCrees } from '@/components/about/AboutCrees'
 import { AboutDifference } from '@/components/about/AboutDifference'
 import { AboutFinalCta } from '@/components/about/AboutFinalCta'
 import { AboutHero } from '@/components/about/AboutHero'
@@ -34,6 +37,10 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
+/**
+ * Production About — approved enhanced structure.
+ * Order: Hero → Who → Why → CREES → Principles → Way → People → B Corp → Proof → Partners → Final CTA
+ */
 export default async function AboutPage() {
   const p = await getAboutPage()
   const sec = p.sectionVisibility
@@ -46,9 +53,13 @@ export default async function AboutPage() {
         {sec.hero ? <AboutHero data={p.hero} /> : null}
         {sec.who ? <AboutWho data={p.who} /> : null}
         {sec.why ? <AboutWhy data={p.why} /> : null}
+        {sec.creesIntegration ? <AboutCrees data={p.crees} /> : null}
         {sec.different ? <AboutDifference data={p.difference} /> : null}
         {sec.way ? <AboutWay data={p.way} /> : null}
-        {sec.people ? <AboutPeople data={p.people} /> : null}
+        {sec.people ? (
+          <AboutPeople data={p.people} initialVisible={p.people.initialVisibleCount} />
+        ) : null}
+        {sec.bcorp ? <AboutBcorp data={p.bcorp} /> : null}
         {sec.proof ? <AboutProof data={p.proof} /> : null}
         {sec.partners &&
         (p.partnersBand.partners.length > 0 || p.partnersBand.emptyMessage?.trim()) ? (

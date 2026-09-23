@@ -98,6 +98,8 @@ function pagePathFor(
     case 'about':
     case 'aboutPage':
       return '/about'
+    case 'creesManu':
+      return '/crees-manu'
     case 'journal':
       return '/journal'
     case 'privacyPolicy':

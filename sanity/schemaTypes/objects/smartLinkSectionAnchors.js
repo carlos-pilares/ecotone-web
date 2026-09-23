@@ -5,9 +5,11 @@
 const ABOUT_PAGE_SECTIONS = [
   {title: 'Who we are', value: 'who'},
   {title: 'Why we exist', value: 'why'},
+  {title: 'Ecotone + CREES', value: 'ecotone-crees'},
   {title: 'What makes us different', value: 'different'},
   {title: 'Our way', value: 'way'},
   {title: 'People', value: 'people'},
+  {title: 'B Corp', value: 'bcorp'},
   {title: 'Proof / platform', value: 'proof'},
   {title: 'Final CTA', value: 'contact'},
 ]

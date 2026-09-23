@@ -196,6 +196,115 @@
   line-height: 1.7;
 }
 
+/* Principles manifesto — split editorial (enhanced preview only) */
+.diff-manifesto {
+  display: grid;
+  grid-template-columns: minmax(0, 0.4fr) minmax(0, 0.6fr);
+  gap: clamp(28px, 4vw, 48px);
+  align-items: start;
+}
+.diff-manifesto-lead {
+  min-width: 0;
+}
+.diff-manifesto-title {
+  max-width: none;
+  width: 100%;
+  margin-bottom: 14px;
+}
+.diff-manifesto-intro {
+  margin: 0 0 22px;
+  width: 100%;
+  max-width: none;
+}
+.diff-manifesto-media {
+  border-radius: var(--rl);
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  max-height: 260px;
+  background: var(--n200);
+}
+.diff-manifesto-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+.diff-manifesto-principles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  min-width: 0;
+}
+.diff-panel {
+  padding: 26px 24px 24px;
+  background: var(--w);
+  border: 0.5px solid var(--n200);
+  border-radius: var(--rl);
+  min-width: 0;
+  transition: border-color 0.2s ease;
+}
+.diff-panel:hover {
+  border-color: var(--b200);
+}
+.diff-panel-num {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: var(--brown);
+}
+.diff-panel-rule {
+  display: block;
+  width: 28px;
+  height: 1px;
+  margin: 12px 0 14px;
+  background: var(--b200);
+}
+.diff-panel-title {
+  margin: 0 0 10px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--n900);
+}
+.diff-panel-body {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--n700);
+  line-height: 1.75;
+  width: 100%;
+  max-width: none;
+}
+
+@media (max-width: 900px) {
+  .diff-manifesto {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .diff-manifesto-media {
+    aspect-ratio: 16 / 10;
+    max-height: 280px;
+  }
+}
+
+@media (max-width: 560px) {
+  .diff-manifesto-principles {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .diff-panel {
+    padding: 22px 20px 20px;
+  }
+  .diff-panel-num {
+    font-size: 20px;
+  }
+}
+
 /* ═══ 05 Way ═══ */
 .way-grid {
   display: grid;
@@ -258,6 +367,8 @@
   border-radius: var(--rl);
   overflow: hidden;
   background: var(--w);
+  display: flex;
+  flex-direction: column;
   transition:
     border-color 0.18s,
     box-shadow 0.2s;
@@ -280,6 +391,10 @@
 }
 .person-body {
   padding: 14px 15px 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 .person-name {
   font-size: 15px;
@@ -296,11 +411,274 @@
   text-transform: uppercase;
   margin-bottom: 9px;
 }
+.person-affiliation {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--n700);
+  margin: -5px 0 9px;
+  line-height: 1.4;
+}
 .person-bio {
   font-size: 13px;
   font-weight: 300;
   color: var(--n700);
   line-height: 1.65;
+  width: 100%;
+  max-width: none;
+  flex: 1;
+}
+
+.people-intro {
+  margin-bottom: 28px;
+  width: 100%;
+  max-width: none;
+}
+
+.person-linkedin-slot {
+  min-height: 1.4em;
+  margin-top: 12px;
+}
+
+.person-linkedin {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--brown-dk);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition:
+    color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.person-linkedin:hover {
+  color: var(--brown);
+  border-bottom-color: rgba(144, 103, 48, 0.35);
+}
+
+.person-linkedin-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.people-expand {
+  margin-top: 28px;
+  display: flex;
+  justify-content: center;
+}
+
+.people-expand-btn {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--b200);
+  border-radius: 100px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--brown-dk);
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    border-color 0.18s,
+    color 0.18s;
+}
+
+.people-expand-btn:hover {
+  background: var(--b50);
+  border-color: var(--brown);
+  color: var(--brown);
+}
+
+@keyframes person-card-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.person-card--reveal {
+  animation: person-card-reveal 0.35s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .person-card--reveal {
+    animation: none;
+  }
+}
+
+/* ═══ Ecotone + CREES / B Corp — paired visual system (enhanced preview) ═══ */
+.about-pair-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.4fr) minmax(0, 0.6fr);
+  gap: clamp(28px, 4.5vw, 56px);
+  align-items: center;
+}
+.about-pair-visual {
+  min-width: 0;
+}
+.about-pair-copy {
+  min-width: 0;
+  width: 100%;
+}
+.about-pair-title {
+  max-width: none;
+  width: 100%;
+  margin-bottom: 10px;
+}
+.about-pair-body {
+  width: 100%;
+  max-width: none;
+  margin: 0 0 14px;
+}
+.about-pair-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 22px;
+}
+
+/* CREES — light chapter */
+.about-crees-media {
+  border-radius: var(--rl);
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  min-height: 360px;
+  max-height: 520px;
+  background: var(--n200);
+}
+.about-crees-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+.about-crees-copy .h2,
+.about-crees-copy .body {
+  max-width: none;
+  width: 100%;
+}
+.about-crees-subtitle {
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--n900);
+  line-height: 1.45;
+}
+.about-crees-subtitle em {
+  font-style: italic;
+  font-weight: 400;
+}
+.about-crees-lockup {
+  margin: 22px 0 20px;
+}
+.about-crees-lockup-img {
+  display: block;
+  width: 100%;
+  max-width: min(340px, 92%);
+  height: auto;
+  object-fit: contain;
+  object-position: left center;
+}
+
+/* B Corp — dark counterpart */
+.about-page .about-bcorp.bg-dark {
+  background: linear-gradient(165deg, #2a1c0a 0%, var(--n900) 42%, #1a1209 100%);
+}
+.about-bcorp-grid {
+  position: relative;
+  z-index: 1;
+}
+@media (min-width: 781px) {
+  .about-bcorp-copy {
+    padding-left: clamp(20px, 2.5vw, 36px);
+    border-left: 1px solid rgba(236, 229, 213, 0.12);
+  }
+}
+.about-bcorp-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  padding: 20px 12px;
+}
+.about-bcorp-mark {
+  display: block;
+  width: min(200px, 72%);
+  /* Original SVG viewBox: 136.941 × 200.1086 */
+  aspect-ratio: 136.941 / 200.1086;
+  background-color: #ffffff;
+  -webkit-mask-image: url('/brand/b-corp-logo-black-rgb.svg');
+  mask-image: url('/brand/b-corp-logo-black-rgb.svg');
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+.about-bcorp-h2 {
+  color: var(--cream);
+}
+.about-bcorp-body {
+  font-size: 15px;
+  font-weight: 300;
+  color: rgba(236, 229, 213, 0.62);
+  line-height: 1.8;
+}
+.about-bcorp-btn-primary {
+  background: var(--b200);
+  color: var(--brown-xdk);
+}
+.about-bcorp-btn-primary:hover {
+  background: #e0bd8a;
+  color: var(--brown-xdk);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 780px) {
+  .about-pair-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  .about-crees-media {
+    aspect-ratio: 16 / 10;
+    min-height: 220px;
+    max-height: 340px;
+  }
+  .about-bcorp-visual {
+    min-height: 180px;
+    padding: 8px 0 4px;
+    justify-content: flex-start;
+  }
+  .about-bcorp-mark {
+    width: min(140px, 46%);
+  }
+}
+
+@media (max-width: 520px) {
+  .about-pair-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .about-pair-actions .btn {
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+  }
+  .about-crees-lockup-img {
+    max-width: 100%;
+  }
 }
 
 /* ═══ 07 Proof ═══ */
@@ -311,14 +689,16 @@
   letter-spacing: -0.022em;
   line-height: 1.1;
   margin-bottom: 12px;
-  max-width: 540px;
+  max-width: none;
+  width: 100%;
 }
 .about-proof-intro {
   font-size: 14px;
   font-weight: 300;
   color: rgba(236, 229, 213, 0.42);
   line-height: 1.8;
-  max-width: 520px;
+  max-width: none;
+  width: 100%;
   margin-bottom: 40px;
 }
 .proof-stats {

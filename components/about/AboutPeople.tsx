@@ -1,32 +1,96 @@
+'use client'
+
+import { useId, useState } from 'react'
+
 import type { AboutPageResolved } from '@/lib/resolveAboutPageData'
 
 type PeopleData = AboutPageResolved['people']
+type Person = PeopleData['members'][number]
 
-export function AboutPeople({ data }: { data: PeopleData }) {
+/**
+ * Existing About People section.
+ * Optional `initialVisible` enables View more people / Show less when members exceed that count.
+ * Default (omit / undefined) shows everyone — same as production behaviour.
+ */
+export function AboutPeople({
+  data,
+  initialVisible,
+}: {
+  data: PeopleData
+  initialVisible?: number
+}) {
+  const panelId = useId()
+  const [expanded, setExpanded] = useState(false)
+  const limit = initialVisible && initialVisible > 0 ? initialVisible : null
+  const canExpand = limit != null && data.members.length > limit
+  const visible =
+    !canExpand || expanded ? data.members : data.members.slice(0, limit)
+
   return (
     <section className="content-section bg-parch fade" id={data.sectionId}>
       <div className="content-inner">
         <div className="eyebrow">{data.eyebrow}</div>
         <h2 className="h2">{data.headline}</h2>
-        <p className="body" style={{ marginBottom: 28, maxWidth: 560 }}>
-          {data.intro}
-        </p>
-        <div className="people-grid">
-          {data.members.map((m) => (
-            <article key={m.key} className="person-card">
-              <div className="person-img">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={m.imageUrl} alt={m.imageAlt} />
-              </div>
-              <div className="person-body">
-                <div className="person-name">{m.name}</div>
-                <div className="person-role">{m.role}</div>
-                <p className="person-bio">{m.bio}</p>
-              </div>
-            </article>
+        <p className="body people-intro">{data.intro}</p>
+        <div
+          className={`people-grid${expanded && canExpand ? ' people-grid--expanded' : ''}`}
+          id={panelId}
+        >
+          {visible.map((m, i) => (
+            <PersonCard
+              key={m.key}
+              person={m}
+              reveal={canExpand && expanded && limit != null && i >= limit}
+            />
           ))}
         </div>
+        {canExpand ? (
+          <div className="people-expand">
+            <button
+              type="button"
+              className="people-expand-btn"
+              aria-expanded={expanded}
+              aria-controls={panelId}
+              onClick={() => setExpanded((v) => !v)}
+            >
+              {expanded ? 'Show less ↑' : 'View more people ↓'}
+            </button>
+          </div>
+        ) : null}
       </div>
     </section>
+  )
+}
+
+function PersonCard({ person, reveal }: { person: Person; reveal?: boolean }) {
+  const linkedin = person.linkedinUrl?.trim()
+
+  return (
+    <article className={`person-card${reveal ? ' person-card--reveal' : ''}`}>
+      <div className="person-img">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={person.imageUrl} alt={person.imageAlt} />
+      </div>
+      <div className="person-body">
+        <div className="person-name">{person.name}</div>
+        <div className="person-role">{person.role}</div>
+        {person.affiliation?.trim() ? (
+          <div className="person-affiliation">{person.affiliation.trim()}</div>
+        ) : null}
+        <p className="person-bio">{person.bio}</p>
+        <div className="person-linkedin-slot">
+          {linkedin ? (
+            <a
+              href={linkedin}
+              className="person-linkedin"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              LinkedIn ↗
+            </a>
+          ) : null}
+        </div>
+      </div>
+    </article>
   )
 }
