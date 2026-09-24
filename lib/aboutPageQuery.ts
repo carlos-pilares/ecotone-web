@@ -1,5 +1,7 @@
 import { groq } from 'next-sanity'
 
+import type { EcotoneSanityImageField } from '@/lib/ecotoneImage'
+import { GROQ_ECOTONE_IMAGE_FIELDS } from '@/lib/ecotoneImage'
 import type { PartnerDoc } from '@/lib/queries'
 import type { ReserveCtaSettingsGroq } from '@/lib/reserveCtaGroq'
 import { GROQ_PARTNER_DOC_FIELDS } from '@/lib/partnerGroq'
@@ -19,7 +21,9 @@ export type AboutPageSanityDoc = {
     noIndex?: boolean | null
     ogImageUrl?: string | null
   } | null
+  /** @deprecated Prefer `heroImage` for crop/hotspot-aware delivery. */
   heroImageUrl?: string | null
+  heroImage?: EcotoneSanityImageField | null
   heroImageAlt?: string | null
   heroEyebrow?: string | null
   heroTitle?: string | null
@@ -29,7 +33,9 @@ export type AboutPageSanityDoc = {
   heroPrimarySmartLink?: SmartLinkGroq | null
   heroSecondarySmartLink?: SmartLinkGroq | null
   whoSectionId?: string | null
+  /** @deprecated Prefer `whoImage`. */
   whoImageUrl?: string | null
+  whoImage?: EcotoneSanityImageField | null
   whoImageAlt?: string | null
   whoEyebrow?: string | null
   whoTitle?: string | null
@@ -44,7 +50,9 @@ export type AboutPageSanityDoc = {
   creesTitle?: string | null
   creesSubtitle?: string | null
   creesBodyParagraphs?: Array<{ text?: string | null }> | null
+  /** @deprecated Prefer `creesImage`. */
   creesImageUrl?: string | null
+  creesImage?: EcotoneSanityImageField | null
   creesImageAlt?: string | null
   creesLockupUrl?: string | null
   creesLockupAlt?: string | null
@@ -55,7 +63,9 @@ export type AboutPageSanityDoc = {
   diffEyebrow?: string | null
   diffTitle?: string | null
   diffIntro?: string | null
+  /** @deprecated Prefer `diffImage`. */
   diffImageUrl?: string | null
+  diffImage?: EcotoneSanityImageField | null
   diffImageAlt?: string | null
   diffCards?: Array<{
     iconKey?: string | null
@@ -75,7 +85,9 @@ export type AboutPageSanityDoc = {
   peopleBody?: string | null
   peopleInitialVisibleCount?: number | null
   peopleCards?: Array<{
+    /** @deprecated Prefer `image`. */
     imageUrl?: string | null
+    image?: EcotoneSanityImageField | null
     imageAlt?: string | null
     name?: string | null
     role?: string | null
@@ -144,6 +156,7 @@ export const aboutPageQuery = groq`
       "ogImageUrl": ogImage.asset->url
     },
     "heroImageUrl": heroImage.asset->url,
+    heroImage { ${GROQ_ECOTONE_IMAGE_FIELDS} },
     heroImageAlt,
     heroEyebrow,
     heroTitle,
@@ -155,6 +168,7 @@ export const aboutPageQuery = groq`
     sectionModules[]{ key, visible, anchorId, eyebrow, sectionTitle, sectionText },
     whoSectionId,
     "whoImageUrl": whoImage.asset->url,
+    whoImage { ${GROQ_ECOTONE_IMAGE_FIELDS} },
     whoImageAlt,
     whoEyebrow,
     whoTitle,
@@ -170,6 +184,7 @@ export const aboutPageQuery = groq`
     creesSubtitle,
     creesBodyParagraphs[]{ text },
     "creesImageUrl": creesImage.asset->url,
+    creesImage { ${GROQ_ECOTONE_IMAGE_FIELDS} },
     creesImageAlt,
     "creesLockupUrl": creesLockup.asset->url,
     creesLockupAlt,
@@ -181,6 +196,7 @@ export const aboutPageQuery = groq`
     diffTitle,
     diffIntro,
     "diffImageUrl": diffImage.asset->url,
+    diffImage { ${GROQ_ECOTONE_IMAGE_FIELDS} },
     diffImageAlt,
     diffCards[]{ iconKey, title, description },
     waySectionId,
@@ -197,6 +213,7 @@ export const aboutPageQuery = groq`
     peopleInitialVisibleCount,
     peopleCards[]{
       "imageUrl": image.asset->url,
+      image { ${GROQ_ECOTONE_IMAGE_FIELDS} },
       imageAlt,
       name,
       role,

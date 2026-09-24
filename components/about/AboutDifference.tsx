@@ -1,3 +1,4 @@
+import { EcotoneImage } from '@/components/media/EcotoneImage'
 import type { AboutPageResolved } from '@/lib/resolveAboutPageData'
 
 type DiffData = AboutPageResolved['difference']
@@ -11,7 +12,6 @@ const MANIFESTO_INTRO_FALLBACK =
  */
 export function AboutDifference({ data }: { data: DiffData }) {
   const intro = data.intro?.trim() || MANIFESTO_INTRO_FALLBACK
-  const imageUrl = data.imageUrl
   const imageAlt = data.imageAlt
 
   return (
@@ -23,12 +23,14 @@ export function AboutDifference({ data }: { data: DiffData }) {
             <h2 className="h2 diff-manifesto-title">{data.headline}</h2>
             <p className="body diff-manifesto-intro">{intro}</p>
             <div className="diff-manifesto-media">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={imageUrl}
+              <EcotoneImage
+                image={data.image.image}
+                fallbackUrl={data.image.fallbackUrl || data.imageUrl}
+                masterWidth={data.image.masterWidth}
+                masterHeight={data.image.masterHeight}
+                role="editorial"
                 alt={imageAlt}
                 loading="lazy"
-                decoding="async"
               />
             </div>
           </div>

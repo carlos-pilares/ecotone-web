@@ -1,3 +1,4 @@
+import { EcotoneImage } from '@/components/media/EcotoneImage'
 import type { AboutPageResolved } from '@/lib/resolveAboutPageData'
 
 type WhoData = AboutPageResolved['who']
@@ -8,8 +9,14 @@ export function AboutWho({ data }: { data: WhoData }) {
       <div className="content-inner">
         <div className="who-grid">
           <div className="who-img">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={data.imageUrl} alt={data.imageAlt} />
+            <EcotoneImage
+              image={data.image.image}
+              fallbackUrl={data.image.fallbackUrl || data.imageUrl}
+              masterWidth={data.image.masterWidth}
+              masterHeight={data.image.masterHeight}
+              role="editorial"
+              alt={data.imageAlt}
+            />
           </div>
           <div>
             <div className="eyebrow">{data.eyebrow}</div>

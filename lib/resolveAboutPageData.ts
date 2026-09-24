@@ -10,6 +10,7 @@ import {
   resolveAboutPageSectionVisibility,
   type AboutPageSectionVisibility,
 } from '@/lib/aboutPageSectionVisibility'
+import type { EcotoneImageSource, EcotoneSanityImageField } from '@/lib/ecotoneImage'
 import type { PartnerDoc } from '@/lib/queries'
 import { filterPublishedPartnerDocs } from '@/lib/partnerDocs'
 import { getLowestActiveExperiencePrice, buildReserveRowsForHome, type ExperiencePriceInput } from '@/lib/reserveCtaPricing'
@@ -24,6 +25,24 @@ function trimOr(fallback: string, v?: string | null) {
 
 function aboutImage(cms: string | null | undefined, fallback: string, width: number): string {
   return optimizeSanityImageDelivery(trimOr(fallback, cms), width)
+}
+
+/** Preserve crop/hotspot + master dims for the Phase-1 responsive pipeline. */
+function aboutResponsiveImage(
+  field: EcotoneSanityImageField | null | undefined,
+  urlFallback: string | null | undefined,
+  staticFallbackUrl: string,
+): EcotoneImageSource {
+  const fallbackUrl = trimOr(staticFallbackUrl, urlFallback || field?.asset?.url)
+  const masterWidth = field?.asset?.metadata?.dimensions?.width ?? null
+  const masterHeight = field?.asset?.metadata?.dimensions?.height ?? null
+  const hasAsset = Boolean(field?.asset?._id || field?.asset?._ref || field?.asset?.url)
+  return {
+    image: hasAsset ? field : null,
+    fallbackUrl,
+    masterWidth: typeof masterWidth === 'number' ? masterWidth : null,
+    masterHeight: typeof masterHeight === 'number' ? masterHeight : null,
+  }
 }
 
 function splitTitleLines(cms: string | null | undefined, fallback: readonly string[]): string[] {
@@ -74,7 +93,10 @@ export type AboutPageResolved = {
     tagline: string
     primaryCta: { label: string; href: string; openInNewTab: boolean; rel?: string } | null
     secondaryCta: { label: string; href: string; openInNewTab: boolean; rel?: string } | null
+    /** Legacy single URL (still used where needed). */
     imageUrl: string
+    /** Phase-1 responsive source (crop/hotspot preserved). */
+    image: EcotoneImageSource
     imageAlt: string
   }
   who: {
@@ -83,6 +105,7 @@ export type AboutPageResolved = {
     headline: string
     paragraphs: string[]
     imageUrl: string
+    image: EcotoneImageSource
     imageAlt: string
     pills: string[]
   }
@@ -98,6 +121,7 @@ export type AboutPageResolved = {
     headline: string
     intro: string
     imageUrl: string
+    image: EcotoneImageSource
     imageAlt: string
     cards: Array<{ key: string; title: string; description: string }>
   }
@@ -108,6 +132,7 @@ export type AboutPageResolved = {
     subtitle: string
     paragraphs: string[]
     imageUrl: string
+    image: EcotoneImageSource
     imageAlt: string
     lockupUrl: string
     lockupAlt: string
@@ -140,6 +165,7 @@ export type AboutPageResolved = {
       affiliation?: string
       bio: string
       imageUrl: string
+      image: EcotoneImageSource
       imageAlt: string
       /** Optional LinkedIn profile URL — omit when absent. */
       linkedinUrl?: string
@@ -245,6 +271,7 @@ export function resolveAboutPageData(
         }
       : null,
     imageUrl: aboutImage(c?.heroImageUrl, fb.hero.imageUrl, SANITY_IMG.HERO),
+    image: aboutResponsiveImage(c?.heroImage, c?.heroImageUrl, fb.hero.imageUrl),
     imageAlt: trimOr(fb.hero.imageAlt, c?.heroImageAlt),
   }
 
@@ -254,6 +281,7 @@ export function resolveAboutPageData(
     headline: trimOr(fb.who.headline, c?.whoTitle),
     paragraphs: paragraphsFromCms(c?.whoBodyParagraphs, fb.who.paragraphs),
     imageUrl: aboutImage(c?.whoImageUrl, fb.who.imageUrl, SANITY_IMG.SECTION),
+    image: aboutResponsiveImage(c?.whoImage, c?.whoImageUrl, fb.who.imageUrl),
     imageAlt: trimOr(fb.who.imageAlt, c?.whoImageAlt),
     pills: pillsFromCms(c?.whoPills, fb.who.pills),
   }
@@ -290,6 +318,7 @@ export function resolveAboutPageData(
     headline: trimOr(fb.difference.headline, c?.diffTitle),
     intro: trimOr(fb.difference.intro, c?.diffIntro),
     imageUrl: aboutImage(c?.diffImageUrl, fb.difference.imageUrl, SANITY_IMG.SECTION),
+    image: aboutResponsiveImage(c?.diffImage, c?.diffImageUrl, fb.difference.imageUrl),
     imageAlt: trimOr(fb.difference.imageAlt, c?.diffImageAlt),
     cards,
   }
@@ -307,6 +336,7 @@ export function resolveAboutPageData(
     subtitle: trimOr(fb.crees.subtitle, c?.creesSubtitle),
     paragraphs: paragraphsFromCms(c?.creesBodyParagraphs, fb.crees.paragraphs),
     imageUrl: aboutImage(c?.creesImageUrl, fb.crees.imageUrl, SANITY_IMG.SECTION),
+    image: aboutResponsiveImage(c?.creesImage, c?.creesImageUrl, fb.crees.imageUrl),
     imageAlt: trimOr(fb.crees.imageAlt, c?.creesImageAlt),
     lockupUrl: trimOr(fb.crees.lockupUrl, c?.creesLockupUrl),
     lockupAlt: trimOr(fb.crees.lockupAlt, c?.creesLockupAlt),
@@ -337,6 +367,7 @@ export function resolveAboutPageData(
     affiliation?: string
     bio: string
     imageUrl: string
+    image: EcotoneImageSource
     imageAlt: string
     linkedinUrl?: string
   }> = fb.people.members.map((m) => ({
@@ -345,6 +376,7 @@ export function resolveAboutPageData(
     role: m.role,
     bio: m.bio,
     imageUrl: m.imageUrl,
+    image: aboutResponsiveImage(null, m.imageUrl, m.imageUrl),
     imageAlt: m.imageAlt,
   }))
   const peopleCms = c?.peopleCards
@@ -355,16 +387,19 @@ export function resolveAboutPageData(
         const role = p.role?.trim()
         const bio = p.bio?.trim() || ''
         const affiliation = p.affiliation?.trim() || undefined
-        const imageUrl = p.imageUrl?.trim()
+        const imageUrl = p.imageUrl?.trim() || p.image?.asset?.url?.trim()
         const imageAlt = p.imageAlt?.trim()
         const linkedinUrl = p.linkedinUrl?.trim() || undefined
         if (!name || !role || !imageUrl || !imageAlt) return null
+        const image = aboutResponsiveImage(p.image, imageUrl, imageUrl)
         return {
           key: `person-${i}`,
           name,
           role,
           bio,
+          // Keep legacy single-URL for any non-migrated consumers; portrait role used in UI.
           imageUrl: optimizeSanityImageDelivery(imageUrl, SANITY_IMG.ABOUT_PORTRAIT),
+          image,
           imageAlt,
           ...(affiliation ? { affiliation } : {}),
           ...(linkedinUrl ? { linkedinUrl } : {}),

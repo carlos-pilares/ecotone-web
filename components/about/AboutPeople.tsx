@@ -2,6 +2,7 @@
 
 import { useId, useState } from 'react'
 
+import { EcotoneImage } from '@/components/media/EcotoneImage'
 import type { AboutPageResolved } from '@/lib/resolveAboutPageData'
 
 type PeopleData = AboutPageResolved['people']
@@ -68,8 +69,15 @@ function PersonCard({ person, reveal }: { person: Person; reveal?: boolean }) {
   return (
     <article className={`person-card${reveal ? ' person-card--reveal' : ''}`}>
       <div className="person-img">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={person.imageUrl} alt={person.imageAlt} />
+        <EcotoneImage
+          image={person.image.image}
+          fallbackUrl={person.image.fallbackUrl || person.imageUrl}
+          masterWidth={person.image.masterWidth}
+          masterHeight={person.image.masterHeight}
+          role="portrait"
+          alt={person.imageAlt}
+          loading="lazy"
+        />
       </div>
       <div className="person-body">
         <div className="person-name">{person.name}</div>

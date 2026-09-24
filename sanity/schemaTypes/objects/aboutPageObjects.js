@@ -1,4 +1,5 @@
 import {defineField, defineType} from 'sanity'
+import {validateRequiredImageRole} from '../../lib/ecotoneImageRoleValidation'
 
 export const aboutPageParagraph = defineType({
   name: 'aboutPageParagraph',
@@ -73,7 +74,7 @@ export const aboutPagePerson = defineType({
       title: 'Photo',
       type: 'image',
       options: {hotspot: true},
-      validation: (Rule) => Rule.required(),
+      validation: validateRequiredImageRole('portrait'),
     }),
     defineField({name: 'imageAlt', title: 'Image alt', type: 'string', validation: (Rule) => Rule.required()}),
     defineField({name: 'name', title: 'Name', type: 'string', validation: (Rule) => Rule.required()}),

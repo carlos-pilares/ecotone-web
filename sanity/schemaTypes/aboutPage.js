@@ -1,5 +1,6 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
 import {PageSectionVisibleField} from '../components/pageSection/PageSectionVisibleField'
+import {validateImageRole} from '../lib/ecotoneImageRoleValidation'
 
 const pageSectionVisibleUi = (sectionKey, group) =>
   defineField({
@@ -74,6 +75,7 @@ export const aboutPage = defineType({
       type: 'image',
       group: 'hero',
       options: {hotspot: true},
+      validation: validateImageRole('hero'),
     }),
     defineField({name: 'heroImageAlt', title: 'Hero image alt', type: 'string', group: 'hero'}),
     defineField({name: 'heroEyebrow', title: 'Eyebrow', type: 'string', group: 'hero'}),
@@ -132,6 +134,7 @@ export const aboutPage = defineType({
       type: 'image',
       group: 'who',
       options: {hotspot: true},
+      validation: validateImageRole('editorial'),
     }),
     defineField({name: 'whoImageAlt', title: 'Image alt', type: 'string', group: 'who'}),
     defineField({name: 'whoEyebrow', title: 'Eyebrow', type: 'string', group: 'who'}),
@@ -198,6 +201,7 @@ export const aboutPage = defineType({
       type: 'image',
       group: 'crees',
       options: {hotspot: true},
+      validation: validateImageRole('editorial'),
     }),
     defineField({name: 'creesImageAlt', title: 'Image alt', type: 'string', group: 'crees'}),
     defineField({
@@ -257,6 +261,7 @@ export const aboutPage = defineType({
       type: 'image',
       group: 'different',
       options: {hotspot: true},
+      validation: validateImageRole('editorial'),
     }),
     defineField({name: 'diffImageAlt', title: 'Editorial image alt', type: 'string', group: 'different'}),
     defineField({

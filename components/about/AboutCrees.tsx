@@ -1,3 +1,4 @@
+import { EcotoneImage } from '@/components/media/EcotoneImage'
 import type { AboutPageResolved } from '@/lib/resolveAboutPageData'
 
 type CreesData = AboutPageResolved['crees']
@@ -17,12 +18,14 @@ export function AboutCrees({ data }: { data: CreesData }) {
       <div className="content-inner">
         <div className="about-pair-grid">
           <div className="about-pair-visual about-crees-media">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={data.imageUrl}
+            <EcotoneImage
+              image={data.image.image}
+              fallbackUrl={data.image.fallbackUrl || data.imageUrl}
+              masterWidth={data.image.masterWidth}
+              masterHeight={data.image.masterHeight}
+              role="editorial"
               alt={data.imageAlt}
               loading="lazy"
-              decoding="async"
             />
           </div>
           <div className="about-pair-copy about-crees-copy">

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { EcotoneImage } from '@/components/media/EcotoneImage'
 import type { AboutPageResolved } from '@/lib/resolveAboutPageData'
 
 type HeroData = AboutPageResolved['hero']
@@ -10,8 +11,16 @@ export function AboutHero({ data }: { data: HeroData }) {
   return (
     <section className="about-hero" aria-label="About Ecotone">
       <div className="about-hero-img">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={data.imageUrl} alt={data.imageAlt} />
+        <EcotoneImage
+          image={data.image.image}
+          fallbackUrl={data.image.fallbackUrl || data.imageUrl}
+          masterWidth={data.image.masterWidth}
+          masterHeight={data.image.masterHeight}
+          role="hero"
+          alt={data.imageAlt}
+          loading="eager"
+          fetchPriority="high"
+        />
         <div className="about-hero-overlay" aria-hidden />
       </div>
       <div className="about-hero-content">
