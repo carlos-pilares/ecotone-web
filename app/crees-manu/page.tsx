@@ -22,6 +22,9 @@ export const metadata: Metadata = {
 
 const LOGO_LOCKUP = '/crees-manu/logo-lockup.png'
 
+/** Set to `true` when the official announcement is ready to show again. */
+const SHOW_CREES_ANNOUNCEMENT_SECTION = false
+
 const MISSION_CARDS = [
   {
     title: 'Long-term Conservation',
@@ -215,23 +218,25 @@ export default function CreesManuPage() {
           </div>
         </section>
 
-        <section className="content-section crees-press-section fade" aria-labelledby="crees-press-heading">
-          <div className="content-inner">
-            <div className="crees-press-inner">
-              <div className="eyebrow">Announcement</div>
-              <h2 id="crees-press-heading" className="h2">
-                Read the announcement
-              </h2>
-              <p className="crees-press-body">
-                Read the full statement from founder Quinn Meyer on the vision behind the union between
-                CREES Manu and Ecotone.
-              </p>
-              <a href="#" className="btn btn-secondary">
-                Read the statement
-              </a>
+        {SHOW_CREES_ANNOUNCEMENT_SECTION ? (
+          <section className="content-section crees-press-section fade" aria-labelledby="crees-press-heading">
+            <div className="content-inner">
+              <div className="crees-press-inner">
+                <div className="eyebrow">Announcement</div>
+                <h2 id="crees-press-heading" className="h2">
+                  Read the announcement
+                </h2>
+                <p className="crees-press-body">
+                  Read the full statement from founder Quinn Meyer on the vision behind the union between
+                  CREES Manu and Ecotone.
+                </p>
+                <a href="#" className="btn btn-secondary">
+                  Read the statement
+                </a>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        ) : null}
 
         <section className="crees-closing fade" aria-label="Closing message">
           <div className="crees-closing-bg" aria-hidden>
