@@ -36,6 +36,11 @@ const MANU_VOLUNTEER_LANDING_PATH = '/manu-conservation-volunteer'
 const MANU_VOLUNTEER_PRICE_DISPLAY = 'US$2,200 | 30% off | US$1,540'
 const MANU_VOLUNTEER_DURATION = '4 weeks'
 
+const MFC2027_CAMPAIGN_NAME = 'Manu Field Crew 2027'
+const MFC2027_LANDING_PATH = '/manu-field-crew-2027'
+const MFC2027_SOURCE = 'manu-field-crew-2027-landing'
+const MFC2027_PRICE_DISPLAY = 'US$2,600 | 30% off | US$1,820'
+
 function resolveManuVolunteerLandingPage(pageUrl: string): string {
   const trimmed = pageUrl.trim()
   if (!trimmed) return MANU_VOLUNTEER_LANDING_PATH
@@ -47,6 +52,34 @@ function resolveManuVolunteerLandingPage(pageUrl: string): string {
     return pathname || MANU_VOLUNTEER_LANDING_PATH
   } catch {
     return MANU_VOLUNTEER_LANDING_PATH
+  }
+}
+
+function isManuFieldCrew2027Payload(payload: {
+  source: string
+  pageUrl: string
+}): boolean {
+  if (payload.source.trim() === MFC2027_SOURCE) return true
+  try {
+    const pathname = new URL(payload.pageUrl.trim(), 'https://www.ecotone.eco').pathname.replace(
+      /\/$/,
+      '',
+    )
+    return pathname.startsWith(MFC2027_LANDING_PATH)
+  } catch {
+    return payload.pageUrl.includes(MFC2027_LANDING_PATH)
+  }
+}
+
+function resolveMfc2027LandingPage(pageUrl: string): string {
+  const trimmed = pageUrl.trim()
+  if (!trimmed) return MFC2027_LANDING_PATH
+  try {
+    const pathname = new URL(trimmed, 'https://www.ecotone.eco').pathname.replace(/\/$/, '')
+    if (pathname.startsWith(MFC2027_LANDING_PATH)) return MFC2027_LANDING_PATH
+    return pathname || MFC2027_LANDING_PATH
+  } catch {
+    return MFC2027_LANDING_PATH
   }
 }
 
@@ -177,17 +210,20 @@ export function normalizeEnquiryToLead(
     }
   }
 
-  // manu_conservation_volunteer
+  // manu_conservation_volunteer (includes Manu Field Crew 2027 via source/landing)
   const fullName = payload.fullName
+  const isMfc2027 = isManuFieldCrew2027Payload(payload)
   return {
     leadId,
     dateTimeIso,
     typeOfLead: 'Campaign',
     acquisitionChannel: 'Web Form',
     conversationChannel: 'Email',
-    campaignName: MANU_VOLUNTEER_CAMPAIGN_NAME,
+    campaignName: isMfc2027 ? MFC2027_CAMPAIGN_NAME : MANU_VOLUNTEER_CAMPAIGN_NAME,
     experienceName: MANU_VOLUNTEER_EXPERIENCE_NAME,
-    landingPage: resolveManuVolunteerLandingPage(payload.pageUrl),
+    landingPage: isMfc2027
+      ? resolveMfc2027LandingPage(payload.pageUrl)
+      : resolveManuVolunteerLandingPage(payload.pageUrl),
     fullName,
     firstName: deriveFirstName(fullName),
     email: payload.email,
@@ -197,7 +233,7 @@ export function normalizeEnquiryToLead(
     travelDate: '',
     partySize: payload.groupSize.trim(),
     duration: payload.duration.trim() || MANU_VOLUNTEER_DURATION,
-    price: MANU_VOLUNTEER_PRICE_DISPLAY,
+    price: isMfc2027 ? MFC2027_PRICE_DISPLAY : MANU_VOLUNTEER_PRICE_DISPLAY,
     messageNote: '',
     rawPayload,
   }
@@ -210,6 +246,9 @@ export function getNormalizedLeadEmailSubject(lead: NormalizedLead): string {
   if (lead.typeOfLead === 'Campaign') {
     if (lead.campaignName === MANU_VOLUNTEER_CAMPAIGN_NAME) {
       return `New Manu Conservation Volunteer lead [${lead.leadId}]`
+    }
+    if (lead.campaignName === MFC2027_CAMPAIGN_NAME) {
+      return `New Manu Field Crew 2027 lead [${lead.leadId}]`
     }
     return `New Wonder Beyond the Wonder lead [${lead.leadId}]`
   }

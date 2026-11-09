@@ -1,0 +1,307 @@
+/* Manu Field Crew 2027 — campaign-scoped overrides only */
+
+.mfc2027-cta-link {
+  text-decoration: none;
+}
+
+.mfc2027-product-clarity {
+  margin: 0 0 1.15rem;
+  font-family: var(--mcv-font);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  color: rgba(236, 229, 213, 0.88);
+}
+
+.mfc2027-hero-action .mcv-hero-lead {
+  margin-bottom: 0.85rem;
+}
+
+.mfc2027-hero-secondary {
+  margin: 1rem 0 0;
+  max-width: 28rem;
+  font-family: var(--mcv-font);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1.45;
+  color: rgba(236, 229, 213, 0.72);
+}
+
+.mfc2027-secondary-link {
+  font-family: var(--mcv-font);
+  font-size: inherit;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+  color: inherit;
+}
+
+.mfc2027-secondary-link--on-hero {
+  color: rgba(236, 229, 213, 0.82);
+}
+
+.mfc2027-section-cta {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+/* Copy rhythm — headline → body → statement → CTA */
+.mfc2027-copy-stack .mcv-display-title {
+  margin-bottom: 1.15rem;
+}
+
+.mfc2027-copy-stack .mcv-section-body {
+  margin-top: 0;
+  margin-bottom: 1.1rem;
+}
+
+.mfc2027-copy-stack .mcv-enjoy-tagline,
+.mfc2027-copy-stack .mcv-opportunity-lead {
+  margin-top: 0.15rem;
+  margin-bottom: 1.35rem;
+}
+
+.mfc2027-copy-stack .mcv-cta {
+  margin-top: 0.15rem;
+}
+
+.mfc2027-opportunity-copy .mcv-opportunity-eyebrow {
+  margin-bottom: 0.85rem;
+}
+
+.mfc2027-opportunity-alt {
+  margin: 1.35rem 0 0;
+  font-family: var(--mcv-font);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: rgba(44, 29, 7, 0.68);
+}
+
+.mfc2027-opportunity-alt__support {
+  display: inline;
+}
+
+/* Photo credits inside images */
+.mfc2027-root .mfc2027-media-frame {
+  position: relative;
+  overflow: hidden;
+}
+
+.mfc2027-root .mfc2027-media-frame--fill {
+  width: 100%;
+  height: 100%;
+}
+
+.mfc2027-root .mfc2027-media-frame--fill > .mcv-fieldwork-img,
+.mfc2027-root .mfc2027-media-frame--fill > picture,
+.mfc2027-root .mfc2027-media-frame--fill img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mfc2027-root .mfc2027-photo-credit,
+.mfc2027-root .mcv-page .mfc2027-photo-credit {
+  position: absolute;
+  left: 0.65rem;
+  bottom: 0.55rem;
+  z-index: 3;
+  margin: 0 !important;
+  max-width: calc(100% - 1.3rem);
+  padding: 0.28rem 0.45rem;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  color: var(--ecotone-cream, #ece5d5) !important;
+  background: linear-gradient(
+    90deg,
+    rgba(20, 14, 6, 0.55) 0%,
+    rgba(20, 14, 6, 0.28) 70%,
+    rgba(20, 14, 6, 0) 100%
+  );
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+/* Result booking hub — restores MCV image-left / dates-right composition */
+
+.mfc2027-result-date .mcv-result-date__title-row {
+  justify-content: space-between;
+  width: 100%;
+}
+
+.mfc2027-result-date__month {
+  margin-left: auto;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(44, 29, 7, 0.55);
+}
+
+.mfc2027-book-primary {
+  margin-top: 0.25rem;
+}
+
+.mfc2027-all-dates {
+  margin-top: 0.35rem;
+  padding-top: 0.15rem;
+}
+
+.mfc2027-all-dates__summary {
+  cursor: pointer;
+  font-family: var(--mcv-font);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: rgba(44, 29, 7, 0.72);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.mfc2027-all-dates__intro {
+  margin: 0.85rem 0 0.65rem;
+  font-family: var(--mcv-font);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: rgba(44, 29, 7, 0.62);
+}
+
+.mfc2027-all-dates__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.mfc2027-all-dates__row {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 0.5rem;
+  font-family: var(--mcv-font);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: rgba(44, 29, 7, 0.78);
+}
+
+.mfc2027-all-dates__month {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.mfc2027-aftercare {
+  max-width: 36rem;
+  margin: 2.75rem 0 0;
+  padding: 1.5rem 0 0.5rem;
+  border-top: 1px solid rgba(44, 29, 7, 0.12);
+  text-align: left;
+}
+
+.mfc2027-assistance {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  max-width: none;
+  text-align: left;
+}
+
+.mfc2027-assistance__title {
+  margin: 0 0 0.55rem;
+  font-family: var(--mcv-font);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ecotone-brown-xdk);
+}
+
+.mfc2027-assistance__body {
+  margin: 0 0 1rem;
+  font-family: var(--mcv-font);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: rgba(44, 29, 7, 0.78);
+}
+
+.mfc2027-assistance__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0.55rem 1.15rem;
+  border: 1px solid rgba(44, 29, 7, 0.28);
+  border-radius: 999px;
+  font-family: var(--mcv-font);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  color: var(--ecotone-brown-xdk);
+  background: transparent;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.mfc2027-assistance__cta:hover {
+  background: rgba(44, 29, 7, 0.05);
+  border-color: rgba(44, 29, 7, 0.42);
+}
+
+.mfc2027-assistance__cta:focus-visible {
+  outline: var(--mcv-focus-ring);
+  outline-offset: var(--mcv-focus-offset);
+}
+
+.mfc2027-programme-alt {
+  display: block;
+  margin: 32px 0 0;
+  max-width: none;
+  font-family: var(--mcv-font);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: rgba(44, 29, 7, 0.58);
+  text-align: left;
+}
+
+.mfc2027-programme-alt__question {
+  display: block;
+  margin: 0 0 8px;
+}
+
+.mfc2027-programme-alt__link {
+  display: inline;
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.mfc2027-modal-offer-row .mcv-modal-offer-upto {
+  display: none;
+}
+
+@media (max-width: 390px) {
+  .mfc2027-all-dates__row {
+    grid-template-columns: 1fr;
+    gap: 0.1rem;
+  }
+
+  .mfc2027-root .mfc2027-photo-credit {
+    font-size: 9px;
+    left: 0.45rem;
+    bottom: 0.4rem;
+  }
+
+  .mfc2027-aftercare {
+    margin-top: 2.25rem;
+  }
+
+  .mfc2027-programme-alt {
+    margin-top: 28px;
+  }
+}
