@@ -1,7 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { groq } from 'next-sanity'
 
-import { getExperienceDetailSlugs } from '@/lib/getExperienceDetailPage'
 import { getLodgePageSlugsForStaticParams } from '@/lib/lodgePageCms'
 import { experienceLandingSlugsQuery } from '@/lib/queries'
 import { clientServer } from '@/lib/sanity'
@@ -42,6 +41,7 @@ function hasSanityConfig(): boolean {
 /**
  * Public indexable sitemap for Ecotone.
  * Dynamic slugs come from the same Sanity sources used by generateStaticParams.
+ * Experience detail routes are omitted until that App Router surface ships on main.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const buildDate = new Date()
@@ -69,7 +69,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return entries
   }
 
-  const [experienceSlugs, lodgeRows, journalRows, detailSlugs] = await Promise.all([
+  const [experienceSlugs, lodgeRows, journalRows] = await Promise.all([
     clientServer
       .fetch<(string | null)[] | null>(experienceLandingSlugsQuery)
       .catch(() => null),
@@ -77,7 +77,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     clientServer
       .fetch<Array<{ slug: string | null; lastModified?: string | null }> | null>(journalSitemapQuery)
       .catch(() => null),
-    getExperienceDetailSlugs().catch(() => [] as string[]),
   ])
 
   const seen = new Set(entries.map((e) => e.url))
@@ -105,12 +104,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const s = typeof row?.slug === 'string' ? row.slug.trim() : ''
     if (!s) continue
     pushPath(`/journal/${s}`, parseDate(row.lastModified) ?? buildDate)
-  }
-
-  for (const slug of detailSlugs ?? []) {
-    const s = typeof slug === 'string' ? slug.trim() : ''
-    if (!s) continue
-    pushPath(`/experiences/${s}/detail`, buildDate)
   }
 
   return entries
