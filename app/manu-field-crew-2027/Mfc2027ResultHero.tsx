@@ -1,17 +1,12 @@
-import { ManuVolunteerCopyCodeButton } from '../manu-conservation-volunteer/ManuVolunteerCopyCodeButton'
 import { MCV_HERO_IMAGES } from '../manu-conservation-volunteer/manu-volunteer-images'
 import { WonderResponsiveImage } from '../wonder-beyond-the-wonder/WonderResponsiveImage'
 
-import {
-  MFC2027_DISCOUNT_PERCENT,
-  MFC2027_PRICE_DISPLAY,
-  MFC2027_PROMO_CODE,
-} from './mfc2027-campaign'
+import { MFC2027_PRICE_DISPLAY } from './mfc2027-campaign'
 
 export function Mfc2027ResultHero() {
   return (
     <div className="mcv-result-hero-block">
-      <section className="mcv-result-hero" aria-labelledby="mfc2027-result-hero-title">
+      <section className="mcv-result-hero mfc2027-result-hero" aria-labelledby="mfc2027-result-hero-title">
         <div className="mcv-result-hero-media" aria-hidden>
           <WonderResponsiveImage
             manifest={MCV_HERO_IMAGES}
@@ -25,46 +20,30 @@ export function Mfc2027ResultHero() {
 
         <div className="mcv-result-hero-shell">
           <div className="mcv-result-hero-content">
-            <div className="mcv-result-hero-reward">
-              <p className="mcv-result-hero-eyebrow">YOUR 2027 MANU FIELD OFFER</p>
+            <div className="mfc2027-result-hero-copy">
+              <p className="mfc2027-result-hero-eyebrow">YOUR 2027 FIELD SEASON</p>
 
-              <h1 id="mfc2027-result-hero-title" className="mcv-result-hero-lockup">
-                <span className="mcv-result-hero-lockup__lead">You unlocked</span>
-                <span className="mcv-result-hero-lockup__discount">
-                  <span className="mcv-result-hero-lockup__pct">{MFC2027_DISCOUNT_PERCENT}%</span>
-                  <span className="mcv-result-hero-lockup__off">OFF</span>
+              <h1 id="mfc2027-result-hero-title" className="mfc2027-result-hero-title">
+                <span className="mfc2027-result-hero-title__lead">Choose your</span>
+                <span className="mfc2027-result-hero-title__line mfc2027-result-hero-title__line--manu">
+                  Manu Field
                 </span>
-                <span className="mcv-result-hero-lockup__for">
-                  your 4-week Manu Field Crew experience.
+                <span className="mfc2027-result-hero-title__line mfc2027-result-hero-title__line--depart">
+                  Departure.
                 </span>
               </h1>
 
-              <div className="mcv-result-hero-facts" aria-label="Offer pricing and code">
-                <p className="mcv-result-hero-facts__price">
-                  <span className="mcv-result-hero-facts__was">{MFC2027_PRICE_DISPLAY.base}</span>
-                  <span className="mcv-result-hero-facts__arrow" aria-hidden>
-                    →
-                  </span>
-                  <span className="mcv-result-hero-facts__now">{MFC2027_PRICE_DISPLAY.offer}</span>
-                </p>
-                <div className="mcv-result-hero-facts__code-line">
-                  <p className="mcv-result-hero-facts__meta">
-                    {MFC2027_DISCOUNT_PERCENT}% off · Code{' '}
-                    <span className="mcv-result-hero-accent">{MFC2027_PROMO_CODE}</span>
-                  </p>
-                  <ManuVolunteerCopyCodeButton
-                    code={MFC2027_PROMO_CODE}
-                    label="Copy"
-                    className="mcv-result-hero-copy"
-                  />
-                </div>
-              </div>
-
-              <p className="mcv-result-hero-support">
-                Choose a preferred 2027 departure below, then continue to WeTravel to review the
-                itinerary, live availability and booking details. Use code{' '}
-                <span className="mcv-result-hero-accent">{MFC2027_PROMO_CODE}</span> on WeTravel.
+              <p className="mfc2027-result-hero-support">
+                Four weeks of conservation fieldwork, rainforest life and real research experience
+                from the Manu Learning Centre.
               </p>
+
+              <div className="mfc2027-result-hero-meta" aria-label="Programme details and price">
+                <p className="mfc2027-result-hero-details">
+                  4 weeks · Manu Learning Centre · Fixed 2027 departures
+                </p>
+                <p className="mfc2027-result-hero-price">{MFC2027_PRICE_DISPLAY}</p>
+              </div>
             </div>
           </div>
         </div>

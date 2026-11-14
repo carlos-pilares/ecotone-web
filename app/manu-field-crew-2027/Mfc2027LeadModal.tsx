@@ -24,11 +24,9 @@ import { useMfc2027Campaign } from './Mfc2027CampaignContext'
 import {
   MFC2027_BASE_PRICE,
   MFC2027_CTA_SEE_DEPARTURES,
-  MFC2027_DISCOUNT_PERCENT,
   MFC2027_DURATION,
   MFC2027_GROUP_SIZE_OPTIONS,
   MFC2027_LANDING_PATH,
-  MFC2027_OFFER_PRICE,
   MFC2027_PRIVACY_NOTICE_VERSION,
   MFC2027_RESULT_PATH,
   MFC2027_SESSION_KEY,
@@ -151,8 +149,9 @@ function buildLeadPayload(
     gbraid: campaign.gbraid,
     wbraid: campaign.wbraid,
     basePrice: MFC2027_BASE_PRICE,
-    discountPercent: MFC2027_DISCOUNT_PERCENT,
-    offerPrice: MFC2027_OFFER_PRICE,
+    // Shared enquiry schema still requires these numbers; no active discount on this campaign.
+    discountPercent: 0,
+    offerPrice: MFC2027_BASE_PRICE,
     duration: MFC2027_DURATION,
     privacyNoticeVersion: MFC2027_PRIVACY_NOTICE_VERSION,
     privacyNoticeShownAt,
@@ -476,15 +475,12 @@ function Mfc2027LeadModalInner({
                 Tell us a little about you and when you&apos;d like to join.
               </p>
 
-              <div className="mcv-modal-offer" aria-label="2027 field offer">
-                <div className="mcv-modal-offer-row mfc2027-modal-offer-row">
-                  <span className="mcv-modal-offer-pct">{MFC2027_DISCOUNT_PERCENT}%</span>
-                  <span className="mcv-modal-offer-off">OFF</span>
-                </div>
-                <p className="mcv-modal-offer-detail">
-                  Selected 4-week 2027 Manu Field Crew departures.
-                </p>
-              </div>
+              <p className="mfc2027-modal-context" aria-label="Manu Field Crew 2027">
+                <span className="mfc2027-modal-context__eyebrow">MANU FIELD CREW 2027</span>
+                <span className="mfc2027-modal-context__line">
+                  4 weeks · Fixed departures throughout 2027
+                </span>
+              </p>
 
               <form className="mcv-modal-form" onSubmit={onSubmit} noValidate>
                 <div className="mcv-form-grid">

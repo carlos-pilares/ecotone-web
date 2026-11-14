@@ -26,7 +26,6 @@ import {
   MFC2027_EXPLORE_CV_LABEL,
   MFC2027_FULL_PROGRAMME_PATH,
   MFC2027_LOCATION,
-  MFC2027_PROMO_CODE,
   type Mfc2027Departure,
 } from './mfc2027-campaign'
 
@@ -149,8 +148,7 @@ export function Mfc2027ResultDepartures({ leadId }: { leadId?: string }) {
                 station — with fixed Monday departures throughout 2027.
               </p>
               <p className="mcv-result-programme-note">
-                Places are confirmed in order of booking and are subject to availability. Use code{' '}
-                {MFC2027_PROMO_CODE} on WeTravel.
+                Places are confirmed in order of booking and are subject to availability.
               </p>
             </div>
           </article>

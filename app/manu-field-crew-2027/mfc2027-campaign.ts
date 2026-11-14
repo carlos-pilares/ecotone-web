@@ -1,6 +1,6 @@
 /**
  * Manu Field Crew 2027 — centralized commercial + booking config.
- * Change promo values here only; do not scatter across components.
+ * Base price only — no promotional discount on this campaign.
  */
 
 export const MFC2027_CAMPAIGN_NAME = 'Manu Field Crew 2027'
@@ -38,7 +38,7 @@ export const MFC2027_EXPLORE_CV_SUPPORT =
   'Looking for another programme length or a different volunteer format?'
 export const MFC2027_EXPLORE_CV_SUPPORT_SHORT = 'For other durations and programme options.'
 
-/** Product clarity line for the 4-week campaign offer. */
+/** Product clarity line for the 4-week campaign. */
 export const MFC2027_PRODUCT_CLARITY =
   '4 weeks · Manu Learning Centre · 2027 fixed departures'
 
@@ -58,19 +58,12 @@ export const MFC2027_CALENDLY_URL = 'https://calendly.com/ecotone-info/30min'
 export const MFC2027_WETRAVEL_TRIP_URL =
   'https://www.wetravel.com/trips/conservation-season-mlc-4w-ecotone-4799330933?_wbc'
 
-/** Provisional promotional offer — edit here to update site-wide. */
+/** Base programme price — edit here to update site-wide. */
 export const MFC2027_BASE_PRICE = 2600
-export const MFC2027_DISCOUNT_PERCENT = 30
-export const MFC2027_OFFER_PRICE = 1820
-export const MFC2027_PROMO_CODE = 'CREW30'
 
-export const MFC2027_PRICE_DISPLAY = {
-  base: 'US$2,600',
-  offer: 'US$1,820',
-} as const
-
-/** Raw_Leads PRICE column format. */
-export const MFC2027_PRICE_SHEET = 'US$2,600 | 30% off | US$1,820'
+/** Display / Raw_Leads PRICE — base price only. */
+export const MFC2027_PRICE_DISPLAY = 'US$2,600'
+export const MFC2027_PRICE_SHEET = 'US$2,600'
 
 export type Mfc2027Departure = {
   key: string

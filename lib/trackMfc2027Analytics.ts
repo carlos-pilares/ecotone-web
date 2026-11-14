@@ -1,9 +1,9 @@
 import {
+  MFC2027_BASE_PRICE,
   MFC2027_CAMPAIGN_NAME,
-  MFC2027_DISCOUNT_PERCENT,
+  MFC2027_DURATION,
   MFC2027_EXPERIENCE_NAME,
   MFC2027_LANDING_PATH,
-  MFC2027_OFFER_PRICE,
   type Mfc2027Departure,
 } from '@/app/manu-field-crew-2027/mfc2027-campaign'
 import { trackEvent, type GtagEventParams } from '@/lib/analytics'
@@ -154,8 +154,8 @@ export function trackMfc2027ResultView(params?: {
   group_size?: string
 }): void {
   trackMfc2027Event('mfc2027_result_view', {
-    offer_price: MFC2027_OFFER_PRICE,
-    discount_percent: MFC2027_DISCOUNT_PERCENT,
+    base_price: MFC2027_BASE_PRICE,
+    duration: MFC2027_DURATION,
     travel_timing: params?.travel_timing || undefined,
     group_size: params?.group_size || undefined,
   })
@@ -166,8 +166,8 @@ function departureParams(departure: Mfc2027Departure): GtagEventParams {
     departure_key: departure.key,
     departure_start: departure.startIso,
     departure_end: departure.endIso,
-    offer_price: MFC2027_OFFER_PRICE,
-    discount_percent: MFC2027_DISCOUNT_PERCENT,
+    base_price: MFC2027_BASE_PRICE,
+    duration: MFC2027_DURATION,
   }
 }
 
@@ -178,8 +178,8 @@ export function trackMfc2027DepartureSelect(departure: Mfc2027Departure): void {
 export function trackMfc2027WetravelClick(departure?: Mfc2027Departure | null): void {
   trackMfc2027Event('mfc2027_wetravel_click', {
     booking_provider: 'wetravel',
-    offer_price: MFC2027_OFFER_PRICE,
-    discount_percent: MFC2027_DISCOUNT_PERCENT,
+    base_price: MFC2027_BASE_PRICE,
+    duration: MFC2027_DURATION,
     ...(departure ? departureParams(departure) : {}),
   })
 }

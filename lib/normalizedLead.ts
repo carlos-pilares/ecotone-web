@@ -39,7 +39,7 @@ const MANU_VOLUNTEER_DURATION = '4 weeks'
 const MFC2027_CAMPAIGN_NAME = 'Manu Field Crew 2027'
 const MFC2027_LANDING_PATH = '/manu-field-crew-2027'
 const MFC2027_SOURCE = 'manu-field-crew-2027-landing'
-const MFC2027_PRICE_DISPLAY = 'US$2,600 | 30% off | US$1,820'
+const MFC2027_PRICE_DISPLAY = 'US$2,600'
 
 function resolveManuVolunteerLandingPage(pageUrl: string): string {
   const trimmed = pageUrl.trim()
