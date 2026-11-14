@@ -7,6 +7,7 @@ import {
   type Mfc2027Departure,
 } from '@/app/manu-field-crew-2027/mfc2027-campaign'
 import { trackEvent, type GtagEventParams } from '@/lib/analytics'
+import { trackMetaLead } from '@/lib/metaPixel'
 
 export const MFC2027_CAMPAIGN_PAGE = 'manu_field_crew_2027'
 export const MFC2027_FLOW_TYPE = 'manu_field_crew_2027'
@@ -125,6 +126,7 @@ export function trackMfc2027SubmitError(params: {
 /**
  * Conversion on successful `/api/enquiry` save.
  * Fires `enquiry_submit` + `generate_lead` once per modal success session.
+ * Also fires Meta Pixel standard `Lead` (no PII) at the same success point.
  */
 export function trackMfc2027LeadSuccess(params: {
   travel_timing: string
@@ -147,6 +149,8 @@ export function trackMfc2027LeadSuccess(params: {
 
   trackMfc2027Event('enquiry_submit', shared)
   trackMfc2027Event('generate_lead', shared)
+  // Mirror GA conversion → Meta standard Lead (same once-per-session guard). No PII.
+  trackMetaLead()
 }
 
 export function trackMfc2027ResultView(params?: {
