@@ -1,11 +1,106 @@
 /* Manu Field Crew 2027 — campaign-scoped overrides only */
 
-.mfc2027-cta-link {
-  text-decoration: none;
+/*
+ * Hero safe area — one shared gutter for logo, top CTA, copy, lower meta/CTA, status.
+ * Root cause of edge-hugging: topbar used a short fixed height + tiny top pad, while
+ * `.mcv-hero-inner` added a second horizontal inset on top of `.mcv-container` gutters.
+ */
+.mfc2027-root {
+  --hero-gutter: clamp(20px, 5vw, 80px);
+  --hero-gutter-top: clamp(20px, 2.5vw, 32px);
+  --hero-gutter-bottom: clamp(28px, 8vh, 56px);
+  /* Keep page sections + topbar + hero on the same horizontal system */
+  --page-pad: var(--hero-gutter);
+  --mcv-topbar-h: calc(
+    max(var(--hero-gutter-top), env(safe-area-inset-top, 0px)) + clamp(38px, 8vw, 48px) + 10px
+  );
 }
 
-.mfc2027-product-clarity {
-  margin: 0 0 1.15rem;
+@media (max-width: 719px) {
+  .mfc2027-root {
+    --mcv-topbar-h: calc(
+      max(var(--hero-gutter-top), env(safe-area-inset-top, 0px)) + 34px + 10px
+    );
+  }
+}
+
+/* Topbar: logo + CTA share the same top/side gutters */
+.mfc2027-root .mcv-topbar--hero {
+  --mcv-topbar-pad-top: max(var(--hero-gutter-top), env(safe-area-inset-top, 0px));
+  --mcv-topbar-pad-bottom: 8px;
+}
+
+.mfc2027-root .mcv-topbar--solid {
+  --mcv-topbar-pad-top: max(10px, env(safe-area-inset-top, 0px));
+  --mcv-topbar-pad-bottom: 10px;
+}
+
+@media (max-width: 719px) {
+  .mfc2027-root .mcv-topbar--hero {
+    --mcv-topbar-pad-top: max(var(--hero-gutter-top), env(safe-area-inset-top, 0px));
+    --mcv-topbar-pad-bottom: 8px;
+  }
+
+  .mfc2027-root .mcv-topbar--solid {
+    --mcv-topbar-pad-top: max(8px, env(safe-area-inset-top, 0px));
+    --mcv-topbar-pad-bottom: 8px;
+  }
+}
+
+/*
+ * Hero content: drop the second inset so copy / lower CTA / status
+ * align to the same `--hero-gutter` already applied by `.mcv-container`.
+ */
+.mfc2027-root .mcv-hero-inner {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--hero-content-max);
+  padding-inline: 0;
+  padding-block-start: calc(var(--mcv-topbar-h) + var(--space-4));
+  padding-block-end: max(
+    var(--hero-gutter-bottom),
+    calc(20px + env(safe-area-inset-bottom, 0px))
+  );
+}
+
+/*
+ * Lower hero vertical hierarchy — explicit stacks with gap (not margin tweaks).
+ * Reads as: lead → META / [PRIMARY CTA] / SECONDARY → STATUS
+ * Zero `.mcv-page p` margins inside the stack so flex `gap` is the sole vertical rhythm.
+ */
+.mfc2027-hero-lower {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--prose-max);
+  margin-top: var(--space-5);
+}
+
+.mfc2027-hero-lower > .mcv-hero-lead {
+  margin: 0 0 0.85rem;
+}
+
+.mfc2027-root .mcv-hero-action,
+.mfc2027-hero-action {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  /* Primary group → secondary programme option — 28px clears the filled CTA optically */
+  gap: 1.75rem;
+}
+
+.mfc2027-hero-action-primary {
+  display: flex;
+  flex-direction: column;
+  gap: 1.0625rem; /* ~17px meta → primary CTA (desktop 16–18) */
+}
+
+.mfc2027-hero-lower p.mfc2027-product-clarity {
+  margin: 0;
   font-family: var(--mcv-font);
   font-size: 0.8125rem;
   font-weight: 600;
@@ -14,19 +109,84 @@
   color: rgba(236, 229, 213, 0.88);
 }
 
-.mfc2027-hero-action .mcv-hero-lead {
-  margin-bottom: 0.85rem;
-}
-
-.mfc2027-hero-secondary {
-  margin: 1rem 0 0;
+.mfc2027-hero-lower p.mfc2027-hero-secondary {
+  margin: 0;
   max-width: 28rem;
   font-family: var(--mcv-font);
   font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.01em;
-  line-height: 1.45;
+  line-height: 1.55;
   color: rgba(236, 229, 213, 0.72);
+}
+
+/* Status outside the action stack — supporting info below */
+.mfc2027-hero-lower p.mfc2027-hero-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 1.75rem 0 0 !important; /* 28px — top of 24–28 */
+  max-width: 32rem;
+}
+
+@media (min-width: 768px) {
+  .mfc2027-root .mcv-hero-inner {
+    padding-inline: 0;
+    padding-block-end: max(
+      clamp(var(--space-6), 9vh, var(--space-8)),
+      calc(24px + env(safe-area-inset-bottom, 0px))
+    );
+  }
+
+  .mfc2027-hero-lower {
+    margin-top: var(--space-6);
+  }
+}
+
+@media (max-width: 767px) {
+  .mfc2027-root .mcv-hero-inner {
+    max-width: none;
+    width: 100%;
+    padding-inline: 0;
+    padding-block-start: calc(var(--mcv-topbar-h) + var(--space-2));
+    padding-block-end: max(
+      var(--hero-gutter-bottom),
+      calc(20px + env(safe-area-inset-bottom, 0px))
+    );
+  }
+
+  .mfc2027-hero-lower {
+    max-width: none;
+  }
+
+  /* Full-width within the shared guttered container — not the viewport */
+  .mfc2027-root .mcv-hero-cta {
+    width: 100%;
+    max-width: none;
+  }
+
+  .mfc2027-root .mcv-hero-action,
+  .mfc2027-hero-action {
+    gap: 1.75rem; /* 28px — mobile CTA → secondary (top of 24–28) */
+  }
+
+  .mfc2027-hero-action-primary {
+    gap: 1rem; /* 16px meta → CTA */
+  }
+
+  .mfc2027-hero-lower p.mfc2027-hero-secondary {
+    max-width: none;
+    line-height: 1.6;
+  }
+
+  .mfc2027-hero-lower p.mfc2027-hero-status {
+    margin-top: 1.75rem !important; /* 28px mobile */
+    max-width: none;
+  }
+}
+
+.mfc2027-cta-link {
+  text-decoration: none;
 }
 
 .mfc2027-secondary-link {

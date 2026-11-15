@@ -187,33 +187,41 @@ function Mfc2027PageInner({ partnersBand }: { partnersBand: Mfc2027PartnersBandD
               <span className="mcv-hero-title-line mcv-hero-title-line--manu">Manu</span>
               <span className="mcv-hero-title-line mcv-hero-title-line--crew">Field Crew.</span>
             </h1>
-            <div className="mcv-hero-action mfc2027-hero-action">
+            <div className="mfc2027-hero-lower">
               <p className="mcv-hero-lead">
                 Four weeks of conservation, rainforest life and people who care about nature as much
                 as you do — with fixed 2027 Monday departures.
               </p>
-              <p className="mfc2027-product-clarity">{MFC2027_PRODUCT_CLARITY}</p>
-              <Mfc2027CtaLink
-                className="mcv-hero-cta"
-                variant="prominent"
-                ctaLocation="hero"
-                ariaLabel={CTA_ARIA}
-              >
-                {MFC2027_CTA_SEE_DEPARTURES}
-              </Mfc2027CtaLink>
-              <p className="mfc2027-hero-secondary">
-                Looking for another programme length?{' '}
-                <Link
-                  href={MFC2027_FULL_PROGRAMME_PATH}
-                  className="mfc2027-secondary-link mfc2027-secondary-link--on-hero"
-                  onClick={() =>
-                    trackMfc2027FullProgrammeClick({ cta_location: 'hero' })
-                  }
-                >
-                  {MFC2027_EXPLORE_CV_LABEL}
-                </Link>
-              </p>
-              <p className="mcv-hero-offer" aria-label="Campaign availability">
+
+              {/* Explicit action stack: meta → primary CTA → secondary programme option */}
+              <div className="mcv-hero-action mfc2027-hero-action">
+                <div className="mfc2027-hero-action-primary">
+                  <p className="mfc2027-product-clarity">{MFC2027_PRODUCT_CLARITY}</p>
+                  <Mfc2027CtaLink
+                    className="mcv-hero-cta"
+                    variant="prominent"
+                    ctaLocation="hero"
+                    ariaLabel={CTA_ARIA}
+                  >
+                    {MFC2027_CTA_SEE_DEPARTURES}
+                  </Mfc2027CtaLink>
+                </div>
+                <p className="mfc2027-hero-secondary">
+                  Looking for another programme length?{' '}
+                  <Link
+                    href={MFC2027_FULL_PROGRAMME_PATH}
+                    className="mfc2027-secondary-link mfc2027-secondary-link--on-hero"
+                    onClick={() =>
+                      trackMfc2027FullProgrammeClick({ cta_location: 'hero' })
+                    }
+                  >
+                    {MFC2027_EXPLORE_CV_LABEL}
+                  </Link>
+                </p>
+              </div>
+
+              {/* Status sits outside the action group — supporting info, not a CTA sibling */}
+              <p className="mcv-hero-offer mfc2027-hero-status" aria-label="Campaign availability">
                 <span className="mcv-hero-offer-dot" aria-hidden="true" />
                 <span className="mcv-hero-offer-text">
                   2027 fixed departures open · Book directly on WeTravel
