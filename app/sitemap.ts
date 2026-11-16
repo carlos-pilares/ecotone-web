@@ -4,9 +4,7 @@ import { groq } from 'next-sanity'
 import { getLodgePageSlugsForStaticParams } from '@/lib/lodgePageCms'
 import { experienceLandingSlugsQuery } from '@/lib/queries'
 import { clientServer } from '@/lib/sanity'
-
-/** Production canonical origin for Search Console / crawlers. */
-const BASE_URL = 'https://www.ecotone.eco'
+import { absoluteUrl } from '@/lib/siteUrl'
 
 /** Published journal posts that are not marked noIndex, with reliable timestamps. */
 const journalSitemapQuery = groq`
@@ -16,13 +14,8 @@ const journalSitemapQuery = groq`
   }
 `
 
-function absoluteUrl(path: string): string {
-  if (path === '/') return BASE_URL
-  return `${BASE_URL}${path.startsWith('/') ? path : `/${path}`}`
-}
-
 function entry(path: string, lastModified: Date = new Date()): MetadataRoute.Sitemap[number] {
-  return { url: absoluteUrl(path), lastModified }
+  return { url: absoluteUrl(path === '/' ? '/' : path), lastModified }
 }
 
 function parseDate(value: string | null | undefined): Date | null {

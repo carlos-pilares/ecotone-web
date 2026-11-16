@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 
-const BASE_URL = 'https://www.ecotone.eco'
+import { PUBLIC_SITE_ORIGIN } from '@/lib/siteUrl'
 
 /**
  * Site-wide robots rules. Campaign and public marketing pages remain crawlable.
@@ -12,6 +12,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/studio', '/api/'],
     },
-    sitemap: `${BASE_URL}/sitemap.xml`,
+    sitemap: `${PUBLIC_SITE_ORIGIN}/sitemap.xml`,
   }
 }

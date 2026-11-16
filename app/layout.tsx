@@ -10,6 +10,7 @@ import { GoogleAnalytics } from '@/components/GoogleAnalytics'
 import { GaRoutePageView } from '@/components/GaRoutePageView'
 import { getBookingModalSettings } from '@/lib/getBookingModalSettings'
 import { getSiteSettingsShell } from '@/lib/getSiteSettingsShell'
+import { siteOrigin } from '@/lib/siteUrl'
 
 import './globals.css'
 import './announcement-bar.css'
@@ -27,6 +28,9 @@ const lexend = Lexend({
 })
 
 export const metadata: Metadata = {
+  // Absolute SEO URLs (canonical/OG) resolve against the public production host,
+  // never a preview deployment hostname. Route metadata may still override titles etc.
+  metadataBase: new URL(siteOrigin()),
   title: 'Ecotone — Immersive Nature Experiences · Cusco, Perú',
   description: 'No viajas para escapar del mundo, sino para protegerlo. Immersive all-inclusive nature experiences in the Manu Biosphere Reserve and Camanti, Peru.',
 }
