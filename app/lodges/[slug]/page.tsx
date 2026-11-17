@@ -2,9 +2,9 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { LodgePageView } from '@/app/lodges/LodgePageView'
+import { buildAbsoluteSeoMetadata } from '@/lib/buildAbsoluteSeoMetadata'
 import { getActivePromotions } from '@/lib/getPromotions'
 import { getLodgePageCms, getLodgePageSlugsForStaticParams } from '@/lib/lodgePageCms'
-import { lodgeSoqtapataSeoDefault } from '@/lib/lodgePageCmsTypes'
 
 /** ISR: match `app/lodges/soqtapata-lodge/page.tsx`. */
 export const revalidate = 60
@@ -21,12 +21,15 @@ export async function generateMetadata({
   const { slug } = await params
   const resolved = await getLodgePageCms(slug)
   if (resolved.source !== 'cms' || !resolved.doc?.lodgePageId) {
-    return { title: 'Lodge · Ecotone', description: lodgeSoqtapataSeoDefault.description }
+    return { title: 'Lodge · Ecotone' }
   }
-  return {
-    title: resolved.seo.title || lodgeSoqtapataSeoDefault.title,
-    description: resolved.seo.description || lodgeSoqtapataSeoDefault.description,
-  }
+  return buildAbsoluteSeoMetadata({
+    path: `/lodges/${slug}`,
+    title: resolved.seo.title,
+    description: resolved.seo.description,
+    noIndex: resolved.seo.noIndex,
+    ogImageUrl: resolved.seo.ogImageUrl,
+  })
 }
 
 export default async function LodgePageBySlug({ params }: { params: Promise<{ slug: string }> }) {

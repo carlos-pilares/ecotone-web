@@ -537,9 +537,10 @@ export function buildLearningPagePayloadFromStructuredRow(
     experience = { ...experience, pageNav: pageNavFromCms }
   }
 
+  // Entity-local fallback only; programme.seo is applied inside seoFromStructuredRow (after page.seo).
   const programmeSeoFallback = {
-    title: programme.seo?.title?.trim() || `${programmeTitle} — Ecotone`,
-    description: programme.seo?.description?.trim() || programme.shortDescription?.trim() || '',
+    title: `${programmeTitle} — Ecotone`,
+    description: programme.shortDescription?.trim() || '',
   }
 
   if (!experienceHasMediaSection(experience.media)) {
@@ -555,7 +556,9 @@ export function buildLearningPagePayloadFromStructuredRow(
     reviewsLayout,
     doc: { _id: pageRow._id, slug: pageRow.slug, seo: pageRow.seo ?? null },
     cmsError: null,
-    seo: seoFromStructuredRow(pageRow, programmeSeoFallback),
+    seo: seoFromStructuredRow(pageRow, programmeSeoFallback, {
+      mainImageUrl: programme.mainImageUrl,
+    }),
     sectionVisibility,
     reviewsSectionLead: pres.reviewsSectionLead,
     reviewsRatingSummary: normalizeReviewsRatingSummary(pageRow.reviewsSettings ?? null) ?? {

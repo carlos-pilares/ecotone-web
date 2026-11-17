@@ -484,7 +484,12 @@ export const soqtapataStructuredPageBySlugQuery = groq`
     _id,
     internalTitle,
     slug,
-    seo,
+    seo {
+      title,
+      description,
+      noIndex,
+      "ogImageUrl": ogImage.asset->url
+    },
     internalNav {
       title,
       subtitle,
@@ -829,7 +834,12 @@ export const soqtapataStructuredPageBySlugQuery = groq`
         }
       },
       faqs[] { _key, question, answer },
-      seo,
+      seo {
+        title,
+        description,
+        noIndex,
+        "ogImageUrl": ogImage.asset->url
+      },
       "lodge": lodge-> {
         _id, name, shortDescription, ${GROQ_LODGE_ALTITUDE_AS_ALTITUDE}, route, amenities,
         "mainImageUrl": mainImage.asset->url
@@ -873,7 +883,12 @@ export const lodgeStructuredPageBySlugQuery = groq`
     _id,
     internalTitle,
     slug,
-    seo,
+    seo {
+      title,
+      description,
+      noIndex,
+      "ogImageUrl": ogImage.asset->url
+    },
     heroImage,
     heroGalleryOrderKeys,
     menuThumbnailImage,
@@ -1101,10 +1116,16 @@ export const lodgeStructuredPageBySlugQuery = groq`
       availabilityNote,
       bookingMessage,
       trustItems[]{ title, subtitle },
-      seo,
+      seo {
+        title,
+        description,
+        noIndex,
+        "ogImageUrl": ogImage.asset->url
+      },
       seoTitle,
       seoDescription,
       ogImage,
+      "ogImageUrl": ogImage.asset->url,
       mainImage,
       "mainImageUrl": mainImage.asset->url,
       heroGalleryOpenAriaLabel,

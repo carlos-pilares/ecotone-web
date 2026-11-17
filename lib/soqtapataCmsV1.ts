@@ -214,7 +214,12 @@ export type SoqtapataCmsPageDoc = {
   _id?: string
   slug?: { current?: string | null } | null
   /** Page-level SEO; structured fields (not legacy title/seoDescription). */
-  seo?: { title?: string | null; description?: string | null } | null
+  seo?: {
+    title?: string | null
+    description?: string | null
+    noIndex?: boolean | null
+    ogImageUrl?: string | null
+  } | null
 } | null
 
 export type {
@@ -238,7 +243,12 @@ export type SoqtapataPageCmsPayload = {
   reviewsLayout: ExperienceReviewsLayoutMutable
   doc: SoqtapataCmsPageDoc
   cmsError: string | null
-  seo: { title: string; description: string }
+  seo: {
+    title: string
+    description: string
+    noIndex: boolean
+    ogImageUrl: string | null
+  }
   sectionVisibility: SoqtapataSectionVisibility
   reviewsSectionLead: string | null | undefined
   reviewsRatingSummary: ReviewsRatingSummary
@@ -274,7 +284,12 @@ export const getSoqtapataPageCms = cache(async (slug: string): Promise<Soqtapata
     reviewsLayout: ExperienceReviewsLayoutMutable
     doc: SoqtapataCmsPageDoc
     cmsError: string | null
-    seo: { title: string; description: string }
+    seo: {
+      title: string
+      description: string
+      noIndex: boolean
+      ogImageUrl: string | null
+    }
     sectionModules: SoqtapataPageModuleRow[] | null | undefined
     pageReviews: { eyebrow?: string | null; title?: string | null; body?: string | null } | null | undefined
     reviewsRatingSummary: ReviewsRatingSummary
@@ -319,7 +334,7 @@ export const getSoqtapataPageCms = cache(async (slug: string): Promise<Soqtapata
       reviewsLayout,
       doc: null,
       cmsError: cmsErr,
-      seo: soqtapataPristineSeoDefault,
+      seo: { ...soqtapataPristineSeoDefault, noIndex: false, ogImageUrl: null },
       sectionModules: null,
       pageReviews: null,
       reviewsRatingSummary: { ...DEFAULT_REVIEWS_RATING_SUMMARY },
@@ -434,7 +449,16 @@ export const getSoqtapataPageCms = cache(async (slug: string): Promise<Soqtapata
   }
   const reviewsLayout = reviewsLayoutFromRow(row, soqtapataExperienceReviewsLayout)
   const doc: SoqtapataCmsPageDoc = { _id: row._id, slug: row.slug, seo: row.seo }
-  const seo = seoFromStructuredRow(row, { ...soqtapataPristineSeoDefault })
+  const entityName = exp.name?.trim() || experience.hero?.h1?.trim() || 'Experience'
+  const entityDescription = exp.shortDescription?.trim() || ''
+  const seo = seoFromStructuredRow(
+    row,
+    {
+      title: `${entityName} — Ecotone`,
+      description: entityDescription.slice(0, 200),
+    },
+    { mainImageUrl: exp.mainImageUrl },
+  )
   return finalizePayload({
     experience,
     programType: exp?.programType?.trim() ?? null,

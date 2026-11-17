@@ -34,6 +34,7 @@ import {
 } from '@/lib/mergeExperienceListingRows'
 import { filterPublishedPartnerDocs } from '@/lib/partnerDocs'
 import { client } from '@/lib/sanity'
+import { absoluteUrl } from '@/lib/siteUrl'
 
 const raw = readFileSync(join(process.cwd(), 'ecotone-home-final.html'), 'utf-8')
 const { css: homeInjectBaseCss } = parseEcotoneHomeHtml(raw)
@@ -44,13 +45,16 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = s.title?.trim() || undefined
   const description = s.description?.trim() || undefined
   const images = s.ogImageUrl?.trim() ? [{ url: s.ogImageUrl.trim() }] : undefined
+  const canonical = absoluteUrl('/')
   return {
     title,
     description,
     robots: s.noIndex ? { index: false, follow: false } : undefined,
+    alternates: { canonical },
     openGraph: {
       title,
       description,
+      url: canonical,
       ...(images ? { images } : {}),
     },
   }

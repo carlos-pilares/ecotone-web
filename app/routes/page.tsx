@@ -13,6 +13,7 @@ import { SiteHeader } from '@/components/SiteHeader'
 import { SnapshotBar } from '@/components/shared/SnapshotBar'
 import { getActivePromotions } from '@/lib/getPromotions'
 import { getRoutesPage } from '@/lib/getRoutesPage'
+import { absoluteUrl } from '@/lib/siteUrl'
 
 import '../experiences/experience-surface.css'
 import './routes-surface.css'
@@ -20,17 +21,20 @@ import './routes-surface.css'
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getRoutesPage()
   const { seo } = page
+  const canonical = absoluteUrl('/routes')
   return {
     title: seo.title,
     description: seo.description,
     robots: seo.noIndex ? { index: false, follow: false } : undefined,
+    alternates: { canonical },
     openGraph: seo.ogImageUrl
       ? {
           title: seo.title,
           description: seo.description,
+          url: canonical,
           images: [{ url: seo.ogImageUrl }],
         }
-      : { title: seo.title, description: seo.description },
+      : { title: seo.title, description: seo.description, url: canonical },
   }
 }
 

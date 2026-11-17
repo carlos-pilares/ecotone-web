@@ -199,7 +199,12 @@ export type SoqtapataStructuredPageRow = {
   _id: string
   internalTitle?: string | null
   slug?: { current?: string | null } | null
-  seo?: { title?: string | null; description?: string | null } | null
+  seo?: {
+    title?: string | null
+    description?: string | null
+    noIndex?: boolean | null
+    ogImageUrl?: string | null
+  } | null
   /** Overrides por bloque (eyebrow, título, intro, visible). */
   sectionModules?: SoqtapataPageModuleRow[] | null
   pageHero?: CmsPageHero | null
@@ -470,7 +475,12 @@ type CmsExperience = {
   snapshotHighlights?: CmsSnapshotHighlightRow[] | null
   lodgePresentationRows?: CmsLodgePresentationRow[] | null
   faqs?: { _key?: string | null; question?: string; answer?: string }[] | null
-  seo?: { title?: string | null; description?: string | null } | null
+  seo?: {
+    title?: string | null
+    description?: string | null
+    noIndex?: boolean | null
+    ogImageUrl?: string | null
+  } | null
   routeDocument?: {
     name?: string | null
     shortDescription?: string | null
@@ -2509,18 +2519,54 @@ export function reviewsLayoutFromRow(
   }
 }
 
+export type ResolvedLandingSeo = {
+  title: string
+  description: string
+  noIndex: boolean
+  ogImageUrl: string | null
+}
+
+function trimSeoText(value: string | null | undefined): string {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+/**
+ * Experience landing SEO precedence:
+ * page.seo → experience/learningProgramme.seo → caller fallbacks (entity name / short description).
+ * Images: page.seo.ogImageUrl → content seo.ogImageUrl → mainImageUrl (no invented defaults).
+ * noIndex: page.seo.noIndex when set; otherwise content-level noIndex.
+ */
 export function seoFromStructuredRow(
   row: SoqtapataStructuredPageRow | null | undefined,
   fallbacks: { title: string; description: string },
-): { title: string; description: string } {
-  if (!row) return fallbacks
-  const pageSeo = row.seo
-  const expSeo = row.experience?.seo
-  return {
-    title: (pageSeo?.title && pageSeo.title.trim()) || (expSeo?.title && expSeo.title.trim()) || fallbacks.title,
-    description:
-      (pageSeo?.description && pageSeo.description.trim()) || (expSeo?.description && expSeo.description.trim()) || fallbacks.description,
+  opts?: { mainImageUrl?: string | null },
+): ResolvedLandingSeo {
+  if (!row) {
+    return {
+      title: fallbacks.title,
+      description: fallbacks.description,
+      noIndex: false,
+      ogImageUrl: trimSeoText(opts?.mainImageUrl) || null,
+    }
   }
+  const pageSeo = row.seo
+  const contentSeo = row.experience?.seo ?? row.learningProgramme?.seo
+  const title =
+    trimSeoText(pageSeo?.title) || trimSeoText(contentSeo?.title) || fallbacks.title
+  const description =
+    trimSeoText(pageSeo?.description) ||
+    trimSeoText(contentSeo?.description) ||
+    fallbacks.description
+  const noIndex =
+    pageSeo?.noIndex != null ? Boolean(pageSeo.noIndex) : Boolean(contentSeo?.noIndex)
+  const ogImageUrl =
+    trimSeoText(pageSeo?.ogImageUrl) ||
+    trimSeoText(contentSeo?.ogImageUrl) ||
+    trimSeoText(opts?.mainImageUrl) ||
+    trimSeoText(row.experience?.mainImageUrl) ||
+    trimSeoText(row.learningProgramme?.mainImageUrl) ||
+    null
+  return { title, description, noIndex, ogImageUrl }
 }
 
 function strOrNull(v: unknown): string | null {

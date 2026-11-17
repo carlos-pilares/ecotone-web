@@ -617,33 +617,61 @@ function resolveReviewsSection(
 function resolveSeo(
   row: LodgeStructuredPageRow | null | undefined,
   lodge: LodgeDocumentRow,
-): { title: string; description: string } {
-  const d = lodgeSoqtapataSeoDefault
-  if (row?.seo?.title?.trim()) {
+): { title: string; description: string; noIndex: boolean; ogImageUrl: string | null } {
+  const pageSeo = row?.seo
+  const lodgeSeo = lodge.seo
+  const shortDescription = lodge.shortDescription?.trim() || ''
+  const name = lodge.name?.trim() || ''
+
+  const noIndex =
+    pageSeo?.noIndex != null ? Boolean(pageSeo.noIndex) : Boolean(lodgeSeo?.noIndex)
+
+  const ogImageUrl =
+    pageSeo?.ogImageUrl?.trim() ||
+    lodgeSeo?.ogImageUrl?.trim() ||
+    lodge.ogImageUrl?.trim() ||
+    lodge.mainImageUrl?.trim() ||
+    null
+
+  // Description fallbacks stay entity-local (shortDescription) — never borrow Soqtapata lodge copy
+  // for another lodge. Soqtapata defaults apply only when this lodge has no name/identity at all.
+  if (pageSeo?.title?.trim()) {
     return {
-      title: row.seo.title.trim(),
-      description: (row.seo.description?.trim() || d.description).slice(0, 200),
+      title: pageSeo.title.trim(),
+      description: (pageSeo.description?.trim() || shortDescription).slice(0, 200),
+      noIndex,
+      ogImageUrl,
     }
   }
-  if (lodge.seo?.title?.trim()) {
+  if (lodgeSeo?.title?.trim()) {
     return {
-      title: lodge.seo.title.trim(),
-      description: (lodge.seo.description?.trim() || d.description).slice(0, 200),
+      title: lodgeSeo.title.trim(),
+      description: (lodgeSeo.description?.trim() || shortDescription).slice(0, 200),
+      noIndex,
+      ogImageUrl,
     }
   }
   if (lodge.seoTitle?.trim()) {
     return {
       title: lodge.seoTitle.trim(),
-      description: (lodge.seoDescription?.trim() || d.description).slice(0, 200),
+      description: (lodge.seoDescription?.trim() || shortDescription).slice(0, 200),
+      noIndex,
+      ogImageUrl,
     }
   }
-  if (lodge.name?.trim()) {
+  if (name) {
     return {
-      title: `${lodge.name} — Ecotone`,
-      description: (lodge.shortDescription?.trim() || d.description).slice(0, 200),
+      title: `${name} — Ecotone`,
+      description: shortDescription.slice(0, 200),
+      noIndex,
+      ogImageUrl,
     }
   }
-  return { ...d }
+  return {
+    ...lodgeSoqtapataSeoDefault,
+    noIndex,
+    ogImageUrl,
+  }
 }
 
 function mergeLocationMapLabels(loc: LodgeStaticBundle['location'], lodge: LodgeDocumentRow): LodgeStaticBundle['location'] {
@@ -927,7 +955,7 @@ export function mergeLodgePageWithFallback(
       cmsError,
       pageSlug,
       doc: null,
-      seo: { ...lodgeSoqtapataSeoDefault },
+      seo: { ...lodgeSoqtapataSeoDefault, noIndex: false, ogImageUrl: null },
       ...out,
       reviewsSection: resolveReviewsSection(
         row?.sections ?? null,

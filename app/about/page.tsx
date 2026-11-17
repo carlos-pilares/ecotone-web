@@ -16,6 +16,7 @@ import { PartnersBand } from '@/components/shared/PartnersBand'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
 import { getAboutPage } from '@/lib/getAboutPage'
+import { absoluteUrl } from '@/lib/siteUrl'
 
 import '../experiences/experience-surface.css'
 import './about-surface.css'
@@ -23,17 +24,20 @@ import './about-surface.css'
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getAboutPage()
   const { seo } = page
+  const canonical = absoluteUrl('/about')
   return {
     title: seo.title,
     description: seo.description,
     robots: seo.noIndex ? { index: false, follow: false } : undefined,
+    alternates: { canonical },
     openGraph: seo.ogImageUrl
       ? {
           title: seo.title,
           description: seo.description,
+          url: canonical,
           images: [{ url: seo.ogImageUrl }],
         }
-      : { title: seo.title, description: seo.description },
+      : { title: seo.title, description: seo.description, url: canonical },
   }
 }
 

@@ -229,10 +229,18 @@ export type LodgeDocumentRow = {
   availabilityNote?: string | null
   bookingMessage?: string | null
   trustItems?: LodgeTrustItemRow[] | null
-  seo?: { title?: string | null; description?: string | null; ogImage?: unknown; noIndex?: boolean | null } | null
+  seo?: {
+    title?: string | null
+    description?: string | null
+    ogImage?: unknown
+    ogImageUrl?: string | null
+    noIndex?: boolean | null
+  } | null
   seoTitle?: string | null
   seoDescription?: string | null
   ogImage?: SanityImageSource | null
+  /** Legacy lodge.ogImage asset URL (when present). */
+  ogImageUrl?: string | null
   mainImage?: SanityImageSource | null
   mainImageUrl?: string | null
   heroGalleryOpenAriaLabel?: string | null
@@ -295,7 +303,13 @@ export type LodgeStructuredPageRow = {
   _id?: string
   internalTitle?: string | null
   slug?: { current?: string | null } | null
-  seo?: { title?: string | null; description?: string | null; ogImage?: unknown; noIndex?: boolean | null } | null
+  seo?: {
+    title?: string | null
+    description?: string | null
+    ogImage?: unknown
+    ogImageUrl?: string | null
+    noIndex?: boolean | null
+  } | null
   heroImage?: SanityImageSource | null
   heroGalleryOrderKeys?: string[] | null
   menuThumbnailImage?: string | null
@@ -412,7 +426,12 @@ export type LodgePageResolvedPayload = {
     lodgePageId?: string
     lodgeId?: string
   } | null
-  seo: { title: string; description: string }
+  seo: {
+    title: string
+    description: string
+    noIndex: boolean
+    ogImageUrl: string | null
+  }
   hero: LodgeHeroData
   pageNav: LodgeInPageNavData
   snapshot: readonly LodgeSnapshotItem[]

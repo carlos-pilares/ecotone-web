@@ -12,10 +12,8 @@ import { TechProductsSection } from '@/components/TechProductsSection'
 import { ExperienceOfferTerms } from '@/components/experience/ExperienceOfferTerms'
 import { buildSoqtapataBookingSummary } from '@/lib/buildSoqtapataBookingSummary'
 import { getActivePromotions } from '@/lib/getPromotions'
-import {
-  SOQTAPATA_LOCAL_FALLBACK_SLUG,
-  soqtapataPristineSeoDefault,
-} from '@/lib/soqtapataCmsV1'
+import { buildAbsoluteSeoMetadata } from '@/lib/buildAbsoluteSeoMetadata'
+import { SOQTAPATA_LOCAL_FALLBACK_SLUG } from '@/lib/soqtapataCmsV1'
 import { experienceHasMediaSection } from '@/lib/soqtapataStructuredCms'
 import { experienceLandingSlugsQuery } from '@/lib/queries'
 import { clientServer } from '@/lib/sanity'
@@ -72,10 +70,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const landing = await getExperienceLandingPage(slug)
   if (!landing) notFound()
   const seo = landing.seo
-  return {
-    title: seo.title || soqtapataPristineSeoDefault.title,
-    description: seo.description || soqtapataPristineSeoDefault.description,
-  }
+  return buildAbsoluteSeoMetadata({
+    path: `/experiences/${slug}`,
+    title: seo.title,
+    description: seo.description,
+    noIndex: seo.noIndex,
+    ogImageUrl: seo.ogImageUrl,
+  })
 }
 
 export default async function ExperienceLandingPage({ params, searchParams }: PageProps) {
