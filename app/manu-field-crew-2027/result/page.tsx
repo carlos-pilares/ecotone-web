@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: 'Choose your 2027 departure | Manu Field Crew',
   description:
     'Choose your Manu Field Crew 2027 departure, then continue to WeTravel to check availability and book.',
-  robots: { index: true, follow: true },
+  robots: { index: false, follow: false },
 }
 
 export default function ManuFieldCrew2027ResultPage() {
